@@ -8,10 +8,7 @@
 #include "CollFrustum.h"
 #include "CollSphere.h"
 
-#include "ResDynamicVIBuffer.h"
-#include "ResVertexShader.h"
-#include "ResPixelShader.h"
-#include "ResCBuffer.h"
+#include "Resources.h"
 
 #include "CameraObject.h"
 
@@ -267,7 +264,7 @@ void CColliderManager::ClearColliderGroup()
 HRESULT CColliderManager::Initialize()
 {
     if (auto res = E::CGameInstance::Get()
-        .AddResourceT<E::CResVertexShader>("PERMANENT_SHADER", "VertexShader_ColliderDbg", "./Resources/Shader/Collider/Collider.hlsl"))
+        .AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_ColliderDbg", "./Resources/Shader/Collider/Collider.hlsl"))
     {
         if (FAILED(res->Load()))
         {
@@ -276,7 +273,7 @@ HRESULT CColliderManager::Initialize()
         m_pDbgVShader = res;
     }
     if (auto res = E::CGameInstance::Get()
-        .AddResourceT<E::CResPixelShader>("PERMANENT_SHADER", "PixelShader_ColliderDbg", "./Resources/Shader/Collider/Collider.hlsl"))
+        .AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_ColliderDbg", "./Resources/Shader/Collider/Collider.hlsl"))
     {
         if (FAILED(res->Load()))
         {
@@ -285,7 +282,7 @@ HRESULT CColliderManager::Initialize()
         m_pDbgPShader = res;
     }
     if (auto res = E::CGameInstance::Get()
-        .AddResourceT("PERMANENT_BUFFER", "CB_ColliderDbgPerFrame", E::CResCBuffer::Create()))
+        .AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_ColliderDbgPerFrame", E::CResCBuffer::Create()))
     {
         if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_COLL_PER_FRAME) })))
         {
@@ -294,7 +291,7 @@ HRESULT CColliderManager::Initialize()
         m_pPerFrame = res;
     }
     if (auto res = CGameInstance::Get()
-        .AddResourceT("PERMANENT_BUFFER", "DVI_ColliderDbg", CResDynamicVIBuffer::Create()))
+        .AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "DVI_ColliderDbg", CResDynamicVIBuffer::Create()))
     {
         CResDynamicVIBuffer::DESC desc{};
         desc.ePrimitiveType = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
