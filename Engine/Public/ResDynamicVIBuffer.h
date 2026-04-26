@@ -37,7 +37,7 @@ public:
 	HRESULT Unload(const std::any& arg = {})  override;
 
 public:
-	static SPtr<CResDynamicVIBuffer> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResDynamicVIBuffer> Create();
 };
 
 NS_END

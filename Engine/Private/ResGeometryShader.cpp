@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResGeometryShader.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -38,7 +39,7 @@ CResGeometryShader::~CResGeometryShader()
 {
 }
 
-SPtr<CResGeometryShader> CResGeometryShader::Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResGeometryShader> CResGeometryShader::Create(const _string& sPath)
 {
-	return ToSPtr(new CResGeometryShader{ sPath, pDevice, pContext });
+	return ToSPtr(new CResGeometryShader{ sPath, CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

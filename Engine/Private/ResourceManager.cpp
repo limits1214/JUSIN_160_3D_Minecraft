@@ -286,19 +286,19 @@ SPtr<CResource> CResourceManager::CreateResource(_string_id eAssetType, const _s
 	case CResJson::StaticType:
 		return CResJson::Create(sPath);
 	case CResVertexShader::StaticType:
-		return CResVertexShader::Create(sPath, m_pDevice, m_pContext);
+		return CResVertexShader::Create(sPath);
 	case CResPixelShader::StaticType:
-		return CResPixelShader::Create(sPath, m_pDevice, m_pContext);
+		return CResPixelShader::Create(sPath);
 	case CResGeometryShader::StaticType:
-		return CResGeometryShader::Create(sPath, m_pDevice, m_pContext);
+		return CResGeometryShader::Create(sPath);
 	case CResTessHullShader::StaticType:
-		return CResTessHullShader::Create(sPath, m_pDevice, m_pContext);
+		return CResTessHullShader::Create(sPath);
 	case CResTessDomainShader::StaticType:
-		return CResTessDomainShader::Create(sPath, m_pDevice, m_pContext);
+		return CResTessDomainShader::Create(sPath);
 	case CResComputeShader::StaticType:
-		return CResComputeShader::Create(sPath, m_pDevice, m_pContext);
+		return CResComputeShader::Create(sPath);
 	case CResGeoShaderStreamOut::StaticType:
-		return CResGeoShaderStreamOut::Create(sPath, m_pDevice, m_pContext);
+		return CResGeoShaderStreamOut::Create(sPath);
 	//case Engine::CAsset::TYPE::FMOD_SOUND:
 	//	return CResFmodSound::Create(sPath);
 	//case Engine::CAsset::TYPE::JSON:

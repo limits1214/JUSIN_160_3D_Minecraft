@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResQuadFullscreenTexBuffer.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -93,7 +94,7 @@ HRESULT CResQuadFullscreenTexBuffer::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResQuadFullscreenTexBuffer> CResQuadFullscreenTexBuffer::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResQuadFullscreenTexBuffer> CResQuadFullscreenTexBuffer::Create()
 {
-    return ToSPtr(new CResQuadFullscreenTexBuffer{ "", pDevice, pContext });
+    return ToSPtr(new CResQuadFullscreenTexBuffer{ "", CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
 }

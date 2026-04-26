@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResComputeShader.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -38,7 +39,7 @@ CResComputeShader::~CResComputeShader()
 {
 }
 
-SPtr<CResComputeShader> CResComputeShader::Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResComputeShader> CResComputeShader::Create(const _string& sPath)
 {
-	return ToSPtr(new CResComputeShader{ sPath, pDevice, pContext });
+	return ToSPtr(new CResComputeShader{ sPath, CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext()});
 }

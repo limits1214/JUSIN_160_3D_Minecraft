@@ -16,6 +16,8 @@
 
 #include "Renderer.h"
 
+#include "FlyCamera.h"
+
 NS_USING(Engine)
 
 CGameInstance::CGameInstance()
@@ -210,6 +212,15 @@ HRESULT CGameInstance::InitializeResources()
 
 HRESULT CGameInstance::InitializePrototype()
 {
+	if (AddPrototype("PERMANENT", "Prototype_Component_Transform", CTransform::Create()))
+	{
+		return E_FAIL;
+	}
+
+	if (AddPrototype("CAMERAS", "Prototype_GameObject_FlyCamera", CFlyCamera::Create()))
+	{
+		return E_FAIL;
+	}
 	return S_OK;
 }
 

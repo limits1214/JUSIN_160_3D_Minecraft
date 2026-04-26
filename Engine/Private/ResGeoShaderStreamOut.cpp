@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResGeoShaderStreamOut.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -107,7 +108,7 @@ CResGeoShaderStreamOut::~CResGeoShaderStreamOut()
 {
 }
 
-SPtr<CResGeoShaderStreamOut> CResGeoShaderStreamOut::Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResGeoShaderStreamOut> CResGeoShaderStreamOut::Create(const _string& sPath)
 {
-	return ToSPtr(new CResGeoShaderStreamOut{ sPath, pDevice, pContext });
+	return ToSPtr(new CResGeoShaderStreamOut{ sPath, CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

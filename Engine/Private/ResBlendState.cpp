@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResBlendState.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -46,7 +47,7 @@ HRESULT CResBlendState::Unload(const std::any& arg)
 	return S_OK;
 }
 
-SPtr<CResBlendState> CResBlendState::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResBlendState> CResBlendState::Create()
 {
-	return ToSPtr(new CResBlendState{ "", pDevice, pContext });
+	return ToSPtr(new CResBlendState{ "", CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

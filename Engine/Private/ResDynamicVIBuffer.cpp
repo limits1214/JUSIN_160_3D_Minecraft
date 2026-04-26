@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResDynamicVIBuffer.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -55,7 +56,7 @@ HRESULT CResDynamicVIBuffer::Unload(const std::any& arg)
 	return S_OK;
 }
 
-SPtr<CResDynamicVIBuffer> CResDynamicVIBuffer::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResDynamicVIBuffer> CResDynamicVIBuffer::Create()
 {
-	return ToSPtr(new CResDynamicVIBuffer{"", pDevice, pContext});
+	return ToSPtr(new CResDynamicVIBuffer{"", CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
 }

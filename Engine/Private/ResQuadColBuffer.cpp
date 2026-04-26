@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResQuadColBuffer.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -94,7 +95,7 @@ HRESULT CResQuadColBuffer::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResQuadColBuffer> CResQuadColBuffer::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResQuadColBuffer> CResQuadColBuffer::Create()
 {
-    return ToSPtr(new CResQuadColBuffer{ "", pDevice, pContext });
+    return ToSPtr(new CResQuadColBuffer{ "", CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
 }

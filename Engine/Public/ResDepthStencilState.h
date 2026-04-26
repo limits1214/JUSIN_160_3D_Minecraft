@@ -25,7 +25,7 @@ private:
 	ComPtr<ID3D11Device> m_pDevice{};
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 public:
-	static SPtr<CResDepthStencilState> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResDepthStencilState> Create();
 };
 
 NS_END

@@ -285,7 +285,7 @@ HRESULT CColliderManager::Initialize()
         m_pDbgPShader = res;
     }
     if (auto res = E::CGameInstance::Get()
-        .AddResourceT("PERMANENT_BUFFER", "CBuffer_ColliderDbgPerFrame", E::CResCBuffer::Create(m_pDevice.Get(), m_pContext.Get())))
+        .AddResourceT("PERMANENT_BUFFER", "CB_ColliderDbgPerFrame", E::CResCBuffer::Create()))
     {
         if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_COLL_PER_FRAME) })))
         {
@@ -294,7 +294,7 @@ HRESULT CColliderManager::Initialize()
         m_pPerFrame = res;
     }
     if (auto res = CGameInstance::Get()
-        .AddResourceT("PERMANENT", "ColliderDbg", CResDynamicVIBuffer::Create(m_pDevice, m_pContext)))
+        .AddResourceT("PERMANENT_BUFFER", "DVI_ColliderDbg", CResDynamicVIBuffer::Create()))
     {
         CResDynamicVIBuffer::DESC desc{};
         desc.ePrimitiveType = D3D_PRIMITIVE_TOPOLOGY_LINELIST;

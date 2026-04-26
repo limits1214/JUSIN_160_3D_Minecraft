@@ -46,7 +46,7 @@ private:
 	std::vector<ComPtr<ID3D11RenderTargetView>> m_pRTV{};
 
 public:
-	static SPtr<CResDynamicTexture2D> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResDynamicTexture2D> Create();
 
 };
 

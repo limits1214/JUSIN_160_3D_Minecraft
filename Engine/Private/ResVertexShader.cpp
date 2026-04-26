@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResVertexShader.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -130,7 +131,7 @@ CResVertexShader::~CResVertexShader()
 {
 }
 
-SPtr<CResVertexShader> CResVertexShader::Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResVertexShader> CResVertexShader::Create(const _string& sPath)
 {
-	return ToSPtr(new CResVertexShader{ sPath, pDevice, pContext });
+	return ToSPtr(new CResVertexShader{ sPath, CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

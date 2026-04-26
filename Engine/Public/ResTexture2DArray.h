@@ -31,7 +31,7 @@ private:
 	std::optional<std::pair<StringID, StringID>> m_textureId{};
 
 public:
-	static SPtr<CResTexture2DArray> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResTexture2DArray> Create();
 };
 
 NS_END

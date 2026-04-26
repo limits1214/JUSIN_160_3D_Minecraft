@@ -23,7 +23,7 @@ private:
 	ComPtr<ID3D11PixelShader> m_pPixelShader{};
 
 public:
-	static SPtr<CResPixelShader> Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResPixelShader> Create(const _string& sPath);
 };
 
 NS_END

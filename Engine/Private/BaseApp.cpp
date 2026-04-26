@@ -73,6 +73,9 @@ HRESULT CBaseApp::Loop()
 		//m_iMeasureFixedUpdateCnt = 0;
 		m_iMeasureUpdateCnt = 0;
 		//m_iMeasureRenderCnt = 0;
+		_tchar szFps[32];
+		swprintf_s(szFps, 32, L"%d", m_iMeasureUpdateCntPerSec);
+		SetWindowText(CGameInstance::Get().GetHwnd(), szFps);
 
 		m_MeasureTimer.Reset(fmodf(m_MeasureTimer.Get_CurrTime(), m_MeasureTimer.Get_GoalTime()));
 	}
@@ -83,11 +86,11 @@ void CBaseApp::UpdateGUI()
 {
 	Engine::CGameInstance::Get().ImguiNewFrame();
 
-	ImGui::Begin("Mesure");
-	//ImGui::Text("FU/s: %i", m_iMeasureFixedUpdateCntPerSec);
-	ImGui::Text("U/s: %i", m_iMeasureUpdateCntPerSec);
-	//ImGui::Text("R/s: %i", m_iMeasureRenderCntPerSec);
-	ImGui::End();
+	//ImGui::Begin("Mesure");
+	////ImGui::Text("FU/s: %i", m_iMeasureFixedUpdateCntPerSec);
+	//ImGui::Text("U/s: %i", m_iMeasureUpdateCntPerSec);
+	////ImGui::Text("R/s: %i", m_iMeasureRenderCntPerSec);
+	//ImGui::End();
 
 	Engine::CGameInstance::Get().UpdateGUI();
 

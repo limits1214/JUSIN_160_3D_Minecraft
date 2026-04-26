@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "GameInstance.h"
 #include "ResTexture2D.h"
 #include <directxtk/WICTextureLoader.h>
 #include <wincodec.h>
@@ -166,9 +167,9 @@ HRESULT CResTexture2D::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResTexture2D> CResTexture2D::Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResTexture2D> CResTexture2D::Create(const _string& sPath)
 {
-    return ToSPtr(new CResTexture2D{ sPath, pDevice, pContext });
+    return ToSPtr(new CResTexture2D{ sPath, CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }
 
 

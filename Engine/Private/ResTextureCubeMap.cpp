@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResTextureCubeMap.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -95,7 +96,7 @@ HRESULT CResTextureCubeMap::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResTextureCubeMap> CResTextureCubeMap::Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResTextureCubeMap> CResTextureCubeMap::Create(const _string& sPath)
 {
-    return ToSPtr(new CResTextureCubeMap{ sPath, pDevice, pContext });
+    return ToSPtr(new CResTextureCubeMap{ sPath, CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

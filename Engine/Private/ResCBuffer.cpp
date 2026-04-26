@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResCBuffer.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -72,12 +73,10 @@ HRESULT CResCBuffer::CreateBuffer(const CBUFFER_DESC& desc)
     return m_pDevice->CreateBuffer(&bd, desc.pInitData ? &initData : nullptr, m_pCBuffer.GetAddressOf());
 }
 
-SPtr<CResCBuffer> CResCBuffer::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext, const CBUFFER_DESC* pDesc)
+SPtr<CResCBuffer> CResCBuffer::Create()
 {
-    auto pInstance = ToSPtr(new CResCBuffer{ "", pDevice , pContext });
-    //if (pDesc)
-    //{
-    //    pInstance->Load();
-    //}
+    
+    auto pInstance = ToSPtr(new CResCBuffer{ "", CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
+    
     return pInstance;
 }

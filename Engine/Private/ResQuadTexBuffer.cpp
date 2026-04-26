@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResQuadTexBuffer.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -93,7 +94,7 @@ HRESULT CResQuadTexBuffer::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResQuadTexBuffer> CResQuadTexBuffer::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResQuadTexBuffer> CResQuadTexBuffer::Create()
 {
-    return ToSPtr(new CResQuadTexBuffer{"", pDevice, pContext});
+    return ToSPtr(new CResQuadTexBuffer{"", CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
 }

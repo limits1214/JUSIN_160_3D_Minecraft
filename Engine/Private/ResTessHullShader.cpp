@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResTessHullShader.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -38,7 +39,7 @@ CResTessHullShader::~CResTessHullShader()
 {
 }
 
-SPtr<CResTessHullShader> CResTessHullShader::Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResTessHullShader> CResTessHullShader::Create(const _string& sPath)
 {
-	return ToSPtr(new CResTessHullShader{ sPath, pDevice, pContext });
+	return ToSPtr(new CResTessHullShader{ sPath, CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }
