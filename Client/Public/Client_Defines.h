@@ -6,8 +6,14 @@ namespace Client
 	static const unsigned int	g_iWinSizeY{ 720 };
 
 	enum class LEVEL {
-		LOADING, LOGO, GAMEPLAY,
+		LOADING,
+		LOGO,
+		MENU,
+		THE_OVERWORLD,
+		THE_NETHER,
+		THE_END
 	};
 }
+
 extern HWND g_hWnd;
 extern HINSTANCE g_hInstance;
