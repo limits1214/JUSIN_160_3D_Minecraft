@@ -249,6 +249,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\Engine_Tag.h" />
     <ClInclude Include="..\Public\Engine_Template.h" />
     <ClInclude Include="..\Public\Engine_Typedef.h" />
+    <ClInclude Include="..\public\FlyCamera.h" />
     <ClInclude Include="..\public\GameInstance.h" />
     <ClInclude Include="..\public\GameObject.h" />
     <ClInclude Include="..\public\GameObjectManager.h" />
@@ -299,6 +300,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\TimeProvider.h" />
     <ClInclude Include="..\Public\Timer.h" />
     <ClInclude Include="..\public\Transform.h" />
+    <ClInclude Include="..\public\UICamera.h" />
     <ClInclude Include="..\public\WorkerManager.h" />
     <ClInclude Include="..\Public\IRenderable.h" />
     <ClInclude Include="..\Public\Handle.h" />
@@ -414,6 +416,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\CollSphere.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\DInputManager.cpp" />
+    <ClCompile Include="..\private\FlyCamera.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />
     <ClCompile Include="..\private\GameObject.cpp" />
     <ClCompile Include="..\private\GameObjectManager.cpp" />
@@ -462,6 +465,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\TimeProvider.cpp" />
     <ClCompile Include="..\Private\Timer.cpp" />
     <ClCompile Include="..\private\Transform.cpp" />
+    <ClCompile Include="..\private\UICamera.cpp" />
     <ClCompile Include="..\private\WorkerManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -27,10 +27,15 @@ protected:
 	HRESULT StartLevel(UPtr<CLevel> pStartLevel);
 
 protected:
+	ComPtr<ID3D11Device> m_pDevice{};
+	ComPtr<ID3D11DeviceContext> m_pContext{};
+
+protected:
 	CTimer m_UpdateTimer{};
 	CTimer m_MeasureTimer{};
 
 	uint32_t m_iMeasureUpdateCnt{};
+	uint32_t m_iMeasureUpdateCntPerSec{};
 };
 
 NS_END

@@ -106,6 +106,12 @@
     <Filter Include="Serialize">
       <UniqueIdentifier>{7a19d2a5-21ba-4d5d-a92a-86e5542bc118}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Camera\FlyCamera">
+      <UniqueIdentifier>{f7559206-bbbf-4ed4-8d29-ef09ceec0bb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Camera\UICamera">
+      <UniqueIdentifier>{36020d2a-6f78-43ed-b2ac-9ea7ff96ac8a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -336,6 +342,12 @@
     <ClInclude Include="..\Public\ISerializer.h">
       <Filter>Serialize</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\FlyCamera.h">
+      <Filter>GameObject\Camera\FlyCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UICamera.h">
+      <Filter>GameObject\Camera\UICamera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -556,6 +568,12 @@
     </ClCompile>
     <ClCompile Include="..\private\CameraManager.cpp">
       <Filter>GameObject\Camera\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\FlyCamera.cpp">
+      <Filter>GameObject\Camera\FlyCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UICamera.cpp">
+      <Filter>GameObject\Camera\UICamera</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

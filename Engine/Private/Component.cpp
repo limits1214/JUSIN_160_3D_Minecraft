@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "Component.h"
 NS_USING(Engine)
 
