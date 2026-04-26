@@ -52,6 +52,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableUnitySupport>true</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -59,6 +60,7 @@
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableUnitySupport>true</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -97,6 +99,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>..\Bin\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\Bin\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
@@ -138,18 +146,26 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\Public\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Public\;$(ProjectDir);$(SolutionDir)ThirdParty\nlohmann_3.12.0\include\;$(SolutionDir)ThirdParty\imgui-1.83\;$(SolutionDir)ThirdParty\ImGuizmo-1.83\;$(SolutionDir)ThirdParty\tweeny-3.2.1\include￦;$(SolutionDir)ThirdParty\fmod_2_03_12\inc\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>d3d11.lib;dxguid.lib;fmod_vc.lib;dinput8.lib;dxcompiler.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\fmod_2_03_12\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>cd /d $(SolutionDir)
+call CopyClient.bat</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -157,18 +173,26 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);NDEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\Public\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Public\;$(ProjectDir);$(SolutionDir)ThirdParty\nlohmann_3.12.0\include\;$(SolutionDir)ThirdParty\imgui-1.83\;$(SolutionDir)ThirdParty\ImGuizmo-1.83\;$(SolutionDir)ThirdParty\tweeny-3.2.1\include￦;$(SolutionDir)ThirdParty\fmod_2_03_12\inc\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>d3d11.lib;dxguid.lib;fmod_vc.lib;dinput8.lib;dxcompiler.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\fmod_2_03_12\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>cd /d $(SolutionDir)
+call CopyClient.bat</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
@@ -205,6 +229,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\public\BaseApp.h" />
+    <ClInclude Include="..\public\CameraManager.h" />
+    <ClInclude Include="..\public\CameraObject.h" />
+    <ClInclude Include="..\Public\CollBox.h" />
+    <ClInclude Include="..\Public\CollFrustum.h" />
+    <ClInclude Include="..\Public\Collider.h" />
+    <ClInclude Include="..\Public\ColliderManager.h" />
+    <ClInclude Include="..\Public\CollOrientedBox.h" />
+    <ClInclude Include="..\Public\CollSphere.h" />
+    <ClInclude Include="..\public\Component.h" />
+    <ClInclude Include="..\public\DInputManager.h" />
     <ClInclude Include="..\Public\Engine_Base.h" />
     <ClInclude Include="..\Public\Engine_Defines.h" />
     <ClInclude Include="..\Public\Engine_Enum.h" />
@@ -215,12 +250,219 @@
     <ClInclude Include="..\Public\Engine_Template.h" />
     <ClInclude Include="..\Public\Engine_Typedef.h" />
     <ClInclude Include="..\public\GameInstance.h" />
+    <ClInclude Include="..\public\GameObject.h" />
+    <ClInclude Include="..\public\GameObjectManager.h" />
+    <ClInclude Include="..\public\GraphicDevice.h" />
+    <ClInclude Include="..\public\Helper.h" />
+    <ClInclude Include="..\public\ImguiManager.h" />
+    <ClInclude Include="..\Public\ISerializer.h" />
+    <ClInclude Include="..\public\Level.h" />
+    <ClInclude Include="..\public\LevelManager.h" />
+    <ClInclude Include="..\public\Prototype.h" />
+    <ClInclude Include="..\public\PrototypeManager.h" />
+    <ClInclude Include="..\public\Renderer.h" />
+    <ClInclude Include="..\Public\ResBlendState.h" />
+    <ClInclude Include="..\Public\ResCBuffer.h" />
+    <ClInclude Include="..\Public\ResComputeShader.h" />
+    <ClInclude Include="..\Public\ResCubeBuffer.h" />
+    <ClInclude Include="..\Public\ResCubeColBuffer.h" />
+    <ClInclude Include="..\Public\ResDepthStencilState.h" />
+    <ClInclude Include="..\Public\ResDynamicBuffer.h" />
+    <ClInclude Include="..\Public\ResDynamicTexture2D.h" />
+    <ClInclude Include="..\Public\ResDynamicVIBuffer.h" />
+    <ClInclude Include="..\Public\ResFmodSound.h" />
+    <ClInclude Include="..\Public\ResGeometryShader.h" />
+    <ClInclude Include="..\Public\ResGeoShaderStreamOut.h" />
+    <ClInclude Include="..\Public\ResJson.h" />
+    <ClInclude Include="..\Public\ResOffscreenTexture.h" />
+    <ClInclude Include="..\Public\Resource.h" />
+    <ClInclude Include="..\Public\ResourceManager.h" />
+    <ClInclude Include="..\Public\Resources.h" />
+    <ClInclude Include="..\Public\ResPixelShader.h" />
+    <ClInclude Include="..\Public\ResQuadBuffer.h" />
+    <ClInclude Include="..\Public\ResQuadColBuffer.h" />
+    <ClInclude Include="..\Public\ResQuadFullscreenTexBuffer.h" />
+    <ClInclude Include="..\Public\ResQuadTexBuffer.h" />
+    <ClInclude Include="..\Public\ResRasterizerState.h" />
+    <ClInclude Include="..\Public\ResSamplerState.h" />
+    <ClInclude Include="..\Public\ResShader.h" />
+    <ClInclude Include="..\Public\ResTessDomainShader.h" />
+    <ClInclude Include="..\Public\ResTessHullShader.h" />
+    <ClInclude Include="..\Public\ResTexture.h" />
+    <ClInclude Include="..\Public\ResTexture2D.h" />
+    <ClInclude Include="..\Public\ResTexture2DArray.h" />
+    <ClInclude Include="..\Public\ResTextureCubeMap.h" />
+    <ClInclude Include="..\Public\ResVertexShader.h" />
+    <ClInclude Include="..\Public\ResVIBuffer.h" />
+    <ClInclude Include="..\Public\ResViewPort.h" />
+    <ClInclude Include="..\public\SoundManager.h" />
+    <ClInclude Include="..\Public\TimeProvider.h" />
+    <ClInclude Include="..\Public\Timer.h" />
+    <ClInclude Include="..\public\Transform.h" />
+    <ClInclude Include="..\public\WorkerManager.h" />
+    <ClInclude Include="..\Public\IRenderable.h" />
+    <ClInclude Include="..\Public\Handle.h" />
+    <ClInclude Include="..\Public\Slot.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">1</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">1</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_demo.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">1</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">1</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_draw.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">1</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">1</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_impl_dx11.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">1</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">1</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_impl_win32.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">1</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">1</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_tables.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">1</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">1</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_widgets.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">1</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">1</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\GraphEditor.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">3</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">3</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\ImCurveEdit.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">3</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">3</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\ImGradient.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">3</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">3</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\ImGuizmo.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">3</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">3</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\ImSequencer.cpp">
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">3</OrderInUnityFile>
+      <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">3</OrderInUnityFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
+      <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
+    </ClCompile>
+    <ClCompile Include="..\private\BaseApp.cpp" />
+    <ClCompile Include="..\private\CameraManager.cpp" />
+    <ClCompile Include="..\private\CameraObject.cpp" />
+    <ClCompile Include="..\Private\CollBox.cpp" />
+    <ClCompile Include="..\Private\CollFrustum.cpp" />
+    <ClCompile Include="..\Private\Collider.cpp" />
+    <ClCompile Include="..\Private\ColliderManager.cpp" />
+    <ClCompile Include="..\Private\CollOrientedBox.cpp" />
+    <ClCompile Include="..\Private\CollSphere.cpp" />
+    <ClCompile Include="..\private\Component.cpp" />
+    <ClCompile Include="..\private\DInputManager.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />
-    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="..\private\GameObject.cpp" />
+    <ClCompile Include="..\private\GameObjectManager.cpp" />
+    <ClCompile Include="..\private\GraphicDevice.cpp" />
+    <ClCompile Include="..\private\Helper.cpp" />
+    <ClCompile Include="..\private\ImguiManager.cpp" />
+    <ClCompile Include="..\private\Level.cpp" />
+    <ClCompile Include="..\private\LevelManager.cpp" />
+    <ClCompile Include="..\private\Prototype.cpp" />
+    <ClCompile Include="..\private\PrototypeManager.cpp" />
+    <ClCompile Include="..\private\Renderer.cpp" />
+    <ClCompile Include="..\Private\ResBlendState.cpp" />
+    <ClCompile Include="..\Private\ResCBuffer.cpp" />
+    <ClCompile Include="..\Private\ResComputeShader.cpp" />
+    <ClCompile Include="..\Private\ResCubeBuffer.cpp" />
+    <ClCompile Include="..\Private\ResCubeColBuffer.cpp" />
+    <ClCompile Include="..\Private\ResDepthStencilState.cpp" />
+    <ClCompile Include="..\Private\ResDynamicBuffer.cpp" />
+    <ClCompile Include="..\Private\ResDynamicTexture2D.cpp" />
+    <ClCompile Include="..\Private\ResDynamicVIBuffer.cpp" />
+    <ClCompile Include="..\Private\ResFmodSound.cpp" />
+    <ClCompile Include="..\Private\ResGeometryShader.cpp" />
+    <ClCompile Include="..\Private\ResGeoShaderStreamOut.cpp" />
+    <ClCompile Include="..\Private\ResJson.cpp" />
+    <ClCompile Include="..\Private\ResOffscreenTexture.cpp" />
+    <ClCompile Include="..\Private\Resource.cpp" />
+    <ClCompile Include="..\Private\ResourceManager.cpp" />
+    <ClCompile Include="..\Private\ResPixelShader.cpp" />
+    <ClCompile Include="..\Private\ResQuadBuffer.cpp" />
+    <ClCompile Include="..\Private\ResQuadColBuffer.cpp" />
+    <ClCompile Include="..\Private\ResQuadFullscreenTexBuffer.cpp" />
+    <ClCompile Include="..\Private\ResQuadTexBuffer.cpp" />
+    <ClCompile Include="..\Private\ResRasterizerState.cpp" />
+    <ClCompile Include="..\Private\ResSamplerState.cpp" />
+    <ClCompile Include="..\Private\ResShader.cpp" />
+    <ClCompile Include="..\Private\ResTessDomainShader.cpp" />
+    <ClCompile Include="..\Private\ResTessHullShader.cpp" />
+    <ClCompile Include="..\Private\ResTexture.cpp" />
+    <ClCompile Include="..\Private\ResTexture2D.cpp" />
+    <ClCompile Include="..\Private\ResTexture2DArray.cpp" />
+    <ClCompile Include="..\Private\ResTextureCubeMap.cpp" />
+    <ClCompile Include="..\Private\ResVertexShader.cpp" />
+    <ClCompile Include="..\Private\ResVIBuffer.cpp" />
+    <ClCompile Include="..\Private\ResViewPort.cpp" />
+    <ClCompile Include="..\private\SoundManager.cpp" />
+    <ClCompile Include="..\Private\TimeProvider.cpp" />
+    <ClCompile Include="..\Private\Timer.cpp" />
+    <ClCompile Include="..\private\Transform.cpp" />
+    <ClCompile Include="..\private\WorkerManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>

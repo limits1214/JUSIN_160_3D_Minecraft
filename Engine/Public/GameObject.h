@@ -1,0 +1,109 @@
+#pragma once
+#include "Prototype.h"
+//#include "MyTreeNode.h"
+#include "Component.h"
+#include "Transform.h"
+#include "Handle.h"
+#include "IRenderable.h"
+
+NS_BEGIN(Engine)
+
+class ENGINE_DLL CGameObject : public CPrototype, public IRenderable//, public CMyTreeNode<CGameObject>
+{
+public:
+	DECLARE_DERIVED_TYPE(CGameObject, CPrototype)
+	// ENGINE_DLL 인애들은 반드시 명시적으로 복사 생성자, 복사 대입연산자 딜리트하거나 재정의해주어야함
+	CGameObject& operator=(const CGameObject&) = delete;
+
+public:
+	typedef struct tagGameObjectDesc
+	{
+		CHandle handle{};
+		_string sObjectTag{};
+	}GAMEOBJECT_DESC;
+
+protected:
+	explicit CGameObject();
+	explicit CGameObject(const CGameObject& Prototype);
+	~CGameObject();
+
+public:
+	virtual HRESULT Initialize(void* pArg);
+	virtual void PriorityUpdate(_float fTimeDelta);
+	virtual void Update(_float fTimeDelta);
+	virtual void LateUpdate(_float fTimeDelta);
+	HRESULT Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) override;
+	bool HasRenderPass(RENDERPASS ePass) const override { return (m_RenderPassFlags & static_cast<uint32_t>(ePass)) != 0; };
+	virtual void UpdateGUI();
+
+protected:
+	uint32_t m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT);
+
+public:
+	CTransform& GetTransform() { return *m_pComTransform; }
+	const CTransform& GetTransform() const { return *m_pComTransform; }
+protected:
+	std::vector<std::pair<StringID, UPtr<CComponent>>> m_Components{};
+	std::unordered_map<StringID, size_t> m_ComponentsLookup{};
+	CTransform* m_pComTransform{};
+
+
+public:
+	HRESULT AddComponent(const StringID& tagComponent, UPtr<CComponent> pComponent);
+
+	template<typename T>
+	T* GetComponent(const StringID& tagComponent)
+	{
+		auto iter = m_ComponentsLookup.find(tagComponent);
+		if (iter == m_ComponentsLookup.end())
+		{
+			return nullptr;
+		}
+
+		if (T::StaticType == m_Components[iter->second].second->GetType())
+		{
+			return static_cast<T*>(m_Components[iter->second].second.get());
+		}
+
+		return nullptr;
+	};
+
+
+protected:
+	HRESULT DelComponent(const StringID& tagComponent);
+
+public:
+	_string_view GetTag() const { return m_sTag; }
+private:
+	_string m_sTag{};
+
+
+private:
+	CHandle m_ObjectHandle{};
+public:
+	const CHandle& GetHandle() const { return m_ObjectHandle; }
+
+public:
+	const std::optional<CHandle>& GetParentObjectHandle() const { return m_pParentHandle; }
+	void SetParentObjectHandle(std::optional<CHandle> newParentHandle);
+public:
+	const std::vector<CHandle>& GetChildrenHandle() const { return m_pChildrenHandles; }
+protected:
+	void _SetParentHandle(const std::optional<CHandle>& newParentHandle);
+	void EraseChildHandle(const CHandle& pChildHandle);
+protected:
+	std::optional<CHandle> m_pParentHandle{};
+	std::vector<CHandle> m_pChildrenHandles{};
+
+protected:
+	void Free() override;
+
+public:
+	void SetPendingDestroy(_bool b = true);
+	void SetPendingDestroyCascade(_bool b = true);
+	_bool GetPendingDestroy() const { return m_bPendingDestroy; }
+private:
+	_bool m_bPendingDestroy{ false };
+};
+
+NS_END

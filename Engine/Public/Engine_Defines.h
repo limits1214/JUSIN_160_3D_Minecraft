@@ -48,9 +48,9 @@ using namespace Microsoft::WRL;
 namespace E = Engine;
 
 // for study
-#include "ExStruct.h"
+//#include "ExStruct.h"
 
-#include "tracy/Tracy.hpp"
+//#include "tracy/Tracy.hpp"
 
 #include <imgui.h>
 #include <ImGuizmo.h>

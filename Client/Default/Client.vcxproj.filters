@@ -4,6 +4,12 @@
     <Filter Include="98.Default">
       <UniqueIdentifier>{639fa3ba-c421-4e43-ac31-67500e233190}</UniqueIdentifier>
     </Filter>
+    <Filter Include="99.Defines">
+      <UniqueIdentifier>{58e0c654-9871-4730-b657-e077f364193c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00.MainApp">
+      <UniqueIdentifier>{552ae3c9-66e7-43dd-b697-3c36bcdcddf5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -21,6 +27,12 @@
     <ClInclude Include="targetver.h">
       <Filter>98.Default</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\MainApp.h">
+      <Filter>00.MainApp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Client_Defines.h">
+      <Filter>99.Defines</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -28,6 +40,9 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>98.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\MainApp.cpp">
+      <Filter>00.MainApp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

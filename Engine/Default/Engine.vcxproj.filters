@@ -10,6 +10,102 @@
     <Filter Include="99.Defines">
       <UniqueIdentifier>{c2b4c052-0dd1-4d64-bcbf-d1588c898955}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BaseApp">
+      <UniqueIdentifier>{201dccc5-9f75-4509-a0eb-ca162056e379}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Timer">
+      <UniqueIdentifier>{d79dfe3c-ee64-4bbd-ab59-b831c49e4038}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Level">
+      <UniqueIdentifier>{50590b30-d2f1-4f07-a192-8263e4b73776}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Level\Manager">
+      <UniqueIdentifier>{3e275bd2-8fa2-4269-90e8-b120faf1b885}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{ae5c7fee-2535-4286-aaae-69f2e8857e94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGUI">
+      <UniqueIdentifier>{782c5aef-a698-4ed8-bcf1-3988fc105ada}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGUI\Imgui">
+      <UniqueIdentifier>{3e16b8b9-d599-4ad1-be55-0f92fabe9d73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGUI\Imguizmo">
+      <UniqueIdentifier>{5226249a-b440-4561-883b-be49acaed937}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer">
+      <UniqueIdentifier>{0b45516a-57af-4e63-bbde-8019ba956e89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\FmodSound">
+      <UniqueIdentifier>{edd7471c-b4f2-4f21-9a27-ca584e58b4f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Json">
+      <UniqueIdentifier>{8226700f-41b5-4197-ba4d-0e13eadf3247}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Manager">
+      <UniqueIdentifier>{701f8e3a-4e75-42e4-880b-b40522945c5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shader">
+      <UniqueIdentifier>{095b3dba-0ef0-46a2-9df1-a67320819f00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\State">
+      <UniqueIdentifier>{bce21f4c-1d3d-47dd-9868-d2813181f571}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Texture">
+      <UniqueIdentifier>{8c6bbc16-4817-489f-aecf-8b9a6237e617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\ViewPort">
+      <UniqueIdentifier>{ad518455-b16c-4518-9f1a-120526e561bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device">
+      <UniqueIdentifier>{5347a09f-ac8b-4d38-8bbd-a9b60f64e03e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{b6df8340-c083-41cb-bb48-bbbf2e356fb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Worker">
+      <UniqueIdentifier>{07405913-2d3e-464c-ba30-eb7fa1b8a3fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collider">
+      <UniqueIdentifier>{8da242db-225a-4c9a-8084-dfe8a3ae945a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collider\Manager">
+      <UniqueIdentifier>{d405aee3-3914-4dcf-9b14-5ba7f58ad866}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{a1d59f3b-7653-41d9-b13b-77c3dfb95b42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Prototype">
+      <UniqueIdentifier>{09930407-2d36-462c-9207-40f10c73d0c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Prototype\Manager">
+      <UniqueIdentifier>{19d090f6-471d-43c7-951f-9117d73d0454}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject">
+      <UniqueIdentifier>{50207373-bc12-45d0-870a-60fed91153ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component">
+      <UniqueIdentifier>{3ef0c664-4f19-44c1-8eb7-16d79642864e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\Transform">
+      <UniqueIdentifier>{5ed0bf8f-b94b-44eb-8d37-58f88f07d08a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Manager">
+      <UniqueIdentifier>{8a812b48-0666-4a05-8bb7-1dda248be8f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helper">
+      <UniqueIdentifier>{379d95e3-dd47-4f52-af31-6cd8b2c5dd2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Camera">
+      <UniqueIdentifier>{08794115-f1ca-44ff-8200-0b868a6cdcb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Camera\Manager">
+      <UniqueIdentifier>{5c9a83cd-c2f5-4108-b01a-524ea4defa21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Serialize">
+      <UniqueIdentifier>{7a19d2a5-21ba-4d5d-a92a-86e5542bc118}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -48,16 +144,418 @@
     <ClInclude Include="..\Public\Engine_Macro.h">
       <Filter>99.Defines</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\BaseApp.h">
+      <Filter>BaseApp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\TimeProvider.h">
+      <Filter>Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Timer.h">
+      <Filter>Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Level.h">
+      <Filter>Level</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\LevelManager.h">
+      <Filter>Level\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ImguiManager.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Resource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Resources.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResFmodSound.h">
+      <Filter>Resource\FmodSound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResBlendState.h">
+      <Filter>Resource\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResDynamicBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResCubeBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResCBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResCubeColBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResComputeShader.h">
+      <Filter>Resource\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResDepthStencilState.h">
+      <Filter>Resource\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResDynamicTexture2D.h">
+      <Filter>Resource\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResDynamicVIBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResJson.h">
+      <Filter>Resource\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResOffscreenTexture.h">
+      <Filter>Resource\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResPixelShader.h">
+      <Filter>Resource\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResQuadColBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResQuadBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResourceManager.h">
+      <Filter>Resource\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResQuadFullscreenTexBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResQuadTexBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResRasterizerState.h">
+      <Filter>Resource\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResSamplerState.h">
+      <Filter>Resource\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTessHullShader.h">
+      <Filter>Resource\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTessDomainShader.h">
+      <Filter>Resource\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResShader.h">
+      <Filter>Resource\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTexture.h">
+      <Filter>Resource\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTexture2D.h">
+      <Filter>Resource\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTexture2DArray.h">
+      <Filter>Resource\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTextureCubeMap.h">
+      <Filter>Resource\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResVertexShader.h">
+      <Filter>Resource\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResVIBuffer.h">
+      <Filter>Resource\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResViewPort.h">
+      <Filter>Resource\ViewPort</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\SoundManager.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResGeoShaderStreamOut.h">
+      <Filter>Resource\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResGeometryShader.h">
+      <Filter>Resource\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DInputManager.h">
+      <Filter>Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\GraphicDevice.h">
+      <Filter>Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\WorkerManager.h">
+      <Filter>Worker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CollBox.h">
+      <Filter>Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CollFrustum.h">
+      <Filter>Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Collider.h">
+      <Filter>Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CollOrientedBox.h">
+      <Filter>Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CollSphere.h">
+      <Filter>Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ColliderManager.h">
+      <Filter>Collider\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Renderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\IRenderable.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Prototype.h">
+      <Filter>Prototype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\PrototypeManager.h">
+      <Filter>Prototype\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Component.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\GameObject.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Transform.h">
+      <Filter>Component\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\GameObjectManager.h">
+      <Filter>GameObject\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Handle.h">
+      <Filter>GameObject\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Slot.h">
+      <Filter>GameObject\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Helper.h">
+      <Filter>Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\CameraObject.h">
+      <Filter>GameObject\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\CameraManager.h">
+      <Filter>GameObject\Camera\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ISerializer.h">
+      <Filter>Serialize</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>98.Default</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>98.Default</Filter>
     </ClCompile>
     <ClCompile Include="..\private\GameInstance.cpp">
       <Filter>00.GameInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\BaseApp.cpp">
+      <Filter>BaseApp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\TimeProvider.cpp">
+      <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Timer.cpp">
+      <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Level.cpp">
+      <Filter>Level</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\LevelManager.cpp">
+      <Filter>Level\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ImguiManager.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_widgets.cpp">
+      <Filter>ImGUI\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui.cpp">
+      <Filter>ImGUI\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_demo.cpp">
+      <Filter>ImGUI\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_draw.cpp">
+      <Filter>ImGUI\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_impl_dx11.cpp">
+      <Filter>ImGUI\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_impl_win32.cpp">
+      <Filter>ImGUI\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\imgui-1.83\imgui_tables.cpp">
+      <Filter>ImGUI\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\ImSequencer.cpp">
+      <Filter>ImGUI\Imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\GraphEditor.cpp">
+      <Filter>ImGUI\Imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\ImCurveEdit.cpp">
+      <Filter>ImGUI\Imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\ImGradient.cpp">
+      <Filter>ImGUI\Imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ThirdParty\ImGuizmo-1.83\ImGuizmo.cpp">
+      <Filter>ImGUI\Imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Resource.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResFmodSound.cpp">
+      <Filter>Resource\FmodSound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResBlendState.cpp">
+      <Filter>Resource\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResDynamicBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResCBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResCubeColBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResCubeBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResComputeShader.cpp">
+      <Filter>Resource\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResDepthStencilState.cpp">
+      <Filter>Resource\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResDynamicTexture2D.cpp">
+      <Filter>Resource\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResDynamicVIBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResJson.cpp">
+      <Filter>Resource\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResOffscreenTexture.cpp">
+      <Filter>Resource\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResPixelShader.cpp">
+      <Filter>Resource\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResQuadBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResQuadColBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResourceManager.cpp">
+      <Filter>Resource\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResQuadFullscreenTexBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResQuadTexBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResRasterizerState.cpp">
+      <Filter>Resource\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResSamplerState.cpp">
+      <Filter>Resource\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTessDomainShader.cpp">
+      <Filter>Resource\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTessHullShader.cpp">
+      <Filter>Resource\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResShader.cpp">
+      <Filter>Resource\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTexture.cpp">
+      <Filter>Resource\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTexture2D.cpp">
+      <Filter>Resource\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTexture2DArray.cpp">
+      <Filter>Resource\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTextureCubeMap.cpp">
+      <Filter>Resource\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResVertexShader.cpp">
+      <Filter>Resource\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResVIBuffer.cpp">
+      <Filter>Resource\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResViewPort.cpp">
+      <Filter>Resource\ViewPort</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\SoundManager.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResGeoShaderStreamOut.cpp">
+      <Filter>Resource\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResGeometryShader.cpp">
+      <Filter>Resource\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DInputManager.cpp">
+      <Filter>Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\GraphicDevice.cpp">
+      <Filter>Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\WorkerManager.cpp">
+      <Filter>Worker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CollSphere.cpp">
+      <Filter>Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CollBox.cpp">
+      <Filter>Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CollFrustum.cpp">
+      <Filter>Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Collider.cpp">
+      <Filter>Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CollOrientedBox.cpp">
+      <Filter>Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ColliderManager.cpp">
+      <Filter>Collider\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Renderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Prototype.cpp">
+      <Filter>Prototype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PrototypeManager.cpp">
+      <Filter>Prototype\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Component.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\GameObject.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Transform.cpp">
+      <Filter>Component\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\GameObjectManager.cpp">
+      <Filter>GameObject\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Helper.cpp">
+      <Filter>Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\CameraObject.cpp">
+      <Filter>GameObject\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\CameraManager.cpp">
+      <Filter>GameObject\Camera\Manager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

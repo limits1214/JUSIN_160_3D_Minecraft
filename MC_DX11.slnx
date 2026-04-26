@@ -4,6 +4,8 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Client/Default/Client.vcxproj" />
-  <Project Path="Engine/Default/Engine.vcxproj" />
+  <Project Path="Client/Default/Client.vcxproj" Id="1c2b3819-b9be-47bd-b26d-826704e2a3b8">
+    <BuildDependency Project="Engine/Default/Engine.vcxproj" />
+  </Project>
+  <Project Path="Engine/Default/Engine.vcxproj" Id="e9b5de02-8f43-48fd-861d-f748f495b607" />
 </Solution>
