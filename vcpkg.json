@@ -1,0 +1,15 @@
+{
+  "name": "dx11-mc",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "boost-asio",
+    "boost-beast",
+    "spdlog",
+    "directxtex",
+    "directxtk"
+  ],
+  "overrides": [
+   
+  ],
+  "builtin-baseline": "fc349a7b35348173d4d24621ae04ad80e2375957"
+}
