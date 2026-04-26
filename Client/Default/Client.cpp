@@ -5,10 +5,13 @@
 #include "framework.h"
 #include "Client.h"
 
+#include "MainApp.h"
+
 #define MAX_LOADSTRING 100
 
 // 전역 변수:
-HINSTANCE hInst;                                // 현재 인스턴스입니다.
+HWND g_hWnd;
+HINSTANCE g_hInstance;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
@@ -23,6 +26,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+#ifdef _DEBUG
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -43,17 +49,38 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-    // 기본 메시지 루프입니다:
-    while (GetMessage(&msg, nullptr, 0, 0))
+    auto pMainApp = Client::CMainApp::Create();
+
+
+    if (pMainApp == nullptr)
     {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        return FALSE;
+    }
+
+    while (true)
+    {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            if (WM_QUIT == msg.message)
+            {
+                break;
+            }
+
+            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
+
+        if (FAILED(pMainApp->Loop()))
+        {
+            MSG_BOX("pMainApp->Loop() FAILED");
+            break;
         }
     }
 
-    return (int) msg.wParam;
+    return (int)msg.wParam;
 }
 
 
@@ -77,7 +104,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CLIENT));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_CLIENT);
+    wcex.lpszMenuName   = NULL;
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -96,18 +123,29 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
+    UINT systemDpi = ::GetDpiForSystem();
+    float fScaleFactor = systemDpi / 96.f;
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+    //float fScaleFactor = 1.f;
+    RECT    rc{ 0,0, LONG(Client::g_iWinSizeX * fScaleFactor), LONG(Client::g_iWinSizeY * fScaleFactor) };
+    ::AdjustWindowRectExForDpi(&rc, WS_OVERLAPPEDWINDOW, FALSE, 0, systemDpi);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, 0,
+        rc.right - rc.left,
+        rc.bottom - rc.top,
+        nullptr, nullptr, hInstance, nullptr);
+
+    if (!hWnd)
+    {
+        return FALSE;
+    }
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
+
+   g_hWnd = hWnd;
+   g_hInstance = hInstance;
 
    return TRUE;
 }
@@ -126,6 +164,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    case WM_KEYDOWN:
+    {
+        switch (wParam)
+        {
+        case VK_ESCAPE:
+            PostQuitMessage(0);
+            break;
+        }
+    }
+    break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -133,7 +181,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (wmId)
             {
             case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+                DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
                 break;
             case IDM_EXIT:
                 DestroyWindow(hWnd);

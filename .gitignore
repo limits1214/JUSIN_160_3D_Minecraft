@@ -361,3 +361,29 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EngineSDK
+vcpkg_installed
+!ThirdParty/fmod_2_03_12/**
+imgui.ini
