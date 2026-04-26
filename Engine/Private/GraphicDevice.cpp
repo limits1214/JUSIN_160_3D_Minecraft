@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "GraphicDevice.h"
 #include "GameInstance.h"
-#include "ResDynamicTexture2D.h"
-#include "ResViewPort.h"
+
+#include "Resources.h"
 
 NS_USING(Engine)
 
@@ -73,7 +73,7 @@ HRESULT CGraphicDevice::ReadyDevice(HWND hWnd, WINMODE eWinMode, uint32_t iWinSi
 	ViewPortDesc.MinDepth = 0.f;
 	ViewPortDesc.MaxDepth = 1.f;
 
-	if (auto res = CGameInstance::Get().AddResource("PERMANENT_VP", "VP_SCREEN", CResViewPort::Create()))
+	if (auto res = CGameInstance::Get().AddResource(TAG_RES_GRP_PERMANENT_VP, "VP_BackBuffer", CResViewPort::Create()))
 	{
 		res->Load(ViewPortDesc);
 	}
@@ -202,9 +202,7 @@ HRESULT CGraphicDevice::ReadyDepthStencilView(uint32_t iWinCX, uint32_t iWinCY)
 
 
 	{
-
-
-		auto resource = CGameInstance::Get().AddResourceT("PERMANENT_DEVICE", "DSV", CResDynamicTexture2D::Create());
+		auto resource = CGameInstance::Get().AddResourceT(TAG_RES_GRP_PERMANENT_TEXTURE, "DYNTEX_DSV_BackBuffer", CResDynamicTexture2D::Create());
 
 		if (FAILED(resource->Load(CResDynamicTexture2D::DESC{ .texDesc = {
 			.Width = iWinCX,

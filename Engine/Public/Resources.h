@@ -32,3 +32,10 @@
 #include "ResTextureCubeMap.h"
 
 #include "ResViewPort.h"
+
+
+static const char* TAG_RES_GRP_PERMANENT_BUFFER = "PERMANENT_BUFFER";
+static const char* TAG_RES_GRP_PERMANENT_SHADER = "PERMANENT_SHADER";
+static const char* TAG_RES_GRP_PERMANENT_TEXTURE = "PERMANENT_TEXTURE";
+static const char* TAG_RES_GRP_PERMANENT_STATE = "PERMANENT_STATE";
+static const char* TAG_RES_GRP_PERMANENT_VP = "PERMANENT_VP";

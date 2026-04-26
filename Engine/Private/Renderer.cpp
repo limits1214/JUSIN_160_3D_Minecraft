@@ -20,7 +20,7 @@ HRESULT CRenderer::Initialize()
     GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
 
 
-    auto dsv = CGameInstance::Get().GetResourceFirst<CResDynamicTexture2D>("PERMANENT_DEVICE", "DSV");
+    auto dsv = CGameInstance::Get().GetResourceFirst<CResDynamicTexture2D>(TAG_RES_GRP_PERMANENT_TEXTURE, "DYNTEX_DSV_BackBuffer");
     if (!dsv)
     {
         return E_FAIL;
