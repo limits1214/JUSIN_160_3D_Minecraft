@@ -68,13 +68,13 @@ HRESULT CLevelLogo::Render()
 void CLevelLogo::UpdateGUI()
 {
 	ImGui::Begin("LEVEL: CLevel_Logo");
-	if (ImGui::Button("ChangeLevelTo: GamePlay"))
-	{
-		if (FAILED(Engine::CGameInstance::Get().ChangeLevel(CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::GAMEPLAY))))
-		{
-			MSG_BOX("ChangeLevelTo: GamePlay Failed");
-		}
-	}
+	//if (ImGui::Button("ChangeLevelTo: GamePlay"))
+	//{
+	//	if (FAILED(Engine::CGameInstance::Get().ChangeLevel(CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::GAMEPLAY))))
+	//	{
+	//		MSG_BOX("ChangeLevelTo: GamePlay Failed");
+	//	}
+	//}
 
 	
 
