@@ -30,11 +30,28 @@ private:
 
 public:
 	HRESULT InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID3D11Device>& ppDevice, ComPtr<ID3D11DeviceContext>& ppContext);
+	void UpdateEngine(_float fTimeDelta);
+	HRESULT Draw();
+	void UpdateGUI();
+	void ClearResource(uint32_t iClearLevelIndex);
+	void FrameStart(_float fTimeDelta);
+	void FrameEnd(_float fTimeDelta);
 
+public:
+	void Release_Engine();
 
+private:
+	HRESULT InitializeResources();
+	HRESULT InitializePrototype();
+
+public:
+	HWND GetHwnd() const { return m_hWnd; }
+private:
+	HWND m_hWnd;
 
 
 #pragma region RESOURCE_MANAGER
+public:
 	SPtr<CResource> AddResource(const StringID& sGroupTag, const StringID& sResTag, _string_id eAssetType, const _string& sPath, void* pArg = nullptr);
 	SPtr<CResource> AddResource(const StringID& sGroupTag, const StringID& sResTag, SPtr<CResource> pAsset);
 	template<typename T>
@@ -63,10 +80,12 @@ public:
 #pragma endregion
 
 #pragma region SOUND_MANAGER
+public:
 	HRESULT CreateSound(const _string& sPath, FMOD_SOUND** ppSound);
 #pragma endregion
 
 #pragma region DINPUT_MANAGER
+public:
 	_bool KeyPressing(_ubyte byKeyID) const;
 	_bool KeyUp(_ubyte byKeyID) const;
 	_bool KeyDown(_ubyte byKeyID) const;
@@ -87,6 +106,7 @@ public:
 #pragma endregion
 
 #pragma region LEVEL_MANAGER
+public:
 	HRESULT ChangeLevel(UPtr<CLevel> pNewLevel);
 	void RegisterLevelChangeFunc(const _string& ID, _Func func);
 #pragma endregion
@@ -102,6 +122,7 @@ public:
 #pragma endregion
 
 #pragma region WORKER_MANAGER
+public:
 	void WorkerEnqueue(_string_view svTaskName, _Func func);
 	template<typename Func, typename... Args>
 	auto WorkerEnqueueWithFuture(_string_view svTaskName, Func&& f, Args&&... args)
@@ -121,12 +142,14 @@ public:
 #pragma endregion
 
 #pragma region PROTOTYPE_MANAGER
+public:
 	HRESULT AddPrototype(const StringID& svGroupTag, const StringID& svPrototypetag, UPtr<CPrototype> pPrototype);
 	UPtr<CPrototype> ClonePrototype(const StringID& svGroupTag, const StringID& svPrototypetag, void* pArg = nullptr);
 #pragma endregion
 
 
 #pragma region GAMEOBJECT_MANAGER
+public:
 	void GameObjectAllReset();
 	std::optional<CHandle> AddGameObjectToLayer(const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, const _string& svLayerTag, void* pArg = nullptr);
 	inline CGameObject* GetGameObjectByHandle(const CHandle& handle);
@@ -147,12 +170,14 @@ public:
 
 
 #pragma region CAMERA_MANAGER
+public:
 	const CCameraObject* GetCameraObject(const StringID& GroupID) const;
 	HRESULT SetCameraObject(const StringID& GroupID, const CHandle& handle);
 #pragma endregion
 
 
 #pragma region COLLIDER_MANAGER
+public:
 	void AddColliderGroup(const StringID& groupTag, const CCollider*);
 	const std::vector<const CCollider*>* GetColliderGroup(const StringID& groupTag) const;
 	_bool IntersectColl(const CCollider* pColl1, const CCollider* pColl2);
@@ -161,6 +186,7 @@ public:
 #pragma endregion
 
 #pragma region RENDERER
+public:
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
 #pragma endregion
 

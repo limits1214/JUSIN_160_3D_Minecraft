@@ -28,8 +28,191 @@ CGameInstance::~CGameInstance()
 
 HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID3D11Device>& ppDevice, ComPtr<ID3D11DeviceContext>& ppContext)
 {
+	m_hWnd = EngineDesc.hWnd;
+
+	m_pGraphicDevice = CGraphicDevice::Create(ppDevice, ppContext);
+	if (m_pGraphicDevice == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pResourceManager = CResourceManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pResourceManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(m_pGraphicDevice->ReadyDevice(EngineDesc.hWnd, EngineDesc.eWinMode, EngineDesc.iWinSizeX, EngineDesc.iWinSizeY)))
+	{
+		return E_FAIL;
+	}
+
+	m_pImguiManager = CImguiManager::Create(EngineDesc.hWnd, ppDevice.Get(), ppContext.Get());
+	if (m_pImguiManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pLevelManager = CLevelManager::Create();
+	if (m_pLevelManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pDInputManager = CDInputManager::Create(EngineDesc.hInstance, EngineDesc.hWnd);
+	if (m_pDInputManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pTimeProvider = CTimeProvider::Create();
+	if (m_pTimeProvider == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pWorkerManager = CWorkerManager::Create();
+	if (m_pWorkerManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pPrototypeManager = CPrototypeManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pPrototypeManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pGameObjectManager = CGameObjectManager::Create();
+	if (m_pGameObjectManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pRenderer = CRenderer::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pRenderer == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pCameraManager = CCameraManager::Create();
+	if (m_pCameraManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pColliderManager = CColliderManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pColliderManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(InitializeResources()))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(InitializePrototype()))
+	{
+		return E_FAIL;
+	}
+
 	return S_OK;
 }
+
+void CGameInstance::UpdateEngine(_float fTimeDelta)
+{
+	m_pDInputManager->Update_InputDev();
+
+
+	m_pGameObjectManager->PriorityUpdate(fTimeDelta);
+	m_pGameObjectManager->Update(fTimeDelta);
+	m_pGameObjectManager->LateUpdate(fTimeDelta);
+
+	m_pLevelManager->Update(fTimeDelta);
+
+
+	AddRenderObject(RENDERGROUP::COLLIDER, m_pColliderManager.get());
+}
+
+HRESULT CGameInstance::Draw()
+{
+	if (FAILED(m_pRenderer->Draw()))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(m_pLevelManager->Render()))
+	{
+		return E_FAIL;
+	}
+	return S_OK;
+}
+
+void CGameInstance::UpdateGUI()
+{
+	m_pPrototypeManager->UpdateGUI();
+
+	m_pGameObjectManager->UpdateGUI();
+
+	m_pWorkerManager->UpdateGUI();
+
+	m_pResourceManager->UpdateGUI();
+
+	m_pCameraManager->UpdateGUI();
+
+	m_pLevelManager->UpdateGUI();
+
+	m_pColliderManager->UpdateGUI();
+}
+
+void CGameInstance::ClearResource(uint32_t iClearLevelIndex)
+{
+}
+
+void CGameInstance::FrameStart(_float fTimeDelta)
+{
+	m_pLevelManager->FrameStart(fTimeDelta);
+	m_pGameObjectManager->FrameStart();
+	m_pColliderManager->FrameStart();
+}
+
+void CGameInstance::FrameEnd(_float fTimeDelta)
+{
+	m_pGameObjectManager->FrameEnd();
+	m_pLevelManager->FrameEnd(fTimeDelta);
+
+	m_pColliderManager->FrameEnd();
+}
+
+void CGameInstance::Release_Engine()
+{
+	m_pSoundManager.reset();
+	m_pImguiManager.reset();
+	m_pDInputManager.reset();
+	m_pPrototypeManager.reset();
+	m_pGameObjectManager->AllReset();
+	m_pGameObjectManager.reset();
+	m_pLevelManager.reset();
+	m_pColliderManager.reset();
+	m_pWorkerManager.reset();
+	m_pResourceManager.reset();
+	m_pRenderer.reset();
+
+	m_pGraphicDevice.reset();
+}
+
+HRESULT CGameInstance::InitializeResources()
+{
+	return S_OK;
+}
+
+
+HRESULT CGameInstance::InitializePrototype()
+{
+	return S_OK;
+}
+
 
 
 

@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "CameraObject.h"
 
 NS_USING(Engine)

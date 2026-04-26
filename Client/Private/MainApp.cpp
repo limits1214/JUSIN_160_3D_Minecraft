@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "MainApp.h"
 
+#include "LevelLoading.h"
+
 NS_USING(Client)
 
 CMainApp::CMainApp()
@@ -11,38 +13,39 @@ CMainApp::~CMainApp()
 {
 }
 
-void CMainApp::FixedUpdate(E::_float fTimeDelta)
-{
-}
-
-void CMainApp::Update(E::_float fTimeDelta)
-{
-}
-
-HRESULT CMainApp::Render(E::_float fInterpolation)
-{
-	return S_OK;
-}
-
-void CMainApp::FrameStart(E::_float fTimeDelta)
-{
-}
-
-void CMainApp::FrameEnd(E::_float fTimeDelta)
-{
-}
-
 HRESULT CMainApp::Initialize()
 {
+	Engine::ENGINE_DESC EngineDesc{};
+	EngineDesc.hWnd = g_hWnd;
+	EngineDesc.hInstance = g_hInstance;
+	EngineDesc.eWinMode = Engine::WINMODE::WIN;
+	EngineDesc.iWinSizeX = g_iWinSizeX;
+	EngineDesc.iWinSizeY = g_iWinSizeY;
+	//EngineDesc.iNumLevels = Engine::ETOUI(LEVEL::END);
+
+	if (FAILED(CBaseApp::Initialize(EngineDesc)))
+	{
+		return E_FAIL;
+	}
+
+	if (CBaseApp::StartLevel(CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::LOGO)))
+	{
+		return E_FAIL;
+	}
+
 	return S_OK;
 }
 
-HRESULT CMainApp::ReadyWSClient()
-{
-	return S_OK;
-}
+
 
 Engine::UPtr<CMainApp> CMainApp::Create()
 {
-	return E::ToUPtr(new CMainApp{});
+	auto pInstance = Engine::UPtr<CMainApp>(new CMainApp{});
+
+	if (FAILED(pInstance->Initialize()))
+	{
+		MSG_BOX("Failed to Created : CMainApp");
+	}
+
+	return pInstance;
 }

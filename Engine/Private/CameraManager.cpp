@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "CameraManager.h"
 #include "GameInstance.h"
 #include "CameraObject.h"
