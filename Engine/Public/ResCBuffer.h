@@ -44,7 +44,7 @@ private:
 	UINT m_cpuAccessFlags{};
 
 public:
-	static SPtr<CResCBuffer> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext, const CBUFFER_DESC* pDesc = nullptr);
+	static SPtr<CResCBuffer> Create();
 };
 
 NS_END

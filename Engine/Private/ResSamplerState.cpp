@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ResSamplerState.h"
-
+#include "GameInstance.h"
 NS_USING(Engine)
 
 CResSamplerState::CResSamplerState(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
@@ -45,7 +45,7 @@ HRESULT CResSamplerState::Unload(const std::any& arg)
 	return S_OK;
 }
 
-SPtr<CResSamplerState> CResSamplerState::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResSamplerState> CResSamplerState::Create()
 {
-	return ToSPtr(new CResSamplerState{ "", pDevice, pContext });
+	return ToSPtr(new CResSamplerState{ "", CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

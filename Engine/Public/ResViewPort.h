@@ -13,7 +13,7 @@ public:
 	const D3D11_VIEWPORT& GetViewPort() const { return m_ViewPort; }
 
 private:
-	explicit CResViewPort(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	explicit CResViewPort();
 	~CResViewPort() override;
 
 public:
@@ -24,7 +24,7 @@ private:
 	D3D11_VIEWPORT m_ViewPort{};
 
 public:
-	static SPtr<CResViewPort> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResViewPort> Create();
 };
 
 NS_END

@@ -24,7 +24,7 @@ private:
 	ComPtr<ID3D11Device> m_pDevice{};
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 public:
-	static SPtr<CResBlendState> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResBlendState> Create();
 };
 
 NS_END

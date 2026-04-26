@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResDynamicTexture2D.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -91,7 +92,7 @@ HRESULT CResDynamicTexture2D::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResDynamicTexture2D> CResDynamicTexture2D::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResDynamicTexture2D> CResDynamicTexture2D::Create()
 {
-    return ToSPtr(new CResDynamicTexture2D{"", pDevice, pContext});
+    return ToSPtr(new CResDynamicTexture2D{"", CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

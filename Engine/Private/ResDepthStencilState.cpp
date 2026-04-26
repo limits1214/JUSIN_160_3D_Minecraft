@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ResDepthStencilState.h"
-
+#include "GameInstance.h"
 NS_USING(Engine)
 
 CResDepthStencilState::CResDepthStencilState(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
@@ -43,7 +43,7 @@ HRESULT CResDepthStencilState::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResDepthStencilState> CResDepthStencilState::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResDepthStencilState> CResDepthStencilState::Create()
 {
-	return ToSPtr(new CResDepthStencilState{"", pDevice, pContext});
+	return ToSPtr(new CResDepthStencilState{"", CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

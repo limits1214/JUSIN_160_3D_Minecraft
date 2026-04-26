@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "ResViewPort.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
-CResViewPort::CResViewPort(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+CResViewPort::CResViewPort()
 	: CResource{ "" }
 {
 }
@@ -41,7 +42,7 @@ HRESULT CResViewPort::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResViewPort> CResViewPort::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResViewPort> CResViewPort::Create()
 {
-	return ToSPtr(new CResViewPort{pDevice, pContext});
+	return ToSPtr(new CResViewPort{});
 }

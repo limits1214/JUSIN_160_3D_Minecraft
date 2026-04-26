@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResTessDomainShader.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -38,7 +39,7 @@ CResTessDomainShader::~CResTessDomainShader()
 {
 }
 
-SPtr<CResTessDomainShader> CResTessDomainShader::Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResTessDomainShader> CResTessDomainShader::Create(const _string& sPath)
 {
-	return ToSPtr(new CResTessDomainShader{ sPath, pDevice, pContext });
+	return ToSPtr(new CResTessDomainShader{ sPath, CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

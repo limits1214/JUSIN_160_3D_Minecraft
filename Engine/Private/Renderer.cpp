@@ -18,6 +18,15 @@ HRESULT CRenderer::Initialize()
 {
     RECT rect;
     GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+
+
+    auto dsv = CGameInstance::Get().GetResourceFirst<CResDynamicTexture2D>("PERMANENT_DEVICE", "DSV");
+    if (!dsv)
+    {
+        return E_FAIL;
+    }
+    m_pBackBufferDSV = dsv;
+
     return S_OK;
 }
 
@@ -33,6 +42,13 @@ HRESULT CRenderer::AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRende
 
 HRESULT CRenderer::Draw()
 {
+    auto pDepthStencilView = m_pBackBufferDSV->GetDSV().Get();
+    ID3D11RenderTargetView* rt[1] = { CGameInstance::Get().GetBackBufferRTV().Get() };
+    m_pContext->OMSetRenderTargets(1, rt, pDepthStencilView);
+    _float4 clearColor = { 0.f, 0.f, 1.f, 1.f };
+    m_pContext->ClearRenderTargetView(rt[0], reinterpret_cast<const float*>(&clearColor));
+    m_pContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
     RENDER_CTX ctx{};
 
     if (FAILED(RenderPriority(ctx)))

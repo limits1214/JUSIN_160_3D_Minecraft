@@ -36,7 +36,7 @@ public:
 	HRESULT Unload(const std::any& arg = {})  override;
 
 public:
-	static SPtr<CResQuadColBuffer> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResQuadColBuffer> Create();
 };
 
 NS_END

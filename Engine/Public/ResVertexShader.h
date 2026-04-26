@@ -26,7 +26,7 @@ private:
 	~CResVertexShader() override;
 
 public:
-	static SPtr<CResVertexShader> Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResVertexShader> Create(const _string& sPath);
 };
 
 NS_END

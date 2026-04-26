@@ -23,7 +23,7 @@ private:
 	ComPtr<ID3D11GeometryShader> m_pGeometryShader{};
 
 public:
-	static SPtr<CResGeometryShader> Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResGeometryShader> Create(const _string& sPath);
 };
 
 NS_END

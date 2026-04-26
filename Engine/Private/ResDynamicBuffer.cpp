@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResDynamicBuffer.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -47,7 +48,7 @@ HRESULT CResDynamicBuffer::Unload(const std::any& arg)
 	return S_OK;
 }
 
-SPtr<CResDynamicBuffer> CResDynamicBuffer::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResDynamicBuffer> CResDynamicBuffer::Create()
 {
-	return ToSPtr(new CResDynamicBuffer{ pDevice, pContext });
+	return ToSPtr(new CResDynamicBuffer{ CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
 }

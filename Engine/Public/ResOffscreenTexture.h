@@ -37,7 +37,7 @@ private:
 	ComPtr<ID3D11UnorderedAccessView> m_pUAV{};
 
 public:
-	static SPtr<CResOffscreenTexture> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResOffscreenTexture> Create();
 
 };
 

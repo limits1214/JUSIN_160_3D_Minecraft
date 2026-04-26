@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ResOffscreenTexture.h"
-
+#include "GameInstance.h"
 NS_USING(Engine)
 
 CResOffscreenTexture::CResOffscreenTexture(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
@@ -78,7 +78,7 @@ HRESULT CResOffscreenTexture::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResOffscreenTexture> CResOffscreenTexture::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResOffscreenTexture> CResOffscreenTexture::Create()
 {
-    return ToSPtr(new CResOffscreenTexture{ "", pDevice , pContext });
+    return ToSPtr(new CResOffscreenTexture{ "", CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

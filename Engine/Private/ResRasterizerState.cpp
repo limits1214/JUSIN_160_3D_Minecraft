@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ResRasterizerState.h"
-
+#include "GameInstance.h"
 NS_USING(Engine)
 
 CResRasterizerState::CResRasterizerState(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
@@ -46,7 +46,7 @@ HRESULT CResRasterizerState::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResRasterizerState> CResRasterizerState::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResRasterizerState> CResRasterizerState::Create()
 {
-	return ToSPtr(new CResRasterizerState{ "", pDevice, pContext });
+	return ToSPtr(new CResRasterizerState{ "", CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

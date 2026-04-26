@@ -26,7 +26,7 @@ private:
 	D3D11_TEXTURE2D_DESC m_Texture2DDesc{};
 
 public:
-	static SPtr<CResTextureCubeMap> Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResTextureCubeMap> Create(const _string& sPath);
 };
 
 NS_END

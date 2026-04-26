@@ -127,7 +127,7 @@ HRESULT CResTexture2DArray::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResTexture2DArray> CResTexture2DArray::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResTexture2DArray> CResTexture2DArray::Create()
 {
-    return ToSPtr(new CResTexture2DArray{"", pDevice, pContext});
+    return ToSPtr(new CResTexture2DArray{"", CGameInstance::Get().GetGraphicDevice(), CGameInstance::Get().GetGraphicDeviceContext() });
 }

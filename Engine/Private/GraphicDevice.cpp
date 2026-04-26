@@ -73,7 +73,7 @@ HRESULT CGraphicDevice::ReadyDevice(HWND hWnd, WINMODE eWinMode, uint32_t iWinSi
 	ViewPortDesc.MinDepth = 0.f;
 	ViewPortDesc.MaxDepth = 1.f;
 
-	if (auto res = CGameInstance::Get().AddResource("PERMANENT_VP", "VP_SCREEN", CResViewPort::Create(m_pDevice, m_pDeviceContext)))
+	if (auto res = CGameInstance::Get().AddResource("PERMANENT_VP", "VP_SCREEN", CResViewPort::Create()))
 	{
 		res->Load(ViewPortDesc);
 	}
@@ -204,7 +204,7 @@ HRESULT CGraphicDevice::ReadyDepthStencilView(uint32_t iWinCX, uint32_t iWinCY)
 	{
 
 
-		auto resource = CGameInstance::Get().AddResourceT("PERMANENT_DEVICE", "DSV", CResDynamicTexture2D::Create(m_pDevice, m_pDeviceContext));
+		auto resource = CGameInstance::Get().AddResourceT("PERMANENT_DEVICE", "DSV", CResDynamicTexture2D::Create());
 
 		if (FAILED(resource->Load(CResDynamicTexture2D::DESC{ .texDesc = {
 			.Width = iWinCX,

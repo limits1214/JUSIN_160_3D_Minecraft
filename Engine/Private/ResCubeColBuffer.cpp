@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResCubeColBuffer.h"
+#include "GameInstance.h"
 
 NS_USING(Engine)
 
@@ -122,7 +123,7 @@ HRESULT CResCubeColBuffer::Unload(const std::any& arg)
     return S_OK;
 }
 
-SPtr<CResCubeColBuffer> CResCubeColBuffer::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+SPtr<CResCubeColBuffer> CResCubeColBuffer::Create()
 {
-    return ToSPtr(new CResCubeColBuffer{ "", pDevice, pContext });
+    return ToSPtr(new CResCubeColBuffer{ "", CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
 }

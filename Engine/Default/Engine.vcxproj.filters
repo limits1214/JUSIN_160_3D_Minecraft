@@ -112,6 +112,102 @@
     <Filter Include="GameObject\Camera\UICamera">
       <UniqueIdentifier>{36020d2a-6f78-43ed-b2ac-9ea7ff96ac8a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Collider\Box">
+      <UniqueIdentifier>{8df76a33-e67b-4041-9bb3-6e579c314ad0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collider\OrientedBox">
+      <UniqueIdentifier>{ceae0b90-6f28-4943-868d-521fffd6e886}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collider\Frustum">
+      <UniqueIdentifier>{97f052a5-80c2-4449-9e07-8de898a396fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collider\Sphere">
+      <UniqueIdentifier>{20c4a007-2591-4857-9989-d2c4d9cb7625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device\Graphic">
+      <UniqueIdentifier>{7c1a2d63-1ce5-4e0a-8820-2b87122e49d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device\Input">
+      <UniqueIdentifier>{5b095327-2226-4bfd-9e97-b3931e047f69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer">
+      <UniqueIdentifier>{b901e20e-c68c-4a72-a9c6-e7f05bd268c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\CBuffer">
+      <UniqueIdentifier>{33bb9795-85fd-4f9c-84a2-e3a7943602c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\DynamicBuffer">
+      <UniqueIdentifier>{97642c39-1056-493f-8f1a-e3e312acbb19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\DynamicVIBuffer">
+      <UniqueIdentifier>{51189044-b8cf-4923-bd3b-ad1dd469e17b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\QuadBuffer">
+      <UniqueIdentifier>{2be21c32-2d17-4e72-a9ab-3787b41ae23f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\CubeBuffer">
+      <UniqueIdentifier>{b17d1ec7-abe1-48d1-8a13-0c8d6bf95d45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Texture\DynamicTexture2D">
+      <UniqueIdentifier>{56b40fcd-6c09-4468-9a7a-82e711e4eec6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Texture\OffscreenTexture">
+      <UniqueIdentifier>{e3397dce-1a7d-4b0e-8e06-1ae56cfeae98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Texture\Texture2D">
+      <UniqueIdentifier>{4d3e02ce-013e-4996-8d56-2881f36f2a6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Texture\Texture2DArray">
+      <UniqueIdentifier>{1e257d01-961b-445f-99a8-8e33465c85a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Texture\CubeMap">
+      <UniqueIdentifier>{478920a7-0e05-4ef4-99d3-35be3fb7fad8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\State\BlendState">
+      <UniqueIdentifier>{2aee6ddc-e66d-4944-9694-14731c81e3ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\State\DepthStencilState">
+      <UniqueIdentifier>{3a6a8529-e1de-4c3e-a2aa-f57daac6a11e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\State\RasterizerState">
+      <UniqueIdentifier>{6478270a-5b78-4bfd-8a3d-bb6f2590622b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\State\SamplerState">
+      <UniqueIdentifier>{f3985c65-c866-4448-bdb4-6ce9cb0c9f5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shader\Compute">
+      <UniqueIdentifier>{316b2073-2318-4ac1-96cc-9c863133957d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shader\Geometry">
+      <UniqueIdentifier>{1090a026-d14b-4e92-aab1-b67e3269d7df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shader\GeoStreamOut">
+      <UniqueIdentifier>{986585c9-c096-4280-bf4f-c8142fdc1cde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shader\Pixel">
+      <UniqueIdentifier>{b11815d9-7027-4bd9-94b8-6e355ffffc33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shader\TessDomain">
+      <UniqueIdentifier>{a511b3b0-4bda-46ac-b227-b5cd7790f410}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shader\TessHull">
+      <UniqueIdentifier>{b7377fe7-0dfd-4458-ac7e-197008df6950}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shader\Vertex">
+      <UniqueIdentifier>{f283d9ab-827c-4e61-8037-428addf5c1e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\CubeBuffer\Col">
+      <UniqueIdentifier>{c55dd7f2-89bb-4f2e-b70e-ccab86db1b3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\QuadBuffer\Col">
+      <UniqueIdentifier>{d5e3aae2-de43-4495-a079-d0de288d6b54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\QuadBuffer\Tex">
+      <UniqueIdentifier>{0f9309e6-127d-434d-9ccd-e1f6b77c8def}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\QuadBuffer\FullscreenTex">
+      <UniqueIdentifier>{111cd92b-8747-4069-a3ee-5156bacad64f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -177,68 +273,11 @@
     <ClInclude Include="..\Public\ResFmodSound.h">
       <Filter>Resource\FmodSound</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\ResBlendState.h">
-      <Filter>Resource\State</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResDynamicBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResCubeBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResCBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResCubeColBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResComputeShader.h">
-      <Filter>Resource\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResDepthStencilState.h">
-      <Filter>Resource\State</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResDynamicTexture2D.h">
-      <Filter>Resource\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResDynamicVIBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\ResJson.h">
       <Filter>Resource\Json</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\ResOffscreenTexture.h">
-      <Filter>Resource\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResPixelShader.h">
-      <Filter>Resource\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResQuadColBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResQuadBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\ResourceManager.h">
       <Filter>Resource\Manager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResQuadFullscreenTexBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResQuadTexBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResRasterizerState.h">
-      <Filter>Resource\State</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResSamplerState.h">
-      <Filter>Resource\State</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResTessHullShader.h">
-      <Filter>Resource\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResTessDomainShader.h">
-      <Filter>Resource\Shader</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ResShader.h">
       <Filter>Resource\Shader</Filter>
@@ -246,55 +285,16 @@
     <ClInclude Include="..\Public\ResTexture.h">
       <Filter>Resource\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\ResTexture2D.h">
-      <Filter>Resource\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResTexture2DArray.h">
-      <Filter>Resource\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResTextureCubeMap.h">
-      <Filter>Resource\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResVertexShader.h">
-      <Filter>Resource\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResVIBuffer.h">
-      <Filter>Resource\Buffer</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\ResViewPort.h">
       <Filter>Resource\ViewPort</Filter>
     </ClInclude>
     <ClInclude Include="..\public\SoundManager.h">
       <Filter>Sound</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\ResGeoShaderStreamOut.h">
-      <Filter>Resource\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\ResGeometryShader.h">
-      <Filter>Resource\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\DInputManager.h">
-      <Filter>Device</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\GraphicDevice.h">
-      <Filter>Device</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\WorkerManager.h">
       <Filter>Worker</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\CollBox.h">
-      <Filter>Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\CollFrustum.h">
-      <Filter>Collider</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Collider.h">
-      <Filter>Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\CollOrientedBox.h">
-      <Filter>Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\CollSphere.h">
       <Filter>Collider</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\ColliderManager.h">
@@ -347,6 +347,102 @@
     </ClInclude>
     <ClInclude Include="..\public\UICamera.h">
       <Filter>GameObject\Camera\UICamera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CollBox.h">
+      <Filter>Collider\Box</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CollFrustum.h">
+      <Filter>Collider\Frustum</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CollOrientedBox.h">
+      <Filter>Collider\OrientedBox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CollSphere.h">
+      <Filter>Collider\Sphere</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\GraphicDevice.h">
+      <Filter>Device\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DInputManager.h">
+      <Filter>Device\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResCBuffer.h">
+      <Filter>Resource\Buffer\CBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResDynamicBuffer.h">
+      <Filter>Resource\Buffer\DynamicBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResDynamicVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\DynamicVIBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResCubeBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\CubeBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResQuadBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\QuadBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResDynamicTexture2D.h">
+      <Filter>Resource\Texture\DynamicTexture2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResOffscreenTexture.h">
+      <Filter>Resource\Texture\OffscreenTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTexture2D.h">
+      <Filter>Resource\Texture\Texture2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTexture2DArray.h">
+      <Filter>Resource\Texture\Texture2DArray</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTextureCubeMap.h">
+      <Filter>Resource\Texture\CubeMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResBlendState.h">
+      <Filter>Resource\State\BlendState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResDepthStencilState.h">
+      <Filter>Resource\State\DepthStencilState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResRasterizerState.h">
+      <Filter>Resource\State\RasterizerState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResSamplerState.h">
+      <Filter>Resource\State\SamplerState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResComputeShader.h">
+      <Filter>Resource\Shader\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResGeometryShader.h">
+      <Filter>Resource\Shader\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResGeoShaderStreamOut.h">
+      <Filter>Resource\Shader\GeoStreamOut</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResPixelShader.h">
+      <Filter>Resource\Shader\Pixel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTessDomainShader.h">
+      <Filter>Resource\Shader\TessDomain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResTessHullShader.h">
+      <Filter>Resource\Shader\TessHull</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResVertexShader.h">
+      <Filter>Resource\Shader\Vertex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResCubeColBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\CubeBuffer\Col</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResQuadColBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\QuadBuffer\Col</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResQuadTexBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\QuadBuffer\Tex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ResQuadFullscreenTexBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\QuadBuffer\FullscreenTex</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -416,68 +512,11 @@
     <ClCompile Include="..\Private\ResFmodSound.cpp">
       <Filter>Resource\FmodSound</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\ResBlendState.cpp">
-      <Filter>Resource\State</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResDynamicBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResCBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResCubeColBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResCubeBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResComputeShader.cpp">
-      <Filter>Resource\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResDepthStencilState.cpp">
-      <Filter>Resource\State</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResDynamicTexture2D.cpp">
-      <Filter>Resource\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResDynamicVIBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\ResJson.cpp">
       <Filter>Resource\Json</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\ResOffscreenTexture.cpp">
-      <Filter>Resource\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResPixelShader.cpp">
-      <Filter>Resource\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResQuadBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResQuadColBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\ResourceManager.cpp">
       <Filter>Resource\Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResQuadFullscreenTexBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResQuadTexBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResRasterizerState.cpp">
-      <Filter>Resource\State</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResSamplerState.cpp">
-      <Filter>Resource\State</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResTessDomainShader.cpp">
-      <Filter>Resource\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResTessHullShader.cpp">
-      <Filter>Resource\Shader</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\ResShader.cpp">
       <Filter>Resource\Shader</Filter>
@@ -485,55 +524,16 @@
     <ClCompile Include="..\Private\ResTexture.cpp">
       <Filter>Resource\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\ResTexture2D.cpp">
-      <Filter>Resource\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResTexture2DArray.cpp">
-      <Filter>Resource\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResTextureCubeMap.cpp">
-      <Filter>Resource\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResVertexShader.cpp">
-      <Filter>Resource\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResVIBuffer.cpp">
-      <Filter>Resource\Buffer</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\ResViewPort.cpp">
       <Filter>Resource\ViewPort</Filter>
     </ClCompile>
     <ClCompile Include="..\private\SoundManager.cpp">
       <Filter>Sound</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\ResGeoShaderStreamOut.cpp">
-      <Filter>Resource\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\ResGeometryShader.cpp">
-      <Filter>Resource\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\DInputManager.cpp">
-      <Filter>Device</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\GraphicDevice.cpp">
-      <Filter>Device</Filter>
-    </ClCompile>
     <ClCompile Include="..\private\WorkerManager.cpp">
       <Filter>Worker</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\CollSphere.cpp">
-      <Filter>Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\CollBox.cpp">
-      <Filter>Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\CollFrustum.cpp">
-      <Filter>Collider</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Collider.cpp">
-      <Filter>Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\CollOrientedBox.cpp">
       <Filter>Collider</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\ColliderManager.cpp">
@@ -574,6 +574,102 @@
     </ClCompile>
     <ClCompile Include="..\private\UICamera.cpp">
       <Filter>GameObject\Camera\UICamera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CollBox.cpp">
+      <Filter>Collider\Box</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CollFrustum.cpp">
+      <Filter>Collider\Frustum</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CollOrientedBox.cpp">
+      <Filter>Collider\OrientedBox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CollSphere.cpp">
+      <Filter>Collider\Sphere</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\GraphicDevice.cpp">
+      <Filter>Device\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DInputManager.cpp">
+      <Filter>Device\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResCBuffer.cpp">
+      <Filter>Resource\Buffer\CBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResDynamicBuffer.cpp">
+      <Filter>Resource\Buffer\DynamicBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResDynamicVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\DynamicVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResCubeBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\CubeBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResQuadBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\QuadBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResDynamicTexture2D.cpp">
+      <Filter>Resource\Texture\DynamicTexture2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResOffscreenTexture.cpp">
+      <Filter>Resource\Texture\OffscreenTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTexture2D.cpp">
+      <Filter>Resource\Texture\Texture2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTexture2DArray.cpp">
+      <Filter>Resource\Texture\Texture2DArray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTextureCubeMap.cpp">
+      <Filter>Resource\Texture\CubeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResBlendState.cpp">
+      <Filter>Resource\State\BlendState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResDepthStencilState.cpp">
+      <Filter>Resource\State\DepthStencilState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResRasterizerState.cpp">
+      <Filter>Resource\State\RasterizerState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResSamplerState.cpp">
+      <Filter>Resource\State\SamplerState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResComputeShader.cpp">
+      <Filter>Resource\Shader\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResGeometryShader.cpp">
+      <Filter>Resource\Shader\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResGeoShaderStreamOut.cpp">
+      <Filter>Resource\Shader\GeoStreamOut</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResPixelShader.cpp">
+      <Filter>Resource\Shader\Pixel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTessDomainShader.cpp">
+      <Filter>Resource\Shader\TessDomain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResTessHullShader.cpp">
+      <Filter>Resource\Shader\TessHull</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResVertexShader.cpp">
+      <Filter>Resource\Shader\Vertex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResCubeColBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\CubeBuffer\Col</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResQuadColBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\QuadBuffer\Col</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResQuadTexBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\QuadBuffer\Tex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ResQuadFullscreenTexBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\QuadBuffer\FullscreenTex</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

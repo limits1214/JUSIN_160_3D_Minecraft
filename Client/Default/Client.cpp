@@ -5,6 +5,8 @@
 #include "framework.h"
 #include "Client.h"
 
+#include "GameInstance.h"
+
 #include "MainApp.h"
 
 #define MAX_LOADSTRING 100
@@ -162,6 +164,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    if (Engine::CGameInstance::Get().ImguiWinProc(hWnd, message, wParam, lParam))
+    {
+        return true;
+    }
+
     switch (message)
     {
     case WM_KEYDOWN:

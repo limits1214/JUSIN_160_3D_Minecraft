@@ -23,7 +23,7 @@ private:
 	ComPtr<ID3D11DomainShader> m_pTessDomainShader{};
 
 public:
-	static SPtr<CResTessDomainShader> Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResTessDomainShader> Create(const _string& sPath);
 };
 
 NS_END

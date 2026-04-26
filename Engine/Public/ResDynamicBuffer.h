@@ -31,7 +31,7 @@ private:
 	ComPtr<ID3D11Device> m_pDevice{};
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 public:
-	static SPtr<CResDynamicBuffer> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResDynamicBuffer> Create();
 };
 
 NS_END

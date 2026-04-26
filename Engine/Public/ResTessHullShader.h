@@ -23,7 +23,7 @@ private:
 	ComPtr<ID3D11HullShader> m_pTessHullShader{};
 
 public:
-	static SPtr<CResTessHullShader> Create(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static SPtr<CResTessHullShader> Create(const _string& sPath);
 };
 
 NS_END
