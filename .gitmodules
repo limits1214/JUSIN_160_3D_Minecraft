@@ -1,0 +1,3 @@
+[submodule "MC_DX11_RESOURCE"]
+	path = MC_DX11_RESOURCE
+	url = https://github.com/limits1214/MC_DX11_RESOURCE.git
