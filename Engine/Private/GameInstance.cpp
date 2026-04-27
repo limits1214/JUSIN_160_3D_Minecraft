@@ -17,6 +17,9 @@
 #include "Renderer.h"
 
 #include "FlyCamera.h"
+#include "UICamera.h"
+
+#include "Resources.h"
 
 NS_USING(Engine)
 
@@ -206,6 +209,51 @@ void CGameInstance::Release_Engine()
 
 HRESULT CGameInstance::InitializeResources()
 {
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerFrame", E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_FRAME) })))
+		{
+			return E_FAIL;
+		}
+	}
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject", E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_OBJECT) })))
+		{
+			return E_FAIL;
+		}
+	}
+
+	
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "SAMPLER_Linear", CResSamplerState::Create()))
+	{
+		res->Load(D3D11_SAMPLER_DESC{
+			.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR,
+			.AddressU = D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressV = D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressW = D3D11_TEXTURE_ADDRESS_WRAP,
+			.ComparisonFunc = D3D11_COMPARISON_NEVER,
+			.MinLOD = 0,
+			.MaxLOD = D3D11_FLOAT32_MAX,
+			});
+	}
+
+	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_QuadTex", "./Resources/Shader/QuadTex/QuadTex.hlsl"))
+	{
+		res->Load();
+	}
+	if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_QuadTex", "./Resources/Shader/QuadTex/QuadTex.hlsl"))
+	{
+		res->Load();
+	}
+
+
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_BUFFER, "VIBuffer_QuadTex", E::CResQuadTexBuffer::Create()))
+	{
+		res->Load();
+	}
+	//CResQuadTexBuffer
+
 	return S_OK;
 }
 
@@ -218,6 +266,11 @@ HRESULT CGameInstance::InitializePrototype()
 	}
 
 	if (AddPrototype("CAMERAS", "Prototype_GameObject_FlyCamera", CFlyCamera::Create()))
+	{
+		return E_FAIL;
+	}
+
+	if (AddPrototype("CAMERAS", "Prototype_GameObject_UICamera", CUICamera::Create()))
 	{
 		return E_FAIL;
 	}

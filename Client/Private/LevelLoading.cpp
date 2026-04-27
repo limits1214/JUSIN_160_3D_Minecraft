@@ -2,11 +2,8 @@
 #include "LevelLoading.h"
 #include "GameInstance.h"
 #include "LevelLogo.h"
-#include "ResCBuffer.h"
-#include "ResVertexShader.h"
-#include "ResPixelShader.h"
-#include "ResDynamicVIBuffer.h"
-
+#include "Resources.h"
+#include "BackGround.h"
 NS_USING(Client)
 
 CLevelLoading::CLevelLoading(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext, LEVEL eNextLevelIndex) noexcept
@@ -87,10 +84,20 @@ void CLevelLoading::ThreadStart()
 	{
 		m_futLoadFinish = E::CGameInstance::Get().WorkerEnqueueWithFuture("LOADING_LOGO", [this]()
 			{
-				
+				if (FAILED(E::CGameInstance::Get().AddPrototype("LEVEL_LOGO", "Prototype_GameObject_BackGround", CBackGround::Create())))
+				{
+					return false;
+				}
+
 				//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 				return  true;
 			});
+
+		if (auto res = E::CGameInstance::Get().AddResource("LEVEL_LOGO", "TEX_SHM", E::CResTexture2D::Create("./Resources/Texture/SHM.png")))
+		{
+			res->Load();
+		}
+
 	}
 	break;
 	}

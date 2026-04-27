@@ -301,6 +301,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\Timer.h" />
     <ClInclude Include="..\public\Transform.h" />
     <ClInclude Include="..\public\UICamera.h" />
+    <ClInclude Include="..\public\UIObject.h" />
     <ClInclude Include="..\public\WorkerManager.h" />
     <ClInclude Include="..\Public\IRenderable.h" />
     <ClInclude Include="..\Public\Handle.h" />
@@ -466,6 +467,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\Timer.cpp" />
     <ClCompile Include="..\private\Transform.cpp" />
     <ClCompile Include="..\private\UICamera.cpp" />
+    <ClCompile Include="..\private\UIObject.cpp" />
     <ClCompile Include="..\private\WorkerManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

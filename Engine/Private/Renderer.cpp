@@ -49,7 +49,35 @@ HRESULT CRenderer::Draw()
     m_pContext->ClearRenderTargetView(rt[0], reinterpret_cast<const float*>(&clearColor));
     m_pContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
+
+    {
+        auto pGameCam = CGameInstance::Get().GetCameraObject("GAME");
+        if (!pGameCam)
+        {
+            return S_OK;
+        }
+        {
+            auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerFrame");
+            D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+            if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+            {
+                CB_PER_FRAME cbPerFrame{};
+                XMStoreFloat4x4(&cbPerFrame.matProj, pGameCam->GetProj());
+                XMStoreFloat4x4(&cbPerFrame.matView, pGameCam->GetView());
+                XMStoreFloat4x4(&cbPerFrame.matViewProj, pGameCam->GetView() * pGameCam->GetProj());
+                XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pGameCam->GetView()));
+                cbPerFrame.vCamPos = pGameCam->GetTransform().GetPosition();
+
+                memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
+                m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
+            }
+            m_pContext->VSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+            m_pContext->PSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+        }
+    }
+
     RENDER_CTX ctx{};
+    ctx.pass = RENDERPASS::DEFAULT;
 
     if (FAILED(RenderPriority(ctx)))
     {
@@ -71,6 +99,32 @@ HRESULT CRenderer::Draw()
         return E_FAIL;
     }
 
+
+    {
+        auto pUICame = CGameInstance::Get().GetCameraObject("UI");
+        if (!pUICame)
+        {
+            return S_OK;
+        }
+        {
+            auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerFrame");
+            D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+            if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+            {
+                CB_PER_FRAME cbPerFrame{};
+                XMStoreFloat4x4(&cbPerFrame.matProj, pUICame->GetProj());
+                XMStoreFloat4x4(&cbPerFrame.matView, pUICame->GetView());
+                XMStoreFloat4x4(&cbPerFrame.matViewProj, pUICame->GetView() * pUICame->GetProj());
+                XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pUICame->GetView()));
+                cbPerFrame.vCamPos = pUICame->GetTransform().GetPosition();
+
+                memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
+                m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
+            }
+            m_pContext->VSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+            m_pContext->PSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+        }
+    }
     if (FAILED(RenderUI(ctx)))
     {
         return E_FAIL;
