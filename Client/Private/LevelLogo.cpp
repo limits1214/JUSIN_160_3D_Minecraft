@@ -6,6 +6,8 @@
 #include "FlyCamera.h"
 
 #include "ResCBuffer.h"
+#include "BackGround.h"
+
 
 NS_USING(Client)
 
@@ -22,16 +24,15 @@ HRESULT CLevelLogo::Initialize()
 {
 	Engine::CGameInstance::Get().GameObjectAllReset();
 
-	//{
-	//	CBackGround::BACKGROUND_DESC Desc{};
-	//	Desc.iData = 10;
-
-	//	if (!(E::CGameInstance::Get().AddGameObjectToLayer("LOGO", "Prototype_GameObject_BackGround",
-	//		"Layer_BackGround", &Desc)))
-	//	{
-	//		return E_FAIL;
-	//	}
-	//}
+	{
+		CBackGround::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "BackGround";
+		if (!(E::CGameInstance::Get().AddGameObjectToLayer("LEVEL_LOGO", "Prototype_GameObject_BackGround",
+			"Layer_BackGround", &Desc)))
+		{
+			return E_FAIL;
+		}
+	}
 
 	{
 		E::CCameraObject::CAMERA_DESC Desc{};
@@ -48,6 +49,26 @@ HRESULT CLevelLogo::Initialize()
 			"Layer_Camera", &Desc))
 		{
 			if (FAILED(E::CGameInstance::Get().SetCameraObject("GAME", flyCam.value())))
+			{
+				int x = 0;
+			}
+		}
+	}
+
+	{
+		E::CCameraObject::CAMERA_DESC Desc{};
+		Desc.eProj = E::CCameraObject::PROJ::ORTHOGRAPHIC;
+		Desc.fNear = 0.f;
+		Desc.fFar = 1.f;
+		Desc.fWidth = g_iWinSizeX;
+		Desc.fHeight = g_iWinSizeY;
+		Desc.sObjectTag = "UICam";
+		Desc.vEye = { 0.f, 0.f, -0.1f };
+
+		if (auto uiCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_UICamera",
+			"Layer_Camera", &Desc))
+		{
+			if (FAILED(E::CGameInstance::Get().SetCameraObject("UI", uiCam.value())))
 			{
 				int x = 0;
 			}

@@ -16,6 +16,14 @@ CResShader::~CResShader()
 
 HRESULT CResShader::CompileShader()
 {
+    uint32_t        iFlag = {};
+    iFlag |= D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
+#ifdef _DEBUG
+    iFlag |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+    iFlag |= D3DCOMPILE_OPTIMIZATION_LEVEL1;
+#endif
+
     HRESULT hr = D3DCompileFromFile(
         StringToWString(m_sPath).c_str(),
         nullptr,

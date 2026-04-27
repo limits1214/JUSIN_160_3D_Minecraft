@@ -208,6 +208,9 @@
     <Filter Include="Resource\Buffer\VIBuffer\QuadBuffer\FullscreenTex">
       <UniqueIdentifier>{111cd92b-8747-4069-a3ee-5156bacad64f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\UI">
+      <UniqueIdentifier>{503e7a7a-c372-4e81-a9d0-3c8738ee9444}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -444,6 +447,9 @@
     <ClInclude Include="..\Public\ResQuadFullscreenTexBuffer.h">
       <Filter>Resource\Buffer\VIBuffer\QuadBuffer\FullscreenTex</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\UIObject.h">
+      <Filter>GameObject\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -670,6 +676,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\ResQuadFullscreenTexBuffer.cpp">
       <Filter>Resource\Buffer\VIBuffer\QuadBuffer\FullscreenTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIObject.cpp">
+      <Filter>GameObject\UI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -18,6 +18,11 @@ CUICamera::~CUICamera()
 
 HRESULT CUICamera::Initialize(void* pArg)
 {
+    if (FAILED(CCameraObject::Initialize(pArg)))
+    {
+        return E_FAIL;
+    }
+
     return S_OK;
 }
 
@@ -31,6 +36,9 @@ void CUICamera::Update(E::_float fTimeDelta)
 
 void CUICamera::LateUpdate(E::_float fTimeDelta)
 {
+    m_pComTransform->Update();
+
+    CCameraObject::UpdateViewMatrix();
 }
 
 

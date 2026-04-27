@@ -67,6 +67,10 @@ HRESULT CCameraObject::UpdateViewMatrix()
 	auto& pTransform = GetTransform();
 	auto vEye = pTransform.GetLoadedPostion();
 	auto vLook = pTransform.GetState(STATE::LOOK);
+	E::_float3 tmp;
+	XMStoreFloat3(&tmp, vLook);
+	E::_float3 tmp2;
+	XMStoreFloat3(&tmp2, vEye);
 	auto vAt = vLook + vEye;
 
 	XMStoreFloat4x4(&m_matView,
