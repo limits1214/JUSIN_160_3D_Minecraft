@@ -61,9 +61,7 @@ void CTransform::Update()
 
         if (m_pGameObject)
         {
-            if (m_pGameObject->GetParentObjectHandle())
-            {
-                if (auto* pParentObj = CGameInstance::Get().GetGameObjectByHandle(m_pGameObject->GetParentObjectHandle().value()))
+                if (auto* pParentObj = m_pGameObject->GetParentNode())
                 {
                     _matrix matParent = XMLoadFloat4x4(pParentObj->GetTransform().GetWorldMatrix());
 
@@ -76,14 +74,11 @@ void CTransform::Update()
 
                     matWorld *= matParent;
                 }
-            }
-
-            for (auto& pChildHandle : m_pGameObject->GetChildrenHandle())
+            
+               
+            for (const auto& pChildObj : m_pGameObject->GetChildrenNode())
             {
-                if (auto* pChildObj = CGameInstance::Get().GetGameObjectByHandle(pChildHandle))
-                {
                     pChildObj->GetTransform().SetDirty(true);
-                }
             }
 
         }

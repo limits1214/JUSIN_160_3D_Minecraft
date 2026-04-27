@@ -18,7 +18,7 @@ private:
 
 public:
 	void UpdateGUI();
-	void UpdateGUIDrawTreeNode(const CHandle& handle);
+	void UpdateGUIDrawTreeNode( CGameObject* handle);
 
 	void FrameStart();
 	void FrameEnd();
@@ -54,7 +54,7 @@ private:
 	std::vector<size_t> m_FreeSlots{};
 
 	std::map<_string, std::vector<CHandle>> m_Layers{};
-	std::vector<CHandle> m_TreePreparation{};
+	std::vector<CGameObject*> m_TreePreparation{};
 	std::vector<CGameObject*> m_Tree{};
 
 	_bool m_bTreeReBuild{ true };

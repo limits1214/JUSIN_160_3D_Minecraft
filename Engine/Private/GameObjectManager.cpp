@@ -2,7 +2,8 @@
 #include "GameObjectManager.h"
 #include "GameInstance.h"
 #include "GameObject.h"
-#include "Helper.h"
+//#include "Helper.h"
+#include "MyTreeNode.h"
 
 NS_USING(Engine)
 
@@ -57,7 +58,7 @@ void CGameObjectManager::UpdateGUI()
 				{
 					if (auto* pObj = CGameInstance::Get().GetGameObjectByHandle(handle))
 					{
-						std::string s = std::to_string(handle.GetIndex()) + "_" + std::string{ pObj->GetTag() };
+						std::string s = std::to_string(handle.GetIndex()) + "_" + std::string{ pObj->GetObjectTag() };
 						if (ImGui::TreeNode(s.data()))
 						{
 							pObj->UpdateGUI();
@@ -87,24 +88,22 @@ void CGameObjectManager::UpdateGUI()
 }
 
 
-void CGameObjectManager::UpdateGUIDrawTreeNode(const CHandle& handle)
+void CGameObjectManager::UpdateGUIDrawTreeNode( CGameObject* pObj)
 {
-	if (auto* pObj = GetGameObjectByHandle(handle))
-	{
 		std::string label =
-			std::to_string(handle.GetIndex()) + "_" + std::string{ pObj->GetTag() };
+			std::to_string(pObj->GetHandle().GetIndex()) + "_" + std::string{ pObj->GetObjectTag() };
 
 		if (ImGui::TreeNode(label.c_str()))
 		{
 			pObj->UpdateGUI();
 
-			if (!pObj->GetChildrenHandle().empty())
+			if (!pObj->GetChildrenNode().empty())
 			{
 				if (ImGui::TreeNode("Childrens"))
 				{
-					for (const auto& childHandle : pObj->GetChildrenHandle())
+					for (const auto& pObj : pObj->GetChildrenNode())
 					{
-						UpdateGUIDrawTreeNode(childHandle);
+						UpdateGUIDrawTreeNode(pObj);
 					}
 
 					ImGui::TreePop();
@@ -113,7 +112,7 @@ void CGameObjectManager::UpdateGUIDrawTreeNode(const CHandle& handle)
 
 			ImGui::TreePop();
 		}
-	}
+	
 }
 
 void CGameObjectManager::FrameStart()
@@ -130,24 +129,18 @@ void CGameObjectManager::FrameStart()
 		{
 			if (auto* pObj = GetGameObjectByHandle(handle))
 			{
-				if (!pObj->GetParentObjectHandle().has_value())
+				if (!pObj->GetParentNode())
 				{
-					m_TreePreparation.push_back(pObj->GetHandle());
+					m_TreePreparation.push_back(pObj);
 				}
 			}
 		}
 	}
 
 	m_Tree.clear();
-	for (const auto& RootHandle : m_TreePreparation)
+	for (const auto& pRootObj : m_TreePreparation)
 	{
-		CHelper::MyHandleTreeDFS(&RootHandle, [&](const CHandle* handle)
-			{
-				if (auto* pObj = GetGameObjectByHandle(*handle))
-				{
-					m_Tree.push_back(pObj);
-				}
-			});
+		MyTreeDFS(pRootObj, [&](auto pObj) {m_Tree.push_back(pObj); });
 	}
 
 	// TODO: 플래그 완성되면

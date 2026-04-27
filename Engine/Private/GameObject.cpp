@@ -5,7 +5,6 @@
 #include "GameInstance.h"
 
 #include "Transform.h"
-#include "Helper.h"
 
 NS_USING(Engine)
 
@@ -26,7 +25,7 @@ CGameObject::~CGameObject()
 HRESULT CGameObject::Initialize(void* pArg)
 {
     auto pDesc = static_cast<GAMEOBJECT_DESC*>(pArg);
-    m_sTag = pDesc->sObjectTag;
+    m_sObjectTag = pDesc->sObjectTag;
     m_ObjectHandle = pDesc->handle;
 
     {
@@ -96,7 +95,6 @@ HRESULT CGameObject::AddComponent(const StringID& tagComponent, UPtr<CComponent>
     }
 
     pComponent->SetGameObject(this);
-    pComponent->SetGameObjectHandle(m_ObjectHandle);
 
     auto size = m_Components.size();
     std::pair<StringID, UPtr<CComponent>> a{ tagComponent, std::move(pComponent) };
@@ -131,86 +129,8 @@ HRESULT CGameObject::DelComponent(const StringID& tagComponent)
     return S_OK;
 }
 
-void CGameObject::SetParentObjectHandle(std::optional<CHandle> newParentHandle)
-{
-    _SetParentHandle(newParentHandle);
-
-    if (newParentHandle)
-    {
-        if (auto pTransform = GetComponent<CTransform>("Com_Transform"))
-        {
-            pTransform->SetDirty(true);
-            auto world = GetComponent<CTransform>("Com_Transform")->GetWorldMatrix();
-            pTransform->SetParentWorldMatrix(*world);
-        }
-    }
-    else
-    {
-        if (auto pTransform = GetComponent<CTransform>("Com_Transform"))
-        {
-            pTransform->SetDirty(true);
-            pTransform->SetParentWorldMatrix(std::nullopt);
-        }
-    }
-}
-
-void CGameObject::_SetParentHandle(const std::optional<CHandle>& newParentHandle)
-{
-    if (newParentHandle)
-    {
-        if (m_pParentHandle)
-        {
-            if (auto* pParent = CGameInstance::Get().GetGameObjectByHandle(m_pParentHandle.value()))
-            {
-                pParent->EraseChildHandle(GetHandle());
-                pParent->m_pChildrenHandles.push_back(GetHandle());
-            }
-            m_pParentHandle = newParentHandle;
-        }
-        else
-        {
-            m_pParentHandle = newParentHandle;
-            if (auto* pParent = CGameInstance::Get().GetGameObjectByHandle(m_pParentHandle.value()))
-            {
-                pParent->m_pChildrenHandles.push_back(GetHandle());
-            }
-        }
-    }
-    else
-    {
-        if (m_pParentHandle)
-        {
-            if (auto* pParent = CGameInstance::Get().GetGameObjectByHandle(m_pParentHandle.value()))
-            {
-                pParent->EraseChildHandle(GetHandle());
-            }
-            m_pParentHandle = std::nullopt;
-        }
-    }
-}
-
-void CGameObject::EraseChildHandle(const CHandle& pChildHandle)
-{
-    auto iter = std::find(m_pChildrenHandles.begin(), m_pChildrenHandles.end(), pChildHandle);
-    if (iter != m_pChildrenHandles.end())
-    {
-        m_pChildrenHandles.erase(iter);
-    }
-}
-
 void CGameObject::Free()
 {
-    {
-        SetParentObjectHandle(std::nullopt);
-        std::for_each(m_pChildrenHandles.begin(), m_pChildrenHandles.end(),
-            [](const CHandle& childHandle)
-            {
-                if (auto* pChildObj = CGameInstance::Get().GetGameObjectByHandle(childHandle))
-                {
-                    pChildObj->SetParentObjectHandle(std::nullopt);
-                }
-            });
-    }
     CPrototype::Free();
 }
 
@@ -221,11 +141,5 @@ void CGameObject::SetPendingDestroy(_bool b)
 
 void CGameObject::SetPendingDestroyCascade(_bool b)
 {
-    CHelper::MyHandleTreeDFS(&m_ObjectHandle, [&](const CHandle* handle)
-        {
-            if (auto* pObj = CGameInstance::Get().GetGameObjectByHandle(*handle))
-            {
-                pObj->SetPendingDestroy(b);
-            }
-        });
+    MyTreeDFS(this, [&](auto pObj) {pObj->SetPendingDestroy(b); });
 }

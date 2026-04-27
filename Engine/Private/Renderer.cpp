@@ -130,6 +130,16 @@ HRESULT CRenderer::Draw()
         return E_FAIL;
     }
 
+
+
+
+    {
+        for (auto& vecRenderables : m_RenderObject)
+        {
+            vecRenderables.clear();
+        }
+    }
+
     return S_OK;
 }
 

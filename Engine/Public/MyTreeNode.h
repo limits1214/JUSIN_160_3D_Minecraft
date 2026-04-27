@@ -76,13 +76,13 @@ protected:
             [](auto& pChild) { pChild->SetParentNode(nullptr); });
     }
 
-protected:
+public:
     const T* GetParentNode() const { return m_pParentNode; }
     T* GetParentNode() { return m_pParentNode; }
 
 public:
     const std::vector<T*>& GetChildrenNode() const { return m_pChildrenNode; }
-    std::vector<T*>& GetChildrenNode() { return m_pChildrenNode; }
+    //std::vector<T*>& GetChildrenNode() { return m_pChildrenNode; }
 
 protected:
     void SetParentNode(T* pNewParentNode)

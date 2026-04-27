@@ -1,6 +1,6 @@
 #pragma once
 #include "Prototype.h"
-//#include "MyTreeNode.h"
+#include "MyTreeNode.h"
 #include "Component.h"
 #include "Transform.h"
 #include "Handle.h"
@@ -8,7 +8,9 @@
 
 NS_BEGIN(Engine)
 
-class ENGINE_DLL CGameObject : public CPrototype, public IRenderable//, public CMyTreeNode<CGameObject>
+class ENGINE_DLL CGameObject : public CPrototype,
+								public IRenderable,
+								public CMyTreeNode<CGameObject>
 {
 public:
 	DECLARE_DERIVED_TYPE(CGameObject, CPrototype)
@@ -32,9 +34,11 @@ public:
 	virtual void PriorityUpdate(_float fTimeDelta);
 	virtual void Update(_float fTimeDelta);
 	virtual void LateUpdate(_float fTimeDelta);
+	virtual void UpdateGUI();
+
+public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) override;
 	bool HasRenderPass(RENDERPASS ePass) const override { return (m_RenderPassFlags & static_cast<uint32_t>(ePass)) != 0; };
-	virtual void UpdateGUI();
 
 protected:
 	uint32_t m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT);
@@ -73,27 +77,15 @@ protected:
 	HRESULT DelComponent(const StringID& tagComponent);
 
 public:
-	_string_view GetTag() const { return m_sTag; }
-private:
-	_string m_sTag{};
+	_string_view GetObjectTag() const { return m_sObjectTag; }
+protected:
+	_string m_sObjectTag{};
 
 
 private:
 	CHandle m_ObjectHandle{};
 public:
 	const CHandle& GetHandle() const { return m_ObjectHandle; }
-
-public:
-	const std::optional<CHandle>& GetParentObjectHandle() const { return m_pParentHandle; }
-	void SetParentObjectHandle(std::optional<CHandle> newParentHandle);
-public:
-	const std::vector<CHandle>& GetChildrenHandle() const { return m_pChildrenHandles; }
-protected:
-	void _SetParentHandle(const std::optional<CHandle>& newParentHandle);
-	void EraseChildHandle(const CHandle& pChildHandle);
-protected:
-	std::optional<CHandle> m_pParentHandle{};
-	std::vector<CHandle> m_pChildrenHandles{};
 
 protected:
 	void Free() override;
