@@ -26,30 +26,33 @@ void MyTreeBFS(N* rootNode, F lambda)
 }
 
 template<typename N, typename F>
-void MyTreeDFS(N* rootNode, F lambda)
+void MyTreeDFS(N* rootNode, F&& lambda, std::vector<N*>* stack = nullptr)
 {
+    std::vector<N*> local;
+
+    auto& s = stack ? *stack : local;
+
     if (!rootNode) return;
 
-    std::stack<N*> s{};
-    s.push(rootNode);
+    s.clear();
+    s.push_back(rootNode);
 
     while (!s.empty())
     {
-        if (auto*& node = s.top())
+        auto* node = s.back();
+        s.pop_back();
+
+        lambda(node);
+
+        const auto& children = node->GetChildrenNode();
+        for (auto it = children.rbegin(); it != children.rend(); ++it)
         {
-            s.pop();
-            lambda(node);
-            const auto& children = node->GetChildrenNode();
-            for (auto iter = children.rbegin(); iter != children.rend(); ++iter)
+            if (*it)
             {
-                if ((*iter))
-                {
-                    s.push((*iter));
-                }
+                s.push_back(*it);
             }
         }
     }
-
 }
 
 template<typename N, typename F>

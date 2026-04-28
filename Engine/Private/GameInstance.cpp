@@ -469,7 +469,7 @@ void CGameInstance::GameObjectAllReset()
 {
 	m_pGameObjectManager->AllReset();
 }
-std::optional<CHandle> CGameInstance::AddGameObjectToLayer(const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, const _string& svLayerTag, void* pArg)
+std::optional<CHandle> CGameInstance::AddGameObjectToLayer(const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, uint32_t svLayerTag, void* pArg)
 {
 	//return m_pObjectManager->AddGameObjectToLayer(iPrototypeLevelIndex, svPrototypeTag, iLayerLevelIndex, svLayerTag, pArg);
 	return m_pGameObjectManager->AddGameObjectToLayer(iPrototypeLevelIndex, svPrototypeTag, svLayerTag, pArg);
@@ -478,13 +478,17 @@ inline CGameObject* CGameInstance::GetGameObjectByHandle(const CHandle& handle)
 {
 	return m_pGameObjectManager->GetGameObjectByHandle(handle);
 }
-const std::vector<CHandle>* CGameInstance::GetGameObjectLayer(const _string& siLayerTag) const
+const std::vector<CHandle>* CGameInstance::GetGameObjectLayer(uint32_t siLayerTag) const
 {
 	return m_pGameObjectManager->GetLayer(siLayerTag);
 }
-void CGameInstance::DelGameObjectLayer(const _string& siLayerTag)
+void CGameInstance::DelGameObjectLayer(uint32_t siLayerTag)
 {
 	return m_pGameObjectManager->DelLayer(siLayerTag);
+}
+void CGameInstance::GameObjectLayerInitialize(uint32_t siLayerTag, std::function<std::string(uint32_t)> funcToString)
+{
+	return m_pGameObjectManager->LayerInitialize(siLayerTag, funcToString);
 }
 #pragma endregion
 

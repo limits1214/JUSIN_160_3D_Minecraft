@@ -21,7 +21,7 @@ namespace Client
 		END
 	};
 
-	inline const char* LevelLoadingLayersToString(uint32_t idx)
+	inline std::string LevelLoadingLayersToString(uint32_t idx)
 	{
 		switch (idx)
 		{

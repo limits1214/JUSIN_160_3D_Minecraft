@@ -151,11 +151,12 @@ public:
 #pragma region GAMEOBJECT_MANAGER
 public:
 	void GameObjectAllReset();
-	std::optional<CHandle> AddGameObjectToLayer(const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, const _string& svLayerTag, void* pArg = nullptr);
-	inline CGameObject* GetGameObjectByHandle(const CHandle& handle);
-	const std::vector<CHandle>* GetGameObjectLayer(const _string& siLayerTag) const;
-	void DelGameObjectLayer(const _string& siLayerTag);
+	std::optional<CHandle> AddGameObjectToLayer(const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, uint32_t svLayerTag, void* pArg = nullptr);
+	const std::vector<CHandle>* GetGameObjectLayer(uint32_t siLayerTag) const;
+	void DelGameObjectLayer(uint32_t siLayerTag);
+	void GameObjectLayerInitialize(uint32_t siLayerTag, std::function<std::string(uint32_t)> funcToString = nullptr);
 
+	inline CGameObject* GetGameObjectByHandle(const CHandle& handle);
 	template<typename T>
 	T* GetGameObjectByHandleT(const CHandle& handle)
 	{
