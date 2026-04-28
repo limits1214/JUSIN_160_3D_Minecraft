@@ -13,6 +13,24 @@ namespace Client
 		THE_NETHER,
 		THE_END
 	};
+
+	enum class LEVEL_LOADING_LAYERS
+	{
+		OBJECTS,
+		CAMERA,
+		END
+	};
+
+	inline const char* LevelLoadingLayersToString(uint32_t idx)
+	{
+		switch (idx)
+		{
+		case E::ETOUI(LEVEL_LOADING_LAYERS::OBJECTS): return "OBJECTS";
+		case E::ETOUI(LEVEL_LOADING_LAYERS::CAMERA): return "CAMERA";
+		};
+
+		return "END";
+	}
 }
 
 extern HWND g_hWnd;

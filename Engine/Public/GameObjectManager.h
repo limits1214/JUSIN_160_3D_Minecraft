@@ -24,22 +24,20 @@ public:
 	void FrameEnd();
 
 public:
-	std::optional<CHandle> AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, const _string& siLayerTag, void* pArg);
 	CGameObject* GetGameObjectByHandle(const CHandle& handle) { return const_cast<CGameObject*>(_GetGameObjectByHandle(handle)); }
 	const CGameObject* GetGameObjectByHandle(const CHandle& handle) const { return _GetGameObjectByHandle(handle); }
-	template<typename T>
-	T* GetGameObjectByHandleT(const CHandle& handle);
-	template<typename T>
-	const T* GetGameObjectByHandleT(const CHandle& handle) const;
+	template<typename T> T* GetGameObjectByHandleT(const CHandle& handle);
+	template<typename T> const T* GetGameObjectByHandleT(const CHandle& handle) const;
 private:
 	const CGameObject* _GetGameObjectByHandle(const CHandle& handle) const;
 
 public:
+	std::optional<CHandle> AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, const _string& siLayerTag, void* pArg);
 	const std::vector<CHandle>* GetLayer(const _string& siLayerTag) const;
+	void DelLayer(const _string& siLayerTag);
 
 public:
 	void AllReset();
-	void DelLayer(const _string& siLayerTag);
 
 public:
 	void PriorityUpdate(_float fTimeDelta);
@@ -92,7 +90,7 @@ inline const Engine::CGameObject* Engine::CGameObjectManager::_GetGameObjectByHa
 template<typename T>
 inline T* Engine::CGameObjectManager::GetGameObjectByHandleT(const CHandle& handle)
 {
-	auto obj = const_cast<Engine::CGameObject*>(_GetGameObjectByHandle(handle));
+	const CGameObject* obj = _GetGameObjectByHandle(handle);
 
 	if (!obj)
 	{
@@ -103,15 +101,15 @@ inline T* Engine::CGameObjectManager::GetGameObjectByHandleT(const CHandle& hand
 	{
 		return nullptr;
 	}
-
-	return static_cast<T*>(obj);
+	
+	return const_cast<T*>(static_cast<const T*>(obj));
 }
 
 
 template<typename T>
 inline const T* Engine::CGameObjectManager::GetGameObjectByHandleT(const CHandle& handle) const
 {
-	auto obj = _GetGameObjectByHandle(handle);
+	const CGameObject* obj = _GetGameObjectByHandle(handle);
 
 	if (!obj)
 	{

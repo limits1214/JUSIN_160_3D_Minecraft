@@ -7,6 +7,7 @@
 
 #include "ResCBuffer.h"
 #include "BackGround.h"
+#include "UiCamera.h"
 
 
 NS_USING(Client)
@@ -72,8 +73,18 @@ HRESULT CLevelLogo::Initialize()
 			{
 				int x = 0;
 			}
+
+
+
+			const auto* t = E::CGameInstance::GetConst().GetGameObjectByHandleT<E::CUICamera>(uiCam.value());
+
+			auto* t2 = E::CGameInstance::Get().GetGameObjectByHandleT<E::CUICamera>(uiCam.value());
 		}
+
+
 	}
+
+
 	return S_OK;
 }
 
