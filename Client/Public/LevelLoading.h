@@ -22,6 +22,11 @@ private:
 	void ThreadStart();
 	void LoadingCheck();
 
+
+private:
+	ComPtr<ID3D11Device> m_pDevice{};
+	ComPtr<ID3D11DeviceContext> m_pContext{};
+
 private:
 	const LEVEL m_eNextLevelIndex;
 

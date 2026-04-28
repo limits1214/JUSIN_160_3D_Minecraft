@@ -218,8 +218,10 @@
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\public\LevelLoading.h" />
     <ClInclude Include="..\public\LevelLogo.h" />
+    <ClInclude Include="..\public\LevelTestSimpleGreedy.h" />
     <ClInclude Include="..\public\MainApp.h" />
     <ClInclude Include="..\Public\Client_Defines.h" />
+    <ClInclude Include="..\public\TestSimpleGreedyChunk.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -230,7 +232,9 @@
     <ClCompile Include="..\private\BackGround.cpp" />
     <ClCompile Include="..\private\LevelLoading.cpp" />
     <ClCompile Include="..\private\LevelLogo.cpp" />
+    <ClCompile Include="..\private\LevelTestSimpleGreedy.cpp" />
     <ClCompile Include="..\private\MainApp.cpp" />
+    <ClCompile Include="..\private\TestSimpleGreedyChunk.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

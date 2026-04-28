@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "MainApp.h"
-
+#include "GameInstance.h"
 #include "LevelLoading.h"
+
 
 NS_USING(Client)
 
@@ -32,6 +33,15 @@ HRESULT CMainApp::Initialize()
 	{
 		return E_FAIL;
 	}
+	E::CGameInstance::Get().RegisterLevelChangeFunc("TO_LOGO", [=]() {
+		Engine::CGameInstance::Get().ChangeLevel(
+			CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::LOGO));
+		});
+
+	E::CGameInstance::Get().RegisterLevelChangeFunc("TO_TEST_SIMPLE_GREEDY", [=]() {
+		Engine::CGameInstance::Get().ChangeLevel(
+			CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::TEST_SIMPLE_GREEDY));
+		});
 
 	return S_OK;
 }

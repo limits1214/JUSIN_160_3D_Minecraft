@@ -18,6 +18,7 @@ public:
 	HRESULT Initialize();
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
 	HRESULT Draw();
+	void FrameEnd();
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};

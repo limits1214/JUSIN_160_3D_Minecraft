@@ -133,14 +133,17 @@ HRESULT CRenderer::Draw()
 
 
 
-    {
-        for (auto& vecRenderables : m_RenderObject)
-        {
-            vecRenderables.clear();
-        }
-    }
+    
 
     return S_OK;
+}
+
+void CRenderer::FrameEnd()
+{
+    for (auto& vecRenderables : m_RenderObject)
+    {
+        vecRenderables.clear();
+    }
 }
 
 HRESULT CRenderer::DrawFullscreen()
