@@ -99,7 +99,7 @@ HRESULT CLevelLogo::Initialize()
 						E::CUICamera* volatile sink = nullptr;
 						for (size_t i = 0; i < 10'000'000; ++i)
 						{
-							if (val->GetType() == E::CUICamera::StaticType)
+							if (val->IsA(E::CUICamera::StaticType))
 							{
 								sink = static_cast<E::CUICamera*>(val);
 							}

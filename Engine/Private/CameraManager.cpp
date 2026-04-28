@@ -47,12 +47,11 @@ const CCameraObject* CCameraManager::GetCameraObject(const StringID& GroupID) co
 	{
 		return nullptr;
 	}
-	//auto a = pObj->GetType();
-	//auto b = pObj->GetTypeStr();
-	//if (pObj->GetType() != CCameraObject::StaticType)
-	//{
-	//	return nullptr;
-	//}
+	
+	if (!pObj->IsA(CCameraObject::StaticType))
+	{
+		return nullptr;
+	}
 
 	return static_cast<CCameraObject*>(pObj);
 }
@@ -65,10 +64,11 @@ HRESULT CCameraManager::SetCameraObject(const StringID& GroupID, const CHandle& 
 		return E_FAIL;
 	}
 
-	if (!dynamic_cast<CCameraObject*>(pObj))
+	if (!pObj->IsA(CCameraObject::StaticType))
 	{
 		return E_FAIL;
 	}
+
 	auto iter = m_ActiveCameras.find(GroupID);
 	if (iter != m_ActiveCameras.end())
 	{
