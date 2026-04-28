@@ -164,7 +164,7 @@ public:
 	template<typename T>
 	const T* GetGameObjectByHandleT(const CHandle& handle) const
 	{
-		return m_pGameObjectManager->GetGameObjectByHandleT<T>(handle);
+		return static_cast<const CGameObjectManager*>(m_pGameObjectManager.get())->GetGameObjectByHandleT<T>(handle);
 	}
 #pragma endregion
 
