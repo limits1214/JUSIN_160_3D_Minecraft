@@ -25,6 +25,15 @@
     <Filter Include="GameObject\BackGround">
       <UniqueIdentifier>{c8080255-989d-4ed6-9c06-af9923c5ace0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Levels\Test">
+      <UniqueIdentifier>{bb15d8b4-0187-4acf-8d30-c7691836f2ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Levels\Test\SimpleGreedy">
+      <UniqueIdentifier>{d44469b4-382c-4f79-80cc-2239e3faa336}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Levels\Test\SimpleGreedy\Object">
+      <UniqueIdentifier>{cf61ddd6-a3e9-424d-8fab-01d49867bc14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -57,6 +66,12 @@
     <ClInclude Include="..\public\BackGround.h">
       <Filter>GameObject\BackGround</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\LevelTestSimpleGreedy.h">
+      <Filter>Levels\Test\SimpleGreedy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\TestSimpleGreedyChunk.h">
+      <Filter>Levels\Test\SimpleGreedy\Object</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -76,6 +91,12 @@
     </ClCompile>
     <ClCompile Include="..\private\BackGround.cpp">
       <Filter>GameObject\BackGround</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\LevelTestSimpleGreedy.cpp">
+      <Filter>Levels\Test\SimpleGreedy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\TestSimpleGreedyChunk.cpp">
+      <Filter>Levels\Test\SimpleGreedy\Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

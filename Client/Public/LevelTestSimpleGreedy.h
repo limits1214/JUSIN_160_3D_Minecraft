@@ -4,11 +4,11 @@
 
 NS_BEGIN(Client)
 
-class CLevelLogo final : public Engine::CLevel
+class CLevelTestSimpleGreedy final : public Engine::CLevel
 {
 private:
-	explicit CLevelLogo();
-	~CLevelLogo() override;
+	explicit CLevelTestSimpleGreedy();
+	~CLevelTestSimpleGreedy() override;
 
 public:
 	HRESULT Initialize() override;
@@ -18,7 +18,7 @@ public:
 	void FrameStart(E::_float fTimeDelta) override;
 
 public:
-	static Engine::UPtr<CLevelLogo> Create();
+	static Engine::UPtr<CLevelTestSimpleGreedy> Create();
 
 private:
 	void Free() override;

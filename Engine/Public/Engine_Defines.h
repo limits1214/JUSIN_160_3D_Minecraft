@@ -17,6 +17,7 @@ using namespace Microsoft::WRL;
 #pragma warning(disable : 4251)
 #include <d3dcompiler.h>
 
+#include <cstdint>
 #include <stack>
 #include <queue>
 #include <vector>

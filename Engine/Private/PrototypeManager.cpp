@@ -68,6 +68,15 @@ UPtr<CPrototype> CPrototypeManager::ClonePrototype(const StringID& svGroupTag, c
 	return pPrototype->Clone(pArg);
 }
 
+void CPrototypeManager::DelPrototype(const StringID& sGroupTag)
+{
+	auto iter = m_pPrototypes.find(sGroupTag);
+	if (iter != m_pPrototypes.end())
+	{
+		m_pPrototypes.erase(iter);
+	}
+}
+
 CPrototypeManager::PROTOTYPES* CPrototypeManager::Find_Group(const StringID& svGroupTag)
 {
 	auto iter = m_pPrototypes.find(svGroupTag);

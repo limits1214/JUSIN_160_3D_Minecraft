@@ -16,6 +16,7 @@ public:
 	HRESULT Initialize();
 	HRESULT AddPrototype(const StringID& svGroupTag, const StringID& svPrototypeTag, UPtr<CPrototype> pPrototype);
 	UPtr<CPrototype> ClonePrototype(const StringID& svGroupTag, const StringID& svPrototypeTag, void* pArg);
+	void DelPrototype(const StringID& sGroupTag);
 
 private:
 	typedef std::unordered_map<StringID, UPtr<CPrototype>> PROTOTYPES;

@@ -187,6 +187,7 @@ void CGameInstance::FrameEnd(_float fTimeDelta)
 	m_pGameObjectManager->FrameEnd();
 	m_pLevelManager->FrameEnd(fTimeDelta);
 
+	m_pRenderer->FrameEnd();
 	m_pColliderManager->FrameEnd();
 }
 
@@ -195,12 +196,12 @@ void CGameInstance::Release_Engine()
 	m_pSoundManager.reset();
 	m_pImguiManager.reset();
 	m_pDInputManager.reset();
-	m_pPrototypeManager.reset();
 	m_pGameObjectManager->AllReset();
 	m_pGameObjectManager.reset();
 	m_pLevelManager.reset();
 	m_pColliderManager.reset();
 	m_pWorkerManager.reset();
+	m_pPrototypeManager.reset();
 	m_pResourceManager.reset();
 	m_pRenderer.reset();
 
@@ -225,7 +226,7 @@ HRESULT CGameInstance::InitializeResources()
 	}
 
 	
-	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "SAMPLER_Linear", CResSamplerState::Create()))
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_LINEAR_WRAP, CResSamplerState::Create()))
 	{
 		res->Load(D3D11_SAMPLER_DESC{
 			.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR,
@@ -252,8 +253,41 @@ HRESULT CGameInstance::InitializeResources()
 	{
 		res->Load();
 	}
-	//CResQuadTexBuffer
 
+	//
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL, E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_BACK;
+		desc.DepthClipEnable = TRUE;
+		res->Load(desc);
+	}
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_FRONTCULL, E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_FRONT;
+		desc.DepthClipEnable = TRUE;
+		res->Load(desc);
+	}
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL, E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_NONE;
+		desc.DepthClipEnable = TRUE;
+		res->Load(desc);
+	}
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_WIREFRAME_NOCULL, E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_WIREFRAME;
+		desc.CullMode = D3D11_CULL_NONE;
+		desc.DepthClipEnable = TRUE;
+
+		res->Load(desc);
+	}
 	return S_OK;
 }
 
@@ -460,6 +494,10 @@ HRESULT CGameInstance::AddPrototype(const StringID& svGroupTag, const StringID& 
 UPtr<CPrototype> CGameInstance::ClonePrototype(const StringID& svGroupTag, const StringID& svPrototypetag, void* pArg)
 {
 	return m_pPrototypeManager->ClonePrototype(svGroupTag, svPrototypetag, pArg);
+}
+void CGameInstance::DelPrototype(const StringID& sGroupTag)
+{
+	m_pPrototypeManager->DelPrototype(sGroupTag);
 }
 #pragma endregion
 

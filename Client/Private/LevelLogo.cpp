@@ -12,8 +12,8 @@
 
 NS_USING(Client)
 
-CLevelLogo::CLevelLogo(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
-	: CLevel{ pDevice, pContext }
+CLevelLogo::CLevelLogo()
+
 {
 }
 
@@ -158,9 +158,9 @@ void CLevelLogo::FrameStart(E::_float fTimeDelta)
 
 }
 
-Engine::UPtr<CLevelLogo> CLevelLogo::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+Engine::UPtr<CLevelLogo> CLevelLogo::Create()
 {
-	auto	pInstance = Engine::UPtr<CLevelLogo>(new CLevelLogo(pDevice, pContext));
+	auto	pInstance = Engine::UPtr<CLevelLogo>(new CLevelLogo{});
 
 	if (FAILED(pInstance->Initialize()))
 	{
@@ -172,6 +172,7 @@ Engine::UPtr<CLevelLogo> CLevelLogo::Create(ComPtr<ID3D11Device> pDevice, ComPtr
 
 void CLevelLogo::Free()
 {
-	//E::CGameInstance::Get().GameObjectAllReset();
+	E::CGameInstance::Get().DelPrototype("LEVEL_LOGO");
+	E::CGameInstance::Get().DelResource("LEVEL_LOGO");
 	CLevel::Free();
 }

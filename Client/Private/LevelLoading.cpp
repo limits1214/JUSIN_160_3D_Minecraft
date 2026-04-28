@@ -4,10 +4,13 @@
 #include "LevelLogo.h"
 #include "Resources.h"
 #include "BackGround.h"
+
+#include "LevelTestSimpleGreedy.h"
 NS_USING(Client)
 
 CLevelLoading::CLevelLoading(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext, LEVEL eNextLevelIndex) noexcept
-	: CLevel{ pDevice ,pContext }
+	: m_pDevice{ pDevice }
+	, m_pContext{ pContext }
 	, m_eNextLevelIndex(eNextLevelIndex)
 {
 }
@@ -63,7 +66,10 @@ HRESULT CLevelLoading::LoadEnd()
 	switch (m_eNextLevelIndex)
 	{
 	case LEVEL::LOGO:
-		pNewLevel = CLevelLogo::Create(m_pDevice, m_pContext);
+		pNewLevel = CLevelLogo::Create();
+		break;
+	case LEVEL::TEST_SIMPLE_GREEDY:
+		pNewLevel = CLevelTestSimpleGreedy::Create();
 		break;
 	}
 	assert(pNewLevel);
@@ -100,6 +106,10 @@ void CLevelLoading::ThreadStart()
 
 	}
 	break;
+
+	default:
+		m_bLoadEnd = true;
+		break;
 	}
 
 }
