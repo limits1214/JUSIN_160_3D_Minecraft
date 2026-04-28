@@ -50,11 +50,12 @@ void CGameObjectManager::UpdateGUI()
 
 	if (ImGui::TreeNode("Layers"))
 	{
-		for (const auto& [LayerID, Layer] : m_Layers)
+		for (uint32_t i = 0; i < m_Layers.size(); ++i)
 		{
-			if (ImGui::TreeNode(LayerID.c_str()))
+			std::string LayerName = m_LayerToStringFunc ? m_LayerToStringFunc(i) : std::to_string(i);
+			if (ImGui::TreeNode(LayerName.c_str()))
 			{
-				for (const auto& handle : Layer)
+				for (const auto& handle : m_Layers[i])
 				{
 					if (auto* pObj = CGameInstance::Get().GetGameObjectByHandle(handle))
 					{
@@ -71,7 +72,6 @@ void CGameObjectManager::UpdateGUI()
 				ImGui::TreePop();
 			}
 		}
-
 		ImGui::TreePop();
 	}
 
@@ -123,7 +123,7 @@ void CGameObjectManager::FrameStart()
 	}
 
 	m_TreePreparation.clear();
-	for (const auto& [LayerID, Layer] : m_Layers)
+	for (const auto& Layer : m_Layers)
 	{
 		for (const auto& handle : Layer)
 		{
@@ -140,7 +140,7 @@ void CGameObjectManager::FrameStart()
 	m_Tree.clear();
 	for (const auto& pRootObj : m_TreePreparation)
 	{
-		MyTreeDFS(pRootObj, [&](auto pObj) {m_Tree.push_back(pObj); });
+		MyTreeDFS(pRootObj, [&](auto pObj) {m_Tree.push_back(pObj); }, &m_DFSReserved);
 	}
 
 	// TODO: 플래그 완성되면
@@ -167,8 +167,13 @@ void CGameObjectManager::FrameEnd()
 }
 
 std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag,
-	const _string& siLayerTag, void* pArg)
+	uint32_t iLayerIdx, void* pArg)
 {
+	if (m_Layers.size() <= iLayerIdx)
+	{
+		return std::nullopt;
+	}
+
 	CHandle objectHandle{};
 	if (m_FreeSlots.empty())
 	{
@@ -208,16 +213,7 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 		m_Objects[emptyIdx].Set(std::move(pGameObject));
 	}
 
-
-	auto iter = m_Layers.find(siLayerTag);
-	if (iter == m_Layers.end())
-	{
-		m_Layers.emplace(siLayerTag, std::vector<CHandle>{ objectHandle });
-	}
-	else
-	{
-		iter->second.push_back(objectHandle);
-	}
+	m_Layers[iLayerIdx].push_back(objectHandle);
 
 	m_bTreeReBuild = true;
 
@@ -225,14 +221,14 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 }
 
 
-const std::vector<CHandle>* CGameObjectManager::GetLayer(const _string& siLayerTag) const
+const std::vector<CHandle>* CGameObjectManager::GetLayer(uint32_t iLayerIdx) const
 {
-	auto* pLayer = FindLayer(siLayerTag);
-	if (pLayer == nullptr)
+	if (m_Layers.size() <= iLayerIdx)
 	{
 		return nullptr;
 	}
-	return pLayer;
+
+	return &m_Layers[iLayerIdx];
 }
 
 void CGameObjectManager::PriorityUpdate(_float fTimeDelta)
@@ -268,20 +264,22 @@ void CGameObjectManager::LateUpdate(_float fTimeDelta)
 	}
 }
 
-const std::vector<CHandle>* CGameObjectManager::FindLayer(const _string& siLayerTag) const
+HRESULT CGameObjectManager::Initialize()
 {
-	auto iter = m_Layers.find(siLayerTag);
-	if (iter == m_Layers.end())
-	{
-		return nullptr;
-	}
-
-	return &iter->second;
+	m_DFSReserved.reserve(100);
+	m_TreePreparation.reserve(100);
+	m_Tree.reserve(100);
+	return S_OK;
 }
 
 UPtr<CGameObjectManager> CGameObjectManager::Create()
 {
-	return ToUPtr(new CGameObjectManager{});
+	auto pInstance = ToUPtr(new CGameObjectManager{});
+	if (FAILED(pInstance->Initialize()))
+	{
+		return nullptr;
+	}
+	return pInstance;
 }
 
 // 이거 먼저 호출해주어야함
@@ -304,21 +302,28 @@ void CGameObjectManager::AllReset()
 	m_Tree.clear();
 }
 
-void CGameObjectManager::DelLayer(const _string& siLayerTag)
+void CGameObjectManager::DelLayer(uint32_t iLayerIdx)
 {
-	auto iter = m_Layers.find(siLayerTag);
-	if (iter != m_Layers.end())
+	if (m_Layers.size() <= iLayerIdx)
 	{
-		for (const auto& handle : iter->second)
+		return;
+	}
+
+	;
+	for (const auto& handle : m_Layers[iLayerIdx])
+	{
+		if (auto pObj = GetGameObjectByHandle(handle))
 		{
-			if (auto pObj = GetGameObjectByHandle(handle))
-			{
-				pObj->SetPendingDestroy();
-			}
+			pObj->SetPendingDestroy();
 		}
-		m_Layers.erase(iter);
+		m_Layers[iLayerIdx].clear();
 		FrameEnd();
 	}
+}
+
+void CGameObjectManager::LayerInitialize(uint32_t iNumLayers, std::function<std::string(uint32_t)> funcToString)
+{
+	m_Layers.resize(iNumLayers); m_LayerToStringFunc = funcToString;
 }
 
 void CGameObjectManager::Free()

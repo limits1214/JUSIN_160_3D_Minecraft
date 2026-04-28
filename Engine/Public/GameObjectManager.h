@@ -16,6 +16,9 @@ private:
 	CGameObjectManager();
 	~CGameObjectManager() override;
 
+private:
+	HRESULT Initialize();
+
 public:
 	void UpdateGUI();
 	void UpdateGUIDrawTreeNode( CGameObject* handle);
@@ -29,12 +32,13 @@ public:
 	template<typename T> T* GetGameObjectByHandleT(const CHandle& handle);
 	template<typename T> const T* GetGameObjectByHandleT(const CHandle& handle) const;
 private:
-	const CGameObject* _GetGameObjectByHandle(const CHandle& handle) const;
+	const CGameObject* _GetGameObjectByHandle(const CHandle& handle ) const;
 
 public:
-	std::optional<CHandle> AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, const _string& siLayerTag, void* pArg);
-	const std::vector<CHandle>* GetLayer(const _string& siLayerTag) const;
-	void DelLayer(const _string& siLayerTag);
+	std::optional<CHandle> AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, uint32_t iLayerIdx, void* pArg);
+	const std::vector<CHandle>* GetLayer(uint32_t iLayerIdx) const;
+	void DelLayer(uint32_t iLayerIdx);
+	void LayerInitialize(uint32_t iNumLayers, std::function<std::string(uint32_t)> funcToString);
 
 public:
 	void AllReset();
@@ -45,16 +49,15 @@ public:
 	void LateUpdate(_float fTimeDelta);
 
 private:
-	const std::vector<CHandle>* FindLayer(const _string& siLayerTag) const;
-
-private:
 	std::vector<CSlot<CGameObject>> m_Objects{};
 	std::vector<size_t> m_FreeSlots{};
 
-	std::map<_string, std::vector<CHandle>> m_Layers{};
+	std::vector<std::vector<CHandle>> m_Layers{};
+	std::function<std::string(uint32_t)> m_LayerToStringFunc{};
+
 	std::vector<CGameObject*> m_TreePreparation{};
 	std::vector<CGameObject*> m_Tree{};
-
+	std::vector<CGameObject*> m_DFSReserved{};
 	_bool m_bTreeReBuild{ true };
 
 public:

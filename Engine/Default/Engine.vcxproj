@@ -259,6 +259,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ISerializer.h" />
     <ClInclude Include="..\public\Level.h" />
     <ClInclude Include="..\public\LevelManager.h" />
+    <ClInclude Include="..\Public\MyTreeNode.h" />
     <ClInclude Include="..\public\Prototype.h" />
     <ClInclude Include="..\public\PrototypeManager.h" />
     <ClInclude Include="..\public\Renderer.h" />

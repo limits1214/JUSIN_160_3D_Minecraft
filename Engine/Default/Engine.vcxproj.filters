@@ -450,6 +450,9 @@
     <ClInclude Include="..\public\UIObject.h">
       <Filter>GameObject\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\MyTreeNode.h">
+      <Filter>Helper</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
