@@ -11,13 +11,10 @@ public:
 	CComponent& operator=(const CComponent&) = delete;
 
 public:
-	enum class TYPE
+	typedef struct tagComponentDesc: public CEngineBase
 	{
-		TRANSFORM,
-		VIBUFFER,
-		END
-	};
-
+		CGameObject* pGameObject{};
+	}DESC;
 	//public:
 	//	void SetGameObject(CGameObject* pGameObject) { m_pGameObject = pGameObject; }
 	//	CGameObject* GetGameObject() const { return m_pGameObject; }
@@ -37,7 +34,7 @@ protected:
 	//std::optional<CHandle> m_ObjectHandle{};
 	CGameObject* m_pGameObject{};
 public:
-	void SetGameObject(CGameObject* pObj) { m_pGameObject = pObj; }
+	//void SetGameObject(CGameObject* pObj) { m_pGameObject = pObj; }
 	CGameObject* GetGameObject() const { return m_pGameObject; }
 
 	//const std::optional<CHandle>& GetGameObjectHandle() const { return m_ObjectHandle; }
