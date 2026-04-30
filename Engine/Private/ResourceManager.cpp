@@ -232,11 +232,15 @@ void CResourceManager::DelResource(const StringID& sGroupTag)
 void CResourceManager::DelResource(const StringID& sGroupTag, const StringID& sResTag)
 {
 	auto pGroup = FindGroup(sGroupTag);
-	auto iter = pGroup->find(sResTag);
-	if (iter != pGroup->end())
+	if (pGroup)
 	{
-		pGroup->erase(iter);
+		auto iter = pGroup->find(sResTag);
+		if (iter != pGroup->end())
+		{
+			pGroup->erase(iter);
+		}
 	}
+	
 }
 
 CResourceManager::RESOURCES* CResourceManager::FindGroup(const StringID& sGroupTag)
