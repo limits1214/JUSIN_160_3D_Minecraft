@@ -52,7 +52,27 @@ protected:
 
 
 public:
-	HRESULT AddComponent(const StringID& tagComponent, UPtr<CComponent> pComponent);
+	template<typename T>
+	T* AddComponent(const StringID& tagComponent, UPtr<T> pComponent)
+	{
+		auto iter = m_ComponentsLookup.find(tagComponent);
+		if (iter != m_ComponentsLookup.end())
+		{
+			return nullptr;
+		}
+
+		//pComponent->SetGameObject(this);
+
+		T* pCache = pComponent.get();
+
+		auto size = m_Components.size();
+		std::pair<StringID, UPtr<CComponent>> a{ tagComponent, std::move(pComponent) };
+		m_Components.push_back(std::move(a));
+		m_ComponentsLookup.emplace(tagComponent, size);
+
+
+		return pCache;
+	}
 
 	template<typename T>
 	T* GetComponent(const StringID& tagComponent)

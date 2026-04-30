@@ -37,8 +37,8 @@ HRESULT CGameObject::Initialize(void* pArg)
         {
             return E_FAIL;
         }
-        AddComponent("Com_Transform", static_uptr_cast<CTransform>(std::move(pProto)));
-        m_pComTransform = GetComponent<CTransform>("Com_Transform");
+        m_pComTransform = AddComponent("Com_Transform", static_uptr_cast<CTransform>(std::move(pProto)));
+        //m_pComTransform = GetComponent<CTransform>("Com_Transform");
     }
 
     return S_OK;
@@ -89,24 +89,6 @@ void CGameObject::UpdateGUI()
     }
 }
 
-HRESULT CGameObject::AddComponent(const StringID& tagComponent, UPtr<CComponent> pComponent)
-{
-    auto iter = m_ComponentsLookup.find(tagComponent);
-    if (iter != m_ComponentsLookup.end())
-    {
-        return E_FAIL;
-    }
-
-    //pComponent->SetGameObject(this);
-
-    auto size = m_Components.size();
-    std::pair<StringID, UPtr<CComponent>> a{ tagComponent, std::move(pComponent) };
-    m_Components.push_back(std::move(a));
-    m_ComponentsLookup.emplace(tagComponent, size);
-
-
-    return S_OK;
-}
 
 HRESULT CGameObject::DelComponent(const StringID& tagComponent)
 {
