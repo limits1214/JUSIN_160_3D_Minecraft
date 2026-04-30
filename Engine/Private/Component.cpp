@@ -17,6 +17,7 @@ CComponent::~CComponent()
 
 HRESULT CComponent::Initialize(void* pArg)
 {
+    m_pGameObject = static_cast<const DESC*>(pArg)->pGameObject;
     return S_OK;
 }
 

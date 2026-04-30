@@ -30,7 +30,9 @@ HRESULT CGameObject::Initialize(void* pArg)
     m_ObjectHandle = CGameInstance::Get().GetFreeHandle().value();
 
     {
-        auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_Transform", pDesc);
+        CComponent::DESC componentDesc{};
+        componentDesc.pGameObject = this;
+        auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_Transform", &componentDesc);
         if (pProto == nullptr)
         {
             return E_FAIL;
@@ -95,7 +97,7 @@ HRESULT CGameObject::AddComponent(const StringID& tagComponent, UPtr<CComponent>
         return E_FAIL;
     }
 
-    pComponent->SetGameObject(this);
+    //pComponent->SetGameObject(this);
 
     auto size = m_Components.size();
     std::pair<StringID, UPtr<CComponent>> a{ tagComponent, std::move(pComponent) };
