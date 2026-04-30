@@ -63,7 +63,7 @@ HRESULT CColliderManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX
     if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
     {
         CB_COLL_PER_FRAME cbPerFrame{};
-        cbPerFrame.viewProjMatrix = XMMatrixTranspose(cam->GetView() * cam->GetProj());
+        cbPerFrame.viewProjMatrix = cam->GetView() * cam->GetProj();
 
         D3D11_MAPPED_SUBRESOURCE mappedResource;
         if (SUCCEEDED(m_pContext->Map(m_pPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource))) {

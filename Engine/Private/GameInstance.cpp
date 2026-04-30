@@ -247,6 +247,14 @@ HRESULT CGameInstance::InitializeResources()
 	{
 		res->Load();
 	}
+	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_QuadCol", "./Resources/Shader/QuadCol/QuadCol.hlsl"))
+	{
+		res->Load();
+	}
+	if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_QuadCol", "./Resources/Shader/QuadCol/QuadCol.hlsl"))
+	{
+		res->Load();
+	}
 
 
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_BUFFER, "VIBuffer_QuadTex", E::CResQuadTexBuffer::Create()))

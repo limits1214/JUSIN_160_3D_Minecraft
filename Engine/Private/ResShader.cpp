@@ -18,6 +18,7 @@ HRESULT CResShader::CompileShader()
 {
     uint32_t        iFlag = {};
     iFlag |= D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
+    iFlag |= D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG
     iFlag |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #else
@@ -30,7 +31,7 @@ HRESULT CResShader::CompileShader()
         D3D_COMPILE_STANDARD_FILE_INCLUDE,
         m_sEntryPoint.c_str(),
         m_sTarget.c_str(),
-        D3DCOMPILE_ENABLE_STRICTNESS,
+        iFlag,
         0,
         &m_pBlob,
         &m_pErrorBlob

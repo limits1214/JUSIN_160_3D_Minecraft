@@ -42,6 +42,10 @@ HRESULT CRenderer::AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRende
 
 HRESULT CRenderer::Draw()
 {
+    RENDER_CTX ctx{};
+
+
+    ctx.pass = RENDERPASS::DEFAULT;
     auto pDepthStencilView = m_pBackBufferDSV->GetDSV().Get();
     ID3D11RenderTargetView* rt[1] = { CGameInstance::Get().GetBackBufferRTV().Get() };
     m_pContext->OMSetRenderTargets(1, rt, pDepthStencilView);
@@ -57,6 +61,8 @@ HRESULT CRenderer::Draw()
             return S_OK;
         }
         {
+            ctx.matProj = pGameCam->GetProj();
+            ctx.matView = pGameCam->GetView();
             auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerFrame");
             D3D11_MAPPED_SUBRESOURCE mappedSubResource;
             if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
@@ -76,8 +82,8 @@ HRESULT CRenderer::Draw()
         }
     }
 
-    RENDER_CTX ctx{};
-    ctx.pass = RENDERPASS::DEFAULT;
+   
+    
 
     if (FAILED(RenderPriority(ctx)))
     {
@@ -107,6 +113,9 @@ HRESULT CRenderer::Draw()
             return S_OK;
         }
         {
+            ctx.matProj = pUICame->GetProj();
+            ctx.matView = pUICame->GetView();
+
             auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerFrame");
             D3D11_MAPPED_SUBRESOURCE mappedSubResource;
             if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
