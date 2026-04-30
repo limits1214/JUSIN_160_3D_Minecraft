@@ -13,6 +13,134 @@ CTestSimpleGreedyChunk::~CTestSimpleGreedyChunk()
 {
 }
 
+static std::vector< std::array< std::array<int32_t, 3>, 4>> test(std::vector<int32_t>& testVolume, std::array<int32_t, 3> dims)
+{
+	auto f = [&](int32_t i, int32_t j, int32_t k)->int32_t
+		{
+			int32_t xCnt = dims[0];
+
+			int32_t yCnt = dims[1];
+
+			int32_t zCnt = dims[2];
+
+			int32_t idx = (xCnt * zCnt * j) + (xCnt * k) + i;
+			
+			return testVolume[idx];
+		};
+
+
+	std::vector< std::array< std::array<int32_t, 3>, 4>> quads{};
+
+	for (int32_t d = 0; d < 3; ++d)
+	{
+		std::array<int32_t, 3> q{}, x{};
+		int32_t u{ (d + 1) % 3 };
+		int32_t v{ (d + 2) % 3 };
+		std::vector<int32_t> mask{};
+		mask.resize(dims[u] * dims[v]);
+
+		q[d] = 1;
+
+		for (x[d] = -1; x[d] < dims[d];)
+		{
+			int32_t n{};
+			for (x[v] = 0; x[v] < dims[v]; ++x[v])
+			{
+				for (x[u] = 0; x[u] < dims[u]; ++x[u])
+				{
+					bool b =
+					0 <= x[d] ? f(x[0], x[1], x[2]) : 0
+					!=
+					x[d] < dims[d] - 1 ? f(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : 0;
+
+
+					if (b)
+					{
+						mask[n++] = 1;
+					}
+					else
+					{
+						mask[n++] = 0;
+					}
+				}
+			}
+
+			++x[d];
+
+			n = 0;
+			int32_t w{};
+			int32_t h{};
+			int32_t k{};
+			for (int32_t j = 0; j < dims[v]; ++j)
+			{
+				for (int32_t i = 0; i < dims[u]; )
+				{
+					if (mask[n] == 1)
+					{
+						for(w = 1; mask[n+w] && i + w <dims[u]; ++w)
+						{ }
+
+						bool done = false;
+
+						for ( h = 1; j + h < dims[v]; ++h)
+						{
+							for (k = 0; k < w; ++k)
+							{
+								if (!mask[n + k + h * dims[u]])
+								{
+									done = true;
+									break;
+								}
+							}
+							if (done)
+							{
+								break;
+							}
+						}
+
+						x[u] = i;
+						x[v] = j;
+
+						std::array<int32_t, 3> du{ 0, 0, 0 };
+						du[u] = w;
+						std::array<int32_t, 3> dv{ 0, 0, 0 };
+						dv[v] = h;
+
+						std::array< std::array<int32_t, 3>, 4> quad{};
+						quad[0] = { x[0],x[1], x[2]};
+						quad[1] = { x[0] + du[0],x[1] + du[1], x[2] + du[2] };
+						quad[2] = { x[0] + du[0] + dv[0],x[1] + du[1] + dv[1], x[2] + du[2] + dv[2] };
+						quad[3] = { x[0] + dv[0],x[1] + dv[1], x[2] + dv[2] };
+
+						quads.push_back(quad);
+
+						for (int32_t l = 0; l < h; ++l)
+						{
+							for (k = 0; k < w; ++k)
+							{
+								mask[n + k + l * dims[u]] = false;
+							}
+						}
+
+						i += w;
+						n += w;
+					}
+					else
+					{
+						++i;
+						++n;
+					}
+				}
+			}
+		}
+
+
+	}
+	return quads;
+}
+
+
+
 HRESULT CTestSimpleGreedyChunk::Initialize(void* pArg)
 {
 	if (FAILED(CGameObject::Initialize(pArg)))
@@ -20,42 +148,170 @@ HRESULT CTestSimpleGreedyChunk::Initialize(void* pArg)
 		return E_FAIL;
 	}
 
+	//std::vector<std::vector<std::vector<uint32_t>>> testVolume = {
+	//	{
+	//		{ 1,1,1 },
+	//		{ 1,1,1 },
+	//		{ 1,1,1 }
+	//	},
+	//	{
+	//		{ 1,1,1 },
+	//		{ 1,1,1 },
+	//		{ 1,1,1 }
+	//	},
+	//	{
+	//		{ 1,1,1 },
+	//		{ 1,1,1 },
+	//		{ 1,1,1 }
+	//	}
+	//};
+
+	std::vector<std::vector<std::vector<uint32_t>>> testVolume(
+		8, std::vector<std::vector<uint32_t>>(
+			8, std::vector<uint32_t>(8, 1)
+		)
+	);
+
+	std::vector<int32_t> testvol1(8 * 8 * 8, 1);
+	auto sie = testvol1.size();
+	auto aaa = test(testvol1, { 8,8,8 });
+
+
+	struct Quad
+	{
+		E::_float3 v1;
+		E::_float3 v2;
+		E::_float3 v3;
+		E::_float3 v4;
+	};
+	std::vector<Quad> quads{};
+
+
+	uint32_t dx = 0;
+	uint32_t dy = 0;
+	uint32_t dz = 0;
+	// y
+	for (const std::vector<std::vector<uint32_t>>& v1 : testVolume)
+	{
+		// z
+		for (const std::vector<uint32_t>& v2 : v1)
+		{
+			//x
+			for (const uint32_t& v3 : v2)
+			{
+				if (v3 == 1)
+				{
+					// back (-Z)
+					quads.push_back({
+						{-0.5f + (dx),  0.5f + (dy), -0.5f + (dz)},
+						{ 0.5f + (dx),  0.5f + (dy), -0.5f + (dz)},
+						{ 0.5f + (dx), -0.5f + (dy), -0.5f + (dz)},
+						{-0.5f + (dx), -0.5f + (dy), -0.5f + (dz)}
+						});
+
+					// front (+Z)
+					quads.push_back({
+						{-0.5f + (dx),  0.5f + (dy),  0.5f + (dz)},
+						{-0.5f + (dx), -0.5f + (dy),  0.5f + (dz)},
+						{ 0.5f + (dx), -0.5f + (dy),  0.5f + (dz)},
+						{ 0.5f + (dx),  0.5f + (dy),  0.5f + (dz)}
+						});
+
+					// top (+Y)
+					quads.push_back({
+						{-0.5f + (dx),  0.5f + (dy),  0.5f + (dz)},
+						{ 0.5f + (dx),  0.5f + (dy),  0.5f + (dz)},
+						{ 0.5f + (dx),  0.5f + (dy), -0.5f + (dz)},
+						{-0.5f + (dx),  0.5f + (dy), -0.5f + (dz)}
+						});
+
+					// bottom (-Y)
+					quads.push_back({
+						{-0.5f + (dx), -0.5f + (dy), -0.5f + (dz)},
+						{ 0.5f + (dx), -0.5f + (dy), -0.5f + (dz)},
+						{ 0.5f + (dx), -0.5f + (dy),  0.5f + (dz)},
+						{-0.5f + (dx), -0.5f + (dy),  0.5f + (dz)}
+						});
+
+					// left (-X)
+					quads.push_back({
+						{-0.5f + (dx),  0.5f + (dy),  0.5f + (dz)},
+						{-0.5f + (dx),  0.5f + (dy), -0.5f + (dz)},
+						{-0.5f + (dx), -0.5f + (dy), -0.5f + (dz)},
+						{-0.5f + (dx), -0.5f + (dy),  0.5f + (dz)}
+						});
+
+					// right (+X)
+					quads.push_back({
+						{ 0.5f + (dx),  0.5f + (dy), -0.5f + (dz)},
+						{ 0.5f + (dx),  0.5f + (dy),  0.5f + (dz)},
+						{ 0.5f + (dx), -0.5f + (dy),  0.5f + (dz)},
+						{ 0.5f + (dx), -0.5f + (dy), -0.5f + (dz)}
+						});
+				}
+				
+				++dx;
+			}
+
+			++dz;
+			dx = 0;
+		}
+
+		++dy;
+		dz = 0;
+	}
+
+	
+
+	
+	
+	
+
 
 
 	std::vector<E::VTX_COL> vertices{};
-	vertices.resize(8);
-	vertices[0].pos = {-0.5f, 0.5f, -0.5f };
-	vertices[1].pos = { 0.5f, 0.5f, -0.5f };
-	vertices[2].pos = { 0.5f, -0.5f, -0.5f };
-	vertices[3].pos = { -0.5f, -0.5f, -0.5f };
+	std::vector<uint32_t> indices{};
 
-	vertices[4].pos = { -0.5f, 0.5f, 0.5f};
-	vertices[5].pos = { 0.5f, 0.5f, 0.5f };
-	vertices[6].pos = { 0.5f, 0.5f, -0.5f };
-	vertices[7].pos = { -0.5f, 0.5f, -0.5f };
+	for (uint32_t i = 0; i < quads.size(); ++i)
+	{
+		E::VTX_COL v{};
+		v.pos = quads[i].v1;
+		vertices.push_back(v);
+		v.pos = quads[i].v2;
+		vertices.push_back(v);
+		v.pos = quads[i].v3;
+		vertices.push_back(v);
+		v.pos = quads[i].v4;
+		vertices.push_back(v);
+
+		indices.push_back(i * 4 + 0);
+		indices.push_back(i * 4 + 1);
+		indices.push_back(i * 4 + 2);
+		indices.push_back(i * 4 + 0);
+		indices.push_back(i * 4 + 2);
+		indices.push_back(i * 4 + 3);
+	}
+
+
+
+
+	//vertices.resize(8);
+	//vertices[0].pos = {-0.5f, 0.5f, -0.5f };
+	//vertices[1].pos = { 0.5f, 0.5f, -0.5f };
+	//vertices[2].pos = { 0.5f, -0.5f, -0.5f };
+	//vertices[3].pos = { -0.5f, -0.5f, -0.5f };
+
+	//vertices[4].pos = { -0.5f, 0.5f, 0.5f};
+	//vertices[5].pos = { 0.5f, 0.5f, 0.5f };
+	//vertices[6].pos = { 0.5f, 0.5f, -0.5f };
+	//vertices[7].pos = { -0.5f, 0.5f, -0.5f };
 
 	for (auto& v : vertices)
 	{
 		v.color = { 1.f, 1.f, 1.f, 1.f };
 	}
 
-	std::vector<uint32_t> indices{};
-	indices.resize(12);
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 2;
-
-	indices[3] = 0;
-	indices[4] = 2;
-	indices[5] = 3;
-
-	indices[6] = 4;
-	indices[7] = 5;
-	indices[8] = 6;
-
-	indices[9] = 4;
-	indices[10] = 6;
-	indices[11] = 7;
+	
 
 	E::CResDynamicVIBuffer::DESC desc{};
 	desc.iNumVertices = (uint32_t)vertices.size();
