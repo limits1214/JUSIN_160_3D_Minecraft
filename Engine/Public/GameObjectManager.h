@@ -27,6 +27,9 @@ public:
 	void FrameEnd();
 
 public:
+	std::optional<CHandle> GetFreeHandle() ;
+
+public:
 	CGameObject* GetGameObjectByHandle(const CHandle& handle) { return const_cast<CGameObject*>(_GetGameObjectByHandle(handle)); }
 	const CGameObject* GetGameObjectByHandle(const CHandle& handle) const { return _GetGameObjectByHandle(handle); }
 	template<typename T> T* GetGameObjectByHandleT(const CHandle& handle);

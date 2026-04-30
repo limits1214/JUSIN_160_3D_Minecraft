@@ -528,6 +528,10 @@ void CGameInstance::GameObjectLayerInitialize(uint32_t siLayerTag, std::function
 {
 	return m_pGameObjectManager->LayerInitialize(siLayerTag, funcToString);
 }
+std::optional<CHandle> CGameInstance::GetFreeHandle() const
+{
+	return m_pGameObjectManager->GetFreeHandle();
+}
 #pragma endregion
 
 

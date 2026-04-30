@@ -157,6 +157,8 @@ public:
 	void DelGameObjectLayer(uint32_t siLayerTag);
 	void GameObjectLayerInitialize(uint32_t siLayerTag, std::function<std::string(uint32_t)> funcToString = nullptr);
 
+	std::optional<CHandle> GetFreeHandle() const;
+
 	inline CGameObject* GetGameObjectByHandle(const CHandle& handle);
 	template<typename T>
 	T* GetGameObjectByHandleT(const CHandle& handle)

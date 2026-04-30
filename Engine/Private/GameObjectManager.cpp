@@ -166,6 +166,31 @@ void CGameObjectManager::FrameEnd()
 
 }
 
+std::optional<CHandle> CGameObjectManager::GetFreeHandle() 
+{
+	CHandle objectHandle{};
+	if (m_FreeSlots.empty())
+	{
+		size_t idx = m_Objects.size();
+		uint32_t gen = 0;
+
+		objectHandle = CHandle{ idx, gen };
+		m_Objects.push_back({});
+		m_FreeSlots.push_back(idx);
+	}
+	else
+	{
+		size_t emptyIdx = m_FreeSlots.back();
+		//m_FreeSlots.pop_back();
+
+		size_t idx = emptyIdx;
+		uint32_t gen = m_Objects[emptyIdx].GetGeneration();
+
+		objectHandle = CHandle{ idx, gen };
+	}
+	return objectHandle;
+}
+
 std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag,
 	uint32_t iLayerIdx, void* pArg)
 {
@@ -174,50 +199,28 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 		return std::nullopt;
 	}
 
-	CHandle objectHandle{};
-	if (m_FreeSlots.empty())
+	auto pProto = CGameInstance::Get().ClonePrototype(siProtoGroupTag, siPrototypeTag, pArg);
+	auto pGameObject = static_uptr_cast<CGameObject>(std::move(pProto));
+	if (!pGameObject)
 	{
-		size_t idx = m_Objects.size();
-		uint32_t gen = 0;
-
-		objectHandle = CHandle{ idx, gen };
-		static_cast<CGameObject::GAMEOBJECT_DESC*>(pArg)->handle = objectHandle;
-		// TODO: nullcheck
-		auto pProto = CGameInstance::Get().ClonePrototype(siProtoGroupTag, siPrototypeTag, pArg);
-		auto pGameObject = static_uptr_cast<CGameObject>(std::move(pProto));
-		if (!pGameObject)
-		{
-			return std::nullopt;
-		}
-		CSlot<CGameObject> slot{ std::move(pGameObject) };
-
-		m_Objects.push_back(std::move(slot));
-	}
-	else
-	{
-		size_t emptyIdx = m_FreeSlots.back();
-		m_FreeSlots.pop_back();
-
-		size_t idx = emptyIdx;
-		uint32_t gen = m_Objects[emptyIdx].GetGeneration();
-
-		objectHandle = CHandle{ idx, gen };
-		static_cast<CGameObject::GAMEOBJECT_DESC*>(pArg)->handle = objectHandle;
-		// TODO: nullcheck
-		auto pProto = CGameInstance::Get().ClonePrototype(siProtoGroupTag, siPrototypeTag, pArg);
-		auto pGameObject = static_uptr_cast<CGameObject>(std::move(pProto));
-		if (!pGameObject)
-		{
-			return std::nullopt;
-		}
-		m_Objects[emptyIdx].Set(std::move(pGameObject));
+		return std::nullopt;
 	}
 
-	m_Layers[iLayerIdx].push_back(objectHandle);
+	auto objHandle = pGameObject->GetHandle();
+	
+	auto iter = std::find(m_FreeSlots.begin(), m_FreeSlots.end(), objHandle.GetIndex());
+	if (iter != m_FreeSlots.end())
+	{
+		m_FreeSlots.erase(iter);
+	}
+
+	m_Objects[objHandle.GetIndex()].Set(std::move(pGameObject));
+
+	m_Layers[iLayerIdx].push_back(objHandle);
 
 	m_bTreeReBuild = true;
 
-	return objectHandle;
+	return objHandle;
 }
 
 
