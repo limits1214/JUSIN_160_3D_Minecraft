@@ -6,6 +6,7 @@ NS_BEGIN(Engine)
 template<typename T>
 class CSlot {
 public:
+	CSlot() = default;
 	explicit CSlot(UPtr<T> p) : m_p{ std::move(p) } {}
 public:
 	uint32_t GetGeneration() const { return m_iGeneration; }

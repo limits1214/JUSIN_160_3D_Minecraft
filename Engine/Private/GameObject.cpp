@@ -26,7 +26,8 @@ HRESULT CGameObject::Initialize(void* pArg)
 {
     auto pDesc = static_cast<GAMEOBJECT_DESC*>(pArg);
     m_sObjectTag = pDesc->sObjectTag;
-    m_ObjectHandle = pDesc->handle;
+
+    m_ObjectHandle = CGameInstance::Get().GetFreeHandle().value();
 
     {
         auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_Transform", pDesc);
