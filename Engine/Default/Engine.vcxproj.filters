@@ -211,6 +211,12 @@
     <Filter Include="GameObject\UI">
       <UniqueIdentifier>{503e7a7a-c372-4e81-a9d0-3c8738ee9444}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Light">
+      <UniqueIdentifier>{f5a0b51d-d6f3-4ca1-98b4-f1f0b51ca709}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Light\Manager">
+      <UniqueIdentifier>{5e7b9985-b1c6-483b-9978-29bedce2210b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -453,6 +459,9 @@
     <ClInclude Include="..\Public\MyTreeNode.h">
       <Filter>Helper</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\LightManager.h">
+      <Filter>Light\Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -682,6 +691,9 @@
     </ClCompile>
     <ClCompile Include="..\private\UIObject.cpp">
       <Filter>GameObject\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\LightManager.cpp">
+      <Filter>Light\Manager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

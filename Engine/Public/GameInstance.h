@@ -20,6 +20,7 @@ class CCameraManager;
 class CColliderManager;
 class CCollider;
 class CRenderer;
+class CLightManager;
 
 class ENGINE_DLL CGameInstance final : public Singleton<CGameInstance>
 {
@@ -194,6 +195,11 @@ public:
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
 #pragma endregion
 
+#pragma region LIGHT_MANAGER
+public:
+	std::optional< DIRECTIONAL_LIGHT> GetDirectionalLight(const StringID& iStr);
+	HRESULT SetDirectionalLight(const StringID& iStr, const std::optional< DIRECTIONAL_LIGHT>& light);
+#pragma endregion
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};
 	UPtr<CImguiManager> m_pImguiManager{};
@@ -208,6 +214,7 @@ private:
 	UPtr<CCameraManager> m_pCameraManager{};
 	UPtr<CColliderManager> m_pColliderManager{};
 	UPtr<CRenderer> m_pRenderer{};
+	UPtr<CLightManager> m_pLightManager{};
 };
 
 NS_END
