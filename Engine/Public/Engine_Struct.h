@@ -18,6 +18,48 @@ namespace Engine
 		_Func func;
 	} WORKER_TASK;
 
+	typedef struct tagMaterial
+	{
+		_float4 ambient{};
+		_float4 diffuse{};
+		_float4 specular{};
+		_float4 reflect{};
+	} MATERIAL;
+
+	typedef struct tagDirectionalLight
+	{
+		_float4 ambient{};
+		_float4 diffuse{};
+		_float4 specular{};
+		_float3 direction{};
+		_float _pad{};
+	} DIRECTIONAL_LIGHT;
+
+	typedef struct tagPointLight
+	{
+		_float4 ambient{};
+		_float4 diffuse{};
+		_float4 specular{};
+		_float3 pos{};
+		_float range{};
+		_float3 att{};//감쇠
+		_float _pad{};
+	} POINT_LIGHT;
+
+	typedef struct tagSpotLight
+	{
+		_float4 ambient{};
+		_float4 diffuse{};
+		_float4 specular{};
+		_float3 pos{};
+		_float range{};
+		_float3 direction{};
+		_float spot{};
+		_float3 att{};//감쇠
+		_float _pad{};
+	} SPOT_LIGHT;
+
+
 
 	typedef struct tagVertexCol
 	{
@@ -28,7 +70,7 @@ namespace Engine
 	typedef struct tagVertexTex
 	{
 		_float3 pos;
-		_float2 coord;
+		_float2 texCoord;
 	} VTX_TEX;
 
 	typedef struct tagVertexNormal
@@ -41,7 +83,7 @@ namespace Engine
 	{
 		_float3 pos;
 		_float3 normal;
-		_float2 coord;
+		_float2 texCoord;
 	} VTX_NORMAL_TEX;
 
 

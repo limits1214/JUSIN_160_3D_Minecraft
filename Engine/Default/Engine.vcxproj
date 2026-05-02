@@ -259,6 +259,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ISerializer.h" />
     <ClInclude Include="..\public\Level.h" />
     <ClInclude Include="..\public\LevelManager.h" />
+    <ClInclude Include="..\public\LightManager.h" />
     <ClInclude Include="..\Public\MyTreeNode.h" />
     <ClInclude Include="..\public\Prototype.h" />
     <ClInclude Include="..\public\PrototypeManager.h" />
@@ -427,6 +428,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ImguiManager.cpp" />
     <ClCompile Include="..\private\Level.cpp" />
     <ClCompile Include="..\private\LevelManager.cpp" />
+    <ClCompile Include="..\private\LightManager.cpp" />
     <ClCompile Include="..\private\Prototype.cpp" />
     <ClCompile Include="..\private\PrototypeManager.cpp" />
     <ClCompile Include="..\private\Renderer.cpp" />

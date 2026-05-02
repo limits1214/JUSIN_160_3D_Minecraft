@@ -8,6 +8,7 @@
 #include "ImguiManager.h"
 #include "TimeProvider.h"
 #include "PrototypeManager.h"
+#include "LightManager.h"
 
 #include "GameObject.h"
 #include "CameraManager.h"
@@ -169,6 +170,8 @@ void CGameInstance::UpdateGUI()
 	m_pLevelManager->UpdateGUI();
 
 	m_pColliderManager->UpdateGUI();
+
+	m_pLightManager->UpdateGUI();
 }
 
 void CGameInstance::ClearResource(uint32_t iClearLevelIndex)
@@ -580,5 +583,18 @@ const std::unordered_map<StringID, std::vector<const CCollider*>>* CGameInstance
 HRESULT CGameInstance::AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject)
 {
 	return m_pRenderer->AddRenderObject(eRenderGroup, pRenderObject);
+}
+#pragma endregion
+
+
+#pragma region LIGHT_MANAGER
+
+std::optional<DIRECTIONAL_LIGHT> CGameInstance::GetDirectionalLight(const StringID& iStr)
+{
+	return m_pLightManager->GetDirectionalLight(iStr);
+}
+HRESULT CGameInstance::SetDirectionalLight(const StringID& iStr, const std::optional<DIRECTIONAL_LIGHT>& light)
+{
+	return m_pLightManager->SetDirectionalLight(iStr, light);
 }
 #pragma endregion
