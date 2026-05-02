@@ -9,6 +9,7 @@
 #include "TimeProvider.h"
 #include "PrototypeManager.h"
 #include "LightManager.h"
+#include "VoxelManager.h"
 
 #include "GameObject.h"
 #include "CameraManager.h"
@@ -113,6 +114,18 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
+	m_pLightManager = CLightManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pLightManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pVoxelManager = CVoxelManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pVoxelManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
 	if (FAILED(InitializeResources()))
 	{
 		return E_FAIL;
@@ -172,6 +185,8 @@ void CGameInstance::UpdateGUI()
 	m_pColliderManager->UpdateGUI();
 
 	m_pLightManager->UpdateGUI();
+
+	m_pVoxelManager->UpdateGUI();
 }
 
 void CGameInstance::ClearResource(uint32_t iClearLevelIndex)
@@ -205,6 +220,8 @@ void CGameInstance::Release_Engine()
 	m_pColliderManager.reset();
 	m_pWorkerManager.reset();
 	m_pPrototypeManager.reset();
+	m_pLightManager.reset();
+	m_pVoxelManager.reset();
 	m_pResourceManager.reset();
 	m_pRenderer.reset();
 
