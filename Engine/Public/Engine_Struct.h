@@ -102,4 +102,13 @@ namespace Engine
 		_float4x4 matWorld{};
 		_float4x4 matWVP{};
 	} CB_PER_OBJECT;
+
+
+	typedef struct tagQuad
+	{
+		_float3 v1;
+		_float3 v2;
+		_float3 v3;
+		_float3 v4;
+	} QUAD;
 }

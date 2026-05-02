@@ -217,6 +217,18 @@
     <Filter Include="Light\Manager">
       <UniqueIdentifier>{5e7b9985-b1c6-483b-9978-29bedce2210b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Voxel">
+      <UniqueIdentifier>{e6d84552-9b75-479b-828f-df58e2f6faaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel\Manager">
+      <UniqueIdentifier>{1121b771-ea81-49b8-8736-915bc7eba4ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel\Block">
+      <UniqueIdentifier>{cfe70bfd-b49e-4517-9a83-4969c1dd4ac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel\Chunk">
+      <UniqueIdentifier>{db11d8e3-ba78-4eb5-8dc3-b395821caa2a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -462,6 +474,15 @@
     <ClInclude Include="..\public\LightManager.h">
       <Filter>Light\Manager</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\VoxelManager.h">
+      <Filter>Voxel\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Block.h">
+      <Filter>Voxel\Block</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Chunk.h">
+      <Filter>Voxel\Chunk</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -694,6 +715,15 @@
     </ClCompile>
     <ClCompile Include="..\private\LightManager.cpp">
       <Filter>Light\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\VoxelManager.cpp">
+      <Filter>Voxel\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Block.cpp">
+      <Filter>Voxel\Block</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Chunk.cpp">
+      <Filter>Voxel\Chunk</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

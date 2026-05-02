@@ -21,6 +21,7 @@ class CColliderManager;
 class CCollider;
 class CRenderer;
 class CLightManager;
+class CVoxelManager;
 
 class ENGINE_DLL CGameInstance final : public Singleton<CGameInstance>
 {
@@ -215,6 +216,7 @@ private:
 	UPtr<CColliderManager> m_pColliderManager{};
 	UPtr<CRenderer> m_pRenderer{};
 	UPtr<CLightManager> m_pLightManager{};
+	UPtr<CVoxelManager> m_pVoxelManager{};
 };
 
 NS_END
