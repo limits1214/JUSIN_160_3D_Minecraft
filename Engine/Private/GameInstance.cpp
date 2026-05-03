@@ -143,6 +143,7 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 {
 	m_pDInputManager->Update_InputDev();
 
+	m_pVoxelManager->Update(fTimeDelta);
 
 	m_pGameObjectManager->PriorityUpdate(fTimeDelta);
 	m_pGameObjectManager->Update(fTimeDelta);
@@ -150,7 +151,7 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 
 	m_pLevelManager->Update(fTimeDelta);
 
-
+	AddRenderObject(RENDERGROUP::NONBLEND, m_pVoxelManager.get());
 	AddRenderObject(RENDERGROUP::COLLIDER, m_pColliderManager.get());
 }
 
@@ -272,6 +273,15 @@ HRESULT CGameInstance::InitializeResources()
 		res->Load();
 	}
 	if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_QuadCol", "./Resources/Shader/QuadCol/QuadCol.hlsl"))
+	{
+		res->Load();
+	}
+
+	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block", "./Resources/Shader/Block/Block.hlsl"))
+	{
+		res->Load();
+	}
+	if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block", "./Resources/Shader/Block/Block.hlsl"))
 	{
 		res->Load();
 	}
@@ -613,5 +623,13 @@ std::optional<DIRECTIONAL_LIGHT> CGameInstance::GetDirectionalLight(const String
 HRESULT CGameInstance::SetDirectionalLight(const StringID& iStr, const std::optional<DIRECTIONAL_LIGHT>& light)
 {
 	return m_pLightManager->SetDirectionalLight(iStr, light);
+}
+#pragma endregion
+
+
+#pragma region VOXEL_MANAGER
+void CGameInstance::VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc)
+{
+	m_pVoxelManager->StateUpdate(desc);
 }
 #pragma endregion

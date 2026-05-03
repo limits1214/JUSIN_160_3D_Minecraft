@@ -219,9 +219,11 @@
     <ClInclude Include="..\public\LevelLoading.h" />
     <ClInclude Include="..\public\LevelLogo.h" />
     <ClInclude Include="..\public\LevelTestSimpleGreedy.h" />
+    <ClInclude Include="..\public\LevelTestWorld.h" />
     <ClInclude Include="..\public\MainApp.h" />
     <ClInclude Include="..\Public\Client_Defines.h" />
     <ClInclude Include="..\public\TestSimpleGreedyChunk.h" />
+    <ClInclude Include="..\Public\Level_Defines.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -233,6 +235,7 @@
     <ClCompile Include="..\private\LevelLoading.cpp" />
     <ClCompile Include="..\private\LevelLogo.cpp" />
     <ClCompile Include="..\private\LevelTestSimpleGreedy.cpp" />
+    <ClCompile Include="..\private\LevelTestWorld.cpp" />
     <ClCompile Include="..\private\MainApp.cpp" />
     <ClCompile Include="..\private\TestSimpleGreedyChunk.cpp" />
     <ClCompile Include="Client.cpp" />

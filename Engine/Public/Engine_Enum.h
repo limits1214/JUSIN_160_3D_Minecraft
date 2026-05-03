@@ -14,4 +14,10 @@ namespace Engine
 	};
 	enum class STATE { RIGHT, UP, LOOK, POSITION, END };
 	//enum class VSYNC{ OFF, ON };
+
+	enum class VOXEL_MANAGER_STATE
+	{
+		WORLD_CREATE,
+		WORLD_DESTROY,
+	};
 }
