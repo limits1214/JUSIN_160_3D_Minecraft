@@ -632,4 +632,8 @@ void CGameInstance::VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DES
 {
 	m_pVoxelManager->StateUpdate(desc);
 }
+_float CGameInstance::GetVoxelHeightNoise(_float x, _float z) const
+{
+	return m_pVoxelManager->GetHeightNoise(x,z);
+}
 #pragma endregion

@@ -20,4 +20,9 @@ namespace Engine
 		WORLD_CREATE,
 		WORLD_DESTROY,
 	};
+
+	enum class VOXEL_NOISE_TYPE
+	{
+		HEIGHT
+	};
 }

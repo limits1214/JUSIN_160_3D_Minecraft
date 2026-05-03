@@ -5,6 +5,7 @@
 
 NS_USING(Engine)
 
+
 CChunk::CChunk()
 {
 
@@ -16,6 +17,10 @@ CChunk::~CChunk()
 
 std::vector<VOX_QUAD> CChunk::GenerateQuad()
 {
+	
+	// 0 ~ 128 범위로 변환
+
+
     //FastNoiseLite noise;
     //noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
 	std::vector<VOX_QUAD> quads{};
@@ -35,7 +40,13 @@ std::vector<VOX_QUAD> CChunk::GenerateQuad()
 		{
 			for (uint32_t j = 0; j < VOXEL_CHUNK_Z_SIZE; ++j)
 			{
-				for (uint32_t k = 0; k < VOXEL_CHUNK_Y_SIZE; ++k)
+				auto tmpx = m_iX * VOXEL_CHUNK_X_SIZE + i;
+				auto tmpz = m_iZ * VOXEL_CHUNK_Z_SIZE + j;
+				
+				float n = CGameInstance::Get().GetVoxelHeightNoise((float)tmpx, (float)tmpz); // [-1, 1]
+				uint32_t height = (uint32_t)((n + 1.0f) * 0.5f * 64.0f);
+
+				for (uint32_t k = 0; k < height; ++k)
 				{
 					uint32_t idx = BlockIndexing(i, k, j);
 
@@ -88,9 +99,7 @@ std::vector<VOX_QUAD> CChunk::GenerateQuad()
 							_float3{ (float)dx + 1, (float)dy,     (float)dz + 1 },
 							_float3{ (float)dx + 1, (float)dy,     (float)dz     }
 							});
-
 					}
-
 
 					++dy;
 				}
@@ -111,7 +120,7 @@ std::vector<VOX_QUAD> CChunk::GenerateQuad()
     return quads;
 }
 
-HRESULT CChunk::BufferLoad()
+HRESULT CChunk::BufferLoad(std::mutex& m_Mutex)
 {
 	auto quads = GenerateQuad();
 
@@ -194,14 +203,25 @@ HRESULT CChunk::BufferLoad()
 		return E_FAIL;
 	};
 
-	m_pResDynamicViBuffer = pBuffer;
-	m_sResName = "DYNVIBUFFER_Chunk_" + std::to_string(m_iX) + "_" + std::to_string(m_iZ);
-	E::CGameInstance::Get().AddResource("VOXEL_MANAGER", m_sResName.c_str(), pBuffer);
+	{
+		//std::lock_guard<std::mutex> lock(m_Mutex);
+		
+		m_pResDynamicViBuffer = pBuffer;
+		m_sResName = "DYNVIBUFFER_Chunk_" + std::to_string(m_iX) + "_" + std::to_string(m_iZ);
+		E::CGameInstance::Get().AddResource("VOXEL_MANAGER", m_sResName.c_str(), pBuffer);
+
+		m_bLoaded = true;
+	}
+	
 	return S_OK;
 }
 
 void CChunk::BindBuffer(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 {
+	if (!m_bLoaded)
+	{
+		return;
+	}
 
 	{
 		auto cBufferPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
@@ -211,7 +231,7 @@ void CChunk::BindBuffer(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 		int32_t dx = m_iX * VOXEL_CHUNK_X_SIZE;
 		int32_t dz = m_iZ * VOXEL_CHUNK_Z_SIZE;
 
-		auto worldMat = XMMatrixTranslation(dx, 0, dz);
+		auto worldMat = XMMatrixTranslation((float)dx, 0, (float)dz);
 
 
 		XMStoreFloat4x4(&cbPerObject.matWorld, worldMat);
@@ -252,7 +272,7 @@ HRESULT CChunk::Initialize(const DESC& desc)
 	m_iX = desc.iX;
 	m_iZ = desc.iZ;
 	m_iChunkCoord = desc.iChunkCoord;
-	BufferLoad();
+	//BufferLoad();
 	return S_OK;
 }
 
