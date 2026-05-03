@@ -56,7 +56,7 @@ private:
 
 private:
 	std::unordered_map<int64_t, UPtr<CChunk>> m_mapChucnks{};
-	int32_t m_iRenderDistance{ 30 };
+	int32_t m_iRenderDistance{ 1 };
 
 	std::vector<int64_t> m_ChunkLoadPending{};
 	uint32_t m_iEnqueuedCnt{};
