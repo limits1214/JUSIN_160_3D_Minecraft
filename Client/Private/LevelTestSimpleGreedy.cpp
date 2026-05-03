@@ -3,6 +3,7 @@
 
 #include "FlyCamera.h"
 #include "TestSimpleGreedyChunk.h"
+#include "Level_Defines.h"
 
 NS_USING(Client)
 

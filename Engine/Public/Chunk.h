@@ -5,32 +5,47 @@
 NS_BEGIN(Engine)
 
 constexpr static uint32_t VOXEL_CHUNK_X_SIZE = 16;
-constexpr static uint32_t VOXEL_CHUNK_Y_SIZE = 16;
-constexpr static uint32_t VOXEL_CHUNK_Z_SIZE = 256;
+constexpr static uint32_t VOXEL_CHUNK_Z_SIZE = 16;
+constexpr static uint32_t VOXEL_CHUNK_Y_SIZE = 256;
 
-class CChunk
+class CChunk final: public CEngineBase
 {
 public:
-	struct ChunkCoord {
-		int x, y, z;
-		bool operator==(const ChunkCoord& other) const {
-			return x == other.x && y == other.y && z == other.z;
-		}
-	};
-	struct ChunkCoordHasher {
-		size_t operator()(const Engine::CChunk::ChunkCoord& c) const noexcept {
-			return (static_cast<size_t>(c.x) << 40) |
-				((static_cast<size_t>(c.y) & 0xFFFFF) << 20) |
-				(static_cast<size_t>(c.z) & 0xFFFFF);
-		}
-	};
-	//key = (x << 40) | (y << 20) | z;
+	typedef struct tagDesc
+	{
+		int32_t iX{}, iZ{};
+		uint64_t iChunkCoord{};
+	} DESC;
+
+private:
+	CChunk();
+	~CChunk() override;
+
 public:
-	//const CBlock& GetBlock(uint32_t x, uint32_t y, uint32_t z) const;
-	std::vector<QUAD> GenerateQuad();
+	std::vector<VOX_QUAD> GenerateQuad();
+	uint32_t BlockIndexing(uint32_t x, uint32_t y, uint32_t z) const
+	{
+		return y + z * VOXEL_CHUNK_Y_SIZE + x *VOXEL_CHUNK_Y_SIZE * VOXEL_CHUNK_Z_SIZE;
+	}
+public:
+	HRESULT BufferLoad();
+	void BindBuffer(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
+
+private:
+	HRESULT Initialize(const DESC& desc);
 	
 private:
 	//x,z,y
+	_string m_sResName{};
 	std::array<Block, VOXEL_CHUNK_X_SIZE* VOXEL_CHUNK_Z_SIZE* VOXEL_CHUNK_Y_SIZE> m_arrBlocks{};
+	SPtr<CResDynamicVIBuffer> m_pResDynamicViBuffer{};
+	int32_t m_iX{}, m_iZ{};
+	uint64_t m_iChunkCoord{};
+
+public:
+	static UPtr<CChunk> Create(const DESC& desc);
+
+public:
+	void Free() override;
 };
 NS_END

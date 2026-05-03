@@ -43,6 +43,11 @@ HRESULT CMainApp::Initialize()
 			CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::TEST_SIMPLE_GREEDY));
 		});
 
+	E::CGameInstance::Get().RegisterLevelChangeFunc("TO_TEST_WORLD", [=]() {
+		Engine::CGameInstance::Get().ChangeLevel(
+			CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::TEST_WORLD));
+		});
+
 	return S_OK;
 }
 

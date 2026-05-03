@@ -201,6 +201,11 @@ public:
 	std::optional< DIRECTIONAL_LIGHT> GetDirectionalLight(const StringID& iStr);
 	HRESULT SetDirectionalLight(const StringID& iStr, const std::optional< DIRECTIONAL_LIGHT>& light);
 #pragma endregion
+
+#pragma region VOXEL_MANAGER
+public:
+	void VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
+#pragma endregion
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};
 	UPtr<CImguiManager> m_pImguiManager{};

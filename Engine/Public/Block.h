@@ -13,8 +13,8 @@ public:
 		END
 	};
 
-	TYPE type{ TYPE::AIR};
-	uint8_t  metadata; // 1바이트: 상위 4비트(밝기), 하위 4비트(상태/회전)
+	TYPE type{ TYPE::GRASS };
+	uint8_t  metadata{}; // 1바이트: 상위 4비트(밝기), 하위 4비트(상태/회전)
 };
 
 NS_END

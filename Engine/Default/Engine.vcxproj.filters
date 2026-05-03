@@ -229,6 +229,15 @@
     <Filter Include="Voxel\Chunk">
       <UniqueIdentifier>{db11d8e3-ba78-4eb5-8dc3-b395821caa2a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="100.Shaders">
+      <UniqueIdentifier>{3accd414-d763-43e7-8484-4a170d330154}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Block">
+      <UniqueIdentifier>{1ddc6afc-0083-47d1-97a1-74ee9bc710cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\QuadCol">
+      <UniqueIdentifier>{4a81528d-5046-4952-be1a-b41f24e12a61}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -725,5 +734,13 @@
     <ClCompile Include="..\private\Chunk.cpp">
       <Filter>Voxel\Chunk</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\QuadCol\QuadCol.hlsl">
+      <Filter>100.Shaders\QuadCol</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

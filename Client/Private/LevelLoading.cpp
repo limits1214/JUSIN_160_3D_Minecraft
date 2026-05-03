@@ -6,6 +6,7 @@
 #include "BackGround.h"
 
 #include "LevelTestSimpleGreedy.h"
+#include "LevelTestWorld.h"
 NS_USING(Client)
 
 CLevelLoading::CLevelLoading(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext, LEVEL eNextLevelIndex) noexcept
@@ -70,6 +71,9 @@ HRESULT CLevelLoading::LoadEnd()
 		break;
 	case LEVEL::TEST_SIMPLE_GREEDY:
 		pNewLevel = CLevelTestSimpleGreedy::Create();
+		break;
+	case LEVEL::TEST_WORLD:
+		pNewLevel = CLevelTestWorld::Create();
 		break;
 	}
 	assert(pNewLevel);

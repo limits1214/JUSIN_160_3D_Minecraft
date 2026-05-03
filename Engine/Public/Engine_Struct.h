@@ -11,6 +11,12 @@ namespace Engine
 		uint32_t		iNumLevels;
 	} ENGINE_DESC;
 
+	typedef struct tagVoxelManagerStateUpdateDesc
+	{
+		VOXEL_MANAGER_STATE eState;
+		void* pArg;
+	}VOXEL_MANAGER_STATE_UPDATE_DESC;
+
 	
 	typedef struct tagWorkerTask
 	{
@@ -104,11 +110,11 @@ namespace Engine
 	} CB_PER_OBJECT;
 
 
-	typedef struct tagQuad
+	typedef struct tagVoxQuad
 	{
 		_float3 v1;
 		_float3 v2;
 		_float3 v3;
 		_float3 v4;
-	} QUAD;
+	} VOX_QUAD;
 }

@@ -34,6 +34,9 @@
     <Filter Include="Levels\Test\SimpleGreedy\Object">
       <UniqueIdentifier>{cf61ddd6-a3e9-424d-8fab-01d49867bc14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Levels\Test\World">
+      <UniqueIdentifier>{b299669c-af1f-47e9-bd91-1449e385f2de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -72,6 +75,12 @@
     <ClInclude Include="..\public\TestSimpleGreedyChunk.h">
       <Filter>Levels\Test\SimpleGreedy\Object</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\LevelTestWorld.h">
+      <Filter>Levels\Test\World</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Level_Defines.h">
+      <Filter>99.Defines</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -97,6 +106,9 @@
     </ClCompile>
     <ClCompile Include="..\private\TestSimpleGreedyChunk.cpp">
       <Filter>Levels\Test\SimpleGreedy\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\LevelTestWorld.cpp">
+      <Filter>Levels\Test\World</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
