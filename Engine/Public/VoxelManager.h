@@ -3,6 +3,7 @@
 #include "Block.h"
 #include "Chunk.h"
 #include "IRenderable.h"
+#include <FastNoiseLite.h>
 
 NS_BEGIN(Engine)
 
@@ -51,12 +52,29 @@ private:
 	HRESULT ChunkLoad(int32_t x, int32_t z);
 
 private:
+	HRESULT Initialize();
+
+private:
 	std::unordered_map<int64_t, UPtr<CChunk>> m_mapChucnks{};
-	int32_t m_iRenderDistance{ 3 };
+	int32_t m_iRenderDistance{ 30 };
+
+	std::vector<int64_t> m_ChunkLoadPending{};
+	uint32_t m_iEnqueuedCnt{};
+
+
+public:
+	_float GetHeightNoise(_float x, _float z) const
+	{
+		return  m_NoiseHeight.GetNoise((float)x, (float)z);
+	}
+
+private:
+	FastNoiseLite m_NoiseHeight{};
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};
 	ComPtr<ID3D11DeviceContext> m_pContext{};
+	std::mutex m_Mutex{};
 
 public:
 	static UPtr<CVoxelManager> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);

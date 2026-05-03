@@ -22,13 +22,14 @@ private:
 	~CChunk() override;
 
 public:
+	_bool GetLoaded() const { return m_bLoaded; }
 	std::vector<VOX_QUAD> GenerateQuad();
 	uint32_t BlockIndexing(uint32_t x, uint32_t y, uint32_t z) const
 	{
 		return y + z * VOXEL_CHUNK_Y_SIZE + x *VOXEL_CHUNK_Y_SIZE * VOXEL_CHUNK_Z_SIZE;
 	}
 public:
-	HRESULT BufferLoad();
+	HRESULT BufferLoad(std::mutex& m_Mutex);
 	void BindBuffer(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
 
 private:
@@ -41,6 +42,8 @@ private:
 	SPtr<CResDynamicVIBuffer> m_pResDynamicViBuffer{};
 	int32_t m_iX{}, m_iZ{};
 	uint64_t m_iChunkCoord{};
+
+	_bool m_bLoaded{ false };
 
 public:
 	static UPtr<CChunk> Create(const DESC& desc);
