@@ -27,7 +27,7 @@ HRESULT CLevelTestWorld::Initialize()
 		Desc.fAspect = { g_iWinSizeX / (E::_float)g_iWinSizeY };
 		Desc.fFovY = 75.f;
 		Desc.fNear = 0.1f;
-		Desc.fFar = 100.f;
+		Desc.fFar = 1000.f;
 		Desc.sObjectTag = "FlyCam";
 
 		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",

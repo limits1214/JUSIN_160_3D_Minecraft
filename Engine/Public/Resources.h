@@ -45,9 +45,10 @@ static const char* TAG_RES_GRP_PERMANENT_VP = "PERMANENT_VP";
 // BS_: BlendState
 // DS_: DepthStencilState
 // SS_: SamplerState
-static const char* TAG_RES_STATE_RS_SOLID_BACKCULL = "RS_SOLID_BACKCULL";
-static const char* TAG_RES_STATE_RS_SOLID_FRONTCULL = "RS_SOLID_FRONTCULL";
-static const char* TAG_RES_STATE_RS_SOLID_NOCULL = "RS_SOLID_NOCULL";
-static const char* TAG_RES_STATE_RS_WIREFRAME_NOCULL = "RS_WIREFRAME_NOCULL";
+constexpr static const char* TAG_RES_STATE_RS_SOLID_BACKCULL = "RS_SOLID_BACKCULL";
+constexpr static const char* TAG_RES_STATE_RS_SOLID_FRONTCULL = "RS_SOLID_FRONTCULL";
+constexpr static const char* TAG_RES_STATE_RS_SOLID_NOCULL = "RS_SOLID_NOCULL";
+constexpr static const char* TAG_RES_STATE_RS_WIREFRAME_NOCULL = "RS_WIREFRAME_NOCULL";
 
-static const char* TAG_RES_STATE_SS_LINEAR_WRAP = "SS_LinearWrap";
+constexpr static const char* TAG_RES_STATE_SS_LINEAR_WRAP = "SS_LinearWrap";
+constexpr static const char* TAG_RES_STATE_SS_POINT_WRAP = "SS_PointWrap";

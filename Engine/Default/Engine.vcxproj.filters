@@ -742,5 +742,8 @@
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\QuadCol\QuadCol.hlsl">
       <Filter>100.Shaders\QuadCol</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\Client\Bin\Resources\Shader\ShaderDefines.hlsl">
+      <Filter>100.Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

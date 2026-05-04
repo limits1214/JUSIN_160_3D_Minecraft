@@ -17,17 +17,21 @@ CVoxelManager::~CVoxelManager()
 
 HRESULT CVoxelManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 {
-    const auto& vs = E::CGameInstance::GetConst().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_QuadCol");
-    const auto& ps = E::CGameInstance::GetConst().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_QuadCol");
+
+    const auto& vs = E::CGameInstance::GetConst().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block");
+    const auto& ps = E::CGameInstance::GetConst().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block");
    
     pContext->IASetInputLayout(vs->GetInputLayout().Get());
     pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
     pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
-    if (1)
+    if (0)
     {
         const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_WIREFRAME_NOCULL);
         pContext->RSSetState(rasterizer->GetRasterizerState().Get());
     }
+
+    pContext->PSSetShaderResources(9, 1, m_pResBlocksTexutreArray->GetSRV().GetAddressOf());
+    pContext->PSSetSamplers(9, 1, m_pResSamplerPointWrap->GetSamplerState().GetAddressOf());
 
     for (const auto& [key, val] : m_mapChucnks)
     {
@@ -88,6 +92,18 @@ void CVoxelManager::Update(_float fTimeDelta)
         //const auto& [a,b] = decodeChunkCoord(coord);
         //ChunkLoad(a, b);
     }
+}
+
+CChunk* CVoxelManager::GetChunk(int32_t x, int32_t z) const
+{
+    auto idx = encodeChunkCoord(x, z);
+    auto iter = m_mapChucnks.find(idx);
+    if (iter == m_mapChucnks.end())
+    {
+        return nullptr;
+    }
+
+    return iter->second.get();
 }
 
 void CVoxelManager::StateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc)
@@ -168,15 +184,15 @@ HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t z)
     desc.iX = x;
     desc.iZ = z;
     desc.iChunkCoord = chunkCoord;
-    auto chunk = CChunk::Create(desc);
-    auto pCaching = chunk.get();
-
-    m_mapChucnks.emplace(chunkCoord, std::move(chunk));
+   
 
     CGameInstance::Get().WorkerEnqueue("CHUNK_LOADING", [=]() {
-        //std::lock_guard<std::mutex> lock(m_Mutex);
+        std::lock_guard<std::mutex> lock(m_Mutex);
         //++m_iEnqueuedCnt;
+        auto chunk = CChunk::Create(desc);
+        auto pCaching = chunk.get();
 
+        m_mapChucnks.emplace(chunkCoord, std::move(chunk));
         pCaching->BufferLoad(m_Mutex);
 
         //--m_iEnqueuedCnt;
@@ -187,7 +203,79 @@ HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t z)
 HRESULT CVoxelManager::Initialize()
 {
     m_NoiseHeight.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    m_NoiseHeight.SetFrequency(0.01f);
+    m_NoiseHeight.SetFrequency(0.01f); // 전체적인 지형의 크기 (낮을수록 거대함)
+
+    // Fractal 설정 (핵심!)
+    m_NoiseHeight.SetFractalType(FastNoiseLite::FractalType_FBm);
+    m_NoiseHeight.SetFractalOctaves(5);     // 층을 얼마나 쌓을지 (4~6 추천)
+    m_NoiseHeight.SetFractalLacunarity(2.0f); // 층 사이의 주파수 배율
+    m_NoiseHeight.SetFractalGain(0.5f);       // 층 사이의 영향력 배율
+
+
+    //
+    {
+        if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block", "./Resources/Shader/Block/Block.hlsl"))
+        {
+            if (FAILED(res->Load()))
+            {
+                return E_FAIL;
+            }
+        }
+        if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block", "./Resources/Shader/Block/Block.hlsl"))
+        {
+            if (FAILED(res->Load()))
+            {
+                return E_FAIL;
+            }
+        }
+    }
+    {
+        {
+            //0
+            auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/dirt.png");
+            if (FAILED(pTexture->Load()))
+            {
+                return E_FAIL;
+            }
+            CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+        }
+
+        {
+            //1
+            auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/stone.png");
+            if (FAILED(pTexture->Load()))
+            {
+                return E_FAIL;
+            }
+            CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+        }
+
+        {
+            //2
+            auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/sand.png");
+            if (FAILED(pTexture->Load()))
+            {
+                return E_FAIL;
+            }
+            CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+        }
+    }
+
+    {
+        CResTexture2DArray::DESC desc{};
+        desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
+        auto pTextureArray = CResTexture2DArray::Create();
+        if (FAILED(pTextureArray->Load(desc)))
+        {
+            return E_FAIL;
+        }
+        m_pResBlocksTexutreArray = pTextureArray;
+        CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURE_ARRAY", pTextureArray);
+    }
+    {
+        m_pResSamplerPointWrap = CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
+    }
+
     return S_OK;
 }
 

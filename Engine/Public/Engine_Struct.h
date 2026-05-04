@@ -92,6 +92,12 @@ namespace Engine
 		_float2 texCoord;
 	} VTX_NORMAL_TEX;
 
+	typedef struct tagVertexVoxel
+	{
+		_float3 pos;
+		uint32_t packedData;
+	} VTX_VOXEL;
+
 
 	typedef struct tagConstantBufferPerFrame
 	{
@@ -116,5 +122,6 @@ namespace Engine
 		_float3 v2;
 		_float3 v3;
 		_float3 v4;
+		FACE_DIR eDir;
 	} VOX_QUAD;
 }
