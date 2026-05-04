@@ -101,6 +101,7 @@ namespace Engine
 
 	typedef struct tagConstantBufferPerFrame
 	{
+		DIRECTIONAL_LIGHT dirLight{};
 		_float4x4  matView{};            // 뷰 행렬
 		_float4x4  matProj{};            // 투영 행렬 (Perspective 또는 Ortho)
 		_float4x4  matViewProj{};        // 곱해진 행렬 (VS에서 연산 절약)
@@ -115,6 +116,10 @@ namespace Engine
 		_float4x4 matWVP{};
 	} CB_PER_OBJECT;
 
+	typedef struct tagConstantBufferPerMaterial
+	{
+		MATERIAL mat{};
+	} CB_PER_MATERIAL;
 
 	typedef struct tagVoxQuad
 	{

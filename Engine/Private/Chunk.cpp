@@ -363,6 +363,7 @@ HRESULT CChunk::BufferLoad(std::mutex& m_Mutex)
 
 		// 0000 0000  0000 0000  0000 0000  0000 0000
 		// 
+
 		// normal(3)
 		// 1110 0000  0000 0000  0000 0000  0000 0000
 
@@ -539,7 +540,7 @@ HRESULT CChunk::Initialize(const DESC& desc)
 	m_iChunkCoord = desc.iChunkCoord;
 	//BufferLoad();
 
-	m_pResCBufferPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
+	m_pResCBufferPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_OBJECT);
 	return S_OK;
 }
 
