@@ -54,6 +54,23 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
+
+	if (FAILED(InitializeResources()))
+	{
+		return E_FAIL;
+	}
+
+	m_pPrototypeManager = CPrototypeManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pPrototypeManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(InitializePrototype()))
+	{
+		return E_FAIL;
+	}
+
 	m_pImguiManager = CImguiManager::Create(EngineDesc.hWnd, ppDevice.Get(), ppContext.Get());
 	if (m_pImguiManager == nullptr)
 	{
@@ -84,11 +101,7 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
-	m_pPrototypeManager = CPrototypeManager::Create(ppDevice.Get(), ppContext.Get());
-	if (m_pPrototypeManager == nullptr)
-	{
-		return E_FAIL;
-	}
+	
 
 	m_pGameObjectManager = CGameObjectManager::Create();
 	if (m_pGameObjectManager == nullptr)
@@ -126,15 +139,7 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
-	if (FAILED(InitializeResources()))
-	{
-		return E_FAIL;
-	}
 
-	if (FAILED(InitializePrototype()))
-	{
-		return E_FAIL;
-	}
 
 	return S_OK;
 }
@@ -259,7 +264,18 @@ HRESULT CGameInstance::InitializeResources()
 			.MaxLOD = D3D11_FLOAT32_MAX,
 			});
 	}
-
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP, CResSamplerState::Create()))
+	{
+		res->Load(D3D11_SAMPLER_DESC{
+			.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT, // 핵심
+			.AddressU = D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressV = D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressW = D3D11_TEXTURE_ADDRESS_WRAP,
+			.ComparisonFunc = D3D11_COMPARISON_NEVER,
+			.MinLOD = 0,
+			.MaxLOD = D3D11_FLOAT32_MAX,
+			});
+	}
 	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_QuadTex", "./Resources/Shader/QuadTex/QuadTex.hlsl"))
 	{
 		res->Load();
@@ -277,14 +293,7 @@ HRESULT CGameInstance::InitializeResources()
 		res->Load();
 	}
 
-	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block", "./Resources/Shader/Block/Block.hlsl"))
-	{
-		res->Load();
-	}
-	if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block", "./Resources/Shader/Block/Block.hlsl"))
-	{
-		res->Load();
-	}
+	
 
 
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_BUFFER, "VIBuffer_QuadTex", E::CResQuadTexBuffer::Create()))
@@ -635,5 +644,9 @@ void CGameInstance::VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DES
 _float CGameInstance::GetVoxelHeightNoise(_float x, _float z) const
 {
 	return m_pVoxelManager->GetHeightNoise(x,z);
+}
+CChunk* CGameInstance::GetVoxelChunk(int32_t x, int32_t z) const
+{
+	return m_pVoxelManager->GetChunk(x, z);
 }
 #pragma endregion

@@ -6,7 +6,7 @@
 #include <FastNoiseLite.h>
 
 NS_BEGIN(Engine)
-
+class CResTexture2DArray;
 
 class CVoxelManager final: public CEngineBase, public IRenderable
 {
@@ -43,6 +43,7 @@ public:
 
 public:
 	void Update(_float fTimeDelta);
+	CChunk* GetChunk(int32_t x, int32_t z) const;
 	void StateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
 	void SetChunkLoadCenter(int32_t x, int32_t z);
 	void WorldCreate();
@@ -70,6 +71,8 @@ public:
 
 private:
 	FastNoiseLite m_NoiseHeight{};
+	SPtr<CResTexture2DArray> m_pResBlocksTexutreArray{};
+	SPtr<CResSamplerState> m_pResSamplerPointWrap{};
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};

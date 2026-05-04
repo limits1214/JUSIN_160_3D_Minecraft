@@ -28,6 +28,15 @@ public:
 	{
 		return y + z * VOXEL_CHUNK_Y_SIZE + x *VOXEL_CHUNK_Y_SIZE * VOXEL_CHUNK_Z_SIZE;
 	}
+	Block& GetBlock(uint32_t x, uint32_t y, uint32_t z)
+	{
+		return m_arrBlocks[BlockIndexing(x, y, z)];
+	}
+private:
+	void BlockGenerate();
+	void FaceCulling(std::vector<VOX_QUAD>& quads);
+	void GreedyCulling(std::vector<VOX_QUAD>& quads);
+	void NoCulling(std::vector<VOX_QUAD>& quads);
 public:
 	HRESULT BufferLoad(std::mutex& m_Mutex);
 	void BindBuffer(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
@@ -44,6 +53,9 @@ private:
 	uint64_t m_iChunkCoord{};
 
 	_bool m_bLoaded{ false };
+
+private:
+	SPtr<CResCBuffer> m_pResCBufferPerObject{};
 
 public:
 	static UPtr<CChunk> Create(const DESC& desc);
