@@ -236,16 +236,23 @@ void CGameInstance::Release_Engine()
 
 HRESULT CGameInstance::InitializeResources()
 {
-	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerFrame", E::CResCBuffer::Create()))
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_FRAME, E::CResCBuffer::Create()))
 	{
 		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_FRAME) })))
 		{
 			return E_FAIL;
 		}
 	}
-	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject", E::CResCBuffer::Create()))
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_OBJECT, E::CResCBuffer::Create()))
 	{
 		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_OBJECT) })))
+		{
+			return E_FAIL;
+		}
+	}
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_MATERIAL, E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_MATERIAL) })))
 		{
 			return E_FAIL;
 		}

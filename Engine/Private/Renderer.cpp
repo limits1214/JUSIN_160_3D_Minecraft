@@ -60,10 +60,12 @@ HRESULT CRenderer::Draw()
         {
             return S_OK;
         }
+
+        auto dirLight = CGameInstance::Get().GetDirectionalLight("0_Test");
         {
             ctx.matProj = pGameCam->GetProj();
             ctx.matView = pGameCam->GetView();
-            auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerFrame");
+            auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_FRAME);
             D3D11_MAPPED_SUBRESOURCE mappedSubResource;
             if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
             {
@@ -73,6 +75,10 @@ HRESULT CRenderer::Draw()
                 XMStoreFloat4x4(&cbPerFrame.matViewProj, pGameCam->GetView() * pGameCam->GetProj());
                 XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pGameCam->GetView()));
                 cbPerFrame.vCamPos = pGameCam->GetTransform().GetPosition();
+                if (dirLight.has_value())
+                {
+                    cbPerFrame.dirLight = dirLight.value();
+                }
 
                 memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
                 m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
@@ -116,7 +122,7 @@ HRESULT CRenderer::Draw()
             ctx.matProj = pUICame->GetProj();
             ctx.matView = pUICame->GetView();
 
-            auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerFrame");
+            auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_FRAME);
             D3D11_MAPPED_SUBRESOURCE mappedSubResource;
             if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
             {

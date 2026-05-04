@@ -17,6 +17,21 @@ CVoxelManager::~CVoxelManager()
 
 HRESULT CVoxelManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 {
+    if(false)
+    {
+        auto pCbPerMaterial = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_MATERIAL);
+        D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+        if (SUCCEEDED(m_pContext->Map(pCbPerMaterial->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+        {
+            CB_PER_MATERIAL cbPerMaterial{};
+
+            memcpy(mappedSubResource.pData, &cbPerMaterial, sizeof(cbPerMaterial));
+            m_pContext->Unmap(pCbPerMaterial->GetCBuffer().Get(), 0);
+        }
+        m_pContext->VSSetConstantBuffers(2, 1, pCbPerMaterial->GetCBuffer().GetAddressOf());
+        m_pContext->PSSetConstantBuffers(2, 1, pCbPerMaterial->GetCBuffer().GetAddressOf());
+    }
+
 
     const auto& vs = E::CGameInstance::GetConst().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block");
     const auto& ps = E::CGameInstance::GetConst().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block");
@@ -276,6 +291,18 @@ HRESULT CVoxelManager::Initialize()
         m_pResSamplerPointWrap = CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
     }
 
+
+
+    // test light
+    DIRECTIONAL_LIGHT light{};
+
+    light.direction = _float3(0.3f, -1.0f, 0.2f); // 아래로 비추는 방향
+    // 필요하면 normalize
+
+    light.ambient = _float4(0.2f, 0.2f, 0.25f, 1.0f); // 약간 푸른 톤
+    light.diffuse = _float4(1.f, 1.f, 1.f, 1.0f); // 메인 밝기
+    light.specular = _float4(0.5f, 0.5f, 0.5f, 1.0f);  // 적당한 하이라이트
+    CGameInstance::Get().SetDirectionalLight("0_Test", light);
     return S_OK;
 }
 
