@@ -58,11 +58,11 @@ HRESULT CVoxelManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& c
 
 void CVoxelManager::UpdateGUI()
 {
-    auto test1 = encodeChunkCoord(0, 0);
-    auto test2 = encodeChunkCoord(110, 120);
-    auto test3 = encodeChunkCoord(-110, 120);
-    auto test4 = encodeChunkCoord(-110, -120);
-    auto test5 = encodeChunkCoord(110, -120);
+    auto test1 = encodeChunkCoord(0, 0, 0);
+    auto test2 = encodeChunkCoord(110, 0, 120);
+    auto test3 = encodeChunkCoord(-110, 0, 120);
+    auto test4 = encodeChunkCoord(-110, 0, -120);
+    auto test5 = encodeChunkCoord(110, 0, -120);
 
 
     auto res1 = decodeChunkCoord(test1);
@@ -73,7 +73,7 @@ void CVoxelManager::UpdateGUI()
 
     if (ImGui::Button("SetChunkLoadCenter 0 0 "))
     {
-        SetChunkLoadCenter(0, 0);
+        SetChunkLoadCenter(0, 0, 0);
     }
 
     if (ImGui::Button("SetChunkLoadCenter Cam"))
@@ -81,11 +81,13 @@ void CVoxelManager::UpdateGUI()
         if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
         {
             float fx = cam->GetTransform().GetPosition().x;
+            float fy = cam->GetTransform().GetPosition().y;
             float fz = cam->GetTransform().GetPosition().z;
             auto ix = (uint32_t)floor(fx/ VOXEL_CHUNK_X_SIZE);
+            auto iy = (uint32_t)floor(fy / VOXEL_CHUNK_Y_SIZE);
             auto iz = (uint32_t)floor(fz / VOXEL_CHUNK_Z_SIZE);
 
-            SetChunkLoadCenter(ix, iz);
+            SetChunkLoadCenter(ix, iy, iz);
         }
         
     }
@@ -95,23 +97,50 @@ void CVoxelManager::UpdateGUI()
 
 void CVoxelManager::Update(_float fTimeDelta)
 {
-    if (!m_ChunkLoadPending.empty())
+    if (!m_ChunkLoadFutures.empty())
     {
-        //{
-        //    std::lock_guard<std::mutex> lock(m_Mutex);
-        //    m_ChunkLoadPending.push_back(chunkCoord);
-        //}
-        //auto coord = m_ChunkLoadPending.back();
-        //m_ChunkLoadPending.pop_back();
+        for ( auto& fut : m_ChunkLoadFutures)
+        {
+            if (fut.valid())
+            {
+                if (fut.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+                {
+                    //decodeChunkCoord(fut.get());
+                    
+                    {
+                        std::lock_guard<std::mutex> lock(m_Mutex);
+                        auto res = fut.get();
+                        auto iter = m_mapChucnks.find(res);
+                        if (iter != m_mapChucnks.end())
+                        {
+                            m_mapChucnks[res]->MapBuffer(m_pContext.Get());
+                        }
+                    }
+                    //break;
+                }
+            }
+        }
 
-        //const auto& [a,b] = decodeChunkCoord(coord);
-        //ChunkLoad(a, b);
+        for (auto iter = m_ChunkLoadFutures.begin(); iter != m_ChunkLoadFutures.end(); )
+        {
+            if (!iter->valid())
+            {
+                iter = m_ChunkLoadFutures.erase(iter);
+            }
+            else
+            {
+                ++iter;
+            }
+        }
+       
     }
 }
 
-CChunk* CVoxelManager::GetChunk(int32_t x, int32_t z) const
+CChunk* CVoxelManager::GetChunk(int32_t x, int32_t y, int32_t z) 
 {
-    auto idx = encodeChunkCoord(x, z);
+   
+        std::lock_guard<std::mutex> lock(m_Mutex);
+    auto idx = encodeChunkCoord(x, y, z);
     auto iter = m_mapChucnks.find(idx);
     if (iter == m_mapChucnks.end())
     {
@@ -125,82 +154,96 @@ void CVoxelManager::StateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc)
 {
 }
 
-void CVoxelManager::SetChunkLoadCenter(int32_t x, int32_t z)
+void CVoxelManager::SetChunkLoadCenter(int32_t cx, int32_t cy, int32_t cz)
 {
-    int32_t minX = -m_iRenderDistance + x;
-    int32_t maxX = m_iRenderDistance + x;
-    int32_t minZ = -m_iRenderDistance + z;
-    int32_t maxZ = m_iRenderDistance + z;
+    int32_t minX = cx - m_iRenderDistance;
+    int32_t maxX = cx + m_iRenderDistance;
+    int32_t minZ = cz - m_iRenderDistance;
+    int32_t maxZ = cz + m_iRenderDistance;
 
-   
+    // Y축 범위 (Vertical Render Distance)
+    int32_t verticalDistance = m_iVerticalRenderDistance;  // 새로 추가 추천
+    int32_t minY = cy - verticalDistance;
+    int32_t maxY = cy + verticalDistance;
+
+    
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
 
-        std::vector<uint64_t> delQ{};
+        std::vector<uint64_t> delQ;
         for (const auto& [key, val] : m_mapChucnks)
         {
-            const auto& [x, z] = decodeChunkCoord(key);
+            auto [x, y, z] = decodeChunkCoord(key);
 
-            if (x < minX || x > maxX || z < minZ || z > maxZ)
+            // X, Z, Y 모두 체크
+            if (x < minX || x > maxX ||
+                z < minZ || z > maxZ ||
+                y < minY || y > maxY)
             {
                 delQ.push_back(key);
             }
         }
 
-       
-        std::for_each(delQ.begin(), delQ.end(), [&](const auto& key) {
-            
-            //auto pendingiter = std::find(m_ChunkLoadPending.begin(), m_ChunkLoadPending.end(), key);
-            //if (pendingiter != m_ChunkLoadPending.end())
-            //{
-            //    m_ChunkLoadPending.erase(pendingiter);
-            //}
-
-            m_mapChucnks.erase(key);
-            
-            });
-    }
-
-
-    if (m_iRenderDistance == 0)
-    {
-        auto iter = m_mapChucnks.find(encodeChunkCoord(x, z));
-        if (iter == m_mapChucnks.end())
+        for (const auto& key : delQ)
         {
-            ChunkLoad(x, z);
+            m_mapChucnks.erase(key);
+            // TODO: 메모리 해제, Mesh 삭제 등 정리 작업
         }
     }
-    else
-    {
-        // x
-        for (int32_t i = -m_iRenderDistance + x; i <= m_iRenderDistance + x; ++i)
+
+    //ChunkLoad(0, 0, 0);
+
+    for (int32_t x = minX; x <= maxX; ++x)
         {
-            // z
-            for (int32_t j = -m_iRenderDistance + z; j <= m_iRenderDistance + z; ++j)
+            for (int32_t y = minY; y <= maxY; ++y)
             {
-                auto chunkCoord = encodeChunkCoord(i, j);
-                auto iter = m_mapChucnks.find(chunkCoord);
-                if (iter == m_mapChucnks.end())
+                for (int32_t z = minZ; z <= maxZ; ++z)
                 {
-                    ChunkLoad(i, j);
+                    ChunkLoad(x, y, z);
+                    
                 }
             }
         }
-    }
-
     
 }
 
-HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t z)
+HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t y, int32_t z)
 {
-    auto chunkCoord = encodeChunkCoord(x, z);
+    
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        uint64_t key = encodeChunkCoord(x, y, z);
+        if (m_mapChucnks.find(key) != m_mapChucnks.end())
+        {
+            return S_OK;
+        }
+    }
+    m_ChunkLoadFutures.push_back(std::move(CGameInstance::Get().WorkerEnqueueWithFuture("FUT_CHUNK_LOADING", [=]() {
 
-    CChunk::DESC desc{};
-    desc.iX = x;
-    desc.iZ = z;
-    desc.iChunkCoord = chunkCoord;
-   
+        uint64_t chunkCoord = encodeChunkCoord(x, y, z);
 
+        CChunk::DESC desc{};
+        desc.iX = x;
+        desc.iZ = z;
+        desc.iY = y;
+        desc.iChunkCoord = chunkCoord;
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        auto chunk = CChunk::Create(desc);
+        auto pCaching = chunk.get();
+        pCaching->QuadCalc();
+
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            auto [it, inserted] = m_mapChucnks.emplace(chunkCoord, std::move(chunk));
+            if (!inserted)
+            {
+                volatile int x = 0;
+                return (uint64_t)0;
+            }
+        }
+        return chunkCoord;
+        })));
+/*
     CGameInstance::Get().WorkerEnqueue("CHUNK_LOADING", [=]() {
         std::lock_guard<std::mutex> lock(m_Mutex);
         //++m_iEnqueuedCnt;
@@ -210,8 +253,12 @@ HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t z)
         m_mapChucnks.emplace(chunkCoord, std::move(chunk));
         pCaching->BufferLoad(m_Mutex);
 
+        pCaching->QuadCalc(m_Mutex);
+
         //--m_iEnqueuedCnt;
         });
+
+*/
 	return S_OK;
 }
 

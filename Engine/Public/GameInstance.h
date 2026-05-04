@@ -207,7 +207,7 @@ public:
 public:
 	void VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
 	_float GetVoxelHeightNoise(_float x, _float z) const;
-	CChunk* GetVoxelChunk(int32_t x, int32_t z) const;
+	CChunk* GetVoxelChunk(int32_t x, int32_t y, int32_t z) const;
 #pragma endregion
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};

@@ -4,16 +4,16 @@
 
 NS_BEGIN(Engine)
 
-constexpr static uint32_t VOXEL_CHUNK_X_SIZE = 16;
-constexpr static uint32_t VOXEL_CHUNK_Z_SIZE = 16;
-constexpr static uint32_t VOXEL_CHUNK_Y_SIZE = 256;
+constexpr static uint32_t VOXEL_CHUNK_X_SIZE = 32;
+constexpr static uint32_t VOXEL_CHUNK_Z_SIZE = 32;
+constexpr static uint32_t VOXEL_CHUNK_Y_SIZE = 32;
 
 class CChunk final: public CEngineBase
 {
 public:
 	typedef struct tagDesc
 	{
-		int32_t iX{}, iZ{};
+		int32_t iX{}, iY{}, iZ{};
 		uint64_t iChunkCoord{};
 	} DESC;
 
@@ -40,6 +40,8 @@ private:
 public:
 	HRESULT BufferLoad(std::mutex& m_Mutex);
 	void BindBuffer(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
+	_bool QuadCalc();
+	HRESULT MapBuffer(ID3D11DeviceContext* pContext);
 
 private:
 	HRESULT Initialize(const DESC& desc);
@@ -49,8 +51,13 @@ private:
 	_string m_sResName{};
 	std::array<Block, VOXEL_CHUNK_X_SIZE* VOXEL_CHUNK_Z_SIZE* VOXEL_CHUNK_Y_SIZE> m_arrBlocks{};
 	SPtr<CResDynamicVIBuffer> m_pResDynamicViBuffer{};
-	int32_t m_iX{}, m_iZ{};
+	int32_t m_iX{}, m_iY{}, m_iZ{};
 	uint64_t m_iChunkCoord{};
+
+	std::vector<VOX_QUAD> m_quads{};
+	std::vector<E::VTX_VOXEL> m_vertices{};
+	std::vector<uint32_t>  m_indices{};
+	uint32_t m_iNumIndices{};
 
 	_bool m_bLoaded{ false };
 
