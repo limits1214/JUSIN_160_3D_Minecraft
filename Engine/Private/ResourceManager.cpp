@@ -89,7 +89,6 @@ SPtr<CResource> CResourceManager::AddResource(const StringID& sGroupTag, const S
 
 	return addedResource;
 }
-
 SPtr<CResource> CResourceManager::AddResource(const StringID& sGroupTag, const StringID& sResTag, SPtr<CResource> pAsset)
 {
 	auto pGroup = FindGroup(sGroupTag);

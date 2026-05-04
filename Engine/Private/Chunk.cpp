@@ -36,7 +36,7 @@ void CChunk::BlockGenerate()
 			auto tmpx = m_iX * VOXEL_CHUNK_X_SIZE + i;
 			auto tmpz = m_iZ * VOXEL_CHUNK_Z_SIZE + j;
 			float n = CGameInstance::Get().GetVoxelHeightNoise((float)tmpx, (float)tmpz);
-			uint32_t height = (uint32_t)((n + 1.0f) * 0.5f * 64.0f);
+			uint32_t height = (uint32_t)((n + 1.0f) * 0.5f * 32.0f);
 
 			for (uint32_t k = 0; k < VOXEL_CHUNK_Y_SIZE; ++k)
 			{
@@ -52,10 +52,10 @@ void CChunk::BlockGenerate()
 
 void CChunk::FaceCulling(std::vector<VOX_QUAD>& quads)
 {
-	CChunk* pPlusXAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iZ);
-	CChunk* pMinusXAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iZ);
-	CChunk* pPlusZAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX , m_iZ + 1);
-	CChunk* pMinusZAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX, m_iZ - 1);
+	//CChunk* pPlusXAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iZ);
+	//CChunk* pMinusXAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iZ);
+	//CChunk* pPlusZAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX , m_iZ + 1);
+	//CChunk* pMinusZAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX, m_iZ - 1);
 
 	//CGameInstance::Get().GetVoxelChunk()
 	// Culled Meshing (JS의 p != b 로직 적용)
@@ -436,51 +436,59 @@ HRESULT CChunk::BufferLoad(std::mutex& m_Mutex)
 	//vertices[6].pos = { 0.5f, 0.5f, -0.5f };
 	//vertices[7].pos = { -0.5f, 0.5f, -0.5f };
 
-	E::CResDynamicVIBuffer::DESC desc{};
-	desc.iNumVertices = (uint32_t)vertices.size();
-	desc.iVertexStride = sizeof(E::VTX_VOXEL);
-	desc.vertexDesc = {
-		.ByteWidth = desc.iNumVertices * desc.iVertexStride,
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_VERTEX_BUFFER,
-		.CPUAccessFlags = 0,
-		.MiscFlags = 0
-	};
-	desc.vertexSubResource = {
-		.pSysMem = vertices.data()
-	};
+	//m_pResDynamicViBuffer->get
 
-	desc.iIndexStride = sizeof(uint32_t);
-	desc.iNumIndices = (uint32_t)indices.size();
-	desc.IndexDesc = {
-		.ByteWidth = desc.iNumIndices * desc.iIndexStride,
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_INDEX_BUFFER,
-		.CPUAccessFlags = 0,
-		.MiscFlags = 0
-	};
-	desc.indexSubResource = {
-		.pSysMem = indices.data()
-	};
-	desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
 
-	desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	auto pBuffer = E::CResDynamicVIBuffer::Create();
-	if (FAILED(pBuffer->Load(desc)))
+	if (false)
 	{
-		return E_FAIL;
-	};
+		E::CResDynamicVIBuffer::DESC desc{};
+		desc.iNumVertices = (uint32_t)vertices.size();
+		desc.iVertexStride = sizeof(E::VTX_VOXEL);
+		desc.vertexDesc = {
+			.ByteWidth = desc.iNumVertices * desc.iVertexStride,
+			.Usage = D3D11_USAGE_DYNAMIC,
+			.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+			.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
+			.MiscFlags = 0
+		};
+		desc.vertexSubResource = {
+			.pSysMem = vertices.data()
+		};
 
-	{
-		//std::lock_guard<std::mutex> lock(m_Mutex);
-		
-		m_pResDynamicViBuffer = pBuffer;
-		m_sResName = "DYNVIBUFFER_Chunk_" + std::to_string(m_iX) + "_" + std::to_string(m_iZ);
-		E::CGameInstance::Get().AddResource("VOXEL_MANAGER_CHUNK", m_sResName.c_str(), pBuffer);
+		desc.iIndexStride = sizeof(uint32_t);
+		desc.iNumIndices = (uint32_t)indices.size();
+		desc.IndexDesc = {
+			.ByteWidth = desc.iNumIndices * desc.iIndexStride,
+			.Usage = D3D11_USAGE_DYNAMIC,
+			.BindFlags = D3D11_BIND_INDEX_BUFFER,
+			.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
+			.MiscFlags = 0
+		};
+		desc.indexSubResource = {
+			.pSysMem = indices.data()
+		};
+		desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
 
-		m_bLoaded = true;
+		desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+		auto pBuffer = E::CResDynamicVIBuffer::Create();
+		if (FAILED(pBuffer->Load(desc)))
+		{
+			return E_FAIL;
+		};
+
+		{
+			//std::lock_guard<std::mutex> lock(m_Mutex);
+
+			m_pResDynamicViBuffer = pBuffer;
+			m_sResName = "DYNVIBUFFER_Chunk_" + std::to_string(m_iX) + "_" + std::to_string(m_iZ);
+			//E::CGameInstance::Get().AddResource("VOXEL_MANAGER_CHUNK", m_sResName.c_str(), pBuffer);
+
+			m_bLoaded = true;
+		}
 	}
+	
 	
 	return S_OK;
 }
@@ -529,18 +537,183 @@ void CChunk::BindBuffer(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 	pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
 	pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
 
-	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+	pContext->DrawIndexed(m_iNumIndices, 0, 0);
 }
 
+_bool CChunk::QuadCalc()
+{
+	m_quads = GenerateQuad();
+
+	//std::vector<E::VTX_VOXEL> vertices{};
+	//std::vector<uint32_t> indices{};
+	m_vertices.reserve(m_quads.size() * 4);
+	m_indices.reserve(m_quads.size() * 6);
+	//01
+	//32
+	for (uint32_t i = 0; i < m_quads.size(); ++i)
+	{
+		uint32_t iFaceDir = ETOUI(m_quads[i].eDir);
+
+		// 0000 0000  0000 0000  0000 0000  0000 0000
+		// 
+
+		// normal(3)
+		// 1110 0000  0000 0000  0000 0000  0000 0000
+
+		// vertexao(2)
+		// 0001 1000  0000 0000  0000 0000  0000 0000
+
+		// vertexid(2)
+		// 0000 0110  0000 0000  0000 0000  0000 0000
+
+		// textureid(8)
+		// 0000 0001  1111 1110  0000 0000  0000 0000
+
+		E::VTX_VOXEL v{};
+		v.pos = m_quads[i].v1;
+		{
+			v.packedData = {};
+			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;
+			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 25;
+		}
+		m_vertices.push_back(v);
+
+		v.pos = m_quads[i].v2;
+		{
+			v.packedData = {};
+			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;
+			v.packedData |= (static_cast<uint32_t>(1) & 0x03) << 25;
+		}
+		m_vertices.push_back(v);
+
+		v.pos = m_quads[i].v3;
+		{
+			v.packedData = {};
+			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;
+			v.packedData |= (static_cast<uint32_t>(2) & 0x03) << 25;
+		}
+		m_vertices.push_back(v);
+
+		v.pos = m_quads[i].v4;
+		{
+			v.packedData = {};
+			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;
+			v.packedData |= (static_cast<uint32_t>(3) & 0x03) << 25;
+		}
+		m_vertices.push_back(v);
+
+		m_indices.push_back(i * 4 + 0);
+		m_indices.push_back(i * 4 + 1);
+		m_indices.push_back(i * 4 + 2);
+		m_indices.push_back(i * 4 + 0);
+		m_indices.push_back(i * 4 + 2);
+		m_indices.push_back(i * 4 + 3);
+	}
+
+	return true;
+}
+
+HRESULT CChunk::MapBuffer(ID3D11DeviceContext* pContext)
+{
+
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+	if (SUCCEEDED(pContext->Map(m_pResDynamicViBuffer->GetVertexBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+	{
+		memcpy(mapped.pData, m_vertices.data(), sizeof(VTX_VOXEL) * m_vertices.size());
+		pContext->Unmap(m_pResDynamicViBuffer->GetVertexBuffer().Get(), 0);
+		m_vertices.clear();
+	}
+
+	if (SUCCEEDED(pContext->Map(m_pResDynamicViBuffer->GetIndexBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+	{
+		memcpy(mapped.pData, m_indices.data(), sizeof(uint32_t) * m_indices.size());
+		pContext->Unmap(m_pResDynamicViBuffer->GetIndexBuffer().Get(), 0);
+		m_iNumIndices = (uint32_t)m_indices.size();
+		m_indices.clear();
+	}
+	
+	return S_OK;
+}
+
+
+std::mutex m_Mutex2;
 
 HRESULT CChunk::Initialize(const DESC& desc)
 {
 	m_iX = desc.iX;
+	m_iY = desc.iY;
 	m_iZ = desc.iZ;
 	m_iChunkCoord = desc.iChunkCoord;
 	//BufferLoad();
 
 	m_pResCBufferPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_OBJECT);
+
+
+	// create air buffer
+	{
+		constexpr uint32_t MAX_QUADS_PER_CHUNK = 32 * 32 * 32 * 6;  // 196608
+
+		uint32_t initialNumQuad = MAX_QUADS_PER_CHUNK * 0.07f;   // 7% 추천
+		uint32_t iInitialNumVertices = initialNumQuad * 4;
+		uint32_t iInitialNumIndices = initialNumQuad * 6;
+
+		//16 16 256 = 65536
+		// 65536 * 6 = 393216;
+		//uint32_t initialNumQuad = 393216 * 0.05;
+		//uint32_t iInitialNumVertices = initialNumQuad * 4;
+		//uint32_t iInitialNumIndices = initialNumQuad * 6;
+		E::CResDynamicVIBuffer::DESC desc{};
+		desc.iNumVertices = iInitialNumVertices;
+		desc.iVertexStride = sizeof(E::VTX_VOXEL);
+		desc.vertexDesc = {
+			.ByteWidth = desc.iNumVertices * desc.iVertexStride,
+			.Usage = D3D11_USAGE_DYNAMIC,
+			.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+			.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
+			.MiscFlags = 0
+		};
+		//desc.vertexSubResource = {
+		//	.pSysMem = vertices.data()
+		//};
+
+		desc.iIndexStride = sizeof(uint32_t);
+		desc.iNumIndices = iInitialNumIndices;
+		desc.IndexDesc = {
+			.ByteWidth = desc.iNumIndices * desc.iIndexStride,
+			.Usage = D3D11_USAGE_DYNAMIC,
+			.BindFlags = D3D11_BIND_INDEX_BUFFER,
+			.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
+			.MiscFlags = 0
+		};
+		//desc.indexSubResource = {
+		//	.pSysMem = indices.data()
+		//};
+		desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
+
+		desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+		auto pBuffer = E::CResDynamicVIBuffer::Create();
+		if (FAILED(pBuffer->Load(desc)))
+		{
+			return E_FAIL;
+		};
+
+		{
+			std::lock_guard lock(m_Mutex2);
+			//std::lock_guard<std::mutex> lock(m_Mutex);
+			std::random_device rd;
+			std::mt19937 gen(rd());
+
+			std::uniform_int_distribution<int> dist(0, 1000);
+
+			int value = dist(gen);
+			m_pResDynamicViBuffer = pBuffer;
+			m_sResName = "DYNVIBUFFER_Chunk_" + std::to_string(m_iX) + "_" + std::to_string(m_iZ) ;
+			//E::CGameInstance::Get().AddResource("VOXEL_MANAGER_CHUNK", m_sResName.c_str(), pBuffer);
+
+			m_bLoaded = true;
+		}
+	}
 	return S_OK;
 }
 
@@ -556,6 +729,6 @@ UPtr<CChunk> CChunk::Create(const DESC& desc)
 
 void CChunk::Free()
 {
-	E::CGameInstance::Get().DelResource("VOXEL_MANAGER_CHUNK", m_sResName.c_str());
+	//E::CGameInstance::Get().DelResource("VOXEL_MANAGER_CHUNK", m_sResName.c_str());
 	CEngineBase::Free();
 }

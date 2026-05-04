@@ -652,8 +652,8 @@ _float CGameInstance::GetVoxelHeightNoise(_float x, _float z) const
 {
 	return m_pVoxelManager->GetHeightNoise(x,z);
 }
-CChunk* CGameInstance::GetVoxelChunk(int32_t x, int32_t z) const
+CChunk* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 {
-	return m_pVoxelManager->GetChunk(x, z);
+	return m_pVoxelManager->GetChunk(x, y, z);
 }
 #pragma endregion

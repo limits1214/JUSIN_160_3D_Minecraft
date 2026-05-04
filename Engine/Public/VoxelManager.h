@@ -30,37 +30,60 @@ public:
 
 public:
 	void UpdateGUI();
-	uint64_t  encodeChunkCoord(int32_t x, int32_t z) const
+	uint64_t encodeChunkCoord(int32_t x, int32_t y, int32_t z) const
 	{
-		return static_cast<uint64_t>(static_cast<uint32_t>(x)) << 32 | static_cast<uint32_t>(z);
+		// X: 21비트 (±1,048,575 청크 ≈ ±33.5 million 블록)
+		// Y: 22비트 (±2,097,151 청크 ≈ ±67 million 블록) → Y축은 보통 더 넓게
+		// Z: 21비트
+
+		constexpr int64_t X_OFFSET = 1 << 20;   // 2^20 = 1048576
+		constexpr int64_t Y_OFFSET = 1 << 21;
+		constexpr int64_t Z_OFFSET = 1 << 20;
+
+		uint64_t ux = static_cast<uint64_t>(x + X_OFFSET) & 0x1FFFFF;   // 21비트
+		uint64_t uy = static_cast<uint64_t>(y + Y_OFFSET) & 0x3FFFFF;   // 22비트
+		uint64_t uz = static_cast<uint64_t>(z + Z_OFFSET) & 0x1FFFFF;   // 21비트
+
+		return (ux << 43) | (uy << 21) | uz;
 	}
-	std::pair<int32_t, int32_t> decodeChunkCoord(uint64_t chunkCoord) const
+
+	std::tuple<int32_t, int32_t, int32_t> decodeChunkCoord(uint64_t key) const
 	{
-		int32_t x = static_cast<int32_t>(chunkCoord >> 32);
-		int32_t z = static_cast<int32_t>(chunkCoord & 0xFFFFFFFF);
-		return { x, z };
+		constexpr int64_t X_OFFSET = 1 << 20;
+		constexpr int64_t Y_OFFSET = 1 << 21;
+		constexpr int64_t Z_OFFSET = 1 << 20;
+
+		int32_t x = static_cast<int32_t>((key >> 43) & 0x1FFFFF) - X_OFFSET;
+		int32_t y = static_cast<int32_t>((key >> 21) & 0x3FFFFF) - Y_OFFSET;
+		int32_t z = static_cast<int32_t>(key & 0x1FFFFF) - Z_OFFSET;
+
+		return { x, y, z };
 	}
 
 public:
 	void Update(_float fTimeDelta);
-	CChunk* GetChunk(int32_t x, int32_t z) const;
+	CChunk* GetChunk(int32_t x, int32_t y, int32_t z) ;
 	void StateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
-	void SetChunkLoadCenter(int32_t x, int32_t z);
+	void SetChunkLoadCenter(int32_t x, int32_t y, int32_t z);
 	void WorldCreate();
 	void WorldDestroy();
 
 private:
-	HRESULT ChunkLoad(int32_t x, int32_t z);
+	HRESULT ChunkLoad(int32_t x, int32_t y, int32_t z);
 
 private:
 	HRESULT Initialize();
 
 private:
 	std::unordered_map<int64_t, UPtr<CChunk>> m_mapChucnks{};
-	int32_t m_iRenderDistance{ 1 };
+	int32_t m_iRenderDistance{ 5 };
+	int32_t m_iVerticalRenderDistance{1};
 
 	std::vector<int64_t> m_ChunkLoadPending{};
 	uint32_t m_iEnqueuedCnt{};
+
+
+	std::vector<std::future<uint64_t>> m_ChunkLoadFutures{};
 
 
 public:
