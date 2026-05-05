@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "VoxelManager2.h"
-
+#include "CameraObject.h"
 #include "Resources.h"
 NS_USING(Engine)
 
@@ -70,6 +70,34 @@ void CVoxelManager2::UpdateGUI()
         desc.iCenterY = 0;
         desc.iCenterZ = 0;
         QueuingChunkInRangeCreate(desc);
+    }
+
+    if (ImGui::Button("chunk load 101"))
+    {
+        CHUNK_IN_RANGE_CREATE_DESC desc{};
+        desc.iCenterX = 1;
+        desc.iCenterY = 0;
+        desc.iCenterZ = 1;
+        QueuingChunkInRangeCreate(desc);
+    }
+
+    if (ImGui::Button("SetChunkLoadCenter Cam"))
+    {
+        if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+        {
+            float fx = cam->GetTransform().GetPosition().x;
+            float fy = cam->GetTransform().GetPosition().y;
+            float fz = cam->GetTransform().GetPosition().z;
+            auto ix = (int32_t)floor(fx / VOXEL_CHUNK_X_SIZE2);
+            auto iy = (int32_t)floor(fy / VOXEL_CHUNK_Y_SIZE2);
+            auto iz = (int32_t)floor(fz / VOXEL_CHUNK_Z_SIZE2);
+
+            CHUNK_IN_RANGE_CREATE_DESC desc{};
+            desc.iCenterX = ix;
+            desc.iCenterY = 0;
+            desc.iCenterZ = iz;
+            QueuingChunkInRangeCreate(desc);
+        }
     }
 }
 
@@ -241,18 +269,148 @@ void CVoxelManager2::Update(_float fTimeDelta)
             if (cnt == validCnt)
             {
                 m_eProcessChunkInRangeCreateState = PROCESS_CHUNK_IN_RANGE_CREATE_STATE::REGIST_NEIGHBOR;
-                std::vector<CChunk2*> chunkCaching{};
+                std::vector<CChunk2*> toMessingChunks{};
+                std::unordered_set<CChunk2*> toReMessingSets{};
                 // set neighbor pointer in main thread
                 for (auto& fut : m_futInRangeChunkCreateBlockFillings)
                 {
                     CChunk2* pChunk = fut.get();
-                    chunkCaching.push_back(pChunk);
+                    //pChunk
+                    //m_mapChucnks
+                    const auto&[chunkX,chunkY,chunkZ] = pChunk->GetCoord();
+
+                    {
+                        // 버퍼가 없다면 이번프로세스에서 새로 생겨나는 청크로 판단
+                        // 이경우 인접청크 세팅만해준다
+                        // 버퍼가 있다면 기존에 만들어진 청크로 판단
+                        // 이경우 인접청크 세팅해주고 리메싱 목록에 추가
+
+                        {
+                            uint64_t coord = encodeChunkCoord(chunkX + 1, chunkY, chunkZ);
+                            auto iter = m_mapChucnks.find(coord);
+                            if (iter != m_mapChucnks.end())
+                            {
+                                // pChunk기존 POS_X처리
+                                CChunk2* pNeighbor = iter->second.get();
+
+                                pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::POS_X);
+                                pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::NEG_X);
+
+                                if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                                {
+                                    toReMessingSets.insert(pNeighbor);
+                                }
+                            }
+                        }
+
+                        {
+                            uint64_t coord = encodeChunkCoord(chunkX - 1, chunkY, chunkZ);
+                            auto iter = m_mapChucnks.find(coord);
+                            if (iter != m_mapChucnks.end())
+                            {
+                                // pChunk기존 POS_X처리
+                                CChunk2* pNeighbor = iter->second.get();
+
+                                pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::NEG_X);
+                                pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::POS_X);
+
+                                if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                                {
+                                    toReMessingSets.insert(pNeighbor);
+                                }
+                            }
+                        }
+
+                        {
+                            uint64_t coord = encodeChunkCoord(chunkX, chunkY+1, chunkZ);
+                            auto iter = m_mapChucnks.find(coord);
+                            if (iter != m_mapChucnks.end())
+                            {
+                                // pChunk기존 POS_X처리
+                                CChunk2* pNeighbor = iter->second.get();
+
+                                pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::POS_Y);
+                                pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::NEG_Y);
+
+                                if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                                {
+                                    toReMessingSets.insert(pNeighbor);
+                                }
+                            }
+
+                            {
+                                uint64_t coord = encodeChunkCoord(chunkX, chunkY - 1, chunkZ);
+                                auto iter = m_mapChucnks.find(coord);
+                                if (iter != m_mapChucnks.end())
+                                {
+                                    // pChunk기존 POS_X처리
+                                    CChunk2* pNeighbor = iter->second.get();
+
+                                    pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::NEG_Y);
+                                    pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::POS_Y);
+
+                                    if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                                    {
+                                        toReMessingSets.insert(pNeighbor);
+                                    }
+                                }
+                            }
+
+                            {
+                                uint64_t coord = encodeChunkCoord(chunkX, chunkY , chunkZ+1);
+                                auto iter = m_mapChucnks.find(coord);
+                                if (iter != m_mapChucnks.end())
+                                {
+                                    // pChunk기존 POS_X처리
+                                    CChunk2* pNeighbor = iter->second.get();
+
+                                    pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::POS_Z);
+                                    pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::NEG_Z);
+
+                                    if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                                    {
+                                        toReMessingSets.insert(pNeighbor);
+                                    }
+                                }
+                            }
+
+                            {
+                                uint64_t coord = encodeChunkCoord(chunkX, chunkY, chunkZ - 1);
+                                auto iter = m_mapChucnks.find(coord);
+                                if (iter != m_mapChucnks.end())
+                                {
+                                    // pChunk기존 POS_X처리
+                                    CChunk2* pNeighbor = iter->second.get();
+
+                                    pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::NEG_Z);
+                                    pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::POS_Z);
+
+                                    if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                                    {
+                                        toReMessingSets.insert(pNeighbor);
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+                    toReMessingSets.insert(pChunk);
+                    //toMessingChunks.push_back(pChunk);
+
+
+                    
+
+                    // TODO REMESSING
+                }
+                for (const auto& p : toReMessingSets)
+                {
+                    toMessingChunks.push_back(p);
                 }
                 m_futInRangeChunkCreateBlockFillings.clear();
 
 
                 m_eProcessChunkInRangeCreateState = PROCESS_CHUNK_IN_RANGE_CREATE_STATE::MESSING;
-                for (auto* pChunk : chunkCaching)
+                for (auto* pChunk : toMessingChunks)
                 {
                     std::future<CChunk2*> fut = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_PROCESS_CHUNK_IN_RANGE_CREATE_STATE_MESSING", [pChunk]()->CChunk2* {
                         if (FAILED(pChunk->Messing()))

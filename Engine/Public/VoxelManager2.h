@@ -47,7 +47,7 @@ public:
 
 	typedef struct tagChunkInRangeCreateDesc
 	{
-		uint32_t iCenterX{}, iCenterY{}, iCenterZ{};
+		int32_t iCenterX{}, iCenterY{}, iCenterZ{};
 	}CHUNK_IN_RANGE_CREATE_DESC;
 
 	typedef struct tagChunkOutRangeReleaseDesc
@@ -118,8 +118,8 @@ private:
 	HRESULT Initialize();
 
 private:
-	std::unordered_map<int64_t, UPtr<CChunk2>> m_mapChucnks{};
-	int32_t m_iRenderDistance{ 1 };
+	std::unordered_map<uint64_t, UPtr<CChunk2>> m_mapChucnks{};
+	int32_t m_iRenderDistance{ 10 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 public:
