@@ -16,8 +16,6 @@ CChunk::~CChunk()
 
 std::vector<VOX_QUAD> CChunk::GenerateQuad()
 {
-	BlockGenerate();
-
 	std::vector<VOX_QUAD> quads{};
 	
 	FaceCulling(quads);
