@@ -14,16 +14,166 @@ CChunk2::~CChunk2()
 
 HRESULT CChunk2::BlockFilling()
 {
+	for (uint32_t i = 0; i < VOXEL_CHUNK_X_SIZE2; ++i)
+	{
+		for (uint32_t j = 0; j < VOXEL_CHUNK_Z_SIZE2; ++j)
+		{
+			auto tmpx = m_iX * VOXEL_CHUNK_X_SIZE2 + i;
+			auto tmpz = m_iZ * VOXEL_CHUNK_Z_SIZE2 + j;
+			float n = CGameInstance::Get().GetVoxelHeightNoise((float)tmpx, (float)tmpz);
+			float t = (n + 1.0f) * 0.5f;   // 0~1
+			uint32_t height = (uint32_t)(32.0f + t * 64.0f); // 64~128
+			for (uint32_t k = 0; k < VOXEL_CHUNK_Y_SIZE2; ++k)
+			{
+				uint32_t idx = BlockIndexing(i, k, j);
+				if (k < height)
+					m_arrBlocks[idx].SetType(CBlock2::TYPE::GRASS);
+				else
+					m_arrBlocks[idx].SetType(CBlock2::TYPE::AIR);
+			}
+		}
+	}
 	return S_OK;
 }
 
 HRESULT CChunk2::Messing()
 {
+	m_eMessingState =  MESSING_STATE::ING;
+	std::vector<VOX_QUAD> quads{};
+
+	FaceCulling(quads);
+
+	m_indices.clear();
+	m_vertices.clear();
+
+	m_vertices.reserve(quads.size() * 4);
+	m_indices.reserve(quads.size() * 6);
+
+	//01
+	//32
+	for (uint32_t i = 0; i < quads.size(); ++i)
+	{
+		uint32_t iFaceDir = ETOUI(quads[i].eDir);
+
+		// 0000 0000  0000 0000  0000 0000  0000 0000
+		// 
+
+		// normal(3)
+		// 1110 0000  0000 0000  0000 0000  0000 0000
+
+		// vertexao(2)
+		// 0001 1000  0000 0000  0000 0000  0000 0000
+
+		// vertexid(2)
+		// 0000 0110  0000 0000  0000 0000  0000 0000
+
+		// textureid(8)
+		// 0000 0001  1111 1110  0000 0000  0000 0000
+
+		E::VTX_VOXEL v{};
+		v.pos = quads[i].v1;
+		{
+			v.packedData = {};
+			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;
+			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 25;
+		}
+		m_vertices.push_back(v);
+
+		v.pos = quads[i].v2;
+		{
+			v.packedData = {};
+			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;
+			v.packedData |= (static_cast<uint32_t>(1) & 0x03) << 25;
+		}
+		m_vertices.push_back(v);
+
+		v.pos = quads[i].v3;
+		{
+			v.packedData = {};
+			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;
+			v.packedData |= (static_cast<uint32_t>(2) & 0x03) << 25;
+		}
+		m_vertices.push_back(v);
+
+		v.pos = quads[i].v4;
+		{
+			v.packedData = {};
+			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;
+			v.packedData |= (static_cast<uint32_t>(3) & 0x03) << 25;
+		}
+		m_vertices.push_back(v);
+
+		m_indices.push_back(i * 4 + 0);
+		m_indices.push_back(i * 4 + 1);
+		m_indices.push_back(i * 4 + 2);
+		m_indices.push_back(i * 4 + 0);
+		m_indices.push_back(i * 4 + 2);
+		m_indices.push_back(i * 4 + 3);
+	}
+	m_eMessingState = MESSING_STATE::DONE;
 	return S_OK;
 }
 
 HRESULT CChunk2::GenBuffer()
 {
+	m_eBufferState = BUFFER_STATE::ING;
+
+
+	E::CResDynamicVIBuffer::DESC desc{};
+	desc.iNumVertices = (uint32_t)m_vertices.size();
+	desc.iVertexStride = sizeof(E::VTX_VOXEL);
+	desc.vertexDesc = {
+		.ByteWidth = desc.iNumVertices * desc.iVertexStride,
+		.Usage = D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+		.CPUAccessFlags = 0,
+		.MiscFlags = 0
+	};
+	desc.vertexSubResource = {
+		.pSysMem = m_vertices.data()
+	};
+
+	desc.iIndexStride = sizeof(uint32_t);
+	desc.iNumIndices = (uint32_t)m_indices.size();
+	desc.IndexDesc = {
+		.ByteWidth = desc.iNumIndices * desc.iIndexStride,
+		.Usage = D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_INDEX_BUFFER,
+		.CPUAccessFlags = 0,
+		.MiscFlags = 0
+	};
+	desc.indexSubResource = {
+		.pSysMem = m_indices.data()
+	};
+	desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
+
+	desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	auto pBuffer = E::CResDynamicVIBuffer::Create();
+	if (FAILED(pBuffer->Load(desc)))
+	{
+		m_pResDynamicViBuffer.reset();
+		m_eBufferState = BUFFER_STATE::NON;
+		return E_FAIL;
+	};
+
+	{
+		//std::lock_guard<std::mutex> lock(m_Mutex);
+
+		m_pResDynamicViBuffer = pBuffer;
+		//m_sResName = "DYNVIBUFFER_Chunk_" + std::to_string(m_iX) + "_" + std::to_string(m_iZ);
+		//E::CGameInstance::Get().AddResource("VOXEL_MANAGER_CHUNK", m_sResName.c_str(), pBuffer);
+
+	}
+
+	//m_iNumIndices = (uint32_t)m_indices.size();
+	m_indices.clear();
+	m_vertices.clear();
+
+	m_eBufferState = BUFFER_STATE::DONE;
+	m_eMessingState = MESSING_STATE::NON;
+
+
 	return S_OK;
 }
 
@@ -73,6 +223,106 @@ HRESULT CChunk2::Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 
 	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
 	return S_OK;
+}
+
+void CChunk2::FaceCulling(std::vector<VOX_QUAD>& quads)
+{//CChunk* pPlusXAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iZ);
+	//CChunk* pMinusXAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iZ);
+	//CChunk* pPlusZAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX , m_iZ + 1);
+	//CChunk* pMinusZAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX, m_iZ - 1);
+
+	//CGameInstance::Get().GetVoxelChunk()
+	// Culled Meshing (JS의 p != b 로직 적용)
+	for (int x = 0; x < (int)VOXEL_CHUNK_X_SIZE2; ++x)
+	{
+		for (int z = 0; z < (int)VOXEL_CHUNK_Z_SIZE2; ++z)
+		{
+			for (int y = 0; y < (int)VOXEL_CHUNK_Y_SIZE2; ++y)
+			{
+				uint32_t currentIdx = BlockIndexing(x, y, z);
+				if (m_arrBlocks[currentIdx].GetType() == CBlock2::TYPE::AIR) continue;
+
+				float fx = (float)x;
+				float fy = (float)y;
+				float fz = (float)z;
+
+				// 6방향 검사 및 면 생성
+				// 
+
+				// 1. Top (+Y)
+				int ny = y + 1;
+				if (ny >= (int)VOXEL_CHUNK_Y_SIZE2 || !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque()) {
+					VOX_QUAD quad{};
+					quad.v1 = { fx,     fy + 1, fz + 1 };
+					quad.v2 = { fx + 1, fy + 1, fz + 1 };
+					quad.v3 = { fx + 1, fy + 1, fz };
+					quad.v4 = { fx,     fy + 1, fz };
+					quad.eDir = FACE_DIR::POS_Y;
+					quads.push_back(quad);
+				}
+
+				// 2. Bottom (-Y)
+				ny = y - 1;
+				if (ny < 0 || !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque()) {
+					VOX_QUAD quad{};
+					quad.v1 = { fx,     fy, fz };
+					quad.v2 = { fx + 1, fy, fz };
+					quad.v3 = { fx + 1, fy, fz + 1 };
+					quad.v4 = { fx,     fy, fz + 1 };
+					quad.eDir = FACE_DIR::NEG_Y;
+					quads.push_back(quad);
+				}
+
+				// 3. Front (+Z)
+				int nz = z + 1;
+				if (nz >= (int)VOXEL_CHUNK_Z_SIZE2 || !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque()) {
+					VOX_QUAD quad{};
+					quad.v1 = { fx,     fy + 1, fz + 1 };
+					quad.v2 = { fx,     fy,     fz + 1 };
+					quad.v3 = { fx + 1, fy,     fz + 1 };
+					quad.v4 = { fx + 1, fy + 1, fz + 1 };
+					quad.eDir = FACE_DIR::POS_Z;
+					quads.push_back(quad);
+				}
+
+				// 4. Back (-Z)
+				nz = z - 1;
+				if (nz < 0 || !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque()) {
+					VOX_QUAD quad{};
+					quad.v1 = { fx,     fy + 1, fz };
+					quad.v2 = { fx + 1, fy + 1, fz };
+					quad.v3 = { fx + 1, fy,     fz };
+					quad.v4 = { fx,     fy,     fz };
+					quad.eDir = FACE_DIR::NEG_Z;
+					quads.push_back(quad);
+				}
+
+				// 5. Right (+X)
+				int nx = x + 1;
+				if (nx >= (int)VOXEL_CHUNK_X_SIZE2 || !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque()) {
+					VOX_QUAD quad{};
+					quad.v1 = { fx + 1, fy + 1, fz };
+					quad.v2 = { fx + 1, fy + 1, fz + 1 };
+					quad.v3 = { fx + 1, fy,     fz + 1 };
+					quad.v4 = { fx + 1, fy,     fz };
+					quad.eDir = FACE_DIR::POS_X;
+					quads.push_back(quad);
+				}
+
+				// 6. Left (-X)
+				nx = x - 1;
+				if (nx < 0 || !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque()) {
+					VOX_QUAD quad{};
+					quad.v1 = { fx, fy + 1, fz + 1 };
+					quad.v2 = { fx, fy + 1, fz };
+					quad.v3 = { fx, fy,     fz };
+					quad.v4 = { fx, fy,     fz + 1 };
+					quad.eDir = FACE_DIR::NEG_X;
+					quads.push_back(quad);
+				}
+			}
+		}
+	}
 }
 
 HRESULT CChunk2::Initialize(const DESC& desc)
