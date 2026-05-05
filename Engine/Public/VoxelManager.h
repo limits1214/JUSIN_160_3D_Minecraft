@@ -76,8 +76,8 @@ private:
 
 private:
 	std::unordered_map<int64_t, UPtr<CChunk>> m_mapChucnks{};
-	int32_t m_iRenderDistance{ 5 };
-	int32_t m_iVerticalRenderDistance{1};
+	int32_t m_iRenderDistance{ 1 };
+	int32_t m_iVerticalRenderDistance{0};
 
 	std::vector<int64_t> m_ChunkLoadPending{};
 	uint32_t m_iEnqueuedCnt{};
@@ -89,7 +89,7 @@ private:
 public:
 	_float GetHeightNoise(_float x, _float z) const
 	{
-		return  m_NoiseHeight.GetNoise((float)x, (float)z);
+		return  m_NoiseHeight.GetNoise(x, z);
 	}
 
 private:
