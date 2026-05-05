@@ -1,30 +1,30 @@
 #pragma once
 #include "Engine_Defines.h"
-#include "Block.h"
-#include "Chunk.h"
+#include "Chunk2.h"
 #include "IRenderable.h"
 #include <FastNoiseLite.h>
 
 NS_BEGIN(Engine)
 class CResTexture2DArray;
+class CResVertexShader;
+class CResPixelShader;
+class CResSamplerState;
 
-class CVoxelManager final: public CEngineBase, public IRenderable
+class CVoxelManager2 final : public CEngineBase, public IRenderable
 {
-//public:
-//	CVoxelManager(const CVoxelManager& rhs) = delete;
-//	CVoxelManager& operator=(const CVoxelManager&) = delete;
-public:
-
 private:
-	explicit CVoxelManager(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
-	~CVoxelManager() override;
+	explicit CVoxelManager2(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	~CVoxelManager2() override;
 
 public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) override;
 	bool HasRenderPass(RENDERPASS ePass) const override { return ePass == RENDERPASS::DEFAULT; };
 
 public:
+	void Update(_float fTimeDelta);
 	void UpdateGUI();
+
+public:
 	uint64_t encodeChunkCoord(int32_t x, int32_t y, int32_t z) const
 	{
 		// X: 21비트 (±1,048,575 청크 ≈ ±33.5 million 블록)
@@ -55,34 +55,26 @@ public:
 		return { x, y, z };
 	}
 
-public:
-	void Update(_float fTimeDelta);
-	CChunk* GetChunk(int32_t x, int32_t y, int32_t z) ;
-	void StateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
-	void SetChunkLoadCenter(int32_t x, int32_t y, int32_t z);
 
-private:
-	HRESULT ChunkLoad(int32_t x, int32_t y, int32_t z);
 
 private:
 	HRESULT Initialize();
 
 private:
-	std::unordered_map<int64_t, UPtr<CChunk>> m_mapChucnks{};
+	std::unordered_map<int64_t, UPtr<CChunk2>> m_mapChucnks{};
 	int32_t m_iRenderDistance{ 1 };
-	int32_t m_iVerticalRenderDistance{0};
-
-
-	std::vector<std::future<uint64_t>> m_ChunkLoadFutures{};
-
+	int32_t m_iVerticalRenderDistance{ 0 };
 
 public:
 	_float GetHeightNoise(_float x, _float z) const { return  m_NoiseHeight.GetNoise(x, z); }
-
 private:
 	FastNoiseLite m_NoiseHeight{};
+
+private:
 	SPtr<CResTexture2DArray> m_pResBlocksTexutreArray{};
 	SPtr<CResSamplerState> m_pResSamplerPointWrap{};
+	SPtr<CResPixelShader> m_pResPixelShader{};
+	SPtr<CResVertexShader> m_pResVertexShader{};
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};
@@ -90,7 +82,7 @@ private:
 	std::mutex m_Mutex{};
 
 public:
-	static UPtr<CVoxelManager> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	static UPtr<CVoxelManager2> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
 };
 
 NS_END
