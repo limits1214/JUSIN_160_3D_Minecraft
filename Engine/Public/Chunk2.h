@@ -38,13 +38,17 @@ private:
 	~CChunk2() override;
 
 public:
-	
+	uint32_t BlockIndexing(uint32_t x, uint32_t y, uint32_t z) const
+	{
+		return y + z * VOXEL_CHUNK_Y_SIZE2 + x * VOXEL_CHUNK_Y_SIZE2 * VOXEL_CHUNK_Z_SIZE2;
+	}
 public:
 	HRESULT BlockFilling();
 	HRESULT Messing();
 	HRESULT GenBuffer();
 	HRESULT Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
 private:
+	void FaceCulling(std::vector<VOX_QUAD>& quads);
 	HRESULT Initialize(const DESC& desc);
 private:
 	int32_t m_iX{}, m_iY{}, m_iZ{};

@@ -63,6 +63,14 @@ HRESULT CVoxelManager2::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
 
 void CVoxelManager2::UpdateGUI()
 {
+    if (ImGui::Button("chunk load 000"))
+    {
+        CHUNK_IN_RANGE_CREATE_DESC desc{};
+        desc.iCenterX = 0;
+        desc.iCenterY = 0;
+        desc.iCenterZ = 0;
+        QueuingChunkInRangeCreate(desc);
+    }
 }
 
 void CVoxelManager2::Update(_float fTimeDelta)
@@ -90,7 +98,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
         m_ChunkInRangeCreateQueue.pop();
         m_setCurrentProcess.insert(PROCESS::CHUNK_IN_RANGE_CREATE);
         m_eProcessChunkInRangeCreateState = PROCESS_CHUNK_IN_RANGE_CREATE_STATE::COLLECT_CANDIDATE;
-        m_futInRangeChunkCreateCollectCandidate = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_PROCESS_CHUNK_IN_RANGE_CREATE_STATE_COLLECT_CANDIDATE", [this, &createDesc ]()->std::vector<std::pair<uint64_t, UPtr<CChunk2>>> {
+        m_futInRangeChunkCreateCollectCandidate = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_PROCESS_CHUNK_IN_RANGE_CREATE_STATE_COLLECT_CANDIDATE", [this, createDesc ]()->std::vector<std::pair<uint64_t, UPtr<CChunk2>>> {
             
             int32_t minX = createDesc.iCenterX - m_iRenderDistance;
             int32_t maxX = createDesc.iCenterX + m_iRenderDistance;
