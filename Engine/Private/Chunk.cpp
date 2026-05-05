@@ -388,7 +388,7 @@ HRESULT CChunk::GenBuffer()
 	auto pBuffer = E::CResDynamicVIBuffer::Create();
 	if (FAILED(pBuffer->Load(desc)))
 	{
-
+		m_pResDynamicViBuffer.reset();
 		m_eBufferState = BUFFER_STATE::NO;
 		return E_FAIL;
 	};
