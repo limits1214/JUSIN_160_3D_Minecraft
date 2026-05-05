@@ -17,6 +17,8 @@ public:
 	ComPtr<ID3D11Buffer> GetIndexBuffer() const { return m_pIB; }
 	uint32_t GetNumVertices() const { return m_iNumVertices; }
 	uint32_t GetNumIndices() const { return m_iNumIndices; }
+	void SetNumVertices(uint32_t iNum) { m_iNumVertices = iNum; }
+	void SetNumIndices(uint32_t iNum) { m_iNumIndices = iNum; }
 	uint32_t GetVertexStride() const { return m_iVertexStride; }
 	uint32_t GetIndexStride() const { return m_iIndexStride; }
 	DXGI_FORMAT GetIndexFormat() const { return m_eIndexFormat; }

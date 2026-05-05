@@ -89,10 +89,15 @@ void CVoxelManager::UpdateGUI()
 
             SetChunkLoadCenter(ix, iy, iz);
         }
-        
     }
 
-    volatile int x = 0;
+    if (ImGui::Button("test"))
+    {
+        //m_mapChucnks[encodeChunkCoord(0, 0, 0)]->QuadCalc();
+       
+        //m_mapChucnks[encodeChunkCoord(0, 0, 0)]->MapBuffer(m_pContext.Get());
+        m_mapChucnks[encodeChunkCoord(0, 0, 0)]->GenBuffer();
+    }
 }
 
 void CVoxelManager::Update(_float fTimeDelta)
@@ -108,12 +113,12 @@ void CVoxelManager::Update(_float fTimeDelta)
                     //decodeChunkCoord(fut.get());
                     
                     {
-                        std::lock_guard<std::mutex> lock(m_Mutex);
+                        //std::lock_guard<std::mutex> lock(m_Mutex);
                         auto res = fut.get();
                         auto iter = m_mapChucnks.find(res);
                         if (iter != m_mapChucnks.end())
                         {
-                            m_mapChucnks[res]->MapBuffer(m_pContext.Get());
+                            //m_mapChucnks[res]->MapBuffer(m_pContext.Get());
                         }
                     }
                     //break;
@@ -133,6 +138,16 @@ void CVoxelManager::Update(_float fTimeDelta)
             }
         }
        
+    }
+
+    for (auto& [coord, chunk] : m_mapChucnks)
+    {
+        if (chunk->GetDirty())
+        {
+            //chunk->Update(fTimeDelta);
+            
+            chunk->SetDirty(false);
+        }
     }
 }
 
@@ -173,6 +188,11 @@ void CVoxelManager::SetChunkLoadCenter(int32_t cx, int32_t cy, int32_t cz)
         std::vector<uint64_t> delQ;
         for (const auto& [key, val] : m_mapChucnks)
         {
+            if (val->GetVIState() == CChunk::VI_STATE::ING
+                || val->GetBufferState() == CChunk::BUFFER_STATE::ING)
+            {
+                continue;
+            }
             auto [x, y, z] = decodeChunkCoord(key);
 
             // X, Z, Y 모두 체크
@@ -186,38 +206,58 @@ void CVoxelManager::SetChunkLoadCenter(int32_t cx, int32_t cy, int32_t cz)
 
         for (const auto& key : delQ)
         {
+
             m_mapChucnks.erase(key);
             // TODO: 메모리 해제, Mesh 삭제 등 정리 작업
         }
     }
 
     //ChunkLoad(0, 0, 0);
+   
+        
+    struct ChunkPos {
+        int x, y, z;
+        int dist; // 거리 (맨해튼 or 제곱 거리)
+    };
+
+    std::vector<ChunkPos> list;
 
     for (int32_t x = minX; x <= maxX; ++x)
-        {
-            for (int32_t y = minY; y <= maxY; ++y)
+        for (int32_t y = minY; y <= maxY; ++y)
+            for (int32_t z = minZ; z <= maxZ; ++z)
             {
-                for (int32_t z = minZ; z <= maxZ; ++z)
-                {
-                    ChunkLoad(x, y, z);
-                    
-                }
+                int dx = x - cx;
+                int dy = y - cy;
+                int dz = z - cz;
+
+                int dist = dx * dx + dy * dy + dz * dz; // 제곱 거리 (빠름)
+
+                list.push_back({ x, y, z, dist });
             }
+
+    // 중심부터 가까운 순으로 정렬
+    std::sort(list.begin(), list.end(), [](const ChunkPos& a, const ChunkPos& b) {
+        return a.dist < b.dist;
+        });
+
+    // 순서대로 로드
+    for (auto& p : list)
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        uint64_t key = encodeChunkCoord(p.x, p.y, p.z);
+        if (m_mapChucnks.find(key) == m_mapChucnks.end())
+        {
+            ChunkLoad(p.x, p.y, p.z);
         }
+    }
+       
+    
     
 }
 
 HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t y, int32_t z)
 {
-    
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-        uint64_t key = encodeChunkCoord(x, y, z);
-        if (m_mapChucnks.find(key) != m_mapChucnks.end())
-        {
-            return S_OK;
-        }
-    }
     m_ChunkLoadFutures.push_back(std::move(CGameInstance::Get().WorkerEnqueueWithFuture("FUT_CHUNK_LOADING", [=]() {
 
         uint64_t chunkCoord = encodeChunkCoord(x, y, z);
@@ -228,12 +268,18 @@ HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t y, int32_t z)
         desc.iY = y;
         desc.iChunkCoord = chunkCoord;
         //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        auto chunk = CChunk::Create(desc);
-        auto pCaching = chunk.get();
-        pCaching->QuadCalc();
-
+       
+        CChunk* pCaching{};
         {
             std::lock_guard<std::mutex> lock(m_Mutex);
+            if (m_mapChucnks.find(chunkCoord) != m_mapChucnks.end())
+            {
+                return  (uint64_t)0;
+            }
+
+            auto chunk = CChunk::Create(desc);
+            pCaching = chunk.get();
+            
             auto [it, inserted] = m_mapChucnks.emplace(chunkCoord, std::move(chunk));
             if (!inserted)
             {
@@ -241,6 +287,14 @@ HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t y, int32_t z)
                 return (uint64_t)0;
             }
         }
+
+
+        if (pCaching)
+        {
+            pCaching->QuadCalc();
+            pCaching->GenBuffer();
+        }
+       
         return chunkCoord;
         })));
 /*
@@ -265,13 +319,13 @@ HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t y, int32_t z)
 HRESULT CVoxelManager::Initialize()
 {
     m_NoiseHeight.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    m_NoiseHeight.SetFrequency(0.01f); // 전체적인 지형의 크기 (낮을수록 거대함)
+    m_NoiseHeight.SetFrequency(0.03f); // 전체적인 지형의 크기 (낮을수록 거대함)
 
     // Fractal 설정 (핵심!)
     m_NoiseHeight.SetFractalType(FastNoiseLite::FractalType_FBm);
     m_NoiseHeight.SetFractalOctaves(5);     // 층을 얼마나 쌓을지 (4~6 추천)
     m_NoiseHeight.SetFractalLacunarity(2.0f); // 층 사이의 주파수 배율
-    m_NoiseHeight.SetFractalGain(0.5f);       // 층 사이의 영향력 배율
+    m_NoiseHeight.SetFractalGain(0.3f);       // 층 사이의 영향력 배율
 
 
     //
