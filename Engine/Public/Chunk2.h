@@ -19,6 +19,19 @@ public:
 		uint64_t iChunkCoord{};
 	} DESC;
 
+	enum class BUFFER_STATE
+	{
+		NON, ING, DONE
+	};
+
+	enum class MESSING_STATE
+	{
+		NON, ING, DONE
+	};
+	BUFFER_STATE GetBufferState() const { return m_eBufferState; }
+	MESSING_STATE GetVIState() const { return m_eMessingState; }
+	BUFFER_STATE m_eBufferState{ BUFFER_STATE::NON };
+	MESSING_STATE m_eMessingState{ MESSING_STATE::NON };
 
 private:
 	CChunk2();
@@ -27,7 +40,10 @@ private:
 public:
 	
 public:
-
+	HRESULT BlockFilling();
+	HRESULT Messing();
+	HRESULT GenBuffer();
+	HRESULT Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
 private:
 	HRESULT Initialize(const DESC& desc);
 private:

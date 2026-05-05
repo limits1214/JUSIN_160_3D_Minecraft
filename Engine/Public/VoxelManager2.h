@@ -12,6 +12,63 @@ class CResSamplerState;
 
 class CVoxelManager2 final : public CEngineBase, public IRenderable
 {
+public:
+	enum class PROCESS
+	{
+		CHUNK_IN_RANGE_CREATE,
+		CHUNK_OUT_RANGE_RELEASE,
+		CHUNK_REBUILD
+	};
+
+	enum class PROCESS_CHUNK_IN_RANGE_CREATE_STATE
+	{
+		NON,
+		COLLECT_CANDIDATE,
+		BLOCK_FILLING,
+		REGIST_NEIGHBOR,
+		MESSING,
+		BUFFER_CREATE,
+	};
+	PROCESS_CHUNK_IN_RANGE_CREATE_STATE m_eProcessChunkInRangeCreateState{ PROCESS_CHUNK_IN_RANGE_CREATE_STATE::NON};
+	std::future<std::vector<std::pair<uint64_t, UPtr<CChunk2>>>> m_futInRangeChunkCreateCollectCandidate{};
+	std::vector<std::future<CChunk2*>> m_futInRangeChunkCreateBlockFillings{};
+	//std::future<bool> m_futInRangeChunkCreateRegistNeighbor{};
+	std::vector<std::future<CChunk2*>> m_futInRangeChunkCreateMessing{};
+
+	enum class PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE
+	{
+		NON,
+	};
+
+	enum class PROCESS_CHUNK_REBUILD_STATE
+	{
+		NON,
+	};
+
+	typedef struct tagChunkInRangeCreateDesc
+	{
+		uint32_t iCenterX{}, iCenterY{}, iCenterZ{};
+	}CHUNK_IN_RANGE_CREATE_DESC;
+
+	typedef struct tagChunkOutRangeReleaseDesc
+	{
+
+	}CHUNK_OUT_RANGE_RELEASE_DESC;
+
+	typedef struct tagChunkRebuildDesc
+	{
+
+	}CHUNK_REBUILD_DESC;
+	std::queue<CHUNK_IN_RANGE_CREATE_DESC> m_ChunkInRangeCreateQueue{};
+	std::queue<CHUNK_OUT_RANGE_RELEASE_DESC> m_ChunkOutRangeReleaseQueue{};
+	std::queue<CHUNK_REBUILD_DESC> m_ChunkRebuildQueue{};
+	std::unordered_set<PROCESS> m_setCurrentProcess{};
+	const std::unordered_set<PROCESS>& GetCurrentProcessing() const { return m_setCurrentProcess; };
+
+	HRESULT QueuingChunkInRangeCreate(const CHUNK_IN_RANGE_CREATE_DESC& desc);
+	HRESULT QueuingChunkOutRangeRelease(const CHUNK_OUT_RANGE_RELEASE_DESC& desc);
+	HRESULT QueuingChunkRebuild(const CHUNK_REBUILD_DESC& desc);
+
 private:
 	explicit CVoxelManager2(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
 	~CVoxelManager2() override;
