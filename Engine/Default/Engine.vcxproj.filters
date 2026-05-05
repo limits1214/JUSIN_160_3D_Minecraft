@@ -238,6 +238,18 @@
     <Filter Include="100.Shaders\QuadCol">
       <UniqueIdentifier>{4a81528d-5046-4952-be1a-b41f24e12a61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Voxel2">
+      <UniqueIdentifier>{1aeef163-66ae-44f0-b0a4-49e6d7ebe26e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel2\Manager">
+      <UniqueIdentifier>{7f8d25ca-ec97-459a-9712-08924624f21e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel2\Chunk">
+      <UniqueIdentifier>{5074b6bb-21db-4ea2-99be-aedd5e1dfa53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel2\Block">
+      <UniqueIdentifier>{619f9e21-30c7-42b3-8116-4cb483bd36ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -492,6 +504,15 @@
     <ClInclude Include="..\public\Chunk.h">
       <Filter>Voxel\Chunk</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\Block2.h">
+      <Filter>Voxel2\Block</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Chunk2.h">
+      <Filter>Voxel2\Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\VoxelManager2.h">
+      <Filter>Voxel2\Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -733,6 +754,15 @@
     </ClCompile>
     <ClCompile Include="..\private\Chunk.cpp">
       <Filter>Voxel\Chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Block2.cpp">
+      <Filter>Voxel2\Block</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Chunk2.cpp">
+      <Filter>Voxel2\Chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\VoxelManager2.cpp">
+      <Filter>Voxel2\Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

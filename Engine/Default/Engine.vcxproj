@@ -231,9 +231,11 @@ call CopyClient.bat</Command>
   <ItemGroup>
     <ClInclude Include="..\public\BaseApp.h" />
     <ClInclude Include="..\public\Block.h" />
+    <ClInclude Include="..\public\Block2.h" />
     <ClInclude Include="..\public\CameraManager.h" />
     <ClInclude Include="..\public\CameraObject.h" />
     <ClInclude Include="..\public\Chunk.h" />
+    <ClInclude Include="..\public\Chunk2.h" />
     <ClInclude Include="..\Public\CollBox.h" />
     <ClInclude Include="..\Public\CollFrustum.h" />
     <ClInclude Include="..\Public\Collider.h" />
@@ -307,6 +309,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UICamera.h" />
     <ClInclude Include="..\public\UIObject.h" />
     <ClInclude Include="..\public\VoxelManager.h" />
+    <ClInclude Include="..\public\VoxelManager2.h" />
     <ClInclude Include="..\public\WorkerManager.h" />
     <ClInclude Include="..\Public\IRenderable.h" />
     <ClInclude Include="..\Public\Handle.h" />
@@ -413,9 +416,11 @@ call CopyClient.bat</Command>
     </ClCompile>
     <ClCompile Include="..\private\BaseApp.cpp" />
     <ClCompile Include="..\private\Block.cpp" />
+    <ClCompile Include="..\private\Block2.cpp" />
     <ClCompile Include="..\private\CameraManager.cpp" />
     <ClCompile Include="..\private\CameraObject.cpp" />
     <ClCompile Include="..\private\Chunk.cpp" />
+    <ClCompile Include="..\private\Chunk2.cpp" />
     <ClCompile Include="..\Private\CollBox.cpp" />
     <ClCompile Include="..\Private\CollFrustum.cpp" />
     <ClCompile Include="..\Private\Collider.cpp" />
@@ -477,6 +482,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UICamera.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
     <ClCompile Include="..\private\VoxelManager.cpp" />
+    <ClCompile Include="..\private\VoxelManager2.cpp" />
     <ClCompile Include="..\private\WorkerManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
