@@ -29,19 +29,18 @@ public:
 		NON, ING, DONE
 	};
 	BUFFER_STATE GetBufferState() const { return m_eBufferState; }
-	MESSING_STATE GetVIState() const { return m_eMessingState; }
+	MESSING_STATE GetMessingState() const { return m_eMessingState; }
 	BUFFER_STATE m_eBufferState{ BUFFER_STATE::NON };
 	MESSING_STATE m_eMessingState{ MESSING_STATE::NON };
 
+	uint64_t GetCoordIdx() const { return m_iChunkCoord; }
+	std::tuple<uint32_t, uint32_t, uint32_t> GetCoord() const { return { m_iX, m_iY, m_iZ }; }
 private:
 	CChunk2();
 	~CChunk2() override;
 
 public:
-	uint32_t BlockIndexing(uint32_t x, uint32_t y, uint32_t z) const
-	{
-		return y + z * VOXEL_CHUNK_Y_SIZE2 + x * VOXEL_CHUNK_Y_SIZE2 * VOXEL_CHUNK_Z_SIZE2;
-	}
+	uint32_t BlockIndexing(uint32_t x, uint32_t y, uint32_t z) const { return y + z * VOXEL_CHUNK_Y_SIZE2 + x * VOXEL_CHUNK_Y_SIZE2 * VOXEL_CHUNK_Z_SIZE2; }
 public:
 	HRESULT BlockFilling();
 	HRESULT Messing();
@@ -58,7 +57,14 @@ private:
 	std::array<CBlock2, VOXEL_CHUNK_X_SIZE2 * VOXEL_CHUNK_Z_SIZE2 * VOXEL_CHUNK_Y_SIZE2> m_arrBlocks{};
 
 
-
+public:
+	HRESULT SetNeighborChunk(CChunk2* pChunk, FACE_DIR eDir)
+	{
+		m_arrNeighborChunks[ETOUI(eDir)] = pChunk;
+		return S_OK;
+	}
+private:
+	std::array<CChunk2*, ETOUI(FACE_DIR::END)> m_arrNeighborChunks{};
 
 
 

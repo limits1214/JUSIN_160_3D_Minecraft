@@ -226,13 +226,12 @@ HRESULT CChunk2::Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 }
 
 void CChunk2::FaceCulling(std::vector<VOX_QUAD>& quads)
-{//CChunk* pPlusXAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iZ);
-	//CChunk* pMinusXAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iZ);
-	//CChunk* pPlusZAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX , m_iZ + 1);
-	//CChunk* pMinusZAdjChunk = CGameInstance::Get().GetVoxelChunk(m_iX, m_iZ - 1);
+{
+	CChunk2* pPlusX = m_arrNeighborChunks[static_cast<int>(FACE_DIR::POS_X)];
+	CChunk2* pMinusX = m_arrNeighborChunks[static_cast<int>(FACE_DIR::NEG_X)];
+	CChunk2* pPlusZ = m_arrNeighborChunks[static_cast<int>(FACE_DIR::POS_Z)];
+	CChunk2* pMinusZ = m_arrNeighborChunks[static_cast<int>(FACE_DIR::NEG_Z)];
 
-	//CGameInstance::Get().GetVoxelChunk()
-	// Culled Meshing (JS의 p != b 로직 적용)
 	for (int x = 0; x < (int)VOXEL_CHUNK_X_SIZE2; ++x)
 	{
 		for (int z = 0; z < (int)VOXEL_CHUNK_Z_SIZE2; ++z)
@@ -246,79 +245,131 @@ void CChunk2::FaceCulling(std::vector<VOX_QUAD>& quads)
 				float fy = (float)y;
 				float fz = (float)z;
 
-				// 6방향 검사 및 면 생성
-				// 
-
 				// 1. Top (+Y)
-				int ny = y + 1;
-				if (ny >= (int)VOXEL_CHUNK_Y_SIZE2 || !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque()) {
-					VOX_QUAD quad{};
-					quad.v1 = { fx,     fy + 1, fz + 1 };
-					quad.v2 = { fx + 1, fy + 1, fz + 1 };
-					quad.v3 = { fx + 1, fy + 1, fz };
-					quad.v4 = { fx,     fy + 1, fz };
-					quad.eDir = FACE_DIR::POS_Y;
-					quads.push_back(quad);
+				{
+					int ny = y + 1;
+					bool bExpose = (ny >= (int)VOXEL_CHUNK_Y_SIZE2)
+						? true  // 청크 Y 상단 경계 - 인접 청크 없음(혹은 항상 노출)
+						: !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque();
+					if (bExpose) {
+						VOX_QUAD quad{};
+						quad.v1 = { fx,     fy + 1, fz + 1 };
+						quad.v2 = { fx + 1, fy + 1, fz + 1 };
+						quad.v3 = { fx + 1, fy + 1, fz };
+						quad.v4 = { fx,     fy + 1, fz };
+						quad.eDir = FACE_DIR::POS_Y;
+						quads.push_back(quad);
+					}
 				}
 
 				// 2. Bottom (-Y)
-				ny = y - 1;
-				if (ny < 0 || !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque()) {
-					VOX_QUAD quad{};
-					quad.v1 = { fx,     fy, fz };
-					quad.v2 = { fx + 1, fy, fz };
-					quad.v3 = { fx + 1, fy, fz + 1 };
-					quad.v4 = { fx,     fy, fz + 1 };
-					quad.eDir = FACE_DIR::NEG_Y;
-					quads.push_back(quad);
+				{
+					int ny = y - 1;
+					bool bExpose = (ny < 0)
+						? true
+						: !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque();
+					if (bExpose) {
+						VOX_QUAD quad{};
+						quad.v1 = { fx,     fy, fz };
+						quad.v2 = { fx + 1, fy, fz };
+						quad.v3 = { fx + 1, fy, fz + 1 };
+						quad.v4 = { fx,     fy, fz + 1 };
+						quad.eDir = FACE_DIR::NEG_Y;
+						quads.push_back(quad);
+					}
 				}
 
 				// 3. Front (+Z)
-				int nz = z + 1;
-				if (nz >= (int)VOXEL_CHUNK_Z_SIZE2 || !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque()) {
-					VOX_QUAD quad{};
-					quad.v1 = { fx,     fy + 1, fz + 1 };
-					quad.v2 = { fx,     fy,     fz + 1 };
-					quad.v3 = { fx + 1, fy,     fz + 1 };
-					quad.v4 = { fx + 1, fy + 1, fz + 1 };
-					quad.eDir = FACE_DIR::POS_Z;
-					quads.push_back(quad);
+				{
+					int nz = z + 1;
+					bool bExpose;
+					if (nz >= (int)VOXEL_CHUNK_Z_SIZE2) {
+						// 인접 청크의 z=0 줄 확인
+						bExpose = (pPlusZ == nullptr)
+							? true
+							: !pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].IsOpaque();
+					}
+					else {
+						bExpose = !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque();
+					}
+					if (bExpose) {
+						VOX_QUAD quad{};
+						quad.v1 = { fx,     fy + 1, fz + 1 };
+						quad.v2 = { fx,     fy,     fz + 1 };
+						quad.v3 = { fx + 1, fy,     fz + 1 };
+						quad.v4 = { fx + 1, fy + 1, fz + 1 };
+						quad.eDir = FACE_DIR::POS_Z;
+						quads.push_back(quad);
+					}
 				}
 
 				// 4. Back (-Z)
-				nz = z - 1;
-				if (nz < 0 || !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque()) {
-					VOX_QUAD quad{};
-					quad.v1 = { fx,     fy + 1, fz };
-					quad.v2 = { fx + 1, fy + 1, fz };
-					quad.v3 = { fx + 1, fy,     fz };
-					quad.v4 = { fx,     fy,     fz };
-					quad.eDir = FACE_DIR::NEG_Z;
-					quads.push_back(quad);
+				{
+					int nz = z - 1;
+					bool bExpose;
+					if (nz < 0) {
+						bExpose = (pMinusZ == nullptr)
+							? true
+							: !pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE2 - 1)].IsOpaque();
+					}
+					else {
+						bExpose = !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque();
+					}
+					if (bExpose) {
+						VOX_QUAD quad{};
+						quad.v1 = { fx,     fy + 1, fz };
+						quad.v2 = { fx + 1, fy + 1, fz };
+						quad.v3 = { fx + 1, fy,     fz };
+						quad.v4 = { fx,     fy,     fz };
+						quad.eDir = FACE_DIR::NEG_Z;
+						quads.push_back(quad);
+					}
 				}
 
 				// 5. Right (+X)
-				int nx = x + 1;
-				if (nx >= (int)VOXEL_CHUNK_X_SIZE2 || !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque()) {
-					VOX_QUAD quad{};
-					quad.v1 = { fx + 1, fy + 1, fz };
-					quad.v2 = { fx + 1, fy + 1, fz + 1 };
-					quad.v3 = { fx + 1, fy,     fz + 1 };
-					quad.v4 = { fx + 1, fy,     fz };
-					quad.eDir = FACE_DIR::POS_X;
-					quads.push_back(quad);
+				{
+					int nx = x + 1;
+					bool bExpose;
+					if (nx >= (int)VOXEL_CHUNK_X_SIZE2) {
+						bExpose = (pPlusX == nullptr)
+							? true
+							: !pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].IsOpaque();
+					}
+					else {
+						bExpose = !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque();
+					}
+					if (bExpose) {
+						VOX_QUAD quad{};
+						quad.v1 = { fx + 1, fy + 1, fz };
+						quad.v2 = { fx + 1, fy + 1, fz + 1 };
+						quad.v3 = { fx + 1, fy,     fz + 1 };
+						quad.v4 = { fx + 1, fy,     fz };
+						quad.eDir = FACE_DIR::POS_X;
+						quads.push_back(quad);
+					}
 				}
 
 				// 6. Left (-X)
-				nx = x - 1;
-				if (nx < 0 || !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque()) {
-					VOX_QUAD quad{};
-					quad.v1 = { fx, fy + 1, fz + 1 };
-					quad.v2 = { fx, fy + 1, fz };
-					quad.v3 = { fx, fy,     fz };
-					quad.v4 = { fx, fy,     fz + 1 };
-					quad.eDir = FACE_DIR::NEG_X;
-					quads.push_back(quad);
+				{
+					int nx = x - 1;
+					bool bExpose;
+					if (nx < 0) {
+						bExpose = (pMinusX == nullptr)
+							? true
+							: !pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE2 - 1, y, z)].IsOpaque();
+					}
+					else {
+						bExpose = !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque();
+					}
+					if (bExpose) {
+						VOX_QUAD quad{};
+						quad.v1 = { fx, fy + 1, fz + 1 };
+						quad.v2 = { fx, fy + 1, fz };
+						quad.v3 = { fx, fy,     fz };
+						quad.v4 = { fx, fy,     fz + 1 };
+						quad.eDir = FACE_DIR::NEG_X;
+						quads.push_back(quad);
+					}
 				}
 			}
 		}

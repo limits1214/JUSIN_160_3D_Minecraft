@@ -26,9 +26,10 @@ namespace Engine
 		HEIGHT
 	};
 
-	enum FACE_DIR {
+	enum class FACE_DIR {
 		POS_X = 0, NEG_X,
 		POS_Y, NEG_Y,
-		POS_Z, NEG_Z
+		POS_Z, NEG_Z,
+		END
 	};
 }

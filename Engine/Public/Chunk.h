@@ -96,6 +96,7 @@ private:
 private:
 	SPtr<CResCBuffer> m_pResCBufferPerObject{};
 
+
 public:
 	static UPtr<CChunk> Create(const DESC& desc);
 
