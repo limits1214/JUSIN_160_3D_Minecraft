@@ -54,12 +54,13 @@ public:
 	VI_STATE GetVIState() const { return m_eVIState; }
 	_bool GetDirty() const { return m_bDirty; }
 	void SetDirty(_bool b) { m_bDirty = b; }
+
 private:
-	void BlockGenerate();
 	void FaceCulling(std::vector<VOX_QUAD>& quads);
 	void GreedyCulling(std::vector<VOX_QUAD>& quads);
 	void NoCulling(std::vector<VOX_QUAD>& quads);
 public:
+	void BlockGenerate();
 	_bool QuadCalc();
 	HRESULT GenBuffer();
 	void BindBuffer(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);

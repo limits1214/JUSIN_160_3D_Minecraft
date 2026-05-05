@@ -113,11 +113,12 @@ void CVoxelManager::Update(_float fTimeDelta)
                     //decodeChunkCoord(fut.get());
                     
                     {
-                        //std::lock_guard<std::mutex> lock(m_Mutex);
+                        std::lock_guard<std::mutex> lock(m_Mutex);
                         auto res = fut.get();
                         auto iter = m_mapChucnks.find(res);
                         if (iter != m_mapChucnks.end())
                         {
+                            m_mapChucnks[res]->GenBuffer();
                             //m_mapChucnks[res]->MapBuffer(m_pContext.Get());
                         }
                     }
@@ -291,8 +292,8 @@ HRESULT CVoxelManager::ChunkLoad(int32_t x, int32_t y, int32_t z)
 
         if (pCaching)
         {
+            pCaching->BlockGenerate();
             pCaching->QuadCalc();
-            pCaching->GenBuffer();
         }
        
         return chunkCoord;
