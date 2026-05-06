@@ -8,21 +8,21 @@ NS_USING(Engine)
 // only main thread
 HRESULT CVoxelManager2::QueuingChunkInRangeCreate(const CHUNK_IN_RANGE_CREATE_DESC& desc)
 {
-    m_ChunkInRangeCreateQueue.push(desc);
+    m_ChunkInRangeCreateQueue.push_back(desc);
     return S_OK;
 }
 
 // only main thread
 HRESULT CVoxelManager2::QueuingChunkOutRangeRelease(const CHUNK_OUT_RANGE_RELEASE_DESC& desc)
 {
-    m_ChunkOutRangeReleaseQueue.push(desc);
+    m_ChunkOutRangeReleaseQueue.push_back(desc);
     return S_OK;
 }
 
 // only main thread
 HRESULT CVoxelManager2::QueuingChunkRebuild(const CHUNK_REBUILD_DESC& desc)
 {
-    m_ChunkRebuildQueue.push(desc);
+    m_ChunkRebuildQueue.push_back(desc);
     return S_OK;
 }
 
@@ -99,10 +99,131 @@ void CVoxelManager2::UpdateGUI()
             QueuingChunkInRangeCreate(desc);
         }
     }
+
+    if (ImGui::Button("Release Cam"))
+    {
+        if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+        {
+            float fx = cam->GetTransform().GetPosition().x;
+            float fy = cam->GetTransform().GetPosition().y;
+            float fz = cam->GetTransform().GetPosition().z;
+            auto ix = (int32_t)floor(fx / VOXEL_CHUNK_X_SIZE2);
+            auto iy = (int32_t)floor(fy / VOXEL_CHUNK_Y_SIZE2);
+            auto iz = (int32_t)floor(fz / VOXEL_CHUNK_Z_SIZE2);
+
+            CHUNK_OUT_RANGE_RELEASE_DESC desc{};
+            desc.iCenterX = ix;
+            desc.iCenterY = 0;
+            desc.iCenterZ = iz;
+            QueuingChunkOutRangeRelease(desc);
+        }
+    }
+
+
+    if (ImGui::Button("Picking"))
+    {
+        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+        {
+            RECT rect;
+            GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+
+            //POINT pt;
+            //GetCursorPos(&pt);
+            //ScreenToClient(CGameInstance::Get().GetHwnd(), &pt);
+
+            //int sx = pt.x;
+            //int sy = pt.y;
+
+            E::_float4x4 P;
+            XMStoreFloat4x4(&P, cam->GetProj());
+
+            //float vx = (2.f * sx / rect.right - 1.f) / P._11;
+            //float vy = (-2.f * sy / rect.bottom + 1.f) / P._22;
+
+            E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+            E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+            E::_matrix V = cam->GetView();
+            auto detV = XMMatrixDeterminant(V);
+            E::_matrix invView = XMMatrixInverse(&detV, V);
+
+            //E::_matrix W = GetTransform().GetLoadedWorldMatrix();
+            //auto detW = XMMatrixDeterminant(W);
+            //E::_matrix invWold = XMMatrixInverse(&detW, W);
+
+            //E::_matrix toLocal = invView * invWold;
+
+            rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+            rayDir = XMVector3TransformNormal(rayDir, invView);
+            _float3 vecrayOrigin;
+            _float3 vecrayDir;
+           
+            XMStoreFloat3(&vecrayOrigin, rayOrigin);
+            XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
+
+
+            RaycastResult res;
+            if (RaycastDDA(vecrayOrigin, vecrayDir, 5.f, res))
+            {
+                volatile int x = 0;
+            }
+        }
+    }
+
 }
 
 void CVoxelManager2::Update(_float fTimeDelta)
 {
+    {
+        static float tmp = 0;
+        tmp += fTimeDelta;
+        if (tmp > 1.f)
+        {
+            tmp = 0;
+
+
+            {
+                if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+                {
+                    float fx = cam->GetTransform().GetPosition().x;
+                    float fy = cam->GetTransform().GetPosition().y;
+                    float fz = cam->GetTransform().GetPosition().z;
+                    auto ix = (int32_t)floor(fx / VOXEL_CHUNK_X_SIZE2);
+                    auto iy = (int32_t)floor(fy / VOXEL_CHUNK_Y_SIZE2);
+                    auto iz = (int32_t)floor(fz / VOXEL_CHUNK_Z_SIZE2);
+
+                    CHUNK_OUT_RANGE_RELEASE_DESC desc{};
+                    desc.iCenterX = ix;
+                    desc.iCenterY = 0;
+                    desc.iCenterZ = iz;
+                    m_ChunkOutRangeReleaseQueue.clear();
+                    QueuingChunkOutRangeRelease(desc);
+                }
+            }
+
+            {
+                if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+                {
+                    float fx = cam->GetTransform().GetPosition().x;
+                    float fy = cam->GetTransform().GetPosition().y;
+                    float fz = cam->GetTransform().GetPosition().z;
+                    auto ix = (int32_t)floor(fx / VOXEL_CHUNK_X_SIZE2);
+                    auto iy = (int32_t)floor(fy / VOXEL_CHUNK_Y_SIZE2);
+                    auto iz = (int32_t)floor(fz / VOXEL_CHUNK_Z_SIZE2);
+
+                    CHUNK_IN_RANGE_CREATE_DESC desc{};
+                    desc.iCenterX = ix;
+                    desc.iCenterY = 0;
+                    desc.iCenterZ = iz;
+                    m_ChunkInRangeCreateQueue.clear();
+                    QueuingChunkInRangeCreate(desc);
+                }
+            }
+
+        }
+    }
+
+
     _bool bRebuildProcessing = m_setCurrentProcess.find(PROCESS::CHUNK_REBUILD) != m_setCurrentProcess.end();
     _bool bInRangeCreateProcessing = m_setCurrentProcess.find(PROCESS::CHUNK_IN_RANGE_CREATE) != m_setCurrentProcess.end();
     _bool bOutRangeReleaseProcessing = m_setCurrentProcess.find(PROCESS::CHUNK_OUT_RANGE_RELEASE) != m_setCurrentProcess.end();
@@ -123,7 +244,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
     if (bHasInRangeCreateQueue && !bOutRangeReleaseProcessing && !bInRangeCreateProcessing)
     {
         CHUNK_IN_RANGE_CREATE_DESC createDesc = m_ChunkInRangeCreateQueue.front();
-        m_ChunkInRangeCreateQueue.pop();
+        m_ChunkInRangeCreateQueue.pop_front();
         m_setCurrentProcess.insert(PROCESS::CHUNK_IN_RANGE_CREATE);
         m_eProcessChunkInRangeCreateState = PROCESS_CHUNK_IN_RANGE_CREATE_STATE::COLLECT_CANDIDATE;
         m_futInRangeChunkCreateCollectCandidate = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_PROCESS_CHUNK_IN_RANGE_CREATE_STATE_COLLECT_CANDIDATE", [this, createDesc ]()->std::vector<std::pair<uint64_t, UPtr<CChunk2>>> {
@@ -187,6 +308,177 @@ void CVoxelManager2::Update(_float fTimeDelta)
     // release큐가 존재하는데 현재 크리에이스 프로세싱이 아니여야함
     else if (bHasOutRangeReleasedQueue && !bOutRangeReleaseProcessing && !bInRangeCreateProcessing)
     {
+        CHUNK_OUT_RANGE_RELEASE_DESC releaseDesc = m_ChunkOutRangeReleaseQueue.front();
+        m_ChunkOutRangeReleaseQueue.pop_front();
+        m_setCurrentProcess.insert(PROCESS::CHUNK_OUT_RANGE_RELEASE);
+        m_eProcessChunkOutRangeReleaseState = PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE::COLLECT_CANDIDATE;
+
+        std::vector<CChunk2*> delQ;
+        {
+            int32_t minX = releaseDesc.iCenterX - m_iRenderDistance;
+            int32_t maxX = releaseDesc.iCenterX + m_iRenderDistance;
+            int32_t minZ = releaseDesc.iCenterZ - m_iRenderDistance;
+            int32_t maxZ = releaseDesc.iCenterZ + m_iRenderDistance;
+
+            //// Y축 범위 (Vertical Render Distance)
+            //int32_t verticalDistance = m_iVerticalRenderDistance;  // 새로 추가 추천
+            int32_t minY = releaseDesc.iCenterY - m_iVerticalRenderDistance;
+            int32_t maxY = releaseDesc.iCenterY + m_iVerticalRenderDistance;
+            
+            for (const auto& [coord, pChunk] : m_mapChucnks)
+            {
+                auto [x, y, z] = decodeChunkCoord(coord);
+
+                // X, Z, Y 모두 체크
+                if (x < minX || x > maxX ||
+                    z < minZ || z > maxZ ||
+                    y < minY || y > maxY)
+                {
+                    delQ.push_back(pChunk.get());
+                }
+            }
+        }
+
+
+
+        m_eProcessChunkOutRangeReleaseState = PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE::UNREGIST_NEIGHBOR;
+        {
+            //std::vector<CChunk2*> toMessingChunks{};
+            std::unordered_set<CChunk2*> toReMessingSets{};
+
+            for (const auto& pDelChunk : delQ)
+            {
+                const auto&[delX, delY, delZ] = pDelChunk->GetCoord();
+
+                {
+                    uint64_t coord = encodeChunkCoord(delX + 1, delY, delZ);
+                    auto iter = m_mapChucnks.find(coord);
+                    if (iter != m_mapChucnks.end())
+                    {
+                        CChunk2* pNeighbor = iter->second.get();
+                        pNeighbor->SetNeighborChunk(nullptr, FACE_DIR::NEG_X);
+                        if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                        {
+                            toReMessingSets.insert(pNeighbor);
+                        }
+                    }
+                }
+
+                {
+                    uint64_t coord = encodeChunkCoord(delX - 1, delY, delZ);
+                    auto iter = m_mapChucnks.find(coord);
+                    if (iter != m_mapChucnks.end())
+                    {
+                        CChunk2* pNeighbor = iter->second.get();
+                        pNeighbor->SetNeighborChunk(nullptr, FACE_DIR::POS_X);
+                        if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                        {
+                            toReMessingSets.insert(pNeighbor);
+                        }
+                    }
+                }
+
+                {
+                    uint64_t coord = encodeChunkCoord(delX , delY + 1, delZ);
+                    auto iter = m_mapChucnks.find(coord);
+                    if (iter != m_mapChucnks.end())
+                    {
+                        CChunk2* pNeighbor = iter->second.get();
+                        pNeighbor->SetNeighborChunk(nullptr, FACE_DIR::NEG_Y);
+                        if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                        {
+                            toReMessingSets.insert(pNeighbor);
+                        }
+                    }
+                }
+
+                {
+                    uint64_t coord = encodeChunkCoord(delX, delY - 1, delZ);
+                    auto iter = m_mapChucnks.find(coord);
+                    if (iter != m_mapChucnks.end())
+                    {
+                        CChunk2* pNeighbor = iter->second.get();
+                        pNeighbor->SetNeighborChunk(nullptr, FACE_DIR::POS_Y);
+                        if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                        {
+                            toReMessingSets.insert(pNeighbor);
+                        }
+                    }
+                }
+
+                {
+                    uint64_t coord = encodeChunkCoord(delX, delY, delZ + 1);
+                    auto iter = m_mapChucnks.find(coord);
+                    if (iter != m_mapChucnks.end())
+                    {
+                        CChunk2* pNeighbor = iter->second.get();
+                        pNeighbor->SetNeighborChunk(nullptr, FACE_DIR::NEG_Z);
+                        if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                        {
+                            toReMessingSets.insert(pNeighbor);
+                        }
+                    }
+                }
+
+                {
+                    uint64_t coord = encodeChunkCoord(delX, delY, delZ - 1);
+                    auto iter = m_mapChucnks.find(coord);
+                    if (iter != m_mapChucnks.end())
+                    {
+                        CChunk2* pNeighbor = iter->second.get();
+                        pNeighbor->SetNeighborChunk(nullptr, FACE_DIR::POS_Z);
+                        if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                        {
+                            toReMessingSets.insert(pNeighbor);
+                        }
+                    }
+                }
+            }
+
+
+           
+
+            //for(const)
+
+            for (auto iter = toReMessingSets.begin(); iter != toReMessingSets.end();)
+            {
+                auto findIter = std::find(delQ.begin(), delQ.end(), *iter);
+                if (findIter != delQ.end())
+                {
+                    iter = toReMessingSets.erase(iter);
+                }
+                else
+                {
+                    ++iter;
+                }
+            }
+
+            
+            for (const auto& pDelChunk : delQ)
+            {
+                // delete
+                m_mapChucnks.erase(pDelChunk->GetCoordIdx());
+            }
+
+            m_eProcessChunkOutRangeReleaseState = PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE::MESSING;
+            {
+                for (auto* pChunk : toReMessingSets)
+                {
+                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE_MESSING", [pChunk]()->CChunk2* {
+                        if (FAILED(pChunk->Messing()))
+                        {
+                            // TODO: MSGBOX
+                        }
+                        return pChunk;
+                        });
+                    m_futOutRangeChunkReleaseMessing.push_back(std::move(fut));
+                }
+            }
+        }
+
+       
+
+        
 
     }
 
@@ -463,11 +755,130 @@ void CVoxelManager2::Update(_float fTimeDelta)
     }
     else if (bOutRangeReleaseProcessing)
     {
+        if (m_eProcessChunkOutRangeReleaseState == PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE::MESSING)
+        {
+            //m_eProcessChunkOutRangeReleaseState = PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE::BUFFER_CREATE;
+            for (auto iter = m_futOutRangeChunkReleaseMessing.begin(); iter != m_futOutRangeChunkReleaseMessing.end();)
+            {
+                if (iter->valid())
+                {
+                    if (iter->wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+                    {
+                        if (FAILED(iter->get()->GenBuffer()))
+                        {
+                            // TODO: MSGBOX
+                        }
+                        iter = m_futOutRangeChunkReleaseMessing.erase(iter);
+                    }
+                    else
+                    {
+                        ++iter;
+                    }
+                }
+                else
+                {
+                    // TODO: MSGBOX
+                    ++iter;
+                }
+            }
 
+            if (m_futOutRangeChunkReleaseMessing.empty())
+            {
+                //프로세스 종료
+                m_eProcessChunkOutRangeReleaseState = PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE::NON;
+                m_setCurrentProcess.erase(PROCESS::CHUNK_OUT_RANGE_RELEASE);
+            }
+        }
     }
 
 }
 
+
+bool CVoxelManager2::RaycastDDA(const _float3& rayOrigin, const _float3& rayDir, float fMaxDist, RaycastResult& outResult)
+{
+    // --- 1. 시작 블록 (월드 좌표 → 블록 그리드) ---
+    int32_t bx = (int32_t)floorf(rayOrigin.x);
+    int32_t by = (int32_t)floorf(rayOrigin.y);
+    int32_t bz = (int32_t)floorf(rayOrigin.z);
+
+
+    // 각 축 이동 방향
+    int stepX = (rayDir.x >= 0) ? 1 : -1;
+    int stepY = (rayDir.y >= 0) ? 1 : -1;
+    int stepZ = (rayDir.z >= 0) ? 1 : -1;
+
+    // 다음 블록 경계까지의 t값
+    float tMaxX = (rayDir.x != 0) ? ((stepX > 0 ? (bx + 1.f) : bx) - rayOrigin.x) / rayDir.x : FLT_MAX;
+    float tMaxY = (rayDir.y != 0) ? ((stepY > 0 ? (by + 1.f) : by) - rayOrigin.y) / rayDir.y : FLT_MAX;
+    float tMaxZ = (rayDir.z != 0) ? ((stepZ > 0 ? (bz + 1.f) : bz) - rayOrigin.z) / rayDir.z : FLT_MAX;
+
+    // 블록 하나 이동할 때마다 증가하는 t값
+    float tDeltaX = (rayDir.x != 0) ? fabsf(1.f / rayDir.x) : FLT_MAX;
+    float tDeltaY = (rayDir.y != 0) ? fabsf(1.f / rayDir.y) : FLT_MAX;
+    float tDeltaZ = (rayDir.z != 0) ? fabsf(1.f / rayDir.z) : FLT_MAX;
+
+    FACE_DIR lastFace = FACE_DIR::END;
+
+    while (true)
+    {
+        CChunk2* pChunk = GetChunkByWorldBlockCoord(bx, by, bz);
+
+        if (pChunk)
+        {
+            const auto&[cx, cy,cz]=pChunk->GetCoord();
+            uint32_t lx = (uint32_t)(bx - cx * (int32_t)VOXEL_CHUNK_X_SIZE2);
+            uint32_t ly = (uint32_t)(by - cy * (int32_t)VOXEL_CHUNK_Y_SIZE2);
+            uint32_t lz = (uint32_t)(bz - cz * (int32_t)VOXEL_CHUNK_Z_SIZE2);
+
+            auto& block = pChunk->GetBlock(lx, ly, lz);
+            if (block.GetType() != CBlock2::TYPE::AIR)
+            {
+                outResult.pChunk = pChunk;
+                outResult.iX = lx;
+                outResult.iY = ly;
+                outResult.iZ = lz;
+                outResult.eHitFace = lastFace;
+                outResult.fDist = std::min({ tMaxX, tMaxY, tMaxZ }); // 현재 t
+                return true;
+            }
+        }
+
+        if (tMaxX < tMaxY && tMaxX < tMaxZ)
+        {
+            if (tMaxX > fMaxDist)
+            {
+                break;
+            }
+
+            bx += stepX;
+            tMaxX += tDeltaX;
+            lastFace = (stepX > 0) ? FACE_DIR::NEG_X : FACE_DIR::POS_X;
+        }
+        else if (tMaxY < tMaxZ)
+        {
+            if (tMaxY > fMaxDist)
+            {
+                break;
+            }
+            
+            by += stepY;
+            tMaxY += tDeltaY;
+            lastFace = (stepY > 0) ? FACE_DIR::NEG_Y : FACE_DIR::POS_Y;
+        }
+        else
+        {
+            if (tMaxZ > fMaxDist)
+            {
+                break;
+            }
+
+            bz += stepZ;
+            tMaxZ += tDeltaZ;
+            lastFace = (stepZ > 0) ? FACE_DIR::NEG_Z : FACE_DIR::POS_Z;
+        }
+    }
+    return false;
+}
 
 HRESULT CVoxelManager2::Initialize()
 {
