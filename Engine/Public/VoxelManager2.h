@@ -38,7 +38,13 @@ public:
 	enum class PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE
 	{
 		NON,
+		COLLECT_CANDIDATE,
+		UNREGIST_NEIGHBOR,
+		MESSING,
+		BUFFER_CREATE,
 	};
+	PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE m_eProcessChunkOutRangeReleaseState{ PROCESS_CHUNK_OUT_RANGE_RELEASE_STATE::NON };
+	std::vector<std::future<CChunk2*>> m_futOutRangeChunkReleaseMessing{};
 
 	enum class PROCESS_CHUNK_REBUILD_STATE
 	{
@@ -52,16 +58,16 @@ public:
 
 	typedef struct tagChunkOutRangeReleaseDesc
 	{
-
+		int32_t iCenterX{}, iCenterY{}, iCenterZ{};
 	}CHUNK_OUT_RANGE_RELEASE_DESC;
 
 	typedef struct tagChunkRebuildDesc
 	{
 
 	}CHUNK_REBUILD_DESC;
-	std::queue<CHUNK_IN_RANGE_CREATE_DESC> m_ChunkInRangeCreateQueue{};
-	std::queue<CHUNK_OUT_RANGE_RELEASE_DESC> m_ChunkOutRangeReleaseQueue{};
-	std::queue<CHUNK_REBUILD_DESC> m_ChunkRebuildQueue{};
+	std::list<CHUNK_IN_RANGE_CREATE_DESC> m_ChunkInRangeCreateQueue{};
+	std::list<CHUNK_OUT_RANGE_RELEASE_DESC> m_ChunkOutRangeReleaseQueue{};
+	std::list<CHUNK_REBUILD_DESC> m_ChunkRebuildQueue{};
 	std::unordered_set<PROCESS> m_setCurrentProcess{};
 	const std::unordered_set<PROCESS>& GetCurrentProcessing() const { return m_setCurrentProcess; };
 
@@ -112,14 +118,46 @@ public:
 		return { x, y, z };
 	}
 
+	CChunk2* GetChunkByChunkCoord(int32_t x, int32_t y, int32_t z)
+	{
+		auto idx = encodeChunkCoord(x, y, z);
+		auto iter = m_mapChucnks.find(idx);
+		if (iter == m_mapChucnks.end())
+		{
+			return nullptr;
+		}
 
+		return iter->second.get();
+	}
+
+	CChunk2* GetChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z)
+	{
+		int32_t cx = (int32_t)floor(x / VOXEL_CHUNK_X_SIZE2);
+		int32_t cy = (int32_t)floor(y / VOXEL_CHUNK_Y_SIZE2);
+		int32_t cz = (int32_t)floor(z / VOXEL_CHUNK_Z_SIZE2);
+		return GetChunkByChunkCoord(cx, cy, cz);
+	}
+
+
+	// DDA(Digital Differential Analyzer)
+	struct RaycastResult {
+		CChunk2* pChunk{};
+		uint32_t iX{}, iY{}, iZ{};// 청크기준
+		FACE_DIR eHitFace;
+		float fDist{};
+	};
+	bool RaycastDDA(
+		const _float3& rayOrigin,
+		const _float3& rayDir,     // normalized
+		float fMaxDist,
+		RaycastResult& outResult);
 
 private:
 	HRESULT Initialize();
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk2>> m_mapChucnks{};
-	int32_t m_iRenderDistance{ 10 };
+	int32_t m_iRenderDistance{ 0 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 public:

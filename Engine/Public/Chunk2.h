@@ -34,7 +34,12 @@ public:
 	MESSING_STATE m_eMessingState{ MESSING_STATE::NON };
 
 	uint64_t GetCoordIdx() const { return m_iChunkCoord; }
-	std::tuple<uint32_t, uint32_t, uint32_t> GetCoord() const { return { m_iX, m_iY, m_iZ }; }
+	std::tuple<int32_t, int32_t, int32_t> GetCoord() const { return { m_iX, m_iY, m_iZ }; }
+
+	CBlock2& GetBlock(uint32_t x, uint32_t y, uint32_t z)
+	{
+		return m_arrBlocks[BlockIndexing(x, y, z)];
+	}
 private:
 	CChunk2();
 	~CChunk2() override;
