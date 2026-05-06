@@ -14,6 +14,7 @@ CChunk2::~CChunk2()
 
 HRESULT CChunk2::BlockFilling()
 {
+	m_eBlockFillingState = BLOCKFILLING_STATE::ING;
 	for (uint32_t i = 0; i < VOXEL_CHUNK_X_SIZE2; ++i)
 	{
 		for (uint32_t j = 0; j < VOXEL_CHUNK_Z_SIZE2; ++j)
@@ -33,6 +34,7 @@ HRESULT CChunk2::BlockFilling()
 			}
 		}
 	}
+	m_eBlockFillingState = BLOCKFILLING_STATE::DONE;
 	return S_OK;
 }
 

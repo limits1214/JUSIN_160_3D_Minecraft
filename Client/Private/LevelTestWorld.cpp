@@ -23,7 +23,7 @@ HRESULT CLevelTestWorld::Initialize()
 		E::CCameraObject::CAMERA_DESC Desc{};
 		Desc.eProj = E::CCameraObject::PROJ::PERSPECTIVE;
 		Desc.vAt = { 0.f, 0.f, 0.f };
-		Desc.vEye = { 0.f, 0.f, -5.f };
+		Desc.vEye = { 0.f, 100.f, -5.f };
 		Desc.fAspect = { g_iWinSizeX / (E::_float)g_iWinSizeY };
 		Desc.fFovY = 75.f;
 		Desc.fNear = 0.1f;

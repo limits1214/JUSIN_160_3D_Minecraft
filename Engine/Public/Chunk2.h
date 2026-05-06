@@ -19,6 +19,11 @@ public:
 		uint64_t iChunkCoord{};
 	} DESC;
 
+	enum class BLOCKFILLING_STATE
+	{
+		NON, ING, DONE
+	};
+
 	enum class BUFFER_STATE
 	{
 		NON, ING, DONE
@@ -30,8 +35,11 @@ public:
 	};
 	BUFFER_STATE GetBufferState() const { return m_eBufferState; }
 	MESSING_STATE GetMessingState() const { return m_eMessingState; }
-	BUFFER_STATE m_eBufferState{ BUFFER_STATE::NON };
-	MESSING_STATE m_eMessingState{ MESSING_STATE::NON };
+	BLOCKFILLING_STATE GetBlockFillingSate() const { return m_eBlockFillingState; }
+
+	std::atomic <BLOCKFILLING_STATE> m_eBlockFillingState{ BLOCKFILLING_STATE::NON };
+	std::atomic <BUFFER_STATE> m_eBufferState{ BUFFER_STATE::NON };
+	std::atomic<MESSING_STATE>m_eMessingState{ MESSING_STATE::NON };
 
 	uint64_t GetCoordIdx() const { return m_iChunkCoord; }
 	std::tuple<int32_t, int32_t, int32_t> GetCoord() const { return { m_iX, m_iY, m_iZ }; }
@@ -39,6 +47,10 @@ public:
 	CBlock2& GetBlock(uint32_t x, uint32_t y, uint32_t z)
 	{
 		return m_arrBlocks[BlockIndexing(x, y, z)];
+	}
+	void SetBlock(uint32_t x, uint32_t y, uint32_t z, CBlock2::TYPE eType)
+	{
+		m_arrBlocks[BlockIndexing(x, y, z)].SetType(eType);
 	}
 private:
 	CChunk2();
@@ -68,6 +80,7 @@ public:
 		m_arrNeighborChunks[ETOUI(eDir)] = pChunk;
 		return S_OK;
 	}
+	CChunk2* GetNeighborChunk(FACE_DIR eDir) const { return m_arrNeighborChunks[ETOUI(eDir)]; }
 private:
 	std::array<CChunk2*, ETOUI(FACE_DIR::END)> m_arrNeighborChunks{};
 

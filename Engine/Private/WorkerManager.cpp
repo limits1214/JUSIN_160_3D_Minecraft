@@ -3,7 +3,8 @@
 
 NS_USING(Engine)
 
-CWorkerManager::CWorkerManager()
+CWorkerManager::CWorkerManager(const std::string& sName)
+    : m_sName{sName}
 {
 }
 
@@ -14,7 +15,8 @@ CWorkerManager::~CWorkerManager()
 
 void CWorkerManager::UpdateGUI()
 {
-    ImGui::Begin("Workers");
+    std::string s = m_sName + "_Workers";
+    ImGui::Begin(s.c_str());
 
     if (ImGui::Button("TEST1"))
     {
@@ -153,11 +155,11 @@ void CWorkerManager::ShutDown()
     m_Workers.clear();
 }
 
-UPtr<CWorkerManager> CWorkerManager::Create()
+UPtr<CWorkerManager> CWorkerManager::Create(const std::string& sName, uint32_t iThreadCount)
 {
-    auto pInstance = UPtr<CWorkerManager>(new CWorkerManager{});
+    auto pInstance = UPtr<CWorkerManager>(new CWorkerManager{ sName });
 
-    if (FAILED(pInstance->Initialize()))
+    if (FAILED(pInstance->Initialize(iThreadCount)))
     {
         MSG_BOX("CWorkerManager Create Failed");
         return nullptr;

@@ -138,6 +138,18 @@ public:
 			std::forward<Args>(args)...
 		);
 	}
+
+	void WorkerHighEnqueue(_string_view svTaskName, _Func func);
+	template<typename Func, typename... Args>
+	auto WorkerHighEnqueueWithFuture(_string_view svTaskName, Func&& f, Args&&... args)
+		-> std::future<std::invoke_result_t<Func, Args...>>
+	{
+		return m_pHighWorkerManager->WorkerEnqueueWithFuture(
+			svTaskName,
+			std::forward<Func>(f),
+			std::forward<Args>(args)...
+		);
+	}
 #pragma endregion
 
 #pragma region TIME_PROVIDER
@@ -218,6 +230,7 @@ private:
 	UPtr<CDInputManager> m_pDInputManager{};
 	UPtr<CLevelManager> m_pLevelManager{};
 	UPtr<CWorkerManager> m_pWorkerManager{};
+	UPtr<CWorkerManager> m_pHighWorkerManager{};
 	UPtr<CTimeProvider> m_pTimeProvider{};
 	UPtr<CPrototypeManager> m_pPrototypeManager{};
 	UPtr<CGameObjectManager> m_pGameObjectManager{};

@@ -165,7 +165,10 @@ void CVoxelManager2::UpdateGUI()
             RaycastResult res;
             if (RaycastDDA(vecrayOrigin, vecrayDir, 5.f, res))
             {
-                volatile int x = 0;
+                //res.pChunk->SetBlock(res.iX, res.iY, res.iZ, CBlock2::TYPE::AIR);
+                //res.pChunk->BlockFilling();
+                //res.pChunk->Messing();
+                //res.pChunk->GenBuffer();
             }
         }
     }
@@ -223,6 +226,193 @@ void CVoxelManager2::Update(_float fTimeDelta)
         }
     }
 
+    if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+    {
+        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+        {
+            RECT rect;
+            GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+
+            E::_float4x4 P;
+            XMStoreFloat4x4(&P, cam->GetProj());
+
+            E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+            E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+            E::_matrix V = cam->GetView();
+            auto detV = XMMatrixDeterminant(V);
+            E::_matrix invView = XMMatrixInverse(&detV, V);
+
+            rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+            rayDir = XMVector3TransformNormal(rayDir, invView);
+            _float3 vecrayOrigin;
+            _float3 vecrayDir;
+
+            XMStoreFloat3(&vecrayOrigin, rayOrigin);
+            XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
+
+
+            RaycastResult res;
+            if (RaycastDDA(vecrayOrigin, vecrayDir, 5.f, res))
+            {
+                res.pChunk->SetBlock(res.iX, res.iY, res.iZ, CBlock2::TYPE::AIR);
+
+                // 파괴한 청크 리빌드
+                const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+                CHUNK_REBUILD_DESC desc{};
+                desc.iChunkX = cx;
+                desc.iChunkY = cy;
+                desc.iChunkZ = cz;
+                QueuingChunkRebuild(desc);
+
+                // 경계 블록이면 이웃 청크도 리빌드
+                // X 경계
+                if (res.iX == 0)
+                {
+                    if (auto* pNeighbor = res.pChunk->GetNeighborChunk(FACE_DIR::NEG_X))
+                    {
+                        const auto& [nx, ny, nz] = pNeighbor->GetCoord();
+                        QueuingChunkRebuild({ nx, ny, nz });
+                    }
+                }
+                else if (res.iX == VOXEL_CHUNK_X_SIZE2 - 1)
+                {
+                    if (auto* pNeighbor = res.pChunk->GetNeighborChunk(FACE_DIR::POS_X))
+                    {
+                        const auto& [nx, ny, nz] = pNeighbor->GetCoord();
+                        QueuingChunkRebuild({ nx, ny, nz });
+                    }
+                }
+
+                // Z 경계
+                if (res.iZ == 0)
+                {
+                    if (auto* pNeighbor = res.pChunk->GetNeighborChunk(FACE_DIR::NEG_Z))
+                    {
+                        const auto& [nx, ny, nz] = pNeighbor->GetCoord();
+                        QueuingChunkRebuild({ nx, ny, nz });
+                    }
+                }
+                else if (res.iZ == VOXEL_CHUNK_Z_SIZE2 - 1)
+                {
+                    if (auto* pNeighbor = res.pChunk->GetNeighborChunk(FACE_DIR::POS_Z))
+                    {
+                        const auto& [nx, ny, nz] = pNeighbor->GetCoord();
+                        QueuingChunkRebuild({ nx, ny, nz });
+                    }
+                }
+            }
+        }
+    }
+
+    if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+    {
+        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+        {
+            E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+            E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+            E::_matrix V = cam->GetView();
+            auto       detV = XMMatrixDeterminant(V);
+            E::_matrix invView = XMMatrixInverse(&detV, V);
+
+            rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+            rayDir = XMVector3TransformNormal(rayDir, invView);
+
+            _float3 vecRayOrigin, vecRayDir;
+            XMStoreFloat3(&vecRayOrigin, rayOrigin);
+            XMStoreFloat3(&vecRayDir, XMVector3Normalize(rayDir));
+
+            RaycastResult res;
+            if (RaycastDDA(vecRayOrigin, vecRayDir, 5.f, res))
+            {
+                // 블록을 놓을 로컬 좌표 계산 (히트 면의 반대 방향)
+                // 오프셋 테이블
+                static const std::unordered_map<FACE_DIR, std::tuple<int, int, int>> kFaceOffset =
+                {
+                    { FACE_DIR::POS_X, { +1,  0,  0 } },
+                    { FACE_DIR::NEG_X, { -1,  0,  0 } },
+                    { FACE_DIR::POS_Y, {  0, +1,  0 } },
+                    { FACE_DIR::NEG_Y, {  0, -1,  0 } },
+                    { FACE_DIR::POS_Z, {  0,  0, +1 } },
+                    { FACE_DIR::NEG_Z, {  0,  0, -1 } },
+                };
+
+                auto it = kFaceOffset.find(res.eHitFace);
+                if (it == kFaceOffset.end()) return; // 혹시 END 등 잘못된 face
+
+                auto [ox, oy, oz] = it->second;
+
+                int nx = (int)res.iX + ox;
+                int ny = (int)res.iY + oy;
+                int nz = (int)res.iZ + oz;
+
+                CChunk2* pTargetChunk = res.pChunk;
+
+                // X 경계 처리
+                if (nx < 0)
+                {
+                    pTargetChunk = res.pChunk->GetNeighborChunk(FACE_DIR::NEG_X);
+                    nx += (int)VOXEL_CHUNK_X_SIZE2;
+                }
+                else if (nx >= (int)VOXEL_CHUNK_X_SIZE2)
+                {
+                    pTargetChunk = res.pChunk->GetNeighborChunk(FACE_DIR::POS_X);
+                    nx -= (int)VOXEL_CHUNK_X_SIZE2;
+                }
+
+                // Y 경계 처리
+                if (ny < 0)
+                {
+                    pTargetChunk = res.pChunk->GetNeighborChunk(FACE_DIR::NEG_Y);
+                    ny += (int)VOXEL_CHUNK_Y_SIZE2;
+                }
+                else if (ny >= (int)VOXEL_CHUNK_Y_SIZE2)
+                {
+                    pTargetChunk = res.pChunk->GetNeighborChunk(FACE_DIR::POS_Y);
+                    ny -= (int)VOXEL_CHUNK_Y_SIZE2;
+                }
+
+                // Z 경계 처리
+                if (nz < 0)
+                {
+                    pTargetChunk = res.pChunk->GetNeighborChunk(FACE_DIR::NEG_Z);
+                    nz += (int)VOXEL_CHUNK_Z_SIZE2;
+                }
+                else if (nz >= (int)VOXEL_CHUNK_Z_SIZE2)
+                {
+                    pTargetChunk = res.pChunk->GetNeighborChunk(FACE_DIR::POS_Z);
+                    nz -= (int)VOXEL_CHUNK_Z_SIZE2;
+                }
+
+                if (!pTargetChunk) return; // 이웃 청크 없으면 배치 불가
+
+                pTargetChunk->SetBlock((uint32_t)nx, (uint32_t)ny, (uint32_t)nz, CBlock2::TYPE::GRASS);
+
+                // 타겟 청크 리빌드
+                const auto& [cx, cy, cz] = pTargetChunk->GetCoord();
+                CHUNK_REBUILD_DESC desc{};
+                desc.iChunkX = cx;
+                desc.iChunkY = cy;
+                desc.iChunkZ = cz;
+                QueuingChunkRebuild(desc);
+
+                // 원래 청크와 다른 청크에 놓였다면 원래 청크도 리빌드
+                // (경계면 페이스 컬링 갱신 필요)
+                if (pTargetChunk != res.pChunk)
+                {
+                    const auto& [ocx, ocy, ocz] = res.pChunk->GetCoord();
+                    CHUNK_REBUILD_DESC origDesc{};
+                    origDesc.iChunkX = ocx;
+                    origDesc.iChunkY = ocy;
+                    origDesc.iChunkZ = ocz;
+                    QueuingChunkRebuild(origDesc);
+                }
+            }
+        }
+    }
+
+
 
     _bool bRebuildProcessing = m_setCurrentProcess.find(PROCESS::CHUNK_REBUILD) != m_setCurrentProcess.end();
     _bool bInRangeCreateProcessing = m_setCurrentProcess.find(PROCESS::CHUNK_IN_RANGE_CREATE) != m_setCurrentProcess.end();
@@ -236,8 +426,86 @@ void CVoxelManager2::Update(_float fTimeDelta)
     // 리빌드 큐가 존재하면
     if (bHasRebuildQueue)
     {
+        CHUNK_REBUILD_DESC rebuildDesc = m_ChunkRebuildQueue.front();
+        m_ChunkRebuildQueue.pop_front();
+
+        CChunk2* pChunk = GetChunkByChunkCoord(rebuildDesc.iChunkX, rebuildDesc.iChunkY, rebuildDesc.iChunkZ);
+        if (pChunk)
+        {
+            // chunk is messing or filling? re queue
+            if (pChunk->GetBlockFillingSate() != CChunk2::BLOCKFILLING_STATE::DONE
+                || pChunk->GetBufferState() != CChunk2::BUFFER_STATE::DONE
+                || pChunk->GetMessingState() != CChunk2::MESSING_STATE::NON)
+            {
+                //m_ChunkRebuildQueue.push_back(rebuildDesc);
+            }
+            else
+            {
+                m_setCurrentProcess.insert(PROCESS::CHUNK_REBUILD);
+                m_eProcessChunkRebuildState = PROCESS_CHUNK_REBUILD_STATE::MESSING;
+
+               
+
+                if (auto* pNeighbor = pChunk->GetNeighborChunk(FACE_DIR::POS_X))
+                {
+                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
+                        if (FAILED(pNeighbor->Messing()))
+                        {
+                            // TODO: MSGBOX
+                        }
+                        return pNeighbor;
+                        });
+                    m_futChunkRebuildMessing.push_back(std::move(fut));
+                }
+                if (auto* pNeighbor = pChunk->GetNeighborChunk(FACE_DIR::NEG_X))
+                {
+                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
+                        if (FAILED(pNeighbor->Messing()))
+                        {
+                            // TODO: MSGBOX
+                        }
+                        return pNeighbor;
+                        });
+                    m_futChunkRebuildMessing.push_back(std::move(fut));
+                }
+                if (auto* pNeighbor = pChunk->GetNeighborChunk(FACE_DIR::POS_Z))
+                {
+                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
+                        if (FAILED(pNeighbor->Messing()))
+                        {
+                            // TODO: MSGBOX
+                        }
+                        return pNeighbor;
+                        });
+                    m_futChunkRebuildMessing.push_back(std::move(fut));
+                }
+                if (auto* pNeighbor = pChunk->GetNeighborChunk(FACE_DIR::NEG_Z))
+                {
+                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
+                        if (FAILED(pNeighbor->Messing()))
+                        {
+                            // TODO: MSGBOX
+                        }
+                        return pNeighbor;
+                        });
+                    m_futChunkRebuildMessing.push_back(std::move(fut));
+                }
+
+                
+                    
+                {
+                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pChunk]()->CChunk2* {
+                        if (FAILED(pChunk->Messing()))
+                        {
+                            // TODO: MSGBOX
+                        }
+                        return pChunk;
+                        });
+                    m_futChunkRebuildMessing.push_back(std::move(fut));
+                }
+            }
+        }
         
-        // if rebuild target is maked create or release, do not processing
     }
 
     // create큐가 존재하는데 현제 릴리즈 프로세싱이 아니여야함
@@ -484,7 +752,39 @@ void CVoxelManager2::Update(_float fTimeDelta)
 
     if (bRebuildProcessing)
     {
+        if (m_eProcessChunkRebuildState == PROCESS_CHUNK_REBUILD_STATE::MESSING)
+        {
+            for (auto iter = m_futChunkRebuildMessing.begin(); iter != m_futChunkRebuildMessing.end();)
+            {
+                if (iter->valid())
+                {
+                    if (iter->wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+                    {
+                        if (FAILED(iter->get()->GenBuffer()))
+                        {
+                            // TODO: MSGBOX
+                        }
+                        iter = m_futChunkRebuildMessing.erase(iter);
+                    }
+                    else
+                    {
+                        ++iter;
+                    }
+                }
+                else
+                {
+                    // TODO: MSGBOX
+                    ++iter;
+                }
+            }
 
+            if (m_futChunkRebuildMessing.empty())
+            {
+                //프로세스 종료
+                m_eProcessChunkRebuildState = PROCESS_CHUNK_REBUILD_STATE::NON;
+                m_setCurrentProcess.erase(PROCESS::CHUNK_REBUILD);
+            }
+        }
     }
 
     if (bInRangeCreateProcessing)
@@ -629,62 +929,64 @@ void CVoxelManager2::Update(_float fTimeDelta)
                                     toReMessingSets.insert(pNeighbor);
                                 }
                             }
+                        }
+                        
 
+
+
+                        {
+                            uint64_t coord = encodeChunkCoord(chunkX, chunkY - 1, chunkZ);
+                            auto iter = m_mapChucnks.find(coord);
+                            if (iter != m_mapChucnks.end())
                             {
-                                uint64_t coord = encodeChunkCoord(chunkX, chunkY - 1, chunkZ);
-                                auto iter = m_mapChucnks.find(coord);
-                                if (iter != m_mapChucnks.end())
+                                // pChunk기존 POS_X처리
+                                CChunk2* pNeighbor = iter->second.get();
+
+                                pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::NEG_Y);
+                                pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::POS_Y);
+
+                                if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
                                 {
-                                    // pChunk기존 POS_X처리
-                                    CChunk2* pNeighbor = iter->second.get();
-
-                                    pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::NEG_Y);
-                                    pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::POS_Y);
-
-                                    if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
-                                    {
-                                        toReMessingSets.insert(pNeighbor);
-                                    }
-                                }
-                            }
-
-                            {
-                                uint64_t coord = encodeChunkCoord(chunkX, chunkY , chunkZ+1);
-                                auto iter = m_mapChucnks.find(coord);
-                                if (iter != m_mapChucnks.end())
-                                {
-                                    // pChunk기존 POS_X처리
-                                    CChunk2* pNeighbor = iter->second.get();
-
-                                    pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::POS_Z);
-                                    pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::NEG_Z);
-
-                                    if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
-                                    {
-                                        toReMessingSets.insert(pNeighbor);
-                                    }
-                                }
-                            }
-
-                            {
-                                uint64_t coord = encodeChunkCoord(chunkX, chunkY, chunkZ - 1);
-                                auto iter = m_mapChucnks.find(coord);
-                                if (iter != m_mapChucnks.end())
-                                {
-                                    // pChunk기존 POS_X처리
-                                    CChunk2* pNeighbor = iter->second.get();
-
-                                    pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::NEG_Z);
-                                    pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::POS_Z);
-
-                                    if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
-                                    {
-                                        toReMessingSets.insert(pNeighbor);
-                                    }
+                                    toReMessingSets.insert(pNeighbor);
                                 }
                             }
                         }
-                        
+
+                        {
+                            uint64_t coord = encodeChunkCoord(chunkX, chunkY, chunkZ + 1);
+                            auto iter = m_mapChucnks.find(coord);
+                            if (iter != m_mapChucnks.end())
+                            {
+                                // pChunk기존 POS_X처리
+                                CChunk2* pNeighbor = iter->second.get();
+
+                                pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::POS_Z);
+                                pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::NEG_Z);
+
+                                if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                                {
+                                    toReMessingSets.insert(pNeighbor);
+                                }
+                            }
+                        }
+
+                        {
+                            uint64_t coord = encodeChunkCoord(chunkX, chunkY, chunkZ - 1);
+                            auto iter = m_mapChucnks.find(coord);
+                            if (iter != m_mapChucnks.end())
+                            {
+                                // pChunk기존 POS_X처리
+                                CChunk2* pNeighbor = iter->second.get();
+
+                                pChunk->SetNeighborChunk(pNeighbor, FACE_DIR::NEG_Z);
+                                pNeighbor->SetNeighborChunk(pChunk, FACE_DIR::POS_Z);
+
+                                if (pNeighbor->GetBufferState() != CChunk2::BUFFER_STATE::NON)
+                                {
+                                    toReMessingSets.insert(pNeighbor);
+                                }
+                            }
+                        }
                     }
                     toReMessingSets.insert(pChunk);
                     //toMessingChunks.push_back(pChunk);
@@ -796,11 +1098,10 @@ void CVoxelManager2::Update(_float fTimeDelta)
 
 bool CVoxelManager2::RaycastDDA(const _float3& rayOrigin, const _float3& rayDir, float fMaxDist, RaycastResult& outResult)
 {
-    // --- 1. 시작 블록 (월드 좌표 → 블록 그리드) ---
+    // --- 1. 시작 블록 ---
     int32_t bx = (int32_t)floorf(rayOrigin.x);
     int32_t by = (int32_t)floorf(rayOrigin.y);
     int32_t bz = (int32_t)floorf(rayOrigin.z);
-
 
     // 각 축 이동 방향
     int stepX = (rayDir.x >= 0) ? 1 : -1;
@@ -818,14 +1119,18 @@ bool CVoxelManager2::RaycastDDA(const _float3& rayOrigin, const _float3& rayDir,
     float tDeltaZ = (rayDir.z != 0) ? fabsf(1.f / rayDir.z) : FLT_MAX;
 
     FACE_DIR lastFace = FACE_DIR::END;
+    float    tCurrent = 0.f; // 현재 블록에 진입한 시점의 t값
 
     while (true)
     {
-        CChunk2* pChunk = GetChunkByWorldBlockCoord(bx, by, bz);
+        // 최대 거리 초과 시 조기 종료
+        if (tCurrent > fMaxDist)
+            break;
 
+        CChunk2* pChunk = GetChunkByWorldBlockCoord(bx, by, bz);
         if (pChunk)
         {
-            const auto&[cx, cy,cz]=pChunk->GetCoord();
+            const auto& [cx, cy, cz] = pChunk->GetCoord();
             uint32_t lx = (uint32_t)(bx - cx * (int32_t)VOXEL_CHUNK_X_SIZE2);
             uint32_t ly = (uint32_t)(by - cy * (int32_t)VOXEL_CHUNK_Y_SIZE2);
             uint32_t lz = (uint32_t)(bz - cz * (int32_t)VOXEL_CHUNK_Z_SIZE2);
@@ -838,45 +1143,35 @@ bool CVoxelManager2::RaycastDDA(const _float3& rayOrigin, const _float3& rayDir,
                 outResult.iY = ly;
                 outResult.iZ = lz;
                 outResult.eHitFace = lastFace;
-                outResult.fDist = std::min({ tMaxX, tMaxY, tMaxZ }); // 현재 t
+                outResult.fDist = tCurrent; // 이 블록에 진입한 t (= 이전 스텝의 tMax)
                 return true;
             }
         }
 
+        // 가장 가까운 축 경계로 이동
         if (tMaxX < tMaxY && tMaxX < tMaxZ)
         {
-            if (tMaxX > fMaxDist)
-            {
-                break;
-            }
-
-            bx += stepX;
+            tCurrent = tMaxX;
             tMaxX += tDeltaX;
+            bx += stepX;
             lastFace = (stepX > 0) ? FACE_DIR::NEG_X : FACE_DIR::POS_X;
         }
         else if (tMaxY < tMaxZ)
         {
-            if (tMaxY > fMaxDist)
-            {
-                break;
-            }
-            
-            by += stepY;
+            tCurrent = tMaxY;
             tMaxY += tDeltaY;
+            by += stepY;
             lastFace = (stepY > 0) ? FACE_DIR::NEG_Y : FACE_DIR::POS_Y;
         }
         else
         {
-            if (tMaxZ > fMaxDist)
-            {
-                break;
-            }
-
-            bz += stepZ;
+            tCurrent = tMaxZ;
             tMaxZ += tDeltaZ;
+            bz += stepZ;
             lastFace = (stepZ > 0) ? FACE_DIR::NEG_Z : FACE_DIR::POS_Z;
         }
     }
+
     return false;
 }
 
