@@ -96,13 +96,17 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
-	m_pWorkerManager = CWorkerManager::Create();
+	m_pWorkerManager = CWorkerManager::Create("Normal", std::thread::hardware_concurrency()-2);
 	if (m_pWorkerManager == nullptr)
 	{
 		return E_FAIL;
 	}
-
-	
+	//m_pHighWorkerManager
+	m_pHighWorkerManager = CWorkerManager::Create("High", 2);
+	if (m_pHighWorkerManager == nullptr)
+	{
+		return E_FAIL;
+	}
 
 	m_pGameObjectManager = CGameObjectManager::Create();
 	if (m_pGameObjectManager == nullptr)
@@ -188,6 +192,7 @@ void CGameInstance::UpdateGUI()
 	m_pGameObjectManager->UpdateGUI();
 
 	m_pWorkerManager->UpdateGUI();
+	m_pHighWorkerManager->UpdateGUI();
 
 	m_pResourceManager->UpdateGUI();
 
@@ -232,6 +237,7 @@ void CGameInstance::Release_Engine()
 	m_pLevelManager.reset();
 	m_pColliderManager.reset();
 	m_pWorkerManager.reset();
+	m_pHighWorkerManager.reset();
 	m_pPrototypeManager.reset();
 	m_pLightManager.reset();
 	m_pVoxelManager.reset();
@@ -535,6 +541,11 @@ void CGameInstance::ImguiSetActive(_bool bActive)
 void CGameInstance::WorkerEnqueue(_string_view svTaskName, _Func func)
 {
 	m_pWorkerManager->Enqueue(svTaskName, func);
+}
+
+void CGameInstance::WorkerHighEnqueue(_string_view svTaskName, _Func func)
+{
+	m_pHighWorkerManager->Enqueue(svTaskName, func);
 }
 
 #pragma endregion

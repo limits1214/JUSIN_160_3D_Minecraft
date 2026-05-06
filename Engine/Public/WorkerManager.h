@@ -14,7 +14,7 @@ private:
 	} WORKER;
 
 private:
-	CWorkerManager();
+	CWorkerManager(const std::string& sName);
 	~CWorkerManager();
 
 public:
@@ -64,8 +64,11 @@ private:
 	int m_iTest{};
 	std::future<int> m_TestFuture{};
 
+private:
+	std::string m_sName{};
+
 public:
-	static UPtr<CWorkerManager> Create();
+	static UPtr<CWorkerManager> Create(const std::string& sName, uint32_t iThreadCount);
 };
 
 NS_END

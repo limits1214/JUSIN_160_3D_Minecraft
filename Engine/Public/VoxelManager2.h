@@ -49,7 +49,11 @@ public:
 	enum class PROCESS_CHUNK_REBUILD_STATE
 	{
 		NON,
+		MESSING,
+		BUFFER_CREATE,
 	};
+	PROCESS_CHUNK_REBUILD_STATE m_eProcessChunkRebuildState{ PROCESS_CHUNK_REBUILD_STATE::NON };
+	std::vector<std::future<CChunk2*>> m_futChunkRebuildMessing{};
 
 	typedef struct tagChunkInRangeCreateDesc
 	{
@@ -63,11 +67,12 @@ public:
 
 	typedef struct tagChunkRebuildDesc
 	{
-
+		int32_t iChunkX{}, iChunkY{}, iChunkZ{};
 	}CHUNK_REBUILD_DESC;
 	std::list<CHUNK_IN_RANGE_CREATE_DESC> m_ChunkInRangeCreateQueue{};
 	std::list<CHUNK_OUT_RANGE_RELEASE_DESC> m_ChunkOutRangeReleaseQueue{};
 	std::list<CHUNK_REBUILD_DESC> m_ChunkRebuildQueue{};
+
 	std::unordered_set<PROCESS> m_setCurrentProcess{};
 	const std::unordered_set<PROCESS>& GetCurrentProcessing() const { return m_setCurrentProcess; };
 
@@ -157,7 +162,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk2>> m_mapChucnks{};
-	int32_t m_iRenderDistance{ 0 };
+	int32_t m_iRenderDistance{ 5 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 public:
