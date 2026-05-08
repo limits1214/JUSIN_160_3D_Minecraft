@@ -43,6 +43,7 @@ public:
 	std::optional< CBlock3> GetBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
 	std::optional< CBlock3> GetBlockByChunkCoord(uint64_t chunkIdx ,int32_t cbx, int32_t cby, int32_t cbz) const;
 	void SetBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
+	void SetBlocks(std::vector<std::tuple<int32_t, int32_t, int32_t, CBlock3>>);
 	_bool BlockRaycast(const _float3& rayOrigin,
 		const _float3& rayDir,     // normalized
 		float fMaxDist,
