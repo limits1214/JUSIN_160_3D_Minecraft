@@ -11,6 +11,7 @@
 #include "LightManager.h"
 #include "VoxelManager.h"
 #include "VoxelManager2.h"
+#include "VoxelManager3.h"
 
 #include "GameObject.h"
 #include "CameraManager.h"
@@ -144,12 +145,16 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 	//	return E_FAIL;
 	//}
 
-	m_pVoxelManager2 = CVoxelManager2::Create(ppDevice.Get(), ppContext.Get());
-	if (m_pVoxelManager2 == nullptr)
+	//m_pVoxelManager2 = CVoxelManager2::Create(ppDevice.Get(), ppContext.Get());
+	//if (m_pVoxelManager2 == nullptr)
+	//{
+	//	return E_FAIL;
+	//}
+	m_pVoxelManager3 = CVoxelManager3::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pVoxelManager3 == nullptr)
 	{
 		return E_FAIL;
 	}
-
 
 
 	return S_OK;
@@ -159,7 +164,7 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 {
 	m_pDInputManager->Update_InputDev();
 
-	m_pVoxelManager2->Update(fTimeDelta);
+	m_pVoxelManager3->Update(fTimeDelta);
 
 	m_pGameObjectManager->PriorityUpdate(fTimeDelta);
 	m_pGameObjectManager->Update(fTimeDelta);
@@ -167,7 +172,7 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 
 	m_pLevelManager->Update(fTimeDelta);
 
-	AddRenderObject(RENDERGROUP::NONBLEND, m_pVoxelManager2.get());
+	AddRenderObject(RENDERGROUP::NONBLEND, m_pVoxelManager3.get());
 	AddRenderObject(RENDERGROUP::COLLIDER, m_pColliderManager.get());
 }
 
@@ -204,7 +209,7 @@ void CGameInstance::UpdateGUI()
 
 	m_pLightManager->UpdateGUI();
 
-	m_pVoxelManager2->UpdateGUI();
+	m_pVoxelManager3->UpdateGUI();
 }
 
 void CGameInstance::ClearResource(uint32_t iClearLevelIndex)
@@ -241,7 +246,7 @@ void CGameInstance::Release_Engine()
 	m_pPrototypeManager.reset();
 	m_pLightManager.reset();
 	m_pVoxelManager.reset();
-	m_pVoxelManager2.reset();
+	m_pVoxelManager3.reset();
 	m_pResourceManager.reset();
 	m_pRenderer.reset();
 
@@ -669,11 +674,12 @@ void CGameInstance::VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DES
 }
 _float CGameInstance::GetVoxelHeightNoise(_float x, _float z) const
 {
-	return m_pVoxelManager2->GetHeightNoise(x,z);
+	return m_pVoxelManager3->GetHeightNoise(x,z);
 }
-CChunk* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
+CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 {
+	return m_pVoxelManager3->GetChunkByChunkCoord(x, y, z);
 	//return m_pVoxelManager->GetChunk(x, y, z);
-	return nullptr;
+	//return nullptr;
 }
 #pragma endregion
