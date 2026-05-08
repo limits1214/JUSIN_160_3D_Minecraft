@@ -319,6 +319,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
         && m_queueFutQuadMessing.empty()
         && m_queueFutEdit.empty())
     {
+        // TODO: flag check
         for (auto iter = m_mapChunks.begin(); iter != m_mapChunks.end();)
         {
             if (iter->second->GetDead())
@@ -554,6 +555,8 @@ HRESULT CVoxelManager3::StartProcessOutRangeChunkRelease(const OUT_RANGE_CHUNK_R
     {
         const auto& [cx, cy, cz] = decodeChunkCoord(delIdx);
 
+        setIdx.insert(delIdx);
+
         //POS_X
         {
             uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz);
@@ -640,6 +643,9 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                 //AdjChunkReMessing(chunkIdx);
 
                 const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
+
+                setIdx.insert(chunkIdx);
+
                 //POS_X
                 {
                     uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz);
