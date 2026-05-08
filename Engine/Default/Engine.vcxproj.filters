@@ -250,6 +250,18 @@
     <Filter Include="Voxel2\Block">
       <UniqueIdentifier>{619f9e21-30c7-42b3-8116-4cb483bd36ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Voxel3">
+      <UniqueIdentifier>{40bb09e9-5355-4494-b3c2-ed6279266696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel3\Block">
+      <UniqueIdentifier>{dbdb33c8-6527-41e4-b5fe-bd89f04e6f0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel3\Chunk">
+      <UniqueIdentifier>{a233edc6-ba32-46e0-9cff-01afded6b917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel3\Manager">
+      <UniqueIdentifier>{a82b0510-3d2b-43d7-9bde-8b2d31cb0cc3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -513,6 +525,15 @@
     <ClInclude Include="..\public\VoxelManager2.h">
       <Filter>Voxel2\Manager</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\Block3.h">
+      <Filter>Voxel3\Block</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Chunk3.h">
+      <Filter>Voxel3\Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\VoxelManager3.h">
+      <Filter>Voxel3\Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -763,6 +784,15 @@
     </ClCompile>
     <ClCompile Include="..\private\VoxelManager2.cpp">
       <Filter>Voxel2\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Block3.cpp">
+      <Filter>Voxel3\Block</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Chunk3.cpp">
+      <Filter>Voxel3\Chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\VoxelManager3.cpp">
+      <Filter>Voxel3\Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

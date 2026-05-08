@@ -23,7 +23,8 @@ class CRenderer;
 class CLightManager;
 class CVoxelManager;
 class CVoxelManager2;
-class CChunk;
+class CVoxelManager3;
+class CChunk3;
 
 class ENGINE_DLL CGameInstance final : public Singleton<CGameInstance>
 {
@@ -220,7 +221,7 @@ public:
 public:
 	void VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
 	_float GetVoxelHeightNoise(_float x, _float z) const;
-	CChunk* GetVoxelChunk(int32_t x, int32_t y, int32_t z) const;
+	CChunk3* GetVoxelChunk(int32_t x, int32_t y, int32_t z) const;
 #pragma endregion
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};
@@ -240,6 +241,7 @@ private:
 	UPtr<CLightManager> m_pLightManager{};
 	UPtr<CVoxelManager> m_pVoxelManager{};
 	UPtr<CVoxelManager2> m_pVoxelManager2{};
+	UPtr<CVoxelManager3> m_pVoxelManager3{};
 };
 
 NS_END
