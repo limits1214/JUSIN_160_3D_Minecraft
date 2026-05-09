@@ -473,80 +473,100 @@ CChunk3* CVoxelManager3::GetChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t
 
 HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& createDesc)
 {
-    int32_t minX = createDesc.iCenterX - m_iRenderDistance;
-    int32_t maxX = createDesc.iCenterX + m_iRenderDistance;
-    int32_t minZ = createDesc.iCenterZ - m_iRenderDistance;
-    int32_t maxZ = createDesc.iCenterZ + m_iRenderDistance;
-
-    //// Y축 범위 (Vertical Render Distance)
-    //int32_t verticalDistance = m_iVerticalRenderDistance;  // 새로 추가 추천
-    int32_t minY = createDesc.iCenterY - m_iVerticalRenderDistance;
-    int32_t maxY = createDesc.iCenterY + m_iVerticalRenderDistance;
-
-    struct ChunkPos {
-        int x, y, z;
-        int dist; // 거리 (맨해튼 or 제곱 거리)
-    };
-
-    std::vector<ChunkPos> list;
-
-    for (int32_t x = minX; x <= maxX; ++x)
-        for (int32_t y = minY; y <= maxY; ++y)
-            for (int32_t z = minZ; z <= maxZ; ++z)
-            {
-                uint64_t chunkCoord = encodeChunkCoord(x, y, z);
-                if (m_mapChunks.find(chunkCoord) != m_mapChunks.end())
-                {
-                    continue;
-                }
-
-                int dx = x - createDesc.iCenterX;
-                int dy = y - createDesc.iCenterY;
-                int dz = z - createDesc.iCenterZ;
-
-                int dist = dx * dx + dy * dy + dz * dz; // 제곱 거리 (빠름)
-
-                list.push_back({ x, y, z, dist });
-            }
-
-    // 중심부터 가까운 순으로 정렬
-    std::sort(list.begin(), list.end(), [](const ChunkPos& a, const ChunkPos& b) {
-        return a.dist < b.dist;
-        });
-
-    std::vector<std::future<uint64_t>>  futvec{};
-    for (auto& p : list)
+    // 생성자체를 워커에서해도 갑자기 폭발하면 워커가 가득차버리니까
+    // 근본적인 해결은 아님
+    // 추후에 그냥 조금씩 워커에 던지는 방향으로 개발 필요
+    if (!m_bCreating)
     {
-        uint64_t chunkCoord = encodeChunkCoord(p.x, p.y, p.z);
-        CChunk3::DESC chunkDesc{};
-        chunkDesc.iX = p.x;
-        chunkDesc.iY = p.y;
-        chunkDesc.iZ = p.z;
-        chunkDesc.iChunkCoord = chunkCoord;
-        m_mapChunks.emplace(chunkCoord, std::move(CChunk3::Create(chunkDesc)));
+        m_bCreating = true;
+    }
+    else
+    {
+        return S_OK;
+    }
+    CGameInstance::Get().WorkerEnqueue("TMP", [=]() {
+        
+        
+        int32_t minX = createDesc.iCenterX - m_iRenderDistance;
+        int32_t maxX = createDesc.iCenterX + m_iRenderDistance;
+        int32_t minZ = createDesc.iCenterZ - m_iRenderDistance;
+        int32_t maxZ = createDesc.iCenterZ + m_iRenderDistance;
 
+        //// Y축 범위 (Vertical Render Distance)
+        //int32_t verticalDistance = m_iVerticalRenderDistance;  // 새로 추가 추천
+        int32_t minY = createDesc.iCenterY - m_iVerticalRenderDistance;
+        int32_t maxY = createDesc.iCenterY + m_iVerticalRenderDistance;
 
-        std::future<uint64_t> fut = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_BLOCK_FILLING", [this, chunkCoord]()->uint64_t {
-            auto iter = m_mapChunks.find(chunkCoord);
-            if (iter != m_mapChunks.end())
-            {
-                if (FAILED(iter->second->BlockFilling()))
+        struct ChunkPos {
+            int x, y, z;
+            int dist; // 거리 (맨해튼 or 제곱 거리)
+        };
+
+        std::vector<ChunkPos> list;
+
+        for (int32_t x = minX; x <= maxX; ++x)
+            for (int32_t y = minY; y <= maxY; ++y)
+                for (int32_t z = minZ; z <= maxZ; ++z)
                 {
-                    MSG_BOX("FUT_BLOCK_FILLING FAIL");
-                }
-            }
-            else
-            {
-                MSG_BOX("FUT_BLOCK_FILLING CHUNK NOT FOUND");
-            }
+                    uint64_t chunkCoord = encodeChunkCoord(x, y, z);
+                    if (m_mapChunks.find(chunkCoord) != m_mapChunks.end())
+                    {
+                        continue;
+                    }
 
-            return chunkCoord;
+                    int dx = x - createDesc.iCenterX;
+                    int dy = y - createDesc.iCenterY;
+                    int dz = z - createDesc.iCenterZ;
+
+                    int dist = dx * dx + dy * dy + dz * dz; // 제곱 거리 (빠름)
+
+                    list.push_back({ x, y, z, dist });
+                }
+
+        // 중심부터 가까운 순으로 정렬
+        std::sort(list.begin(), list.end(), [](const ChunkPos& a, const ChunkPos& b) {
+            return a.dist < b.dist;
             });
 
-        futvec.push_back(std::move(fut));
-    }
+        std::vector<std::future<uint64_t>>  futvec{};
+        for (auto& p : list)
+        {
+            uint64_t chunkCoord = encodeChunkCoord(p.x, p.y, p.z);
+            CChunk3::DESC chunkDesc{};
+            chunkDesc.iX = p.x;
+            chunkDesc.iY = p.y;
+            chunkDesc.iZ = p.z;
+            chunkDesc.iChunkCoord = chunkCoord;
+            m_mapChunks.emplace(chunkCoord, std::move(CChunk3::Create(chunkDesc)));
 
-    m_queueFutBlockFilling.push_back(std::move(futvec));
+
+            std::future<uint64_t> fut = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_BLOCK_FILLING", [this, chunkCoord]()->uint64_t {
+                auto iter = m_mapChunks.find(chunkCoord);
+                if (iter != m_mapChunks.end())
+                {
+                    if (FAILED(iter->second->BlockFilling()))
+                    {
+                        MSG_BOX("FUT_BLOCK_FILLING FAIL");
+                    }
+                }
+                else
+                {
+                    MSG_BOX("FUT_BLOCK_FILLING CHUNK NOT FOUND");
+                }
+
+                return chunkCoord;
+                });
+
+            futvec.push_back(std::move(fut));
+        }
+
+        m_queueFutBlockFilling.push_back(std::move(futvec));
+        
+        
+        
+        m_bCreating = false;
+        });
+    
     return S_OK;
 }
 

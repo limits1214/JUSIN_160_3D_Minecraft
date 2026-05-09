@@ -116,7 +116,7 @@ HRESULT CChunk3::CreateBuffer()
 	desc.iVertexStride = sizeof(E::VTX_VOXEL);
 	desc.vertexDesc = {
 		.ByteWidth = desc.iNumVertices * desc.iVertexStride,
-		.Usage = D3D11_USAGE_DEFAULT,
+		.Usage = D3D11_USAGE_IMMUTABLE,
 		.BindFlags = D3D11_BIND_VERTEX_BUFFER,
 		.CPUAccessFlags = 0,
 		.MiscFlags = 0
@@ -129,7 +129,7 @@ HRESULT CChunk3::CreateBuffer()
 	desc.iNumIndices = (uint32_t)m_indices.size();
 	desc.IndexDesc = {
 		.ByteWidth = desc.iNumIndices * desc.iIndexStride,
-		.Usage = D3D11_USAGE_DEFAULT,
+		.Usage = D3D11_USAGE_IMMUTABLE,
 		.BindFlags = D3D11_BIND_INDEX_BUFFER,
 		.CPUAccessFlags = 0,
 		.MiscFlags = 0

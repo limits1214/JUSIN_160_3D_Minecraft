@@ -100,7 +100,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 20 };
+	int32_t m_iRenderDistance{ 1 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 public:
@@ -118,6 +118,7 @@ private:
 	ComPtr<ID3D11Device> m_pDevice{};
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 	std::mutex m_Mutex{};
+	std::atomic<_bool> m_bCreating{ false };
 
 public:
 	static UPtr<CVoxelManager3> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
