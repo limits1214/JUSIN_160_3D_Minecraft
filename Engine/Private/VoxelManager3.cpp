@@ -227,63 +227,85 @@ void CVoxelManager3::Update(_float fTimeDelta)
                 const auto& [cx, cy, cz] = res.pChunk->GetCoord();
 
                 auto worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
-                auto worldBY = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
-                auto worldBZ = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
+                auto worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
+                auto worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
 
                 CBlock3 block{};
                 block.SetType(CBlock3::TYPE::AIR);
 
-                //SetBlock(worldBX, worldBY, worldBZ, CBlock3::TYPE::AIR);
-                SetBlock(res.iX, res.iY, res.iZ, block);
-
-                // 파괴한 청크 리빌드
-                //const auto& [cx, cy, cz] = res.pChunk->GetCoord();
-                //CHUNK_REBUILD_DESC desc{};
-                //desc.iChunkX = cx;
-                //desc.iChunkY = cy;
-                //desc.iChunkZ = cz;
-                //QueuingChunkRebuild(desc);
-
-                // 경계 블록이면 이웃 청크도 리빌드
-                // X 경계
-                //if (res.iX == 0)
-                //{
-                //    if (auto* pNeighbor = res.pChunk->GetNeighborChunk(FACE_DIR::NEG_X))
-                //    {
-                //        const auto& [nx, ny, nz] = pNeighbor->GetCoord();
-                //        QueuingChunkRebuild({ nx, ny, nz });
-                //    }
-                //}
-                //else if (res.iX == VOXEL_CHUNK_X_SIZE3 - 1)
-                //{
-                //    if (auto* pNeighbor = res.pChunk->GetNeighborChunk(FACE_DIR::POS_X))
-                //    {
-                //        const auto& [nx, ny, nz] = pNeighbor->GetCoord();
-                //        QueuingChunkRebuild({ nx, ny, nz });
-                //    }
-                //}
-
-                //// Z 경계
-                //if (res.iZ == 0)
-                //{
-                //    if (auto* pNeighbor = res.pChunk->GetNeighborChunk(FACE_DIR::NEG_Z))
-                //    {
-                //        const auto& [nx, ny, nz] = pNeighbor->GetCoord();
-                //        QueuingChunkRebuild({ nx, ny, nz });
-                //    }
-                //}
-                //else if (res.iZ == VOXEL_CHUNK_Z_SIZE3 - 1)
-                //{
-                //    if (auto* pNeighbor = res.pChunk->GetNeighborChunk(FACE_DIR::POS_Z))
-                //    {
-                //        const auto& [nx, ny, nz] = pNeighbor->GetCoord();
-                //        QueuingChunkRebuild({ nx, ny, nz });
-                //    }
-                //}
+                SetBlock(worldBX, worldBY, worldBZ, block);
             }
         }
     }
 
+    if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+    {
+        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+        {
+            RECT rect;
+            GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+
+            E::_float4x4 P;
+            XMStoreFloat4x4(&P, cam->GetProj());
+
+            E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+            E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+            E::_matrix V = cam->GetView();
+            auto detV = XMMatrixDeterminant(V);
+            E::_matrix invView = XMMatrixInverse(&detV, V);
+
+            rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+            rayDir = XMVector3TransformNormal(rayDir, invView);
+            _float3 vecrayOrigin;
+            _float3 vecrayDir;
+
+            XMStoreFloat3(&vecrayOrigin, rayOrigin);
+            XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
+
+
+            BLOCK_RAY_RESULT res;
+            if (BlockRaycast(vecrayOrigin, vecrayDir, 5.f, res))
+            {
+                const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+
+                auto worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
+                auto worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
+                auto worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
+                if (res.eHitFace == FACE_DIR::POS_X)
+                {
+                    worldBX += 1;
+                }
+                else if (res.eHitFace == FACE_DIR::NEG_X)
+                {
+                    worldBX -= 1;
+                }
+                else if (res.eHitFace == FACE_DIR::POS_Y)
+                {
+                    worldBY += 1;
+                }
+                else if (res.eHitFace == FACE_DIR::NEG_Y)
+                {
+                    worldBY -= 1;
+                }
+                else if (res.eHitFace == FACE_DIR::POS_Z)
+                {
+                    worldBZ += 1;
+                }
+                else if (res.eHitFace == FACE_DIR::NEG_Z)
+                {
+                    worldBZ -= 1;
+                }
+
+                
+
+                CBlock3 block{};
+                block.SetType(CBlock3::TYPE::GRASS);
+
+                SetBlock(worldBX, worldBY, worldBZ, block);
+            }
+        }
+    }
 
 
 
@@ -356,6 +378,10 @@ void CVoxelManager3::UpdateGUI()
             auto iy = (int32_t)floor(fy / VOXEL_CHUNK_Y_SIZE3);
             auto iz = (int32_t)floor(fz / VOXEL_CHUNK_Z_SIZE3);
 
+            int32_t cx = FloorDiv((int32_t)fx, (int32_t)VOXEL_CHUNK_X_SIZE3);
+            int32_t cy = FloorDiv((int32_t)fy, (int32_t)VOXEL_CHUNK_Y_SIZE3);
+            int32_t cz = FloorDiv((int32_t)fz, (int32_t)VOXEL_CHUNK_Z_SIZE3);
+
             IN_RANGE_CHUNK_CREATE_DESC desc{};
             desc.iCenterX = ix;
             desc.iCenterY = 0;
@@ -374,6 +400,10 @@ void CVoxelManager3::UpdateGUI()
             auto ix = (int32_t)floor(fx / VOXEL_CHUNK_X_SIZE3);
             auto iy = (int32_t)floor(fy / VOXEL_CHUNK_Y_SIZE3);
             auto iz = (int32_t)floor(fz / VOXEL_CHUNK_Z_SIZE3);
+
+            int32_t cx = FloorDiv((int32_t)fx, (int32_t)VOXEL_CHUNK_X_SIZE3);
+            int32_t cy = FloorDiv((int32_t)fy, (int32_t)VOXEL_CHUNK_Y_SIZE3);
+            int32_t cz = FloorDiv((int32_t)fz, (int32_t)VOXEL_CHUNK_Z_SIZE3);
 
             OUT_RANGE_CHUNK_RELEASE_DESC desc{};
             desc.iCenterX = ix;
@@ -432,10 +462,13 @@ CChunk3* CVoxelManager3::GetChunkByChunkCoord(int32_t x, int32_t y, int32_t z) c
 
 CChunk3* CVoxelManager3::GetChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const
 {
+    auto tmp1 = FloorDiv(x, VOXEL_CHUNK_X_SIZE3);
+    auto tmp2 = FloorDiv(y, VOXEL_CHUNK_Y_SIZE3);
+    auto tmp3 = FloorDiv(z, VOXEL_CHUNK_Z_SIZE3);
 	int32_t cx = (int32_t)floor(x / VOXEL_CHUNK_X_SIZE3);
 	int32_t cy = (int32_t)floor(y / VOXEL_CHUNK_Y_SIZE3);
 	int32_t cz = (int32_t)floor(z / VOXEL_CHUNK_Z_SIZE3);
-	return GetChunkByChunkCoord(cx, cy, cz);
+	return GetChunkByChunkCoord(tmp1, tmp2, tmp3);
 }
 
 HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& createDesc)
@@ -596,7 +629,6 @@ HRESULT CVoxelManager3::StartProcessOutRangeChunkRelease(const OUT_RANGE_CHUNK_R
                 setIdx.insert(targetCoord);
             }
         }
-        //AdjChunkReMessing(delIdx);
     }
 
     for (const auto& targetCoord : setIdx)
@@ -640,7 +672,6 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
             {
                 uint64_t chunkIdx = futChunkIdx.get();
                 // check 인접 청크
-                //AdjChunkReMessing(chunkIdx);
 
                 const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
 
@@ -739,24 +770,6 @@ HRESULT CVoxelManager3::UpdateCheckQuduedQuadMessingChunk()
             }
         }
 
-
-        //for (const uint64_t& targetIdx : targetCoords)
-        //{
-        //    auto chunkFindIter = m_mapChunks.find(targetIdx);
-        //    if (chunkFindIter != m_mapChunks.end())
-        //    {
-        //        if (chunkFindIter->second->GetMessingState() == CChunk3::MESSING_STATE::ING)
-        //        {
-        //            bNeedContinue = true;
-        //            break;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        // TODO: 제거
-        //    }
-        //}
-
         if (bNeedContinue)
         {
             ++iter;
@@ -811,6 +824,7 @@ HRESULT CVoxelManager3::UpdateCheckQuadMessingEndFutures()
                     auto findIter = m_mapChunks.find(targetCoord);
                     if (findIter != m_mapChunks.end())
                     {
+                        findIter->second->SetMessingQueued(false);
                         if (FAILED(findIter->second->CreateBuffer()))
                         {
                             MSG_BOX("UpdateCheckQuadMessingFutures CreateBuffer FAILEd");
@@ -836,35 +850,31 @@ HRESULT CVoxelManager3::UpdateCheckQuadMessingEndFutures()
 
 HRESULT CVoxelManager3::UpdateCheckBlockEdit()
 {
-    //if (!m_queueFutQuadMessing.empty())
-    //{
-    //    return S_OK;
-    //}
-
     for (auto iter = m_EditShadow.begin(); iter != m_EditShadow.end(); )
     {
-        uint64_t chunkIdx = (*iter).first;
+        uint64_t chunkIdx = iter->first;
         auto chunkFindIter = m_mapChunks.find(chunkIdx);
         if (chunkFindIter != m_mapChunks.end())
         {
-            // 각 체크 도중에 메싱스테이트가 바뀔가능성?
-            // 그냥 메싱이 없을때 적용
-            // 근데 메싱할때 일단 메싱중이면 while로 대기
-            if (true || chunkFindIter->second->GetMessingState() == CChunk3::MESSING_STATE::DONE)
+            if (!chunkFindIter->second->GetMessingQueued())
             {
-
                 const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
                 std::vector<uint64_t> messingReqVec{};
 
-                messingReqVec.push_back(chunkIdx);
+                //CChunk3::BlockIndexing(0, 0, 0);
+                //CChunk3::BlockIndexing(VOXEL_CHUNK_X_SIZE3-1, 0, 0);
+
+                //CChunk3::BlockIndexing(0, 0, VOXEL_CHUNK_Z_SIZE3 - 1);
+                //CChunk3::BlockIndexing(VOXEL_CHUNK_X_SIZE3 - 1, 0, VOXEL_CHUNK_Z_SIZE3 - 1);
 
                 // pos_x
                 {
+                    
                     uint64_t targetIdx = encodeChunkCoord(cx + 1, cy, cz);
                     auto targetIter = m_mapChunks.find(targetIdx);
                     if (targetIter != m_mapChunks.end())
                     {
-                        if (targetIter->second->GetMessingState() != CChunk3::MESSING_STATE::DONE)
+                        if (targetIter->second->GetMessingQueued())
                         {
                             ++iter;
                             continue;
@@ -873,7 +883,6 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                         {
                             messingReqVec.push_back(targetIdx);
                         }
-                        messingReqVec.push_back(targetIdx);
                     }
                 }
 
@@ -883,7 +892,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                     auto targetIter = m_mapChunks.find(targetIdx);
                     if (targetIter != m_mapChunks.end())
                     {
-                        if (targetIter->second->GetMessingState() != CChunk3::MESSING_STATE::DONE)
+                        if (targetIter->second->GetMessingQueued())
                         {
                             ++iter;
                             continue;
@@ -892,7 +901,6 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                         {
                             messingReqVec.push_back(targetIdx);
                         }
-                        messingReqVec.push_back(targetIdx);
                     }
                 }
 
@@ -902,7 +910,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                     auto targetIter = m_mapChunks.find(targetIdx);
                     if (targetIter != m_mapChunks.end())
                     {
-                        if (targetIter->second->GetMessingState() != CChunk3::MESSING_STATE::DONE)
+                        if (targetIter->second->GetMessingQueued())
                         {
                             ++iter;
                             continue;
@@ -911,7 +919,6 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                         {
                             messingReqVec.push_back(targetIdx);
                         }
-                        messingReqVec.push_back(targetIdx);
                     }
                 }
 
@@ -921,7 +928,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                     auto targetIter = m_mapChunks.find(targetIdx);
                     if (targetIter != m_mapChunks.end())
                     {
-                        if (targetIter->second->GetMessingState() != CChunk3::MESSING_STATE::DONE)
+                        if (targetIter->second->GetMessingQueued())
                         {
                             ++iter;
                             continue;
@@ -930,9 +937,18 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                         {
                             messingReqVec.push_back(targetIdx);
                         }
-                        messingReqVec.push_back(targetIdx);
                     }
                 }
+
+                std::unordered_map<uint32_t, CBlock3>& blockChanges = iter->second;
+
+                for (const auto [blockIdx, block] : blockChanges)
+                {
+                    auto tmp = chunkFindIter->second->GetBlock(blockIdx);
+                    chunkFindIter->second->SetBlock(blockIdx, block.GetType());
+                }
+
+                messingReqVec.push_back(chunkIdx);
 
                 QueueingQuadMessing(messingReqVec);
                 iter = m_EditShadow.erase(iter);
@@ -951,94 +967,16 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
     return S_OK;
 }
 
-//HRESULT CVoxelManager3::AdjChunkReMessing(uint64_t targetIdx)
-//{
-//    const auto& [cx, cy, cz] = decodeChunkCoord(targetIdx);
-//    //POS_X
-//    {
-//        uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz);
-//        auto iter = m_mapChunks.find(targetCoord);
-//        if (iter != m_mapChunks.end() && !iter->second->GetDead())
-//        {
-//            std::vector<uint64_t> targetCoords{};
-//            targetCoords.push_back(targetCoord);
-//            EnqueueFutWorkerQuadMessing(targetCoords);
-//        }
-//    }
-//
-//    //NEG_X
-//    {
-//        uint64_t targetCoord = encodeChunkCoord(cx - 1, cy, cz);
-//        auto iter = m_mapChunks.find(targetCoord);
-//        if (iter != m_mapChunks.end() && !iter->second->GetDead())
-//        {
-//            std::vector<uint64_t> targetCoords{};
-//            targetCoords.push_back(targetCoord);
-//            EnqueueFutWorkerQuadMessing(targetCoords);
-//        }
-//    }
-//
-//    //POS_Z
-//    {
-//        uint64_t targetCoord = encodeChunkCoord(cx, cy, cz + 1);
-//        auto iter = m_mapChunks.find(targetCoord);
-//        if (iter != m_mapChunks.end() && !iter->second->GetDead())
-//        {
-//            std::vector<uint64_t> targetCoords{};
-//            targetCoords.push_back(targetCoord);
-//            EnqueueFutWorkerQuadMessing(targetCoords);
-//        }
-//    }
-//
-//    //NEG_Z
-//    {
-//        uint64_t targetCoord = encodeChunkCoord(cx, cy, cz - 1);
-//        auto iter = m_mapChunks.find(targetCoord);
-//        if (iter != m_mapChunks.end() && !iter->second->GetDead())
-//        {
-//            std::vector<uint64_t> targetCoords{};
-//            targetCoords.push_back(targetCoord);
-//            EnqueueFutWorkerQuadMessing(targetCoords);
-//        }
-//    }
-//    return S_OK;
-//}
-
-//HRESULT CVoxelManager3::EnqueueFutWorkerQuadMessing(std::vector<uint64_t> targetCoords)
-//{
-//    std::future<std::vector<uint64_t>> fut = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_QUAD_MESSING", [this, targetCoords]()->std::vector<uint64_t> {
-//        for (const auto& targetCoord : targetCoords)
-//        {
-//            auto iter = m_mapChunks.find(targetCoord);
-//            if (iter != m_mapChunks.end())
-//            {
-//                //while (iter->second->GetMessingState() == CChunk3::MESSING_STATE::ING)
-//                //{
-//                //}
-//                if (FAILED(iter->second->QuadMessing()))
-//                {
-//                    MSG_BOX("FUT_QUAD_MESSING FAIL");
-//                }
-//            }
-//            else
-//            {
-//                MSG_BOX("FUT_QUAD_MESSING CHUNK NOT FOUND");
-//            }
-//        }
-//
-//        return targetCoords;
-//        });
-//
-//    m_queueFutQuadMessing.push_back(std::move(fut));
-//    return S_OK;
-//}
-
 HRESULT CVoxelManager3::QueueingQuadMessing(std::vector<uint64_t> targetCoords)
 {
-    //for (const auto& queuedChunk : m_queuedQuadMessingChunks)
-    //{
-    //    
-    //}
+    for (const auto& chunkIdx : targetCoords)
+    {
+        auto iter = m_mapChunks.find(chunkIdx);
+        if (iter != m_mapChunks.end())
+        {
+            iter->second->SetMessingQueued(true);
+        }
+    }
 
     m_queuedQuadMessingChunks.push_back(targetCoords);
     return S_OK;
