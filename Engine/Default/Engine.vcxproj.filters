@@ -277,6 +277,9 @@
     <Filter Include="GameObject\Entity\Animal\Pig">
       <UniqueIdentifier>{9568e64e-62e2-41de-a404-0b7caa6f41b3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="100.Shaders\Entity">
+      <UniqueIdentifier>{5e0e1e89-c0cb-4b52-b53d-1ee5aa141113}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -837,6 +840,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ShaderDefines.hlsl">
       <Filter>100.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Entity.hlsl">
+      <Filter>100.Shaders\Entity</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
