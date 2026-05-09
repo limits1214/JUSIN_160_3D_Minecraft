@@ -262,6 +262,21 @@
     <Filter Include="Voxel3\Manager">
       <UniqueIdentifier>{a82b0510-3d2b-43d7-9bde-8b2d31cb0cc3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Entity">
+      <UniqueIdentifier>{e27c00f7-2a6d-472f-8d51-8cd816ff997f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Animal">
+      <UniqueIdentifier>{60212ad9-2cc3-4943-b67b-2542acf152c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster">
+      <UniqueIdentifier>{605f9310-b346-47ea-b197-f66014795bbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Player">
+      <UniqueIdentifier>{566f54cc-bf1a-47f4-ba7d-5431adb6b815}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Animal\Pig">
+      <UniqueIdentifier>{9568e64e-62e2-41de-a404-0b7caa6f41b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -534,6 +549,15 @@
     <ClInclude Include="..\public\VoxelManager3.h">
       <Filter>Voxel3\Manager</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\EntityObject.h">
+      <Filter>GameObject\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\AnimalEntityObject.h">
+      <Filter>GameObject\Entity\Animal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\PigEntity.h">
+      <Filter>GameObject\Entity\Animal\Pig</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -793,6 +817,15 @@
     </ClCompile>
     <ClCompile Include="..\private\VoxelManager3.cpp">
       <Filter>Voxel3\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\EntityObject.cpp">
+      <Filter>GameObject\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\AnimalEntityObject.cpp">
+      <Filter>GameObject\Entity\Animal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PigEntity.cpp">
+      <Filter>GameObject\Entity\Animal\Pig</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

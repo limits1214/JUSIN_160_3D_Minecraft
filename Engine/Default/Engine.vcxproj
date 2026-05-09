@@ -229,6 +229,7 @@ call CopyClient.bat</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\public\AnimalEntityObject.h" />
     <ClInclude Include="..\public\BaseApp.h" />
     <ClInclude Include="..\public\Block.h" />
     <ClInclude Include="..\public\Block2.h" />
@@ -255,6 +256,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\Engine_Tag.h" />
     <ClInclude Include="..\Public\Engine_Template.h" />
     <ClInclude Include="..\Public\Engine_Typedef.h" />
+    <ClInclude Include="..\public\EntityObject.h" />
     <ClInclude Include="..\public\FlyCamera.h" />
     <ClInclude Include="..\public\GameInstance.h" />
     <ClInclude Include="..\public\GameObject.h" />
@@ -267,6 +269,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\LevelManager.h" />
     <ClInclude Include="..\public\LightManager.h" />
     <ClInclude Include="..\Public\MyTreeNode.h" />
+    <ClInclude Include="..\public\PigEntity.h" />
     <ClInclude Include="..\public\Prototype.h" />
     <ClInclude Include="..\public\PrototypeManager.h" />
     <ClInclude Include="..\public\Renderer.h" />
@@ -417,6 +420,7 @@ call CopyClient.bat</Command>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
     </ClCompile>
+    <ClCompile Include="..\private\AnimalEntityObject.cpp" />
     <ClCompile Include="..\private\BaseApp.cpp" />
     <ClCompile Include="..\private\Block.cpp" />
     <ClCompile Include="..\private\Block2.cpp" />
@@ -434,6 +438,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\CollSphere.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\DInputManager.cpp" />
+    <ClCompile Include="..\private\EntityObject.cpp" />
     <ClCompile Include="..\private\FlyCamera.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />
     <ClCompile Include="..\private\GameObject.cpp" />
@@ -444,6 +449,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Level.cpp" />
     <ClCompile Include="..\private\LevelManager.cpp" />
     <ClCompile Include="..\private\LightManager.cpp" />
+    <ClCompile Include="..\private\PigEntity.cpp" />
     <ClCompile Include="..\private\Prototype.cpp" />
     <ClCompile Include="..\private\PrototypeManager.cpp" />
     <ClCompile Include="..\private\Renderer.cpp" />

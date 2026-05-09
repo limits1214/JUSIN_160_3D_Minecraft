@@ -596,7 +596,7 @@ HRESULT CChunk::MapBuffer(ID3D11DeviceContext* pContext)
 
 		{
 			std::lock_guard lock(m_Mutex2);
-			m_pResDynamicViBuffer->SetNumVertices(m_vertices.size());
+			m_pResDynamicViBuffer->SetNumVertices((uint32_t)m_vertices.size());
 		}
 
 		m_vertices.clear();
@@ -617,7 +617,7 @@ HRESULT CChunk::MapBuffer(ID3D11DeviceContext* pContext)
 
 		{
 			std::lock_guard lock(m_Mutex2);
-			m_pResDynamicViBuffer->SetNumIndices(m_indices.size());
+			m_pResDynamicViBuffer->SetNumIndices((uint32_t)m_indices.size());
 
 			m_iNumIndices = (uint32_t)m_indices.size();
 		}
@@ -650,7 +650,7 @@ HRESULT CChunk::Initialize(const DESC& desc)
 	{
 		constexpr uint32_t MAX_QUADS_PER_CHUNK = VOXEL_CHUNK_X_SIZE * VOXEL_CHUNK_Z_SIZE * VOXEL_CHUNK_Y_SIZE * 6;  // 196608
 
-		uint32_t initialNumQuad = MAX_QUADS_PER_CHUNK * 0.07f;   // 7% 추천
+		uint32_t initialNumQuad =(uint32_t)(MAX_QUADS_PER_CHUNK * 0.07);   // 7% 추천
 		uint32_t iInitialNumVertices = initialNumQuad * 4;
 		uint32_t iInitialNumIndices = initialNumQuad * 6;
 

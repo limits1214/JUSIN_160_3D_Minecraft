@@ -433,6 +433,7 @@ HRESULT CTestSimpleGreedyChunk::BuildMesh()
 	E::CGameInstance::Get().DelResource("LEVEL_TEST_SIMPLE_GREEDY", "DYNVIBUFFER_Chunk");
 	E::CGameInstance::Get().AddResource("LEVEL_TEST_SIMPLE_GREEDY", "DYNVIBUFFER_Chunk", pBuffer);
 
+	return S_OK;
 }
 
 E::UPtr<CTestSimpleGreedyChunk> CTestSimpleGreedyChunk::Create()

@@ -4,6 +4,8 @@
 #include "Level_Defines.h"
 #include "CameraObject.h"
 
+#include "PigEntity.h"
+
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -39,6 +41,29 @@ HRESULT CLevelTestWorld::Initialize()
 			}
 		}
 	}
+
+	{
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PigEntity", E::CPigEntity::Create())))
+		{
+			int x = 0;
+		}
+	}
+
+	{
+		E::CPigEntity::DESC Desc{};
+		Desc.sObjectTag = "Pig";
+		if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
+			E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+		{
+		
+		}
+
+	}
+	//if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
+	//	E::ETOUI(LEVEL_TEST_WORLD_LAYERS::CAMERA), &Desc))
+	//{
+	//	
+	//}
 
 	return S_OK;
 }
