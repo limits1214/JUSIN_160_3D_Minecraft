@@ -65,6 +65,8 @@ HRESULT CRenderer::Draw()
         {
             ctx.matProj = pGameCam->GetProj();
             ctx.matView = pGameCam->GetView();
+            ctx.matViewProj = ctx.matView * ctx.matProj;
+
             auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_FRAME);
             D3D11_MAPPED_SUBRESOURCE mappedSubResource;
             if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
@@ -121,6 +123,7 @@ HRESULT CRenderer::Draw()
         {
             ctx.matProj = pUICame->GetProj();
             ctx.matView = pUICame->GetView();
+            ctx.matViewProj = ctx.matView * ctx.matProj;
 
             auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_FRAME);
             D3D11_MAPPED_SUBRESOURCE mappedSubResource;

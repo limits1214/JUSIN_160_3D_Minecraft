@@ -94,9 +94,18 @@ namespace Engine
 
 	typedef struct tagVertexVoxel
 	{
-		_float3 pos;
-		uint32_t packedData;
+		_float3 pos{};
+		uint32_t packedData{};
 	} VTX_VOXEL;
+
+	typedef struct tagVertexEntity
+	{
+		_float3 pos{};   // 12 bytes
+		_float3 normal{};     // 12 bytes  (조명 계산용)
+		_float2 texCoord{}; //  8 bytes
+		_float4 boneWeight{}; // 16 bytes  (스키닝용, 마크는 1본만 쓰니까 index만 있어도 됨)
+		uint32_t boneIndex{};  //  4 bytes
+	} VTX_ENTITY;
 
 
 	typedef struct tagConstantBufferPerFrame
@@ -120,6 +129,11 @@ namespace Engine
 	{
 		MATERIAL mat{};
 	} CB_PER_MATERIAL;
+
+	typedef struct tagConstantBufferPerBone
+	{
+		_float4x4 matBone[64];
+	} CB_PER_BONE;
 
 	typedef struct tagVoxQuad
 	{
