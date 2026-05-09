@@ -49,12 +49,18 @@ public:
 public:
 	CBlock3& GetBlock(uint32_t x, uint32_t y, uint32_t z) { return m_arrBlocks[BlockIndexing(x, y, z)]; }
 	void SetBlock(uint32_t x, uint32_t y, uint32_t z, CBlock3::TYPE eType) { m_arrBlocks[BlockIndexing(x, y, z)].SetType(eType); }
+	CBlock3& GetBlock(uint32_t idx) { return m_arrBlocks[idx]; }
+	void SetBlock(uint32_t idx, CBlock3::TYPE eType) { m_arrBlocks[idx].SetType(eType); }
+
 	HRESULT BlockFilling();
 	HRESULT QuadMessing();
 	HRESULT CreateBuffer();
 	HRESULT Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const;
 	_bool GetDead() const { return m_bDead; }
 	void SetDead() { m_bDead = true; }
+
+	_bool GetMessingQueued() const { return m_bMessingQueued; }
+	void SetMessingQueued(_bool b) { m_bMessingQueued = b; }
 
 private:
 	void NiveFaceCulling(std::vector<VOX_QUAD>& quads) const;
@@ -69,6 +75,7 @@ private:
 	int32_t m_iX{}, m_iY{}, m_iZ{};
 	uint64_t m_iChunkCoord{};
 	std::atomic<_bool> m_bDead{ false };
+	std::atomic<_bool> m_bMessingQueued{ false };
 
 private:
 	std::array<CBlock3, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3> m_arrBlocks{};
