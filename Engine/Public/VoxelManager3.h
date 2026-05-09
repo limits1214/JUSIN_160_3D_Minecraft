@@ -94,13 +94,13 @@ private:
 	HRESULT UpdateCheckBlockEdit();
 
 	//HRESULT AdjChunkReMessing(uint64_t targetIdx);
-	HRESULT QueueingQuadMessing(std::vector<uint64_t> targetCoords);
+	HRESULT QueueingQuadMessing(std::vector<uint64_t> targetCoords, _bool bPushFront = false);
 private:
 	HRESULT Initialize();
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 1 };
+	int32_t m_iRenderDistance{ 10 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 public:

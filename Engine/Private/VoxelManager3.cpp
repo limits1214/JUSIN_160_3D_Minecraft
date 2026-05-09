@@ -692,6 +692,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
             {
                 uint64_t chunkIdx = futChunkIdx.get();
                 // check 인접 청크
+                // 최적화 필요함, 실제 반영이 필요한인접청크만
 
                 const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
 
@@ -970,7 +971,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
 
                 messingReqVec.push_back(chunkIdx);
 
-                QueueingQuadMessing(messingReqVec);
+                QueueingQuadMessing(messingReqVec, true);
                 iter = m_EditShadow.erase(iter);
             }
             else
@@ -987,7 +988,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
     return S_OK;
 }
 
-HRESULT CVoxelManager3::QueueingQuadMessing(std::vector<uint64_t> targetCoords)
+HRESULT CVoxelManager3::QueueingQuadMessing(std::vector<uint64_t> targetCoords, _bool bPushFront)
 {
     for (const auto& chunkIdx : targetCoords)
     {
@@ -998,7 +999,18 @@ HRESULT CVoxelManager3::QueueingQuadMessing(std::vector<uint64_t> targetCoords)
         }
     }
 
-    m_queuedQuadMessingChunks.push_back(targetCoords);
+
+
+
+    if (bPushFront)
+    {
+        m_queuedQuadMessingChunks.push_front(targetCoords);
+    }
+    else
+    {
+        m_queuedQuadMessingChunks.push_back(targetCoords);
+    }
+    
     return S_OK;
 }
 
