@@ -47,6 +47,7 @@ public:
 
 private:
 	HRESULT InitializeResources();
+	HRESULT InitializeMCResource();
 	HRESULT InitializePrototype();
 
 public:

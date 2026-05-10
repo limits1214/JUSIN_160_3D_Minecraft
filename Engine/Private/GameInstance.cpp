@@ -61,6 +61,10 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 	{
 		return E_FAIL;
 	}
+	if (FAILED(InitializeMCResource()))
+	{
+		return E_FAIL;
+	}
 
 	m_pPrototypeManager = CPrototypeManager::Create(ppDevice.Get(), ppContext.Get());
 	if (m_pPrototypeManager == nullptr)
@@ -325,14 +329,6 @@ HRESULT CGameInstance::InitializeResources()
 	{
 		res->Load();
 	}
-	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
-	{
-		res->Load();
-	}
-	if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
-	{
-		res->Load();
-	}
 	
 
 
@@ -374,6 +370,61 @@ HRESULT CGameInstance::InitializeResources()
 		desc.DepthClipEnable = TRUE;
 
 		res->Load(desc);
+	}
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "RS_SOLID_BACKCULL_DEPTHBIAS", E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_BACK;
+		desc.DepthClipEnable = TRUE;
+		desc.DepthBias = -100;
+		desc.SlopeScaledDepthBias = -1.0f;
+		desc.DepthBiasClamp = 0.0f;
+		res->Load(desc);
+	}
+	return S_OK;
+}
+
+HRESULT CGameInstance::InitializeMCResource()
+{
+	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
+	{
+		res->Load();
+	}
+	if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
+	{
+		res->Load();
+	}
+
+	// 0: Pig
+	if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Pig/pig_v3.png")))
+	{
+		if (FAILED(pRes->Load()))
+		{
+			int x = 0;
+		}
+	}
+
+	// 1: Saddle
+	if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Pig/saddle_v2.png")))
+	{
+		if (FAILED(pRes->Load()))
+		{
+			int x = 0;
+		}
+	}
+
+	// Entity_64_64_Ted2d_Array
+	{
+		CResTexture2DArray::DESC desc{};
+		desc.textureId = { "MC_ENTITY_TEX_64_64", "TEXTURES" };
+		auto pTextureArray = CResTexture2DArray::Create();
+		if (FAILED(pTextureArray->Load(desc)))
+		{
+			return E_FAIL;
+		}
+		CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURE_ARRAY", pTextureArray);
+		GetGraphicDeviceContext()->PSSetShaderResources(8, 1, pTextureArray->GetSRV().GetAddressOf());
 	}
 	return S_OK;
 }

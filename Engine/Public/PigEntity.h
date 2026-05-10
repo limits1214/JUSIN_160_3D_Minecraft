@@ -8,7 +8,9 @@ struct EntityCube
 	_float3 size{};
 	_float3 rotation{};
 	_float2 uv{};
+	uint32_t texIndex{};
 	_float inflate;
+	_float3 uvSize{};
 };
 struct EntityBone
 {
@@ -16,6 +18,8 @@ struct EntityBone
 	std::string parent{};
 	_float3 pivot{};
 	std::vector<EntityCube> cubes{};
+	_bool mirror{false};
+	std::vector<std::pair<std::string, _float3>> locators{};
 };
 class ENGINE_DLL CPigEntity : public CAnimalEntityObject
 {

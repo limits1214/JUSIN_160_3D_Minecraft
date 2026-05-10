@@ -111,13 +111,27 @@ HRESULT CResTexture2D::Load(const std::any& arg)
     }
     else
     {
-        hr = DirectX::CreateWICTextureFromFile(
+        hr = DirectX::CreateWICTextureFromFileEx(
             m_pDevice.Get(),
-            m_pContext.Get(), // mip 자동 생성
+            m_pContext.Get(),
             path.c_str(),
+            0,
+            D3D11_USAGE_DEFAULT,
+            D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
+            0,
+            D3D11_RESOURCE_MISC_GENERATE_MIPS,
+            DirectX::WIC_LOADER_FORCE_RGBA32,
             pResource.GetAddressOf(),
             m_pSRV.GetAddressOf()
+
         );
+        //hr = DirectX::CreateWICTextureFromFile(
+        //    m_pDevice.Get(),
+        //    m_pContext.Get(), // mip 자동 생성
+        //    path.c_str(),
+        //    pResource.GetAddressOf(),
+        //    m_pSRV.GetAddressOf()
+        //);
     }
     //HRESULT hr = DirectX::CreateWICTextureFromFile(
     //    m_pDevice.Get(),
