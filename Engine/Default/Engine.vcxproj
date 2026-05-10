@@ -246,6 +246,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\CollOrientedBox.h" />
     <ClInclude Include="..\Public\CollSphere.h" />
     <ClInclude Include="..\public\Component.h" />
+    <ClInclude Include="..\public\CowEntity.h" />
     <ClInclude Include="..\public\DInputManager.h" />
     <ClInclude Include="..\Public\Engine_Base.h" />
     <ClInclude Include="..\Public\Engine_Defines.h" />
@@ -437,6 +438,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\CollOrientedBox.cpp" />
     <ClCompile Include="..\Private\CollSphere.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
+    <ClCompile Include="..\private\CowEntity.cpp" />
     <ClCompile Include="..\private\DInputManager.cpp" />
     <ClCompile Include="..\private\EntityObject.cpp" />
     <ClCompile Include="..\private\FlyCamera.cpp" />
