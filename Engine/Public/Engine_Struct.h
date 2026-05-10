@@ -103,8 +103,9 @@ namespace Engine
 		_float3 pos{};   // 12 bytes
 		_float3 normal{};     // 12 bytes  (조명 계산용)
 		_float2 texCoord{}; //  8 bytes
-		_float4 boneWeight{}; // 16 bytes  (스키닝용, 마크는 1본만 쓰니까 index만 있어도 됨)
+		//_float4 boneWeight{}; // 16 bytes  (스키닝용, 마크는 1본만 쓰니까 index만 있어도 됨)
 		uint32_t boneIndex{};  //  4 bytes
+		uint32_t texIndex{};  //  4 bytes
 	} VTX_ENTITY;
 
 
