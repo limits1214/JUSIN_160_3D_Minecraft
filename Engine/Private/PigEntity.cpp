@@ -105,16 +105,16 @@ HRESULT CPigEntity::Initialize(void* pArg)
             cube.size.y += cube.inflate * 2.f;
             cube.size.z += cube.inflate * 2.f;
 
-            cube.origin.z = -cube.origin.z - cube.size.z;
+            //cube.origin.z = -cube.origin.z - cube.size.z;
 
         }
-        bone.pivot.z = -bone.pivot.z;
+        //bone.pivot.z = -bone.pivot.z;
 
         if (!bone.locators.empty())
         {
             for (auto& locator : bone.locators)
             {
-                locator.second.z = -locator.second.z;
+                //locator.second.z = -locator.second.z;
             }
         }
     }
@@ -152,7 +152,7 @@ HRESULT CPigEntity::Initialize(void* pArg)
 
             size = [W, H, D] 큐브일 때:
 
-                   D    W    D    W
+                   D    W    
                 ┌────┬────┬────┬────┐
               D │ top│    │bot │    │
                 ├────┼────┼────┼────┤
@@ -169,16 +169,16 @@ HRESULT CPigEntity::Initialize(void* pArg)
             */
 
             // POS_X: U 범위 (U+D+W) ~ (U+D+W+D)
-            vertices[24 * tmpI + 0] =   { .pos = {x1, y1, z0}, .normal = {1, 0, 0},  .texCoord = {uvm(U + D + W,            V + D,      U + D + W,      U + D + W + D)} };
-            vertices[24 * tmpI + 1] =   { .pos = {x1, y1, z1}, .normal = {1, 0, 0},  .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W,      U + D + W + D)} };
-            vertices[24 * tmpI + 2] =   { .pos = {x1, y0, z1}, .normal = {1, 0, 0},  .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W,      U + D + W + D)} };
-            vertices[24 * tmpI + 3] =   { .pos = {x1, y0, z0}, .normal = {1, 0, 0},  .texCoord = {uvm(U + D + W,            V + D + H,  U + D + W,      U + D + W + D)} };
+            vertices[24 * tmpI + 0] =   { .pos = {x1, y1, z0}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W,            V + D,      U + D + W,      U + D + W + D)}  };
+            vertices[24 * tmpI + 1] =   { .pos = {x1, y1, z1}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W,      U + D + W + D)}  };
+            vertices[24 * tmpI + 2] =   { .pos = {x1, y0, z1}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W,      U + D + W + D)}  };
+            vertices[24 * tmpI + 3] =   { .pos = {x1, y0, z0}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W,            V + D + H,  U + D + W,      U + D + W + D)}  };
 
             // NEG_X: U 범위 U ~ (U+D)
-            vertices[24 * tmpI + 4] =   { .pos = {x0, y1, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U,                    V + D,      U,              U + D)} };
-            vertices[24 * tmpI + 5] =   { .pos = {x0, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D,                V + D,      U,              U + D)} };
-            vertices[24 * tmpI + 6] =   { .pos = {x0, y0, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D,                V + D + H,  U,              U + D)} };
-            vertices[24 * tmpI + 7] =   { .pos = {x0, y0, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U,                    V + D + H,  U,              U + D)} };
+            vertices[24 * tmpI + 4] =   { .pos = {x0, y1, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U,                    V + D,      U,              U + D)}  };
+            vertices[24 * tmpI + 5] =   { .pos = {x0, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D,                V + D,      U,              U + D)}  };
+            vertices[24 * tmpI + 6] =   { .pos = {x0, y0, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D,                V + D + H,  U,              U + D)}  };
+            vertices[24 * tmpI + 7] =   { .pos = {x0, y0, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U,                    V + D + H,  U,              U + D)}  };
 
             // POS_Y: U 범위 (U+D) ~ (U+D+W)
             vertices[24 * tmpI + 8] =   { .pos = {x0, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uvm(U + D,                V,          U + D,          U + D + W)} };
@@ -187,22 +187,23 @@ HRESULT CPigEntity::Initialize(void* pArg)
             vertices[24 * tmpI + 11] =  { .pos = {x0, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uvm(U + D,                V + D,      U + D,          U + D + W)} };
 
             // NEG_Y: U 범위 (U+D+W) ~ (U+D+W+W)
-            vertices[24 * tmpI + 12] =  { .pos = {x0, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,            V,          U + D + W,      U + D + W + W)} };
-            vertices[24 * tmpI + 13] =  { .pos = {x1, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W,        V,          U + D + W,      U + D + W + W)} };
-            vertices[24 * tmpI + 14] =  { .pos = {x1, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W,        V + D,      U + D + W,      U + D + W + W)} };
-            vertices[24 * tmpI + 15] =  { .pos = {x0, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,            V + D,      U + D + W,      U + D + W + W)} };
+            vertices[24 * tmpI + 12] =  { .pos = {x1, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W,        V,          U + D + W,      U + D + W + W)} };
+            vertices[24 * tmpI + 13] =  { .pos = {x0, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,            V,          U + D + W,      U + D + W + W)} };
+            vertices[24 * tmpI + 14] =  { .pos = {x0, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,            V + D,      U + D + W,      U + D + W + W)} };
+            vertices[24 * tmpI + 15] =  { .pos = {x1, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W,        V + D,      U + D + W,      U + D + W + W)} };
 
             // POS_Z: U 범위 (U+D) ~ (U+D+W)
-            vertices[24 * tmpI + 16] =  { .pos = {x0, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D,                V + D,      U + D,          U + D + W)} };
-            vertices[24 * tmpI + 17] =  { .pos = {x0, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D,                V + D + H,  U + D,          U + D + W)} };
-            vertices[24 * tmpI + 18] =  { .pos = {x1, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W,            V + D + H,  U + D,          U + D + W)} };
-            vertices[24 * tmpI + 19] =  { .pos = {x1, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W,            V + D,      U + D,          U + D + W)} };
+            vertices[24 * tmpI + 16] =  { .pos = {x1, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W + D,  U + D + W + D + W)}  };
+            vertices[24 * tmpI + 17] =  { .pos = {x0, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W + D + W,    V + D,      U + D + W + D,  U + D + W + D + W)} };
+            vertices[24 * tmpI + 18] =  { .pos = {x0, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W + D + W,    V + D + H,  U + D + W + D,  U + D + W + D + W)}  };
+            vertices[24 * tmpI + 19] =  { .pos = {x1, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W + D,  U + D + W + D + W)} };
+           
 
             // NEG_Z: U 범위 (U+D+W+D) ~ (U+D+W+D+W)
-            vertices[24 * tmpI + 20] =  { .pos = {x0, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W + D,  U + D + W + D + W)} };
-            vertices[24 * tmpI + 21] =  { .pos = {x1, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D + W,    V + D,      U + D + W + D,  U + D + W + D + W)} };
-            vertices[24 * tmpI + 22] =  { .pos = {x1, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D + W,    V + D + H,  U + D + W + D,  U + D + W + D + W)} };
-            vertices[24 * tmpI + 23] =  { .pos = {x0, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W + D,  U + D + W + D + W)} };
+            vertices[24 * tmpI + 20] =  { .pos = {x0, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D,                V + D,      U + D,          U + D + W)} };
+            vertices[24 * tmpI + 21] =  { .pos = {x1, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W,            V + D,      U + D,          U + D + W)} };
+            vertices[24 * tmpI + 22] =  { .pos = {x1, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W,            V + D + H,  U + D,          U + D + W)} };
+            vertices[24 * tmpI + 23] =  { .pos = {x0, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D,                V + D + H,  U + D,          U + D + W)} };
 
             if (cube.rotation.x != 0.f || cube.rotation.y != 0.f || cube.rotation.z != 0.f)
             {
@@ -215,9 +216,9 @@ HRESULT CPigEntity::Initialize(void* pArg)
                 XMVECTOR vCenter = XMLoadFloat3(&center);
 
                 XMMATRIX rotMat =
-                    XMMatrixRotationX(XMConvertToRadians(cube.rotation.x)) *
-                    XMMatrixRotationY(XMConvertToRadians(cube.rotation.y)) *
-                    XMMatrixRotationZ(XMConvertToRadians(cube.rotation.z));
+                    XMMatrixRotationX(XMConvertToRadians(-cube.rotation.x)) *
+                    XMMatrixRotationY(XMConvertToRadians(-cube.rotation.y)) *
+                    XMMatrixRotationZ(XMConvertToRadians(-cube.rotation.z));
 
                 for (int i = 0; i < 24; i++) {
                     auto& v = vertices[24 * tmpI + i];
@@ -323,7 +324,7 @@ HRESULT CPigEntity::Initialize(void* pArg)
         return E_FAIL;
     }
     
-
+    //GetTransform().SetScale(XMVectorSet(1,1,1,1));
 	return S_OK;
 }
 

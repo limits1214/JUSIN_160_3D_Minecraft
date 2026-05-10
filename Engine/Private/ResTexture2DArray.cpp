@@ -68,6 +68,7 @@ HRESULT CResTexture2DArray::Load(const std::any& arg)
             d.Format != desc.Format ||
             d.MipLevels != desc.MipLevels)
         {
+            MSG_BOX("ARRAY COND FAIL");
             m_eState = STATE::LOADFAIL;
             return E_FAIL;
         }
