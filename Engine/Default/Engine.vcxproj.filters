@@ -280,6 +280,12 @@
     <Filter Include="100.Shaders\Entity">
       <UniqueIdentifier>{5e0e1e89-c0cb-4b52-b53d-1ee5aa141113}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Entity\Animal\Sheep">
+      <UniqueIdentifier>{058280f5-c3b4-4f51-9089-8d65701533e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Animal\Cow">
+      <UniqueIdentifier>{843cbdb6-e45b-46cb-add0-8641cb185e9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -561,6 +567,9 @@
     <ClInclude Include="..\public\PigEntity.h">
       <Filter>GameObject\Entity\Animal\Pig</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\CowEntity.h">
+      <Filter>GameObject\Entity\Animal\Cow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -829,6 +838,9 @@
     </ClCompile>
     <ClCompile Include="..\private\PigEntity.cpp">
       <Filter>GameObject\Entity\Animal\Pig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\CowEntity.cpp">
+      <Filter>GameObject\Entity\Animal\Cow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

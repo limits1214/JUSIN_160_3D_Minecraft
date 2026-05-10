@@ -414,6 +414,15 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// 2: Cow
+	if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Cow/cow_v2.png")))
+	{
+		if (FAILED(pRes->Load()))
+		{
+			int x = 0;
+		}
+	}
+
 	// Entity_64_64_Ted2d_Array
 	{
 		CResTexture2DArray::DESC desc{};
