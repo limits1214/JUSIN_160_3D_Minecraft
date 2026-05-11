@@ -1,8 +1,9 @@
 #pragma once
 #include "AnimalEntityObject.h"
 
-NS_BEGIN(Engine)
 
+NS_BEGIN(Engine)
+class CComEntityModel;
 class ENGINE_DLL CCowEntity : public CAnimalEntityObject
 {
 public:
@@ -30,6 +31,11 @@ public:
 private:
 	_float4x4 m_boneMatrices[64]{};
 	std::vector<EntityBone> m_Bones{};
+
+private:
+	CComEntityModel* m_pComEntityModel{};
+
+
 
 public:
 	static UPtr<CCowEntity> Create();

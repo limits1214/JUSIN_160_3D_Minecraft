@@ -61,15 +61,15 @@ HRESULT CLevelTestWorld::Initialize()
 	}
 
 	{
-		{
-			E::CPigEntity::DESC Desc{};
-			Desc.sObjectTag = "Pig";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
-			{
+		//{
+		//	E::CPigEntity::DESC Desc{};
+		//	Desc.sObjectTag = "Pig";
+		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
+		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+		//	{
 
-			}
-		}
+		//	}
+		//}
 
 		{
 			E::CCowEntity::DESC Desc{};
@@ -81,15 +81,15 @@ HRESULT CLevelTestWorld::Initialize()
 			}
 		}
 
-		{
-			E::CChickenEntity::DESC Desc{};
-			Desc.sObjectTag = "Chicken";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
-			{
+		//{
+		//	E::CChickenEntity::DESC Desc{};
+		//	Desc.sObjectTag = "Chicken";
+		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity",
+		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+		//	{
 
-			}
-		}
+		//	}
+		//}
 
 	}
 	//if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",

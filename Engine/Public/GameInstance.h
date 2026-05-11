@@ -25,6 +25,7 @@ class CVoxelManager;
 class CVoxelManager2;
 class CVoxelManager3;
 class CChunk3;
+class CCameraObject;
 
 class ENGINE_DLL CGameInstance final : public Singleton<CGameInstance>
 {

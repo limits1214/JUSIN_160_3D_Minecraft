@@ -17,6 +17,17 @@ namespace Engine
 		void* pArg;
 	}VOXEL_MANAGER_STATE_UPDATE_DESC;
 
+
+	typedef struct tagRenderContext
+	{
+		RENDERPASS pass;
+		_vector eye{};
+		_matrix matView{};
+		_matrix matProj{};
+		_matrix matViewProj{};
+	} RENDER_CTX;
+
+
 	
 	typedef struct tagWorkerTask
 	{
