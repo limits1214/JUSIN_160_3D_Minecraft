@@ -301,6 +301,12 @@
     <Filter Include="Resource\Buffer\VIBuffer\EntityVIBuffer">
       <UniqueIdentifier>{cfd46342-69f9-45e5-abab-7115fa71ba80}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\Chicken">
+      <UniqueIdentifier>{30656a3f-5461-46b4-9db3-1babc57e547c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Animal\Chicken">
+      <UniqueIdentifier>{e29b470b-5a31-4363-b1fb-7830209a6ac8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -597,6 +603,12 @@
     <ClInclude Include="..\public\ResEnttVIBuffer.h">
       <Filter>Resource\Buffer\VIBuffer\EntityVIBuffer</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoChicken.h">
+      <Filter>Resource\Entity\Geometry\Chicken</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ChickenEntity.h">
+      <Filter>GameObject\Entity\Animal\Chicken</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -880,6 +892,12 @@
     </ClCompile>
     <ClCompile Include="..\private\ResEnttVIBuffer.cpp">
       <Filter>Resource\Buffer\VIBuffer\EntityVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoChicken.cpp">
+      <Filter>Resource\Entity\Geometry\Chicken</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ChickenEntity.cpp">
+      <Filter>GameObject\Entity\Animal\Chicken</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

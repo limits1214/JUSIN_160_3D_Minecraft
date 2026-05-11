@@ -442,6 +442,30 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	{
+		// 2: Chicken
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Chicken/chicken.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// Entity_64_32_Ted2d_Array
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_ENTITY_TEX_64_32", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_32", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(7, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+	}
+
 
 
 
@@ -465,6 +489,17 @@ HRESULT CGameInstance::InitializeMCResource()
 				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Pig", CResEnttVIBuffer::Create()))
 				{
 					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Pig"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Chicken", CResEnttGeoChicken::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Chicken", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Chicken"} });
 				}
 			}
 		}

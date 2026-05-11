@@ -236,6 +236,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\Block3.h" />
     <ClInclude Include="..\public\CameraManager.h" />
     <ClInclude Include="..\public\CameraObject.h" />
+    <ClInclude Include="..\public\ChickenEntity.h" />
     <ClInclude Include="..\public\Chunk.h" />
     <ClInclude Include="..\public\Chunk2.h" />
     <ClInclude Include="..\public\Chunk3.h" />
@@ -284,6 +285,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ResDynamicTexture2D.h" />
     <ClInclude Include="..\Public\ResDynamicVIBuffer.h" />
     <ClInclude Include="..\public\ResEnttGeo.h" />
+    <ClInclude Include="..\public\ResEnttGeoChicken.h" />
     <ClInclude Include="..\public\ResEnttGeoCow.h" />
     <ClInclude Include="..\public\ResEnttGeoPig.h" />
     <ClInclude Include="..\public\ResEnttVIBuffer.h" />
@@ -432,6 +434,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Block3.cpp" />
     <ClCompile Include="..\private\CameraManager.cpp" />
     <ClCompile Include="..\private\CameraObject.cpp" />
+    <ClCompile Include="..\private\ChickenEntity.cpp" />
     <ClCompile Include="..\private\Chunk.cpp" />
     <ClCompile Include="..\private\Chunk2.cpp" />
     <ClCompile Include="..\private\Chunk3.cpp" />
@@ -469,6 +472,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\ResDynamicTexture2D.cpp" />
     <ClCompile Include="..\Private\ResDynamicVIBuffer.cpp" />
     <ClCompile Include="..\private\ResEnttGeo.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoChicken.cpp" />
     <ClCompile Include="..\private\ResEnttGeoCow.cpp" />
     <ClCompile Include="..\private\ResEnttGeoPig.cpp" />
     <ClCompile Include="..\private\ResEnttVIBuffer.cpp" />

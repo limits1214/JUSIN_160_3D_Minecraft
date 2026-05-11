@@ -56,7 +56,7 @@ HRESULT CResEnttVIBuffer::Load(const std::any& arg)
                 float y0 = cube.origin.y, y1 = cube.origin.y + cube.size.y;
                 float z0 = cube.origin.z, z1 = cube.origin.z + cube.size.z;
 
-                float tw = 64.f, th = 64.f; // texture_width, texture_height
+                float tw = (float)geometry.texWidth, th = (float)geometry.texHeight; // texture_width, texture_height
                 float U = cube.uv.x, V = cube.uv.y;     // uv 시작점 (json의 "uv": [U, V])
                 float W = cube.uvSize.x, H = cube.uvSize.y, D = cube.uvSize.z; // 8, 8, 8
 
@@ -249,7 +249,7 @@ HRESULT CResEnttVIBuffer::Load(const std::any& arg)
         std::vector<uint16_t> indices{};
         indices.resize(36 * iCntCube);
         int tmp = 0;
-        for (int i = 0; i < 6 * iCntCube; i++) {
+        for (uint32_t i = 0; i < 6 * iCntCube; i++) {
             indices[i * 6 + 0] = tmp + 0;
             indices[i * 6 + 1] = tmp + 1;
             indices[i * 6 + 2] = tmp + 2;
