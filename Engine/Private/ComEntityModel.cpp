@@ -1,7 +1,7 @@
 #include "ComEntityModel.h"
 #include "GameInstance.h"
 #include "Resources.h"
-
+#include "CameraObject.h"
 NS_USING(Engine)
 
 void CComEntityModel::UpdateGUI()
@@ -24,9 +24,8 @@ HRESULT CComEntityModel::Initialize(void* pArg)
     }
 
     auto pDesc = static_cast<DESC*>(pArg);
-    const auto& [grpTag, resTag] = pDesc->viBufferId;
-    m_pResEntityViBuffer = CGameInstance::Get().GetResourceFirst<CResEnttVIBuffer>(grpTag, resTag);
 
+    m_pResEntityViBuffer = CGameInstance::Get().GetResourceFirst<CResEnttVIBuffer>(pDesc->viBufferId.first, pDesc->viBufferId.second);
 
     auto resources = CGameInstance::Get().GetResourceFirst<CResEnttGeo>(pDesc->geometryId.first, pDesc->geometryId.second);
     const auto& geometry = resources->GetGeometry();
@@ -35,10 +34,25 @@ HRESULT CComEntityModel::Initialize(void* pArg)
     {
         auto b = CEntityModelBone{ bone.name };
         b.SetPivot(bone.pivot);
-        b.SetParentName(bone.parent); // 추가
+        b.SetParentName(bone.parent);
         m_Bones.push_back(b);
     }
 
+    for (uint32_t i = 0; i < m_Bones.size(); ++i)
+    {
+        const std::string& parentName = m_Bones[i].GetParentName();
+        if (!parentName.empty())
+        {
+            for (uint32_t j = 0; j < i; ++j)
+            {
+                if (m_Bones[j].GetName() == parentName)
+                {
+                    m_Bones[i].SetParentIndex(j);
+                    break;
+                }
+            }
+        }
+    }
 	return S_OK;
 }
 
@@ -46,7 +60,7 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
 {
     m_fElapsed += fTimeDelta * 0.1f;
 
-    // 1. 로컬 행렬 세팅
+    // TODO 애니메이션 으로 뺄 예정
     for (auto& bone : m_Bones)
     {
         XMMATRIX local = XMMatrixIdentity();
@@ -65,31 +79,134 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
         bone.UpdateTransformationMatrix(local);
     }
 
-    // 2. 부모 → 자식 순으로 combined 계산
+    if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+    {
+        CEntityModelBone* headBone{};
+        for (auto& bone : m_Bones)
+        {
+            if (bone.GetName() == "head")
+            {
+                headBone = &bone;
+                break;
+            }
+        }
+
+        // 카메라 → 엔티티 방향 벡터
+        const _float3& camPos = cam->GetTransform().GetPosition();
+        const _float3& entityPos = GetGameObject()->GetTransform().GetPosition();
+
+        const _float3& headPivot = headBone->GetPivot(); // 로컬 공간 기준
+        XMVECTOR vHeadWorld = XMLoadFloat3(&entityPos) + XMLoadFloat3(&headPivot);
+
+        XMVECTOR vCam = XMLoadFloat3(&camPos);
+        XMVECTOR vEntity = XMLoadFloat3(&entityPos);
+
+        XMVECTOR vDir = XMVector3Normalize(vCam - vHeadWorld); // 엔티티 → 카메라
+
+        {
+            _vector vLook = vDir;
+
+            _vector vRight = XMVector3Normalize(
+                XMVector3Cross(XMVectorSet(0.f, 1.f, 0.f, 0.f), vLook));
+
+            _vector vUp = XMVector3Cross(vLook, vRight);
+
+            //_float3 scale = GetScale();
+            //SetState(STATE::RIGHT, XMVector3Normalize(vRight) * scale.x);
+            //SetState(STATE::UP, XMVector3Normalize(vUp) * scale.y);
+            //SetState(STATE::LOOK, XMVector3Normalize(vLook) * scale.z);
+
+            _matrix matRot = XMMatrixIdentity();
+            matRot.r[0] = vRight;
+            matRot.r[1] = vUp;
+            matRot.r[2] = vLook;
+
+            if (headBone)
+                headBone->UpdateTransformationMatrix(matRot);
+        }
+        
+
+        // pitch, yaw 계산
+        //float pitch = asinf(XMVectorGetY(vDir));
+        //float yaw = atan2f(XMVectorGetX(vDir), XMVectorGetZ(vDir));
+
+        //// 엔티티 yaw 기준으로 상대화 (relative_to = entity)
+        //const _float3& entityRot = GetGameObject()->GetTransform().GetRotationEuler();
+        //yaw -= XMConvertToRadians(entityRot.y);
+
+        //if (headBone)
+        //    headBone->UpdateTransformationMatrix(
+        //        XMMatrixRotationX(pitch) * XMMatrixRotationY(yaw));
+    }
+
+    ;
+    //if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+    //{
+    //    const _float3& camRot = cam->GetTransform().GetRotationEuler();
+
+    //    // relative_to.rotation = "entity" 이므로 엔티티 yaw를 빼줘야 함
+    //    
+    //    const _float3& entityRot = GetGameObject()->GetTransform().GetRotationEuler();
+
+    //    float rotX = XMConvertToRadians(camRot.x);               // target_x_rotation
+    //    float rotY = XMConvertToRadians(camRot.y - entityRot.y); // target_y_rotation - entity yaw
+
+    //    auto* headBone = FindBone("head");
+    //    if (headBone)
+    //        headBone->UpdateTransformationMatrix(
+    //            XMMatrixRotationX(rotX) * XMMatrixRotationY(rotY));
+    //}
+
+
     for (uint32_t i = 0; i < m_Bones.size(); ++i)
     {
-        const std::string& parentName = m_Bones[i].GetParentName();
+        auto& bone = m_Bones[i];
 
-        if (parentName.empty())
-        {
-            m_Bones[i].UpdateCombinedMatrix(nullptr);
-        }
-        else
-        {
-            const _float4x4* pParentCombined = nullptr;
-            for (uint32_t j = 0; j < i; ++j)
-            {
-                if (m_Bones[j].GetName() == parentName)
-                {
-                    pParentCombined = m_Bones[j].GetCombinedTransformationMatrix();
-                    break;
-                }
-            }
-            m_Bones[i].UpdateCombinedMatrix(pParentCombined);
-        }
+        int32_t parentIdx = bone.GetParentIndex(); // -1이면 루트
+        bone.UpdateCombinedMatrix(parentIdx >= 0
+            ? m_Bones[parentIdx].GetCombinedTransformationMatrix()
+            : nullptr);
 
-        memcpy(&m_cbPerBone.matBone[i], m_Bones[i].GetCombinedTransformationMatrix(), sizeof(_float4x4));
+        memcpy(&m_cbPerBone.matBone[i], bone.GetCombinedTransformationMatrix(), sizeof(_float4x4));
     }
+
+    //for (uint32_t i = 0; i < m_Bones.size(); ++i)
+    //{
+    //    if (i == 0)
+    //    {
+    //        m_Bones[i].UpdateCombinedMatrix(nullptr);
+    //    }
+    //    else
+    //    {
+    //        m_Bones[i].UpdateCombinedMatrix(m_Bones[i-1].GetCombinedTransformationMatrix());
+    //    }
+
+    //    memcpy(&m_cbPerBone.matBone[i], m_Bones[i].GetCombinedTransformationMatrix(), sizeof(_float4x4));
+    //}
+
+    //// 2. 부모 → 자식 순으로 combined 계산
+    //for (uint32_t i = 0; i < m_Bones.size(); ++i)
+    //{
+    //    const std::string& parentName = m_Bones[i].GetParentName();
+    //    if (parentName.empty())
+    //    {
+    //        m_Bones[i].UpdateCombinedMatrix(nullptr);
+    //    }
+    //    else
+    //    {
+    //        const _float4x4* pParentCombined = nullptr;
+    //        for (uint32_t j = 0; j < i; ++j)
+    //        {
+    //            if (m_Bones[j].GetName() == parentName)
+    //            {
+    //                pParentCombined = m_Bones[j].GetCombinedTransformationMatrix();
+    //                break;
+    //            }
+    //        }
+    //        m_Bones[i].UpdateCombinedMatrix(pParentCombined);
+    //    }
+    //    memcpy(&m_cbPerBone.matBone[i], m_Bones[i].GetCombinedTransformationMatrix(), sizeof(_float4x4));
+    //}
 }
 
 void CComEntityModel::BindBoneMatrix() const
@@ -128,30 +245,12 @@ HRESULT CComEntityModel::Render(ID3D11DeviceContext* pContext, const E::RENDER_C
         pContext->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
         pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
         pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
-
-        //{
-        //    auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
-        //    D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-        //    if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-        //    {
-
-        //        E::CB_PER_OBJECT cbPerObject{};
-        //        cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
-        //        XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
-
-        //        memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
-        //        pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
-        //    }
-        //    pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-        //    pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-        //}
+        
         {
-            //const auto& texArray = E::CGameInstance::GetConst().GetResourceFirst<E::CResTexture2DArray>("MC_ENTITY_TEX_64_64", "TEXTURE_ARRAY");
-            //pContext->PSSetShaderResources(8, 1, texArray->GetSRV().GetAddressOf());
-
             const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
             pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
         }
+
         if (1)
         {
             const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
