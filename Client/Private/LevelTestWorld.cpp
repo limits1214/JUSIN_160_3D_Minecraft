@@ -6,7 +6,7 @@
 
 #include "PigEntity.h"
 #include "CowEntity.h"
-
+#include "ChickenEntity.h"
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -53,6 +53,11 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
+
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_ChickenEntity", E::CChickenEntity::Create())))
+		{
+			int x = 0;
+		}
 	}
 
 	{
@@ -70,6 +75,16 @@ HRESULT CLevelTestWorld::Initialize()
 			E::CCowEntity::DESC Desc{};
 			Desc.sObjectTag = "Cow";
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity",
+				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+			{
+
+			}
+		}
+
+		{
+			E::CChickenEntity::DESC Desc{};
+			Desc.sObjectTag = "Chicken";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity",
 				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
 			{
 

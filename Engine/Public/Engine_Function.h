@@ -77,5 +77,25 @@ namespace Engine
 		MultiByteToWideChar(CP_ACP, 0, str.data(), (int)str.size(), &wstrTo[0], sizeNeeded);
 		return wstrTo;
 	}
+
+
+
+
+
+
+	inline uint32_t PackTexId(uint32_t arrayGroupId, uint32_t sliceIndex)
+	{
+		return (arrayGroupId << 24) | (sliceIndex & 0x00FFFFFF);
+	}
+
+	inline uint32_t GetTexArrayGroup(uint32_t texId)
+	{
+		return texId >> 24;
+	}
+
+	inline uint32_t GetTexSliceIndex(uint32_t texId)
+	{
+		return texId & 0x00FFFFFF;
+	}
 }
 

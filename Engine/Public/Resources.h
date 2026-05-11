@@ -37,6 +37,7 @@
 #include "ResEnttGeo.h"
 #include "ResEnttGeoPig.h"
 #include "ResEnttGeoCow.h"
+#include "ResEnttGeoChicken.h"
 
 
 static const char* TAG_RES_GRP_PERMANENT_BUFFER = "PERMANENT_BUFFER";
