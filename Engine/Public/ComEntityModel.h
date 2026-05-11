@@ -29,6 +29,7 @@ public:
 	void BindBoneMatrix() const;
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx, uint32_t iMeshIdx = 0);
 
+
 private:
 	HRESULT Initialize(void* pArg) override;
 
