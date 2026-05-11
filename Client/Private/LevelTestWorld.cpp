@@ -4,7 +4,7 @@
 #include "Level_Defines.h"
 #include "CameraObject.h"
 
-//#include "PigEntity.h"
+#include "PigEntity.h"
 #include "CowEntity.h"
 
 NS_USING(Client)
@@ -44,19 +44,36 @@ HRESULT CLevelTestWorld::Initialize()
 	}
 
 	{
-		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PigEntity", E::CCowEntity::Create())))
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_CowEntity", E::CCowEntity::Create())))
+		{
+			int x = 0;
+		}
+
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PigEntity", E::CPigEntity::Create())))
 		{
 			int x = 0;
 		}
 	}
 
 	{
-		E::CCowEntity::DESC Desc{};
-		Desc.sObjectTag = "Pig";
-		if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
-			E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
 		{
-		
+			E::CPigEntity::DESC Desc{};
+			Desc.sObjectTag = "Pig";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
+				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+			{
+
+			}
+		}
+
+		{
+			E::CCowEntity::DESC Desc{};
+			Desc.sObjectTag = "Cow";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity",
+				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+			{
+
+			}
 		}
 
 	}

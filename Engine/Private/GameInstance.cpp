@@ -387,54 +387,93 @@ HRESULT CGameInstance::InitializeResources()
 
 HRESULT CGameInstance::InitializeMCResource()
 {
-	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
+	// initialize entity shaders
 	{
-		res->Load();
-	}
-	if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
-	{
-		res->Load();
-	}
-
-	// 0: Pig
-	if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Pig/pig_v3.png")))
-	{
-		if (FAILED(pRes->Load()))
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
 		{
-			int x = 0;
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
+		{
+			res->Load();
 		}
 	}
 
-	// 1: Saddle
-	if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Pig/saddle_v2.png")))
+	// initialize entity textures
 	{
-		if (FAILED(pRes->Load()))
+		// 0: Pig
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Pig/pig_v3.png")))
 		{
-			int x = 0;
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 1: Saddle
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Pig/saddle_v2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 2: Cow
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Cow/cow_v2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// Entity_64_64_Ted2d_Array
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_ENTITY_TEX_64_64", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(8, 1, pTextureArray->GetSRV().GetAddressOf());
 		}
 	}
 
-	// 2: Cow
-	if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Cow/cow_v2.png")))
+
+
+
+	// initialize entity geometry
 	{
-		if (FAILED(pRes->Load()))
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Cow", CResEnttGeoCow::Create()))
 		{
-			int x = 0;
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Cow",CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Cow"}});
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Pig", CResEnttGeoPig::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Pig", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Pig"} });
+				}
+			}
 		}
 	}
 
-	// Entity_64_64_Ted2d_Array
-	{
-		CResTexture2DArray::DESC desc{};
-		desc.textureId = { "MC_ENTITY_TEX_64_64", "TEXTURES" };
-		auto pTextureArray = CResTexture2DArray::Create();
-		if (FAILED(pTextureArray->Load(desc)))
-		{
-			return E_FAIL;
-		}
-		CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURE_ARRAY", pTextureArray);
-		GetGraphicDeviceContext()->PSSetShaderResources(8, 1, pTextureArray->GetSRV().GetAddressOf());
-	}
+
+
+
+
 	return S_OK;
 }
 
