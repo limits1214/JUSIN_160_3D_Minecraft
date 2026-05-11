@@ -144,4 +144,58 @@ namespace Engine
 		_float3 v4;
 		FACE_DIR eDir;
 	} VOX_QUAD;
+
+
+	typedef struct tagEntityCube
+	{
+		_float3 origin{};
+		_float3 size{};
+		_float3 rotation{};
+		_float2 uv{};
+		uint32_t texIndex{};
+		_float inflate;
+		_float3 uvSize{};
+		_float3 pivot{};
+	} ENTITY_CUBE;
+
+	typedef struct tagEntityBone
+	{
+		std::string name{};
+		std::string parent{};
+		_float3 pivot{};
+		std::vector<ENTITY_CUBE> cubes{};
+		_bool mirror{ false };
+		std::vector<std::pair<std::string, _float3>> locators{};
+	} ENTITY_BONE;
+
+	typedef struct tagEntityModel
+	{
+		uint32_t texWidth{};
+		uint32_t texHeight{};
+		std::vector<ENTITY_BONE> bones{};
+	} ENTITY_GEOMETRY;
+
+	
+
+	struct EntityCube
+	{
+		_float3 origin{};
+		_float3 size{};
+		_float3 rotation{};
+		_float2 uv{};
+		uint32_t texIndex{};
+		_float inflate;
+		_float3 uvSize{};
+		_float3 pivot{};
+	};
+
+	struct EntityBone
+	{
+		std::string name{};
+		std::string parent{};
+		_float3 pivot{};
+		std::vector<EntityCube> cubes{};
+		_bool mirror{ false };
+		std::vector<std::pair<std::string, _float3>> locators{};
+	};
 }

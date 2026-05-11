@@ -7,6 +7,7 @@
 #include "ResQuadColBuffer.h"
 #include "ResQuadFullscreenTexBuffer.h"
 #include "ResQuadTexBuffer.h"
+#include "ResEnttVIBuffer.h"
 
 #include "ResFmodSound.h"
 
@@ -32,6 +33,10 @@
 #include "ResTextureCubeMap.h"
 
 #include "ResViewPort.h"
+
+#include "ResEnttGeo.h"
+#include "ResEnttGeoPig.h"
+#include "ResEnttGeoCow.h"
 
 
 static const char* TAG_RES_GRP_PERMANENT_BUFFER = "PERMANENT_BUFFER";

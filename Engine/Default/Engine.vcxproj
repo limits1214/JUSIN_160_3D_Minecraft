@@ -283,6 +283,10 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ResDynamicBuffer.h" />
     <ClInclude Include="..\Public\ResDynamicTexture2D.h" />
     <ClInclude Include="..\Public\ResDynamicVIBuffer.h" />
+    <ClInclude Include="..\public\ResEnttGeo.h" />
+    <ClInclude Include="..\public\ResEnttGeoCow.h" />
+    <ClInclude Include="..\public\ResEnttGeoPig.h" />
+    <ClInclude Include="..\public\ResEnttVIBuffer.h" />
     <ClInclude Include="..\Public\ResFmodSound.h" />
     <ClInclude Include="..\Public\ResGeometryShader.h" />
     <ClInclude Include="..\Public\ResGeoShaderStreamOut.h" />
@@ -464,6 +468,10 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\ResDynamicBuffer.cpp" />
     <ClCompile Include="..\Private\ResDynamicTexture2D.cpp" />
     <ClCompile Include="..\Private\ResDynamicVIBuffer.cpp" />
+    <ClCompile Include="..\private\ResEnttGeo.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoCow.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPig.cpp" />
+    <ClCompile Include="..\private\ResEnttVIBuffer.cpp" />
     <ClCompile Include="..\Private\ResFmodSound.cpp" />
     <ClCompile Include="..\Private\ResGeometryShader.cpp" />
     <ClCompile Include="..\Private\ResGeoShaderStreamOut.cpp" />

@@ -19,304 +19,6 @@ CPigEntity::~CPigEntity()
 
 HRESULT CPigEntity::Initialize(void* pArg)
 {
-    m_Bones = {
-        EntityBone{
-            .name = "root",
-            .pivot = {0,0,0}
-        },
-        EntityBone{
-            .name = "head",
-            .parent = "root",
-            .pivot = {0, 12, -7},
-            .cubes = {
-                EntityCube{.origin = {-4, 8, -15}, .size = {8, 8, 8}, .uv {0,0}, .texIndex = 0 },
-                EntityCube{.origin = {-2, 9, -16}, .size = {4, 3, 1}, .uv {16, 16}, .texIndex = 0 }
-            },
-            .locators = {
-                {"lead", {0, 12, -7}}
-            }
-        },
-        EntityBone{
-            .name = "body",
-            .parent = "root",
-            .pivot = {0,0,0},
-            .cubes = {
-                 EntityCube{.origin = {-5, 2, -5}, .size = {10, 16, 8}, .rotation = {90, 0, 0},.uv {28, 32}, .texIndex = 1, .inflate = 0.5  },
-                 EntityCube{.origin = {-5, 2, -5}, .size = {10, 16, 8}, .rotation = {90, 0, 0},.uv {28, 8}, .texIndex = 0  },
-            },
-            .locators = {
-                {"lead_hold", {0, 32, 1}}
-            }
-        },
-        EntityBone{
-            .name = "leg0",
-            .parent = "root",
-            .pivot = {-3, 6, 6},
-            .cubes = {
-                 EntityCube{.origin = {-5, 0, 4}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = 0  },
-            }
-        },
-
-        EntityBone{
-            .name = "leg1",
-            .parent = "root",
-            .pivot = {3, 6, 6},
-            .cubes = {
-                 EntityCube{.origin = {1, 0, 4}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = 0  },
-            },
-            .mirror = true,
-        },
-
-        EntityBone{
-            .name = "leg3",
-            .parent = "root",
-            .pivot = {3, 6, -6},
-            .cubes = {
-                 EntityCube{.origin = { 1, 0, -8}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = 0  },
-            },
-            .mirror = true,
-        },
-
-        EntityBone{
-           .name = "leg2",
-           .parent = "root",
-           .pivot = {-3, 6, -6},
-           .cubes = {
-                EntityCube{.origin = { -5, 0, -8}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = 0  },
-           }
-        } 
-    };
-
-
-    uint32_t iCntCube{};
-    for (auto& bone : m_Bones)
-    {
-        for (auto& cube : bone.cubes)
-        {
-            ++iCntCube;
-
-            cube.uvSize = cube.size;
-
-            // inflate 먼저
-            cube.origin.x -= cube.inflate;
-            cube.origin.y -= cube.inflate;
-            cube.origin.z -= cube.inflate;
-            cube.size.x += cube.inflate * 2.f;
-            cube.size.y += cube.inflate * 2.f;
-            cube.size.z += cube.inflate * 2.f;
-
-            //cube.origin.z = -cube.origin.z - cube.size.z;
-
-        }
-        //bone.pivot.z = -bone.pivot.z;
-
-        if (!bone.locators.empty())
-        {
-            for (auto& locator : bone.locators)
-            {
-                //locator.second.z = -locator.second.z;
-            }
-        }
-    }
-   
-    auto viBuffer = CResDynamicVIBuffer::Create();
-    CResDynamicVIBuffer::DESC desc{};
-
-    std::vector<VTX_ENTITY> vertices{};
-    vertices.resize(24 * iCntCube);
-
-    uint32_t boneIdx = 0;
-    uint32_t tmpI{};
-    for (auto& bone : m_Bones)
-    {
-        for (auto& cube : bone.cubes)
-        {
-            float x0 = cube.origin.x, x1 = cube.origin.x + cube.size.x;
-            float y0 = cube.origin.y, y1 = cube.origin.y + cube.size.y;
-            float z0 = cube.origin.z, z1 = cube.origin.z + cube.size.z;
-
-            float tw = 64.f, th = 64.f; // texture_width, texture_height
-            float U = cube.uv.x, V = cube.uv.y;     // uv 시작점 (json의 "uv": [U, V])
-            float W = cube.uvSize.x, H = cube.uvSize.y, D = cube.uvSize.z; // 8, 8, 8
-
-            auto uvm = [&](float px, float py, float faceU0, float faceU1) -> E::_float2 {
-                if (bone.mirror)
-                {
-                    px = faceU0 + faceU1 - px; // U 반전
-                }
-                return { px / tw, py / th };
-                };
-            /*
-
-            텍스처 좌표 = 픽셀 / texture_size 로 정규화
-
-            size = [W, H, D] 큐브일 때:
-
-                   D    W    
-                ┌────┬────┬────┬────┐
-              D │ top│    │bot │    │
-                ├────┼────┼────┼────┤
-              H │right│frnt│left│back│
-                └────┴────┴────┴────┘
-
-            시작점 (U, V) 기준:
-              top   : (U+D,     V    ) ~ (U+D+W, V+D  )
-              bottom: (U+D+W,   V    ) ~ (U+D+W+W, V+D)
-              right : (U,       V+D  ) ~ (U+D,   V+D+H)
-              front : (U+D,     V+D  ) ~ (U+D+W, V+D+H)
-              left  : (U+D+W,   V+D  ) ~ (U+D+W+D, V+D+H)
-              back  : (U+D+W+D, V+D  ) ~ (U+D+W+D+W, V+D+H)
-            */
-
-            // POS_X: U 범위 (U+D+W) ~ (U+D+W+D)
-            vertices[24 * tmpI + 0] =   { .pos = {x1, y1, z0}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W,            V + D,      U + D + W,      U + D + W + D)}  };
-            vertices[24 * tmpI + 1] =   { .pos = {x1, y1, z1}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W,      U + D + W + D)}  };
-            vertices[24 * tmpI + 2] =   { .pos = {x1, y0, z1}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W,      U + D + W + D)}  };
-            vertices[24 * tmpI + 3] =   { .pos = {x1, y0, z0}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W,            V + D + H,  U + D + W,      U + D + W + D)}  };
-
-            // NEG_X: U 범위 U ~ (U+D)
-            vertices[24 * tmpI + 4] =   { .pos = {x0, y1, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U,                    V + D,      U,              U + D)}  };
-            vertices[24 * tmpI + 5] =   { .pos = {x0, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D,                V + D,      U,              U + D)}  };
-            vertices[24 * tmpI + 6] =   { .pos = {x0, y0, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D,                V + D + H,  U,              U + D)}  };
-            vertices[24 * tmpI + 7] =   { .pos = {x0, y0, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U,                    V + D + H,  U,              U + D)}  };
-
-            // POS_Y: U 범위 (U+D) ~ (U+D+W)
-            vertices[24 * tmpI + 8] =   { .pos = {x0, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uvm(U + D,                V,          U + D,          U + D + W)} };
-            vertices[24 * tmpI + 9] =   { .pos = {x1, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uvm(U + D + W,            V,          U + D,          U + D + W)} };
-            vertices[24 * tmpI + 10] =  { .pos = {x1, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uvm(U + D + W,            V + D,      U + D,          U + D + W)} };
-            vertices[24 * tmpI + 11] =  { .pos = {x0, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uvm(U + D,                V + D,      U + D,          U + D + W)} };
-
-            // NEG_Y: U 범위 (U+D+W) ~ (U+D+W+W)
-            vertices[24 * tmpI + 12] =  { .pos = {x1, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W,        V,          U + D + W,      U + D + W + W)} };
-            vertices[24 * tmpI + 13] =  { .pos = {x0, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,            V,          U + D + W,      U + D + W + W)} };
-            vertices[24 * tmpI + 14] =  { .pos = {x0, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,            V + D,      U + D + W,      U + D + W + W)} };
-            vertices[24 * tmpI + 15] =  { .pos = {x1, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W,        V + D,      U + D + W,      U + D + W + W)} };
-
-            // POS_Z: U 범위 (U+D) ~ (U+D+W)
-            vertices[24 * tmpI + 16] =  { .pos = {x1, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W + D,  U + D + W + D + W)}  };
-            vertices[24 * tmpI + 17] =  { .pos = {x0, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W + D + W,    V + D,      U + D + W + D,  U + D + W + D + W)} };
-            vertices[24 * tmpI + 18] =  { .pos = {x0, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W + D + W,    V + D + H,  U + D + W + D,  U + D + W + D + W)}  };
-            vertices[24 * tmpI + 19] =  { .pos = {x1, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W + D,  U + D + W + D + W)} };
-           
-
-            // NEG_Z: U 범위 (U+D+W+D) ~ (U+D+W+D+W)
-            vertices[24 * tmpI + 20] =  { .pos = {x0, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D,                V + D,      U + D,          U + D + W)} };
-            vertices[24 * tmpI + 21] =  { .pos = {x1, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W,            V + D,      U + D,          U + D + W)} };
-            vertices[24 * tmpI + 22] =  { .pos = {x1, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W,            V + D + H,  U + D,          U + D + W)} };
-            vertices[24 * tmpI + 23] =  { .pos = {x0, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D,                V + D + H,  U + D,          U + D + W)} };
-
-            if (cube.rotation.x != 0.f || cube.rotation.y != 0.f || cube.rotation.z != 0.f)
-            {
-                // 큐브 중심점
-                XMFLOAT3 center = {
-                    (x0 + x1) * 0.5f,
-                    (y0 + y1) * 0.5f,
-                    (z0 + z1) * 0.5f
-                };
-                XMVECTOR vCenter = XMLoadFloat3(&center);
-
-                XMMATRIX rotMat =
-                    XMMatrixRotationX(XMConvertToRadians(-cube.rotation.x)) *
-                    XMMatrixRotationY(XMConvertToRadians(-cube.rotation.y)) *
-                    XMMatrixRotationZ(XMConvertToRadians(-cube.rotation.z));
-
-                for (int i = 0; i < 24; i++) {
-                    auto& v = vertices[24 * tmpI + i];
-
-                    XMVECTOR pos = XMLoadFloat3(&v.pos);
-                    pos = pos - vCenter;
-                    pos = XMVector3TransformCoord(pos, rotMat);
-                    pos = pos + vCenter;
-                    XMStoreFloat3(&v.pos, pos);
-
-                    XMVECTOR nor = XMLoadFloat3(&v.normal);
-                    nor = XMVector3TransformNormal(nor, rotMat);
-                    XMStoreFloat3(&v.normal, nor);
-                }
-            }
-
-            for (int i = 0; i < 24; i++) {
-                vertices[24 * tmpI + i].boneIndex = boneIdx;
-                vertices[24 * tmpI + i].texIndex = cube.texIndex;
-            }
-
-            ++tmpI;
-        }
-        ++boneIdx;
-    }
-
-    desc.iNumVertices = (uint32_t)vertices.size();
-    desc.iVertexStride = sizeof(VTX_ENTITY);
-    desc.vertexDesc = {
-        .ByteWidth = desc.iVertexStride * desc.iNumVertices,
-        .Usage = D3D11_USAGE_DEFAULT,
-        .BindFlags = D3D11_BIND_VERTEX_BUFFER,
-    };
-    desc.vertexSubResource = {
-        .pSysMem = vertices.data()
-    };
-
-    std::vector<uint16_t> indices{};
-    indices.resize(36 * iCntCube);
-    int tmp = 0;
-    for (int i = 0; i < 6 * iCntCube; i++) {
-        indices[i * 6 + 0] = tmp + 0;
-        indices[i * 6 + 1] = tmp + 1;
-        indices[i * 6 + 2] = tmp + 2;
-
-        indices[i * 6 + 3] = tmp + 0;
-        indices[i * 6 + 4] = tmp + 2;
-        indices[i * 6 + 5] = tmp + 3;
-
-        tmp += 4;
-    }
-
-    desc.iNumIndices = (uint32_t)indices.size();
-    desc.iIndexStride = sizeof(uint16_t);
-    desc.IndexDesc = {
-        .ByteWidth = desc.iIndexStride * desc.iNumIndices,
-        .Usage = D3D11_USAGE_DEFAULT,
-        .BindFlags = D3D11_BIND_INDEX_BUFFER,
-    };
-    desc.indexSubResource = {
-        .pSysMem = indices.data()
-    };
-    desc.eIndexFormat = DXGI_FORMAT_R16_UINT;
-
-    if (FAILED(viBuffer->Load(desc)))
-    {
-        int x = 0;
-    }
-
-    CGameInstance::Get().AddResource("ENTITY_PIG", "VIBUFFER", viBuffer);
-
-
-
-    //{
-    //    int boneIdx = 0;
-    //    for (auto& bone : m_Bones) {
-    //        XMStoreFloat4x4(&m_boneMatrices[boneIdx], XMMatrixTranslation(bone.pivot.x, bone.pivot.y, bone.pivot.z));
-    //        ++boneIdx;
-    //    }
-
-    //    {
-    //        auto pContext = CGameInstance::Get().GetGraphicDeviceContext();
-    //        auto pCbPerBone = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerBone");
-    //        D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-    //        if (SUCCEEDED(pContext->Map(pCbPerBone->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-    //        {
-
-    //            E::CB_PER_BONE cbPerBone{};
-    //            memcpy(cbPerBone.matBone, m_boneMatrices, sizeof(_float4x4) * 64);
-
-    //            memcpy(mappedSubResource.pData, &cbPerBone, sizeof(cbPerBone));
-    //            pContext->Unmap(pCbPerBone->GetCBuffer().Get(), 0);
-    //        }
-    //        pContext->VSSetConstantBuffers(4, 1, pCbPerBone->GetCBuffer().GetAddressOf());
-    //        pContext->PSSetConstantBuffers(4, 1, pCbPerBone->GetCBuffer().GetAddressOf());
-    //    }
-    //}
-    
     
 
     if (FAILED(CAnimalEntityObject::Initialize(pArg)))
@@ -324,7 +26,6 @@ HRESULT CPigEntity::Initialize(void* pArg)
         return E_FAIL;
     }
     
-    //GetTransform().SetScale(XMVectorSet(1,1,1,1));
 	return S_OK;
 }
 
@@ -342,19 +43,19 @@ void CPigEntity::Update(E::_float fTimeDelta)
     {
         XMMATRIX local = XMMatrixIdentity();
 
-        if (bone.name == "leg0" || bone.name == "leg3") {
-            float rotX = XMConvertToRadians(cosf(fTmpElapsed * 38.17f) * 80.f);
-            local = XMMatrixRotationX(rotX);
-        }
-        else if (bone.name == "leg1" || bone.name == "leg2") {
-            float rotX = XMConvertToRadians(cosf(fTmpElapsed * 38.17f) * -80.f);
-            local = XMMatrixRotationX(rotX);
-        }
-        else if (bone.name == "head")
-        {
-            float rotY = XMConvertToRadians(cosf(fTmpElapsed * 38.17f) * -10.f);
-            local = XMMatrixRotationY(rotY);
-        }
+        //if (bone.name == "leg0" || bone.name == "leg3") {
+        //    float rotX = XMConvertToRadians(cosf(fTmpElapsed * 38.17f) * 80.f);
+        //    local = XMMatrixRotationX(rotX);
+        //}
+        //else if (bone.name == "leg1" || bone.name == "leg2") {
+        //    float rotX = XMConvertToRadians(cosf(fTmpElapsed * 38.17f) * -80.f);
+        //    local = XMMatrixRotationX(rotX);
+        //}
+        //else if (bone.name == "head")
+        //{
+        //    float rotY = XMConvertToRadians(cosf(fTmpElapsed * 38.17f) * -10.f);
+        //    local = XMMatrixRotationY(rotY);
+        //}
 
         XMVECTOR pivot = XMLoadFloat3(&bone.pivot);
 
@@ -366,7 +67,13 @@ void CPigEntity::Update(E::_float fTimeDelta)
         XMStoreFloat4x4(&m_boneMatrices[boneIdx], boneMatrix);
         ++boneIdx;
     }
- 
+
+    for (uint32_t i = 0; i < 10; ++i)
+    {
+        XMMATRIX local = XMMatrixIdentity();
+        XMStoreFloat4x4(&m_boneMatrices[i], local);
+    }
+
     {
         auto pContext = CGameInstance::Get().GetGraphicDeviceContext();
         auto pCbPerBone = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerBone");
@@ -394,7 +101,7 @@ HRESULT CPigEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& c
     const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Entity");
 
     {
-        const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResDynamicVIBuffer>("ENTITY_PIG", "VIBUFFER");
+        const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResEnttVIBuffer>("MC_ENTITY_VIBuffer", "Pig");
         pContext->IASetInputLayout(vs->GetInputLayout().Get());
         pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
         pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);

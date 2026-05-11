@@ -65,8 +65,13 @@ inline Engine::SPtr<T> Engine::CResourceManager::GetResourceFirst(const StringID
 	auto base = GetResourceFirst(sGroupTag, sResTag);
 	if (!base) return nullptr;
 
-	if (base->GetType() != T::StaticType)
+	if (!base->IsA(T::StaticType))
+	{
 		return nullptr;
+	}
+
+	//if (base->GetType() != T::StaticType)
+	//	return nullptr;
 
 	return std::static_pointer_cast<T>(base);
 }

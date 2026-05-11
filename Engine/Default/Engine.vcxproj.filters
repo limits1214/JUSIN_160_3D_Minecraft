@@ -286,6 +286,21 @@
     <Filter Include="GameObject\Entity\Animal\Cow">
       <UniqueIdentifier>{843cbdb6-e45b-46cb-add0-8641cb185e9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity">
+      <UniqueIdentifier>{353ba62f-d7a4-4aa1-9547-6c8ef24999a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry">
+      <UniqueIdentifier>{ce7c3c64-d673-434c-8e7e-cbb418614776}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Cow">
+      <UniqueIdentifier>{2257e97e-d08c-4d8d-9f9a-ee96543c6b41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Pig">
+      <UniqueIdentifier>{f18eef4e-dbbc-4ca0-87a0-f7641a5918d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\EntityVIBuffer">
+      <UniqueIdentifier>{cfd46342-69f9-45e5-abab-7115fa71ba80}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -570,6 +585,18 @@
     <ClInclude Include="..\public\CowEntity.h">
       <Filter>GameObject\Entity\Animal\Cow</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeo.h">
+      <Filter>Resource\Entity\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoCow.h">
+      <Filter>Resource\Entity\Geometry\Cow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPig.h">
+      <Filter>Resource\Entity\Geometry\Pig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\EntityVIBuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -841,6 +868,18 @@
     </ClCompile>
     <ClCompile Include="..\private\CowEntity.cpp">
       <Filter>GameObject\Entity\Animal\Cow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeo.cpp">
+      <Filter>Resource\Entity\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoCow.cpp">
+      <Filter>Resource\Entity\Geometry\Cow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPig.cpp">
+      <Filter>Resource\Entity\Geometry\Pig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\EntityVIBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
