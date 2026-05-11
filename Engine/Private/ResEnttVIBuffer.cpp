@@ -60,140 +60,136 @@ HRESULT CResEnttVIBuffer::Load(const std::any& arg)
                 float U = cube.uv.x, V = cube.uv.y;     // uv 시작점 (json의 "uv": [U, V])
                 float W = cube.uvSize.x, H = cube.uvSize.y, D = cube.uvSize.z; // 8, 8, 8
 
-                auto uvm = [&](float px, float py, float faceU0, float faceU1) -> E::_float2 {
-                    if (bone.mirror)
-                    {
-                        //px = faceU0 + faceU1 - px; // U 반전
-                    }
+                auto uv = [&](float px, float py) -> E::_float2 {
                     return { px / tw, py / th };
                     };
                 /*
+                     텍스처 좌표 = 픽셀 / texture_size 로 정규화
 
-                텍스처 좌표 = 픽셀 / texture_size 로 정규화
+                     size = [W, H, D] 큐브일 때:
 
-                size = [W, H, D] 큐브일 때:
+                            D    W
+                         ┌────┬────┬────┬────┐
+                       D │         |  top   │bot     │        │
+                         ├────┼────┼────┼────┤
+                       H │rgt      │frnt   │lft     │back    │
+                         └────┴────┴────┴────┘
 
-                       D    W
-                    ┌────┬────┬────┬────┐
-                  D │ top│    │bot │    │
-                    ├────┼────┼────┼────┤
-                  H │right│frnt│left│back│
-                    └────┴────┴────┴────┘
+                     시작점 (U, V) 기준:
+                       top   : (U+D,       V    ) ~ (U+D+W,     V+D  )
+                       bottom: (U+D+W,     V    ) ~ (U+D+W+W,   V+D  )
+                       right : (U,         V+D  ) ~ (U+D,       V+D+H)
+                       front : (U+D,       V+D  ) ~ (U+D+W,     V+D+H)
+                       left  : (U+D+W,     V+D  ) ~ (U+D+W+D,   V+D+H)
+                       back  : (U+D+W+D,   V+D  ) ~ (U+D+W+D+W, V+D+H)
 
-                시작점 (U, V) 기준:
-                  top   : (U+D,     V    ) ~ (U+D+W, V+D  )
-                  bottom: (U+D+W,   V    ) ~ (U+D+W+W, V+D)
-                  right : (U,       V+D  ) ~ (U+D,   V+D+H)
-                  front : (U+D,     V+D  ) ~ (U+D+W, V+D+H)
-                  left  : (U+D+W,   V+D  ) ~ (U+D+W+D, V+D+H)
-                  back  : (U+D+W+D, V+D  ) ~ (U+D+W+D+W, V+D+H)
+                     좌표계 변환 (베드락 오른손 → DX 왼손):
+                       X반전 + Z반전 적용 (= Y축 180도와 동일, winding 유지)
+                       → POS_X(x1면) = 베드락 left face  (U~U+D)
+                       → NEG_X(x0면) = 베드락 right face (U+D+W~U+D+W+D)
+                       → POS_Z(z1면) = 베드락 front face (U+D~U+D+W)
+                       → NEG_Z(z0면) = 베드락 back face  (U+D+W+D~U+D+W+D+W)
+                       → POS_Y/NEG_Y UV는 X반전으로 좌우 반전
+
+                     mirror:
+                       베드락 mirror는 left/right face를 스왑하고 각 face 내부 U를 반전
+                       → POS_X = right face (U+D+W~U+D+W+D), U 반전
+                       → NEG_X = left face  (U~U+D),          U 반전
+                       → 나머지 face도 내부 U 반전
                 */
 
-                if (bone.mirror)
-                {
-                    // POS_X: U 범위 (U+D+W) ~ (U+D+W+D)
-                    vertices[24 * tmpI + 0] = { .pos = {x1, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W,      U + D + W + D)} };
-                    vertices[24 * tmpI + 1] = { .pos = {x1, y1, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D + W,            V + D,      U + D + W,      U + D + W + D)} };
-                    vertices[24 * tmpI + 2] = { .pos = {x1, y0, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D + W,            V + D + H,  U + D + W,      U + D + W + D)} };
-                    vertices[24 * tmpI + 3] = { .pos = {x1, y0, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W,      U + D + W + D)} };
-
-                    // NEG_X: U 범위 U ~ (U+D)
-                    vertices[24 * tmpI + 4] = { .pos = {x0, y1, z1}, .normal = {1, 0, 0},.texCoord = {uvm(U + D,                V + D,      U,              U + D)} };
-                    vertices[24 * tmpI + 5] = { .pos = {x0, y1, z0}, .normal = {1, 0, 0},.texCoord = {uvm(U,                    V + D,      U,              U + D)} };
-                    vertices[24 * tmpI + 6] = { .pos = {x0, y0, z0}, .normal = {1, 0, 0},.texCoord = {uvm(U,                    V + D + H,  U,              U + D)} };
-                    vertices[24 * tmpI + 7] = { .pos = {x0, y0, z1}, .normal = {1, 0, 0},.texCoord = {uvm(U + D,                V + D + H,  U,              U + D)} };
-                }
-                else
-                {
-                    // POS_X: U 범위 (U+D+W) ~ (U+D+W+D)
-                    vertices[24 * tmpI + 0] = { .pos = {x1, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U,                    V + D,      U,              U + D)} };
-                    vertices[24 * tmpI + 1] = { .pos = {x1, y1, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D,                V + D,      U,              U + D)} };
-                    vertices[24 * tmpI + 2] = { .pos = {x1, y0, z1}, .normal = {-1, 0, 0}, .texCoord = {uvm(U + D,                V + D + H,  U,              U + D)} };
-                    vertices[24 * tmpI + 3] = { .pos = {x1, y0, z0}, .normal = {-1, 0, 0}, .texCoord = {uvm(U,                    V + D + H,  U,              U + D)} };
-
-                    // NEG_X: U 범위 U ~ (U+D)
-                    vertices[24 * tmpI + 4] = { .pos = {x0, y1, z1}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W,            V + D,      U + D + W,      U + D + W + D)} };
-                    vertices[24 * tmpI + 5] = { .pos = {x0, y1, z0}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W,      U + D + W + D)} };
-                    vertices[24 * tmpI + 6] = { .pos = {x0, y0, z0}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W,      U + D + W + D)} };
-                    vertices[24 * tmpI + 7] = { .pos = {x0, y0, z1}, .normal = {1, 0, 0}, .texCoord = {uvm(U + D + W,            V + D + H,  U + D + W,      U + D + W + D)} };
-                }
-
 
                 if (bone.mirror)
                 {
-                    // POS_Y: U 범위 (U+D) ~ (U+D+W)
-                    vertices[24 * tmpI + 8] = { .pos = {x0, y1, z1}, .normal = {0, 1, 0}, .texCoord = {uvm(U + D,     V + D, U + D, U + D + W)} };
-                    vertices[24 * tmpI + 9] = { .pos = {x1, y1, z1}, .normal = {0, 1, 0}, .texCoord = {uvm(U + D + W, V + D, U + D, U + D + W)} };
-                    vertices[24 * tmpI + 10] = { .pos = {x1, y1, z0}, .normal = {0, 1, 0}, .texCoord = {uvm(U + D + W, V,     U + D, U + D + W)} };
-                    vertices[24 * tmpI + 11] = { .pos = {x0, y1, z0}, .normal = {0, 1, 0}, .texCoord = {uvm(U + D,     V,     U + D, U + D + W)} };
+                    // POS_X
+                    vertices[24 * tmpI + 0] =  { .pos = {x1, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uv(U + D + W + D,  V + D)} };
+                    vertices[24 * tmpI + 1] =  { .pos = {x1, y1, z1}, .normal = {-1, 0, 0}, .texCoord = {uv(U + D + W,      V + D)} };
+                    vertices[24 * tmpI + 2] =  { .pos = {x1, y0, z1}, .normal = {-1, 0, 0}, .texCoord = {uv(U + D + W,      V + D + H)} };
+                    vertices[24 * tmpI + 3] =  { .pos = {x1, y0, z0}, .normal = {-1, 0, 0}, .texCoord = {uv(U + D + W + D,  V + D + H)} };
 
-                    // NEG_Y (bottom)
-                    vertices[24 * tmpI + 12] = { .pos = {x1, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W, V + D, U + D + W, U + D + W + W)} };
-                    vertices[24 * tmpI + 13] = { .pos = {x0, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,     V + D, U + D + W, U + D + W + W)} };
-                    vertices[24 * tmpI + 14] = { .pos = {x0, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,     V,     U + D + W, U + D + W + W)} };
-                    vertices[24 * tmpI + 15] = { .pos = {x1, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W, V,     U + D + W, U + D + W + W)} };
+                    // NEG_X
+                    vertices[24 * tmpI + 4] =  { .pos = {x0, y1, z1}, .normal = {1, 0, 0},  .texCoord = {uv(U + D,  V + D)} };
+                    vertices[24 * tmpI + 5] =  { .pos = {x0, y1, z0}, .normal = {1, 0, 0},  .texCoord = {uv(U,      V + D)} };
+                    vertices[24 * tmpI + 6] =  { .pos = {x0, y0, z0}, .normal = {1, 0, 0},  .texCoord = {uv(U,      V + D + H)} };
+                    vertices[24 * tmpI + 7] =  { .pos = {x0, y0, z1}, .normal = {1, 0, 0},  .texCoord = {uv(U + D,  V + D + H)} };
+
+                    // POS_Y
+                    vertices[24 * tmpI + 8] =  { .pos = {x0, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uv(U + D,      V + D)} };
+                    vertices[24 * tmpI + 9] =  { .pos = {x1, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uv(U + D + W,  V + D)} };
+                    vertices[24 * tmpI + 10] = { .pos = {x1, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uv(U + D + W,  V)} };
+                    vertices[24 * tmpI + 11] = { .pos = {x0, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uv(U + D,      V)} };
+
+                    // NEG_Y
+                    vertices[24 * tmpI + 12] = { .pos = {x1, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uv(U + D + W + W,  V + D)} };
+                    vertices[24 * tmpI + 13] = { .pos = {x0, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uv(U + D + W,      V + D)} };
+                    vertices[24 * tmpI + 14] = { .pos = {x0, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uv(U + D + W,      V)} };
+                    vertices[24 * tmpI + 15] = { .pos = {x1, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uv(U + D + W + W,  V)} };
+
+                    // POS_Z
+                    vertices[24 * tmpI + 16] = { .pos = {x1, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + D + W,  V + D)} };
+                    vertices[24 * tmpI + 17] = { .pos = {x0, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + D,      V + D)} };
+                    vertices[24 * tmpI + 18] = { .pos = {x0, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + D,      V + D + H)} };
+                    vertices[24 * tmpI + 19] = { .pos = {x1, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + D + W,  V + D + H)} };
+
+                    // NEG_Z
+                    vertices[24 * tmpI + 20] = { .pos = {x0, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + D + W + D + W,  V + D)} };
+                    vertices[24 * tmpI + 21] = { .pos = {x1, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + D + W + D,      V + D)} };
+                    vertices[24 * tmpI + 22] = { .pos = {x1, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + D + W + D,      V + D + H)} };
+                    vertices[24 * tmpI + 23] = { .pos = {x0, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + D + W + D + W,  V + D + H)} };
                 }
                 else
                 {
-                    // POS_Y: U 범위 (U+D) ~ (U+D+W)
-                    vertices[24 * tmpI + 8] = { .pos = {x0, y1, z1}, .normal = {0, 1, 0}, .texCoord = {uvm(U + D + W, V + D, U + D, U + D + W)} };
-                    vertices[24 * tmpI + 9] = { .pos = {x1, y1, z1}, .normal = {0, 1, 0}, .texCoord = {uvm(U + D,     V + D, U + D, U + D + W)} };
-                    vertices[24 * tmpI + 10] = { .pos = {x1, y1, z0}, .normal = {0, 1, 0}, .texCoord = {uvm(U + D,     V,     U + D, U + D + W)} };
-                    vertices[24 * tmpI + 11] = { .pos = {x0, y1, z0}, .normal = {0, 1, 0}, .texCoord = {uvm(U + D + W, V,     U + D, U + D + W)} };
 
-                    // NEG_Y (bottom)
-                    vertices[24 * tmpI + 12] = { .pos = {x1, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,     V + D, U + D + W, U + D + W + W)} };
-                    vertices[24 * tmpI + 13] = { .pos = {x0, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W, V + D, U + D + W, U + D + W + W)} };
-                    vertices[24 * tmpI + 14] = { .pos = {x0, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W + W, V,     U + D + W, U + D + W + W)} };
-                    vertices[24 * tmpI + 15] = { .pos = {x1, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uvm(U + D + W,     V,     U + D + W, U + D + W + W)} };
+                    // POS_X
+                    vertices[24 * tmpI + 0] =  { .pos = {x1, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uv(U,      V + D)} };
+                    vertices[24 * tmpI + 1] =  { .pos = {x1, y1, z1}, .normal = {-1, 0, 0}, .texCoord = {uv(U + D,  V + D)} };
+                    vertices[24 * tmpI + 2] =  { .pos = {x1, y0, z1}, .normal = {-1, 0, 0}, .texCoord = {uv(U + D,  V + D + H)} };
+                    vertices[24 * tmpI + 3] =  { .pos = {x1, y0, z0}, .normal = {-1, 0, 0}, .texCoord = {uv(U,      V + D + H)} };
+
+                    // NEG_X
+                    vertices[24 * tmpI + 4] =  { .pos = {x0, y1, z1}, .normal = {1, 0, 0},  .texCoord = {uv(U + D + W,      V + D)} };
+                    vertices[24 * tmpI + 5] =  { .pos = {x0, y1, z0}, .normal = {1, 0, 0},  .texCoord = {uv(U + D + W + D,  V + D)} };
+                    vertices[24 * tmpI + 6] =  { .pos = {x0, y0, z0}, .normal = {1, 0, 0},  .texCoord = {uv(U + D + W + D,  V + D + H)} };
+                    vertices[24 * tmpI + 7] =  { .pos = {x0, y0, z1}, .normal = {1, 0, 0},  .texCoord = {uv(U + D + W,      V + D + H)} };
+
+                    // POS_Y
+                    vertices[24 * tmpI + 8] =  { .pos = {x0, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uv(U + D + W,  V + D)} };
+                    vertices[24 * tmpI + 9] =  { .pos = {x1, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uv(U + D,      V + D)} };
+                    vertices[24 * tmpI + 10] = { .pos = {x1, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uv(U + D,      V)} };
+                    vertices[24 * tmpI + 11] = { .pos = {x0, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uv(U + D + W,  V)} };
+
+                    // NEG_Y
+                    vertices[24 * tmpI + 12] = { .pos = {x1, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uv(U + D + W,      V + D)} };
+                    vertices[24 * tmpI + 13] = { .pos = {x0, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uv(U + D + W + W,  V + D)} };
+                    vertices[24 * tmpI + 14] = { .pos = {x0, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uv(U + D + W + W,  V)} };
+                    vertices[24 * tmpI + 15] = { .pos = {x1, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uv(U + D + W,      V)} };
+
+                    // POS_Z
+                    vertices[24 * tmpI + 16] = { .pos = {x1, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + D,      V + D)} };
+                    vertices[24 * tmpI + 17] = { .pos = {x0, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + D + W,  V + D)} };
+                    vertices[24 * tmpI + 18] = { .pos = {x0, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + D + W,  V + D + H)} };
+                    vertices[24 * tmpI + 19] = { .pos = {x1, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + D,      V + D + H)} };
+
+                    // NEG_Z
+                    vertices[24 * tmpI + 20] = { .pos = {x0, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + D + W + D,      V + D)} };
+                    vertices[24 * tmpI + 21] = { .pos = {x1, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + D + W + D + W,  V + D)} };
+                    vertices[24 * tmpI + 22] = { .pos = {x1, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + D + W + D + W,  V + D + H)} };
+                    vertices[24 * tmpI + 23] = { .pos = {x0, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + D + W + D,      V + D + H)} };
                 }
-
-                if (bone.mirror)
-                {
-                    // POS_Z: U 범위 (U+D) ~ (U+D+W)
-                    vertices[24 * tmpI + 16] = { .pos = {x1, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W,            V + D,      U + D,          U + D + W)} };
-                    vertices[24 * tmpI + 17] = { .pos = {x0, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D,                V + D,      U + D,          U + D + W)} };
-                    vertices[24 * tmpI + 18] = { .pos = {x0, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D,                V + D + H,  U + D,          U + D + W)} };
-                    vertices[24 * tmpI + 19] = { .pos = {x1, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W,            V + D + H,  U + D,          U + D + W)} };
-
-
-                    // NEG_Z: U 범위 (U+D+W+D) ~ (U+D+W+D+W)
-                    vertices[24 * tmpI + 20] = { .pos = {x0, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D + W,    V + D,      U + D + W + D,  U + D + W + D + W)} };
-                    vertices[24 * tmpI + 21] = { .pos = {x1, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W + D,  U + D + W + D + W)} };
-                    vertices[24 * tmpI + 22] = { .pos = {x1, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W + D,  U + D + W + D + W)} };
-                    vertices[24 * tmpI + 23] = { .pos = {x0, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D + W,    V + D + H,  U + D + W + D,  U + D + W + D + W)} };
-                }
-                else
-                {
-                    // POS_Z: U 범위 (U+D) ~ (U+D+W)
-                    vertices[24 * tmpI + 16] = { .pos = {x1, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D,                V + D,      U + D,          U + D + W)} };
-                    vertices[24 * tmpI + 17] = { .pos = {x0, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W,            V + D,      U + D,          U + D + W)} };
-                    vertices[24 * tmpI + 18] = { .pos = {x0, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D + W,            V + D + H,  U + D,          U + D + W)} };
-                    vertices[24 * tmpI + 19] = { .pos = {x1, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uvm(U + D,                V + D + H,  U + D,          U + D + W)} };
-
-
-                    // NEG_Z: U 범위 (U+D+W+D) ~ (U+D+W+D+W)
-                    vertices[24 * tmpI + 20] = { .pos = {x0, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D,        V + D,      U + D + W + D,  U + D + W + D + W)} };
-                    vertices[24 * tmpI + 21] = { .pos = {x1, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D + W,    V + D,      U + D + W + D,  U + D + W + D + W)} };
-                    vertices[24 * tmpI + 22] = { .pos = {x1, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D + W,    V + D + H,  U + D + W + D,  U + D + W + D + W)} };
-                    vertices[24 * tmpI + 23] = { .pos = {x0, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uvm(U + D + W + D,        V + D + H,  U + D + W + D,  U + D + W + D + W)} };
-                }
-
 
                 if (cube.rotation.x != 0.f || cube.rotation.y != 0.f || cube.rotation.z != 0.f)
                 {
-                    // 큐브 중심점
-                    XMFLOAT3 center = {
-                        (x0 + x1) * 0.5f,
-                        (y0 + y1) * 0.5f,
-                        (z0 + z1) * 0.5f
-                    };
-                    XMVECTOR vCenter = XMLoadFloat3(&center);
-
                     XMFLOAT3 pivot = cube.pivot;
                     XMVECTOR vPivot = XMLoadFloat3(&pivot);
+
                     if (pivot.x == 0.f && pivot.y == 0.f && pivot.z == 0.f)
                     {
+                        // 큐브 중심점
+                        XMFLOAT3 center = {
+                            (x0 + x1) * 0.5f,
+                            (y0 + y1) * 0.5f,
+                            (z0 + z1) * 0.5f
+                        };
                         vPivot = XMLoadFloat3(&center);
                     }
 
@@ -244,8 +240,6 @@ HRESULT CResEnttVIBuffer::Load(const std::any& arg)
             .pSysMem = vertices.data()
         };
 
-
-
         std::vector<uint16_t> indices{};
         indices.resize(36 * iCntCube);
         int tmp = 0;
@@ -284,11 +278,6 @@ HRESULT CResEnttVIBuffer::Load(const std::any& arg)
             m_eState = STATE::LOADFAIL;
             return E_FAIL;
         }
-
-
-
-
-
 	}
 	m_eState = STATE::LOADED;
     return S_OK;
