@@ -25,6 +25,8 @@
 
 #include "Resources.h"
 
+#include "ComEntityModel.h"
+
 NS_USING(Engine)
 
 CGameInstance::CGameInstance()
@@ -516,6 +518,11 @@ HRESULT CGameInstance::InitializeMCResource()
 HRESULT CGameInstance::InitializePrototype()
 {
 	if (AddPrototype("PERMANENT", "Prototype_Component_Transform", CTransform::Create()))
+	{
+		return E_FAIL;
+	}
+
+	if (AddPrototype("PERMANENT", "Prototype_Component_EntityModel", CComEntityModel::Create()))
 	{
 		return E_FAIL;
 	}

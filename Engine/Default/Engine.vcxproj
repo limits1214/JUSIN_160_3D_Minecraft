@@ -246,6 +246,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ColliderManager.h" />
     <ClInclude Include="..\Public\CollOrientedBox.h" />
     <ClInclude Include="..\Public\CollSphere.h" />
+    <ClInclude Include="..\public\ComEntityModel.h" />
     <ClInclude Include="..\public\Component.h" />
     <ClInclude Include="..\public\CowEntity.h" />
     <ClInclude Include="..\public\DInputManager.h" />
@@ -258,6 +259,8 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\Engine_Tag.h" />
     <ClInclude Include="..\Public\Engine_Template.h" />
     <ClInclude Include="..\Public\Engine_Typedef.h" />
+    <ClInclude Include="..\public\EntityModelBone.h" />
+    <ClInclude Include="..\public\EntityModelMesh.h" />
     <ClInclude Include="..\public\EntityObject.h" />
     <ClInclude Include="..\public\FlyCamera.h" />
     <ClInclude Include="..\public\GameInstance.h" />
@@ -444,9 +447,12 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\ColliderManager.cpp" />
     <ClCompile Include="..\Private\CollOrientedBox.cpp" />
     <ClCompile Include="..\Private\CollSphere.cpp" />
+    <ClCompile Include="..\private\ComEntityModel.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\CowEntity.cpp" />
     <ClCompile Include="..\private\DInputManager.cpp" />
+    <ClCompile Include="..\private\EntityModelBone.cpp" />
+    <ClCompile Include="..\private\EntityModelMesh.cpp" />
     <ClCompile Include="..\private\EntityObject.cpp" />
     <ClCompile Include="..\private\FlyCamera.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />

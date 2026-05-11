@@ -307,6 +307,15 @@
     <Filter Include="GameObject\Entity\Animal\Chicken">
       <UniqueIdentifier>{e29b470b-5a31-4363-b1fb-7830209a6ac8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\EntityModel">
+      <UniqueIdentifier>{458122e5-21c4-4b5f-96c4-c5fb7f2f9a3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\EntityModel\Bone">
+      <UniqueIdentifier>{3dfaa452-55b1-4758-bc42-88110df03b60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\EntityModel\Mesh">
+      <UniqueIdentifier>{16eaca4d-ea03-4900-b217-def3348405a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -609,6 +618,15 @@
     <ClInclude Include="..\public\ChickenEntity.h">
       <Filter>GameObject\Entity\Animal\Chicken</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ComEntityModel.h">
+      <Filter>Component\EntityModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\EntityModelBone.h">
+      <Filter>Component\EntityModel\Bone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\EntityModelMesh.h">
+      <Filter>Component\EntityModel\Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -898,6 +916,15 @@
     </ClCompile>
     <ClCompile Include="..\private\ChickenEntity.cpp">
       <Filter>GameObject\Entity\Animal\Chicken</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ComEntityModel.cpp">
+      <Filter>Component\EntityModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\EntityModelBone.cpp">
+      <Filter>Component\EntityModel\Bone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\EntityModelMesh.cpp">
+      <Filter>Component\EntityModel\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
