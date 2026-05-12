@@ -120,6 +120,10 @@ private:
 	std::mutex m_Mutex{};
 	std::atomic<_bool> m_bCreating{ false };
 
+private:
+	_bool m_bDbgBlockPicking{ false };
+	_bool m_bDbgPicking{ false };
+
 public:
 	static UPtr<CVoxelManager3> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
 };
