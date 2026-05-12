@@ -1,21 +1,25 @@
-#include "ChickenEntity.h"
+#include "PlayerEntity.h"
 
 #include "Resources.h"
 #include "GameInstance.h"
 #include "ComEntityModel.h"
 NS_USING(Engine)
 
-CChickenEntity::CChickenEntity()
+
+
+
+
+CPlayerEntity::CPlayerEntity()
 {
 }
 
-CChickenEntity::~CChickenEntity()
+CPlayerEntity::~CPlayerEntity()
 {
 }
 
-HRESULT CChickenEntity::Initialize(void* pArg)
+HRESULT CPlayerEntity::Initialize(void* pArg)
 {
-    if (FAILED(CAnimalEntityObject::Initialize(pArg)))
+    if (FAILED(CHumanoidEntityObject::Initialize(pArg)))
     {
         return E_FAIL;
     }
@@ -23,8 +27,8 @@ HRESULT CChickenEntity::Initialize(void* pArg)
     {
         CComEntityModel::DESC componentDesc{};
         componentDesc.pGameObject = this;
-        componentDesc.viBufferId = { "MC_ENTITY_VIBuffer", "Chicken" };
-        componentDesc.geometryId = { "MC_ENTITY_GEOMETRY", "Chicken" };
+        componentDesc.viBufferId = { "MC_ENTITY_VIBuffer", "Player" };
+        componentDesc.geometryId = { "MC_ENTITY_GEOMETRY", "Player" };
         auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_EntityModel", &componentDesc);
         if (pProto == nullptr)
         {
@@ -32,25 +36,26 @@ HRESULT CChickenEntity::Initialize(void* pArg)
         }
         m_pComEntityModel = AddComponent("Com_EntityModel", static_uptr_cast<CComEntityModel>(std::move(pProto)));
     }
+
     return S_OK;
 }
 
-void CChickenEntity::PriorityUpdate(E::_float fTimeDelta)
+void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CChickenEntity::Update(E::_float fTimeDelta)
+void CPlayerEntity::Update(E::_float fTimeDelta)
 {
     m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
 }
 
-void CChickenEntity::LateUpdate(E::_float fTimeDelta)
+void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 {
     CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
     GetTransform().Update();
 }
 
-HRESULT CChickenEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
     {
         auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
@@ -75,24 +80,24 @@ HRESULT CChickenEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CT
     return S_OK;
 }
 
-UPtr<CChickenEntity> CChickenEntity::Create()
+UPtr<CPlayerEntity> CPlayerEntity::Create()
 {
-    auto pInstance = ToUPtr(new CChickenEntity{});
+    auto pInstance = ToUPtr(new CPlayerEntity{});
     if (FAILED(pInstance->InitializePrototype()))
     {
-        MSG_BOX("Failed to Create: CChickenEntity");
+        MSG_BOX("Failed to Create: CPlayerEntity");
         return nullptr;
     }
 
     return pInstance;
 }
 
-UPtr<CPrototype> CChickenEntity::Clone(void* pArg)
+UPtr<CPrototype> CPlayerEntity::Clone(void* pArg)
 {
-    auto pInstance = ToUPtr(new CChickenEntity{ *this });
+    auto pInstance = ToUPtr(new CPlayerEntity{ *this });
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX("Failed to Cloned: CChickenEntity");
+        MSG_BOX("Failed to Cloned: CPlayerEntity");
         return nullptr;
     }
 

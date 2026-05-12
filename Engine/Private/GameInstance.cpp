@@ -430,6 +430,15 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 3: Player
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Player/steve.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
 		// Entity_64_64_Ted2d_Array
 		{
 			CResTexture2DArray::DESC desc{};
@@ -502,6 +511,17 @@ HRESULT CGameInstance::InitializeMCResource()
 				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Chicken", CResEnttVIBuffer::Create()))
 				{
 					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Chicken"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Player", CResEnttGeoPlayer::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Player", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Player"} });
 				}
 			}
 		}

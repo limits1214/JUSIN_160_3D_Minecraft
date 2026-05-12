@@ -2,7 +2,7 @@
 #include "AnimalEntityObject.h"
 
 NS_BEGIN(Engine)
-
+class CComEntityModel;
 class ENGINE_DLL CChickenEntity : public CAnimalEntityObject
 {
 public:
@@ -28,9 +28,8 @@ public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
-	_float4x4 m_boneMatrices[64]{};
-	std::vector<EntityBone> m_Bones{};
-
+private:
+	CComEntityModel* m_pComEntityModel{};
 public:
 	static UPtr<CChickenEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
