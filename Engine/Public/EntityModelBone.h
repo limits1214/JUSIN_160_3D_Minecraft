@@ -29,12 +29,14 @@ public:
 
     void UpdateCombinedMatrix(const _float4x4* pParentCombined)
     {
-        XMVECTOR pivot = XMLoadFloat3(&m_vPivot);
+        //XMVECTOR pivot = XMLoadFloat3(&m_vPivot);
 
-        XMMATRIX local =
-            XMMatrixTranslationFromVector(-pivot)
-            * XMLoadFloat4x4(&m_TransformationMatrix)
-            * XMMatrixTranslationFromVector(pivot);
+        //XMMATRIX local =
+        //    XMMatrixTranslationFromVector(-pivot)
+        //    * XMLoadFloat4x4(&m_TransformationMatrix)
+        //    * XMMatrixTranslationFromVector(pivot);
+
+        XMMATRIX local =XMLoadFloat4x4(&m_TransformationMatrix);
 
         if (pParentCombined)
             XMStoreFloat4x4(&m_CombinedTransformationMatrix,

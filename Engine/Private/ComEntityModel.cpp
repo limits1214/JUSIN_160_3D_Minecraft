@@ -90,72 +90,44 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
                 break;
             }
         }
-
-        // 카메라 → 엔티티 방향 벡터
-        const _float3& camPos = cam->GetTransform().GetPosition();
-        const _float3& entityPos = GetGameObject()->GetTransform().GetPosition();
-
-        const _float3& headPivot = headBone->GetPivot(); // 로컬 공간 기준
-        XMVECTOR vHeadWorld = XMLoadFloat3(&entityPos) + XMLoadFloat3(&headPivot);
-
-        XMVECTOR vCam = XMLoadFloat3(&camPos);
-        XMVECTOR vEntity = XMLoadFloat3(&entityPos);
-
-        XMVECTOR vDir = XMVector3Normalize(vCam - vHeadWorld); // 엔티티 → 카메라
-
+        if (headBone)
         {
-            _vector vLook = vDir;
+            // 카메라 → 엔티티 방향 벡터
+            const _float3& camPos = cam->GetTransform().GetPosition();
+            const _float3& entityPos = GetGameObject()->GetTransform().GetPosition();
 
-            _vector vRight = XMVector3Normalize(
-                XMVector3Cross(XMVectorSet(0.f, 1.f, 0.f, 0.f), vLook));
+            const _float3& headPivot = headBone->GetPivot(); // 로컬 공간 기준
+            XMVECTOR vHeadWorld = XMLoadFloat3(&entityPos) + XMLoadFloat3(&headPivot);
 
-            _vector vUp = XMVector3Cross(vLook, vRight);
+            XMVECTOR vCam = XMLoadFloat3(&camPos);
+            XMVECTOR vEntity = XMLoadFloat3(&entityPos);
 
-            //_float3 scale = GetScale();
-            //SetState(STATE::RIGHT, XMVector3Normalize(vRight) * scale.x);
-            //SetState(STATE::UP, XMVector3Normalize(vUp) * scale.y);
-            //SetState(STATE::LOOK, XMVector3Normalize(vLook) * scale.z);
+            XMVECTOR vDir = XMVector3Normalize(vCam - vHeadWorld); // 엔티티 → 카메라
 
-            _matrix matRot = XMMatrixIdentity();
-            matRot.r[0] = vRight;
-            matRot.r[1] = vUp;
-            matRot.r[2] = vLook;
+            {
+                _vector vLook = vDir;
 
-            if (headBone)
+                _vector vRight = XMVector3Normalize(
+                    XMVector3Cross(XMVectorSet(0.f, 1.f, 0.f, 0.f), vLook));
+
+                _vector vUp = XMVector3Cross(vLook, vRight);
+
+                //_float3 scale = GetScale();
+                //SetState(STATE::RIGHT, XMVector3Normalize(vRight) * scale.x);
+                //SetState(STATE::UP, XMVector3Normalize(vUp) * scale.y);
+                //SetState(STATE::LOOK, XMVector3Normalize(vLook) * scale.z);
+
+                _matrix matRot = XMMatrixIdentity();
+                matRot.r[0] = vRight;
+                matRot.r[1] = vUp;
+                matRot.r[2] = vLook;
+
+                
                 headBone->UpdateTransformationMatrix(matRot);
+            }
         }
-        
 
-        // pitch, yaw 계산
-        //float pitch = asinf(XMVectorGetY(vDir));
-        //float yaw = atan2f(XMVectorGetX(vDir), XMVectorGetZ(vDir));
-
-        //// 엔티티 yaw 기준으로 상대화 (relative_to = entity)
-        //const _float3& entityRot = GetGameObject()->GetTransform().GetRotationEuler();
-        //yaw -= XMConvertToRadians(entityRot.y);
-
-        //if (headBone)
-        //    headBone->UpdateTransformationMatrix(
-        //        XMMatrixRotationX(pitch) * XMMatrixRotationY(yaw));
     }
-
-    ;
-    //if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
-    //{
-    //    const _float3& camRot = cam->GetTransform().GetRotationEuler();
-
-    //    // relative_to.rotation = "entity" 이므로 엔티티 yaw를 빼줘야 함
-    //    
-    //    const _float3& entityRot = GetGameObject()->GetTransform().GetRotationEuler();
-
-    //    float rotX = XMConvertToRadians(camRot.x);               // target_x_rotation
-    //    float rotY = XMConvertToRadians(camRot.y - entityRot.y); // target_y_rotation - entity yaw
-
-    //    auto* headBone = FindBone("head");
-    //    if (headBone)
-    //        headBone->UpdateTransformationMatrix(
-    //            XMMatrixRotationX(rotX) * XMMatrixRotationY(rotY));
-    //}
 
 
     for (uint32_t i = 0; i < m_Bones.size(); ++i)
@@ -167,46 +139,16 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
             ? m_Bones[parentIdx].GetCombinedTransformationMatrix()
             : nullptr);
 
-        memcpy(&m_cbPerBone.matBone[i], bone.GetCombinedTransformationMatrix(), sizeof(_float4x4));
+        XMVECTOR pivot = XMLoadFloat3(&bone.GetPivot());
+
+        XMMATRIX offseted =
+            XMMatrixTranslationFromVector(-pivot)
+            * XMLoadFloat4x4(bone.GetCombinedTransformationMatrix())
+            * XMMatrixTranslationFromVector(pivot);
+
+        XMStoreFloat4x4(&m_cbPerBone.matBone[i], offseted);
     }
 
-    //for (uint32_t i = 0; i < m_Bones.size(); ++i)
-    //{
-    //    if (i == 0)
-    //    {
-    //        m_Bones[i].UpdateCombinedMatrix(nullptr);
-    //    }
-    //    else
-    //    {
-    //        m_Bones[i].UpdateCombinedMatrix(m_Bones[i-1].GetCombinedTransformationMatrix());
-    //    }
-
-    //    memcpy(&m_cbPerBone.matBone[i], m_Bones[i].GetCombinedTransformationMatrix(), sizeof(_float4x4));
-    //}
-
-    //// 2. 부모 → 자식 순으로 combined 계산
-    //for (uint32_t i = 0; i < m_Bones.size(); ++i)
-    //{
-    //    const std::string& parentName = m_Bones[i].GetParentName();
-    //    if (parentName.empty())
-    //    {
-    //        m_Bones[i].UpdateCombinedMatrix(nullptr);
-    //    }
-    //    else
-    //    {
-    //        const _float4x4* pParentCombined = nullptr;
-    //        for (uint32_t j = 0; j < i; ++j)
-    //        {
-    //            if (m_Bones[j].GetName() == parentName)
-    //            {
-    //                pParentCombined = m_Bones[j].GetCombinedTransformationMatrix();
-    //                break;
-    //            }
-    //        }
-    //        m_Bones[i].UpdateCombinedMatrix(pParentCombined);
-    //    }
-    //    memcpy(&m_cbPerBone.matBone[i], m_Bones[i].GetCombinedTransformationMatrix(), sizeof(_float4x4));
-    //}
 }
 
 void CComEntityModel::BindBoneMatrix() const
