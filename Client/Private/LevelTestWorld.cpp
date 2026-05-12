@@ -67,7 +67,6 @@ HRESULT CLevelTestWorld::Initialize()
 		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
 		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
 		//	{
-
 		//	}
 		//}
 
@@ -77,7 +76,6 @@ HRESULT CLevelTestWorld::Initialize()
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity",
 				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
 			{
-
 			}
 		}
 
@@ -87,7 +85,6 @@ HRESULT CLevelTestWorld::Initialize()
 		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity",
 		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
 		//	{
-
 		//	}
 		//}
 
