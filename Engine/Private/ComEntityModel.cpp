@@ -53,6 +53,54 @@ HRESULT CComEntityModel::Initialize(void* pArg)
             }
         }
     }
+
+
+    for (uint32_t i = 0; i < m_Bones.size(); ++i)
+    {
+        auto& bone = m_Bones[i];
+
+        int32_t parentIdx = bone.GetParentIndex(); // -1이면 루트
+
+        if (parentIdx >= 0)
+        {
+            _float3 localPivot;
+            XMStoreFloat3(&localPivot, XMLoadFloat3(&bone.GetPivot()) - XMLoadFloat3(&m_Bones[parentIdx].GetPivot()));
+            bone.SetLocalPivot(localPivot);
+        }
+        else
+        {
+            bone.SetLocalPivot(bone.GetPivot());
+        }
+        
+
+        bone.UpdateTransformationMatrix(XMMatrixIdentity());
+    }
+
+
+
+    //for (uint32_t i = 0; i < m_Bones.size(); ++i)
+    //{
+    //    auto& bone = m_Bones[i];
+    //    bone.UpdateTransformationMatrix(XMMatrixIdentity());
+    //}
+    // Initialize() 끝부분에 추가
+    for (uint32_t i = 0; i < m_Bones.size(); ++i)
+    {
+        auto& bone = m_Bones[i];
+        int32_t parentIdx = bone.GetParentIndex();
+
+        // Bind Pose Combined Matrix 계산
+        bone.UpdateCombinedMatrix(parentIdx >= 0 ?
+            m_Bones[parentIdx].GetCombinedTransformationMatrix() : nullptr);
+
+        // Offset Matrix 계산해서 저장 (중요!)
+        XMMATRIX bindGlobal = XMLoadFloat4x4(bone.GetCombinedTransformationMatrix());
+        XMMATRIX offset = XMMatrixInverse(nullptr, bindGlobal);
+        //
+        _float4x4 tmp;
+        XMStoreFloat4x4(&tmp, offset);
+        bone.SetOffsetMatrix(tmp);
+    }
 	return S_OK;
 }
 
@@ -61,94 +109,125 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
     m_fElapsed += fTimeDelta * 0.1f;
 
     // TODO 애니메이션 으로 뺄 예정
-    for (auto& bone : m_Bones)
+    
+        //for (auto& bone : m_Bones)
+        //{
+        //    XMMATRIX local = XMMatrixIdentity();
+        //    if (bone.GetName() == "leg0" || bone.GetName() == "leg3")
+        //    {
+        //        float rotX = XMConvertToRadians(cosf(m_fElapsed * 38.17f) * 80.f);
+        //        local = XMMatrixRotationX(rotX);
+        //    }
+        //    else if (bone.GetName() == "leg1" || bone.GetName() == "leg2")
+        //    {
+        //        float rotX = XMConvertToRadians(cosf(m_fElapsed * 38.17f) * -80.f);
+        //        local = XMMatrixRotationX(rotX);
+        //    }
+        //    bone.UpdateTransformationMatrix(local);
+        //}
+
+    if (false)
     {
-        XMMATRIX local = XMMatrixIdentity();
-
-        if (bone.GetName() == "leg0" || bone.GetName() == "leg3")
-        {
-            float rotX = XMConvertToRadians(cosf(m_fElapsed * 38.17f) * 80.f);
-            local = XMMatrixRotationX(rotX);
-        }
-        else if (bone.GetName() == "leg1" || bone.GetName() == "leg2")
-        {
-            float rotX = XMConvertToRadians(cosf(m_fElapsed * 38.17f) * -80.f);
-            local = XMMatrixRotationX(rotX);
-        }
-
-        bone.UpdateTransformationMatrix(local);
-    }
-
-    if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
-    {
-        CEntityModelBone* headBone{};
         for (auto& bone : m_Bones)
         {
-            if (bone.GetName() == "head")
+            XMMATRIX local = XMMatrixIdentity();
+            float flap = (sinf(m_fElapsed * 15.0f) * 0.5f + 0.5f) * 45.0f; // 0 ~ 45도
+            if (bone.GetName() == "body")
             {
-                headBone = &bone;
-                break;
+                // "rotation": ["-this", 0.0, 0.0]
+                // body의 현재 X 회전 상쇄 → 일단 0으로 고정 (지형 기울기 없으면 identity)
+                local = XMMatrixIdentity();
             }
+            else if (bone.GetName() == "wing0")
+            {
+                float rotZ = XMConvertToRadians(flap);
+                local = XMMatrixRotationZ(rotZ);
+            }
+            else if (bone.GetName() == "wing1")
+            {
+                // 0도일 때 몸에 붙고, -45도일 때 위로 펼쳐짐 (왼쪽은 음수가 바깥쪽일 경우)
+     // 만약 -45도가 몸 안쪽이라면 여기도 그냥 flap을 써야 합니다.
+                float rotZ = XMConvertToRadians(-flap);
+                local = XMMatrixRotationZ(rotZ);
+            }
+            else  if (bone.GetName() == "leg0" || bone.GetName() == "leg3")
+            {
+                float rotX = XMConvertToRadians(cosf(m_fElapsed * 38.17f) * 80.f);
+                local = XMMatrixRotationX(rotX);
+            }
+            else if (bone.GetName() == "leg1" || bone.GetName() == "leg2")
+            {
+                float rotX = XMConvertToRadians(cosf(m_fElapsed * 38.17f) * -80.f);
+                local = XMMatrixRotationX(rotX);
+            }
+
+            bone.UpdateTransformationMatrix(local);
         }
-        if (headBone)
+   
+        if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
         {
-            // 카메라 → 엔티티 방향 벡터
-            const _float3& camPos = cam->GetTransform().GetPosition();
-            const _float3& entityPos = GetGameObject()->GetTransform().GetPosition();
-
-            const _float3& headPivot = headBone->GetPivot(); // 로컬 공간 기준
-            XMVECTOR vHeadWorld = XMLoadFloat3(&entityPos) + XMLoadFloat3(&headPivot);
-
-            XMVECTOR vCam = XMLoadFloat3(&camPos);
-            XMVECTOR vEntity = XMLoadFloat3(&entityPos);
-
-            XMVECTOR vDir = XMVector3Normalize(vCam - vHeadWorld); // 엔티티 → 카메라
-
+            CEntityModelBone* headBone{};
+            for (auto& bone : m_Bones)
             {
-                _vector vLook = vDir;
-
-                _vector vRight = XMVector3Normalize(
-                    XMVector3Cross(XMVectorSet(0.f, 1.f, 0.f, 0.f), vLook));
-
-                _vector vUp = XMVector3Cross(vLook, vRight);
-
-                //_float3 scale = GetScale();
-                //SetState(STATE::RIGHT, XMVector3Normalize(vRight) * scale.x);
-                //SetState(STATE::UP, XMVector3Normalize(vUp) * scale.y);
-                //SetState(STATE::LOOK, XMVector3Normalize(vLook) * scale.z);
-
-                _matrix matRot = XMMatrixIdentity();
-                matRot.r[0] = vRight;
-                matRot.r[1] = vUp;
-                matRot.r[2] = vLook;
-
-                
-                headBone->UpdateTransformationMatrix(matRot);
+                if (bone.GetName() == "head")
+                {
+                    headBone = &bone;
+                    break;
+                }
             }
-        }
+            if (headBone)
+            {
+                // 카메라 → 엔티티 방향 벡터
+                const _float3& camPos = cam->GetTransform().GetPosition();
+                const _float3& entityPos = GetGameObject()->GetTransform().GetPosition();
 
+                const _float3& headPivot = headBone->GetPivot(); // 로컬 공간 기준
+                XMVECTOR vHeadWorld = XMLoadFloat3(&entityPos) + XMLoadFloat3(&headPivot);
+
+                XMVECTOR vCam = XMLoadFloat3(&camPos);
+                XMVECTOR vEntity = XMLoadFloat3(&entityPos);
+
+                XMVECTOR vDir = XMVector3Normalize(vCam - vHeadWorld); // 엔티티 → 카메라
+
+                {
+                    _vector vLook = vDir;
+
+                    _vector vRight = XMVector3Normalize(
+                        XMVector3Cross(XMVectorSet(0.f, 1.f, 0.f, 0.f), vLook));
+
+                    _vector vUp = XMVector3Cross(vLook, vRight);
+
+                    //_float3 scale = GetScale();
+                    //SetState(STATE::RIGHT, XMVector3Normalize(vRight) * scale.x);
+                    //SetState(STATE::UP, XMVector3Normalize(vUp) * scale.y);
+                    //SetState(STATE::LOOK, XMVector3Normalize(vLook) * scale.z);
+
+                    _matrix matRot = XMMatrixIdentity();
+                    matRot.r[0] = vRight;
+                    matRot.r[1] = vUp;
+                    matRot.r[2] = vLook;
+
+
+                    headBone->UpdateTransformationMatrix(matRot);
+                }
+            }
+
+        }
     }
 
 
     for (uint32_t i = 0; i < m_Bones.size(); ++i)
     {
         auto& bone = m_Bones[i];
-
         int32_t parentIdx = bone.GetParentIndex(); // -1이면 루트
         bone.UpdateCombinedMatrix(parentIdx >= 0
             ? m_Bones[parentIdx].GetCombinedTransformationMatrix()
             : nullptr);
 
-        XMVECTOR pivot = XMLoadFloat3(&bone.GetPivot());
-
-        XMMATRIX offseted =
-            XMMatrixTranslationFromVector(-pivot)
-            * XMLoadFloat4x4(bone.GetCombinedTransformationMatrix())
-            * XMMatrixTranslationFromVector(pivot);
-
+        auto offsetMatrix = XMLoadFloat4x4(bone.GetOffsetMatrix());
+        XMMATRIX offseted = offsetMatrix * XMLoadFloat4x4(bone.GetCombinedTransformationMatrix());
         XMStoreFloat4x4(&m_cbPerBone.matBone[i], offseted);
     }
-
 }
 
 void CComEntityModel::BindBoneMatrix() const

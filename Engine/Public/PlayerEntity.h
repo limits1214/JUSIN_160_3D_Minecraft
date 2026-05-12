@@ -1,23 +1,22 @@
 #pragma once
-#include "AnimalEntityObject.h"
-
+#include "HumanoidEntityObject.h"
 
 NS_BEGIN(Engine)
 class CComEntityModel;
-class ENGINE_DLL CCowEntity : public CAnimalEntityObject
+class ENGINE_DLL CPlayerEntity : public CHumanoidEntityObject
 {
 public:
-	typedef struct tagDesc : CAnimalEntityObject::DESC
+	typedef struct tagDesc : CHumanoidEntityObject::DESC
 	{
 
 	}DESC;
 
 public:
-	DECLARE_DERIVED_TYPE(CCowEntity, CAnimalEntityObject)
+	DECLARE_DERIVED_TYPE(CPlayerEntity, CHumanoidEntityObject)
 
 private:
-	explicit CCowEntity();
-	~CCowEntity() override;
+	explicit CPlayerEntity();
+	~CPlayerEntity() override;
 
 public:
 	HRESULT Initialize(void* pArg) override;
@@ -29,14 +28,10 @@ public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
-
 private:
 	CComEntityModel* m_pComEntityModel{};
-
-
-
 public:
-	static UPtr<CCowEntity> Create();
+	static UPtr<CPlayerEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
 };
 

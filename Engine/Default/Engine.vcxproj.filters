@@ -271,9 +271,6 @@
     <Filter Include="GameObject\Entity\Monster">
       <UniqueIdentifier>{605f9310-b346-47ea-b197-f66014795bbe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObject\Entity\Player">
-      <UniqueIdentifier>{566f54cc-bf1a-47f4-ba7d-5431adb6b815}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameObject\Entity\Animal\Pig">
       <UniqueIdentifier>{9568e64e-62e2-41de-a404-0b7caa6f41b3}</UniqueIdentifier>
     </Filter>
@@ -315,6 +312,15 @@
     </Filter>
     <Filter Include="Component\EntityModel\Mesh">
       <UniqueIdentifier>{16eaca4d-ea03-4900-b217-def3348405a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Player">
+      <UniqueIdentifier>{69d7874c-60de-470b-a8b6-451b71ddbaa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Humanoid">
+      <UniqueIdentifier>{566f54cc-bf1a-47f4-ba7d-5431adb6b815}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Humanoid\Player">
+      <UniqueIdentifier>{5f7bead0-d4fa-4773-99dd-1a5910bd56e8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -627,6 +633,15 @@
     <ClInclude Include="..\public\EntityModelMesh.h">
       <Filter>Component\EntityModel\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayer.h">
+      <Filter>Resource\Entity\Geometry\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\HumanoidEntityObject.h">
+      <Filter>GameObject\Entity\Humanoid</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\PlayerEntity.h">
+      <Filter>GameObject\Entity\Humanoid\Player</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -925,6 +940,15 @@
     </ClCompile>
     <ClCompile Include="..\private\EntityModelMesh.cpp">
       <Filter>Component\EntityModel\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayer.cpp">
+      <Filter>Resource\Entity\Geometry\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\HumanoidEntityObject.cpp">
+      <Filter>GameObject\Entity\Humanoid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PlayerEntity.cpp">
+      <Filter>GameObject\Entity\Humanoid\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
