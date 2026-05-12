@@ -295,6 +295,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\ResEnttGeoChicken.h" />
     <ClInclude Include="..\public\ResEnttGeoCow.h" />
     <ClInclude Include="..\public\ResEnttGeoPig.h" />
+    <ClInclude Include="..\public\ResEnttGeoSkeleton.h" />
     <ClInclude Include="..\public\ResEnttGeoSteve.h" />
     <ClInclude Include="..\public\ResEnttVIBuffer.h" />
     <ClInclude Include="..\Public\ResFmodSound.h" />
@@ -491,6 +492,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ResEnttGeoChicken.cpp" />
     <ClCompile Include="..\private\ResEnttGeoCow.cpp" />
     <ClCompile Include="..\private\ResEnttGeoPig.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoSkeleton.cpp" />
     <ClCompile Include="..\private\ResEnttGeoSteve.cpp" />
     <ClCompile Include="..\private\ResEnttVIBuffer.cpp" />
     <ClCompile Include="..\Private\ResFmodSound.cpp" />
