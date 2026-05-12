@@ -3,6 +3,9 @@
 #include "CameraObject.h"
 #include "Resources.h"
 
+#include "SkeletonEntity.h"
+
+
 NS_USING(Engine)
 static inline int32_t FloorDiv(int32_t a, int32_t b)
 {
@@ -195,117 +198,256 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
 
 void CVoxelManager3::Update(_float fTimeDelta)
 {
-    if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+    if (m_bDbgPicking)
     {
-        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
         {
-            RECT rect;
-            GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
-
-            E::_float4x4 P;
-            XMStoreFloat4x4(&P, cam->GetProj());
-
-            E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
-            E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
-
-            E::_matrix V = cam->GetView();
-            auto detV = XMMatrixDeterminant(V);
-            E::_matrix invView = XMMatrixInverse(&detV, V);
-
-            rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
-            rayDir = XMVector3TransformNormal(rayDir, invView);
-            _float3 vecrayOrigin;
-            _float3 vecrayDir;
-
-            XMStoreFloat3(&vecrayOrigin, rayOrigin);
-            XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
-
-
-            BLOCK_RAY_RESULT res;
-            if (BlockRaycast(vecrayOrigin, vecrayDir, 5.f, res))
+            if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
             {
-                const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+                RECT rect;
+                GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
 
-                auto worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
-                auto worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
-                auto worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
+                E::_float4x4 P;
+                XMStoreFloat4x4(&P, cam->GetProj());
 
-                CBlock3 block{};
-                block.SetType(CBlock3::TYPE::AIR);
+                POINT mousePos;
+                GetCursorPos(&mousePos);
+                ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
 
-                SetBlock(worldBX, worldBY, worldBZ, block);
+                float ndcX = (2.0f * mousePos.x / (rect.right - rect.left)) - 1.0f;
+                float ndcY = 1.0f - (2.0f * mousePos.y / (rect.bottom - rect.top));
+
+                // 프로젝션 역변환
+                _vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+                _vector rayDir = XMVectorSet(
+                    ndcX / P._11,
+                    ndcY / P._22,
+                    1.0f,
+                    0.0f
+                );
+
+                // 뷰 역변환
+                _matrix V = cam->GetView();
+                auto detV = XMMatrixDeterminant(V);
+                _matrix invView = XMMatrixInverse(&detV, V);
+
+                rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+                rayDir = XMVector3TransformNormal(rayDir, invView);
+                rayDir = XMVector3Normalize(rayDir);
+                _float3 vecrayOrigin;
+                _float3 vecrayDir;
+                XMStoreFloat3(&vecrayOrigin, rayOrigin);
+                XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
+
+
+
+                BLOCK_RAY_RESULT res;
+                if (BlockRaycast(vecrayOrigin, vecrayDir, 15.f, res))
+                {
+                    const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+
+                    int32_t worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
+                    int32_t worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
+                    int32_t worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
+
+                    _vector verts[8] = {
+                        XMVectorSet(worldBX,       worldBY,       worldBZ,       0),
+                        XMVectorSet(worldBX + 1.f, worldBY,       worldBZ,       0),
+                        XMVectorSet(worldBX + 1.f, worldBY + 1.f, worldBZ,       0),
+                        XMVectorSet(worldBX,       worldBY + 1.f, worldBZ,       0),
+                        XMVectorSet(worldBX,       worldBY,       worldBZ + 1.f, 0),
+                        XMVectorSet(worldBX + 1.f, worldBY,       worldBZ + 1.f, 0),
+                        XMVectorSet(worldBX + 1.f, worldBY + 1.f, worldBZ + 1.f, 0),
+                        XMVectorSet(worldBX,       worldBY + 1.f, worldBZ + 1.f, 0),
+                    };
+
+                    struct Face { int i0, i1, i2, i3; _float3 normal; };
+                    Face faces[6] = {
+                        { 0, 3, 2, 1, {  0,  0, -1 } },  // -Z
+                        { 4, 5, 6, 7, {  0,  0,  1 } },  // +Z
+                        { 0, 1, 5, 4, {  0, -1,  0 } },  // -Y
+                        { 3, 7, 6, 2, {  0,  1,  0 } },  // +Y
+                        { 0, 4, 7, 3, { -1,  0,  0 } },  // -X
+                        { 1, 2, 6, 5, {  1,  0,  0 } },  // +X
+                    };
+
+                    float tNearest = FLT_MAX;
+                    _float3 hitNormal = {};
+
+                    for (auto& face : faces)
+                    {
+                        float t = 0.f;
+                        if (DirectX::TriangleTests::Intersects(
+                            rayOrigin, rayDir,
+                            verts[face.i0], verts[face.i1], verts[face.i2], t))
+                        {
+                            if (t < tNearest) { tNearest = t; hitNormal = face.normal; }
+                        }
+                        if (DirectX::TriangleTests::Intersects(
+                            rayOrigin, rayDir,
+                            verts[face.i0], verts[face.i2], verts[face.i3], t))
+                        {
+                            if (t < tNearest) { tNearest = t; hitNormal = face.normal; }
+                        }
+                    }
+
+                    if (tNearest < FLT_MAX)
+                    {
+                        _float3 ro, rd;
+                        XMStoreFloat3(&ro, rayOrigin);
+                        XMStoreFloat3(&rd, rayDir);
+
+                        _float3 hitPos = {
+                            ro.x + rd.x * tNearest,
+                            ro.y + rd.y * tNearest,
+                            ro.z + rd.z * tNearest
+                        };
+
+                        OutputDebugStringA(std::format(
+                            "Hit: ({:.2f}, {:.2f}, {:.2f}) Normal: ({:.0f}, {:.0f}, {:.0f})\n",
+                            hitPos.x, hitPos.y, hitPos.z,
+                            hitNormal.x, hitNormal.y, hitNormal.z
+                        ).c_str());
+
+
+                        {
+                            E::CSkeletonEntity::DESC Desc{};
+                            Desc.sObjectTag = "Skeleton";
+                            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_SkeletonEntity",
+                                E::ETOUI(0), &Desc))
+                            {
+                                if (auto skeleton = CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+                                {
+                                    skeleton->GetTransform().SetPosition(XMVectorSet(hitPos.x, hitPos.y, hitPos.z, 1.f));
+                                    skeleton->GetTransform().SetScale(XMVectorSet(0.1f, 0.1f, 0.1f, 1.f));
+                                }
+                                int x = 0;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        
+        
+    }
+
+    if (m_bDbgBlockPicking)
+    {
+        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+        {
+            if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+            {
+                RECT rect;
+                GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+
+                E::_float4x4 P;
+                XMStoreFloat4x4(&P, cam->GetProj());
+
+                E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+                E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+                E::_matrix V = cam->GetView();
+                auto detV = XMMatrixDeterminant(V);
+                E::_matrix invView = XMMatrixInverse(&detV, V);
+
+                rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+                rayDir = XMVector3TransformNormal(rayDir, invView);
+                _float3 vecrayOrigin;
+                _float3 vecrayDir;
+
+                XMStoreFloat3(&vecrayOrigin, rayOrigin);
+                XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
+
+
+                BLOCK_RAY_RESULT res;
+                if (BlockRaycast(vecrayOrigin, vecrayDir, 5.f, res))
+                {
+                    const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+
+                    auto worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
+                    auto worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
+                    auto worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
+
+                    CBlock3 block{};
+                    block.SetType(CBlock3::TYPE::AIR);
+
+                    SetBlock(worldBX, worldBY, worldBZ, block);
+                }
+            }
+        }
+
+        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+        {
+            if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+            {
+                RECT rect;
+                GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+
+                E::_float4x4 P;
+                XMStoreFloat4x4(&P, cam->GetProj());
+
+                E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+                E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+                E::_matrix V = cam->GetView();
+                auto detV = XMMatrixDeterminant(V);
+                E::_matrix invView = XMMatrixInverse(&detV, V);
+
+                rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+                rayDir = XMVector3TransformNormal(rayDir, invView);
+                _float3 vecrayOrigin;
+                _float3 vecrayDir;
+
+                XMStoreFloat3(&vecrayOrigin, rayOrigin);
+                XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
+
+
+                BLOCK_RAY_RESULT res;
+                if (BlockRaycast(vecrayOrigin, vecrayDir, 5.f, res))
+                {
+                    const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+
+                    auto worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
+                    auto worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
+                    auto worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
+                    if (res.eHitFace == FACE_DIR::POS_X)
+                    {
+                        worldBX += 1;
+                    }
+                    else if (res.eHitFace == FACE_DIR::NEG_X)
+                    {
+                        worldBX -= 1;
+                    }
+                    else if (res.eHitFace == FACE_DIR::POS_Y)
+                    {
+                        worldBY += 1;
+                    }
+                    else if (res.eHitFace == FACE_DIR::NEG_Y)
+                    {
+                        worldBY -= 1;
+                    }
+                    else if (res.eHitFace == FACE_DIR::POS_Z)
+                    {
+                        worldBZ += 1;
+                    }
+                    else if (res.eHitFace == FACE_DIR::NEG_Z)
+                    {
+                        worldBZ -= 1;
+                    }
+
+
+
+                    CBlock3 block{};
+                    block.SetType(CBlock3::TYPE::GRASS);
+
+                    SetBlock(worldBX, worldBY, worldBZ, block);
+                }
             }
         }
     }
-
-    if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
-    {
-        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
-        {
-            RECT rect;
-            GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
-
-            E::_float4x4 P;
-            XMStoreFloat4x4(&P, cam->GetProj());
-
-            E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
-            E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
-
-            E::_matrix V = cam->GetView();
-            auto detV = XMMatrixDeterminant(V);
-            E::_matrix invView = XMMatrixInverse(&detV, V);
-
-            rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
-            rayDir = XMVector3TransformNormal(rayDir, invView);
-            _float3 vecrayOrigin;
-            _float3 vecrayDir;
-
-            XMStoreFloat3(&vecrayOrigin, rayOrigin);
-            XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
-
-
-            BLOCK_RAY_RESULT res;
-            if (BlockRaycast(vecrayOrigin, vecrayDir, 5.f, res))
-            {
-                const auto& [cx, cy, cz] = res.pChunk->GetCoord();
-
-                auto worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
-                auto worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
-                auto worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
-                if (res.eHitFace == FACE_DIR::POS_X)
-                {
-                    worldBX += 1;
-                }
-                else if (res.eHitFace == FACE_DIR::NEG_X)
-                {
-                    worldBX -= 1;
-                }
-                else if (res.eHitFace == FACE_DIR::POS_Y)
-                {
-                    worldBY += 1;
-                }
-                else if (res.eHitFace == FACE_DIR::NEG_Y)
-                {
-                    worldBY -= 1;
-                }
-                else if (res.eHitFace == FACE_DIR::POS_Z)
-                {
-                    worldBZ += 1;
-                }
-                else if (res.eHitFace == FACE_DIR::NEG_Z)
-                {
-                    worldBZ -= 1;
-                }
-
-                
-
-                CBlock3 block{};
-                block.SetType(CBlock3::TYPE::GRASS);
-
-                SetBlock(worldBX, worldBY, worldBZ, block);
-            }
-        }
-    }
+    
 
 
 
@@ -358,13 +500,14 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
 void CVoxelManager3::UpdateGUI()
 {
-    if (ImGui::Button("chunk load 000"))
+    if (ImGui::Button("dbg block picking"))
     {
-        IN_RANGE_CHUNK_CREATE_DESC desc{};
-        desc.iCenterX = 0;
-        desc.iCenterY = 0;
-        desc.iCenterZ = 0;
-        QueuingInRangeChunkCreate(desc);
+        m_bDbgBlockPicking = !m_bDbgBlockPicking;
+    }
+
+    if (ImGui::Button("dbg picking"))
+    {
+        m_bDbgPicking = !m_bDbgPicking;
     }
 
     if (ImGui::Button("SetChunkLoadCenter Cam"))

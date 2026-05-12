@@ -331,6 +331,27 @@
     <Filter Include="Resource\Entity\Geometry\Skeleton">
       <UniqueIdentifier>{1c8b24bf-88f4-4ba3-8e03-c4caaa041b4f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Item">
+      <UniqueIdentifier>{870332a8-3a92-48c4-867c-52036af8e313}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{1f995101-4cb2-4529-baeb-e0626b770ae3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Manager">
+      <UniqueIdentifier>{18206a88-6672-4c8a-b907-bddea2e4edb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Item">
+      <UniqueIdentifier>{91f53f7c-733a-49d8-b63e-6124e108c022}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\Drop">
+      <UniqueIdentifier>{b578ad8f-d538-41d0-89a3-10fc3f5e09c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Item\Pickaxe">
+      <UniqueIdentifier>{f5649b3f-e242-4928-8ebd-12ca91fe2a3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Item\Pickaxe\Wood">
+      <UniqueIdentifier>{385c43bc-4ff1-4964-ac9c-86dd70870534}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -663,6 +684,24 @@
     <ClInclude Include="..\public\ResEnttGeoSkeleton.h">
       <Filter>Resource\Entity\Geometry\Skeleton</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\Item.h">
+      <Filter>Game\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\GameManager.h">
+      <Filter>Game\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ItemObject.h">
+      <Filter>GameObject\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DropItem.h">
+      <Filter>GameObject\Item\Drop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ItemPickaxe.h">
+      <Filter>Game\Item\Pickaxe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ItemWoodPickaxe.h">
+      <Filter>Game\Item\Pickaxe\Wood</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -982,6 +1021,24 @@
     </ClCompile>
     <ClCompile Include="..\private\ResEnttGeoSkeleton.cpp">
       <Filter>Resource\Entity\Geometry\Skeleton</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Item.cpp">
+      <Filter>Game\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\GameManager.cpp">
+      <Filter>Game\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ItemObject.cpp">
+      <Filter>GameObject\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DropItem.cpp">
+      <Filter>GameObject\Item\Drop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ItemPickaxe.cpp">
+      <Filter>Game\Item\Pickaxe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ItemWoodPickaxe.cpp">
+      <Filter>Game\Item\Pickaxe\Wood</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
