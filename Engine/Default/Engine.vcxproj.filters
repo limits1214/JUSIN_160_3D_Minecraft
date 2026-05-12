@@ -328,6 +328,9 @@
     <Filter Include="Resource\Entity\Geometry\Steve">
       <UniqueIdentifier>{69d7874c-60de-470b-a8b6-451b71ddbaa2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\Skeleton">
+      <UniqueIdentifier>{1c8b24bf-88f4-4ba3-8e03-c4caaa041b4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -657,6 +660,9 @@
     <ClInclude Include="..\public\SkeletonEntity.h">
       <Filter>GameObject\Entity\Monster\Skeleton</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoSkeleton.h">
+      <Filter>Resource\Entity\Geometry\Skeleton</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -973,6 +979,9 @@
     </ClCompile>
     <ClCompile Include="..\private\SkeletonEntity.cpp">
       <Filter>GameObject\Entity\Monster\Skeleton</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoSkeleton.cpp">
+      <Filter>Resource\Entity\Geometry\Skeleton</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

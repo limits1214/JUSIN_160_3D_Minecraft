@@ -8,6 +8,7 @@
 #include "CowEntity.h"
 #include "ChickenEntity.h"
 #include "PlayerSteveEntity.h"
+#include "SkeletonEntity.h"
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -63,45 +64,58 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
+
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_SkeletonEntity", E::CSkeletonEntity::Create())))
+		{
+			int x = 0;
+		}
 		
 	}
 
 	{
-		{
-			E::CPigEntity::DESC Desc{};
-			Desc.sObjectTag = "Pig";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
-			{
-			}
-		}
+		//{
+		//	E::CPigEntity::DESC Desc{};
+		//	Desc.sObjectTag = "Pig";
+		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
+		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+		//	{
+		//	}
+		//}
+
+		//{
+		//	E::CCowEntity::DESC Desc{};
+		//	Desc.sObjectTag = "Cow";
+		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity",
+		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+		//	{
+		//	}
+		//}
+
+		//{
+		//	E::CChickenEntity::DESC Desc{};
+		//	Desc.sObjectTag = "Chicken";
+		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity",
+		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+		//	{
+		//	}
+		//}
+		//{
+		//	E::CPlayerSteveEntity::DESC Desc{};
+		//	Desc.sObjectTag = "PlayerSteve";
+		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerSteveEntity",
+		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+		//	{
+		//	}
+		//}
 
 		{
-			E::CCowEntity::DESC Desc{};
-			Desc.sObjectTag = "Cow";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity",
+			E::CSkeletonEntity::DESC Desc{};
+			Desc.sObjectTag = "Skeleton";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_SkeletonEntity",
 				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
 			{
 			}
 		}
-
-		{
-			E::CChickenEntity::DESC Desc{};
-			Desc.sObjectTag = "Chicken";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
-			{
-			}
-		}
-		{
-			E::CPlayerSteveEntity::DESC Desc{};
-			Desc.sObjectTag = "PlayerSteve";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerSteveEntity",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
-			{
-			}
-		}
-		
 
 	}
 	//if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
