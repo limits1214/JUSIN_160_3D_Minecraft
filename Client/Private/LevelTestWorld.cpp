@@ -7,7 +7,7 @@
 #include "PigEntity.h"
 #include "CowEntity.h"
 #include "ChickenEntity.h"
-#include "PlayerEntity.h"
+#include "PlayerSteveEntity.h"
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -59,11 +59,11 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
-
-		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PlayerEntity", E::CPlayerEntity::Create())))
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PlayerSteveEntity", E::CPlayerSteveEntity::Create())))
 		{
 			int x = 0;
 		}
+		
 	}
 
 	{
@@ -93,15 +93,15 @@ HRESULT CLevelTestWorld::Initialize()
 			{
 			}
 		}
-
 		{
-			E::CPlayerEntity::DESC Desc{};
-			Desc.sObjectTag = "Player";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
+			E::CPlayerSteveEntity::DESC Desc{};
+			Desc.sObjectTag = "PlayerSteve";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerSteveEntity",
 				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
 			{
 			}
 		}
+		
 
 	}
 	//if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",

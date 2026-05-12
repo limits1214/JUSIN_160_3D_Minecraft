@@ -274,9 +274,11 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\Level.h" />
     <ClInclude Include="..\public\LevelManager.h" />
     <ClInclude Include="..\public\LightManager.h" />
+    <ClInclude Include="..\public\MonsterEntityObject.h" />
     <ClInclude Include="..\Public\MyTreeNode.h" />
     <ClInclude Include="..\public\PigEntity.h" />
-    <ClInclude Include="..\public\PlayerEntity.h" />
+    <ClInclude Include="..\public\PlayerEntityObject.h" />
+    <ClInclude Include="..\public\PlayerSteveEntity.h" />
     <ClInclude Include="..\public\Prototype.h" />
     <ClInclude Include="..\public\PrototypeManager.h" />
     <ClInclude Include="..\public\Renderer.h" />
@@ -293,7 +295,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\ResEnttGeoChicken.h" />
     <ClInclude Include="..\public\ResEnttGeoCow.h" />
     <ClInclude Include="..\public\ResEnttGeoPig.h" />
-    <ClInclude Include="..\public\ResEnttGeoPlayer.h" />
+    <ClInclude Include="..\public\ResEnttGeoSteve.h" />
     <ClInclude Include="..\public\ResEnttVIBuffer.h" />
     <ClInclude Include="..\Public\ResFmodSound.h" />
     <ClInclude Include="..\Public\ResGeometryShader.h" />
@@ -320,6 +322,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ResVertexShader.h" />
     <ClInclude Include="..\Public\ResVIBuffer.h" />
     <ClInclude Include="..\Public\ResViewPort.h" />
+    <ClInclude Include="..\public\SkeletonEntity.h" />
     <ClInclude Include="..\public\SoundManager.h" />
     <ClInclude Include="..\Public\TimeProvider.h" />
     <ClInclude Include="..\Public\Timer.h" />
@@ -468,8 +471,10 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Level.cpp" />
     <ClCompile Include="..\private\LevelManager.cpp" />
     <ClCompile Include="..\private\LightManager.cpp" />
+    <ClCompile Include="..\private\MonsterEntityObject.cpp" />
     <ClCompile Include="..\private\PigEntity.cpp" />
-    <ClCompile Include="..\private\PlayerEntity.cpp" />
+    <ClCompile Include="..\private\PlayerEntityObject.cpp" />
+    <ClCompile Include="..\private\PlayerSteveEntity.cpp" />
     <ClCompile Include="..\private\Prototype.cpp" />
     <ClCompile Include="..\private\PrototypeManager.cpp" />
     <ClCompile Include="..\private\Renderer.cpp" />
@@ -486,7 +491,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ResEnttGeoChicken.cpp" />
     <ClCompile Include="..\private\ResEnttGeoCow.cpp" />
     <ClCompile Include="..\private\ResEnttGeoPig.cpp" />
-    <ClCompile Include="..\private\ResEnttGeoPlayer.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoSteve.cpp" />
     <ClCompile Include="..\private\ResEnttVIBuffer.cpp" />
     <ClCompile Include="..\Private\ResFmodSound.cpp" />
     <ClCompile Include="..\Private\ResGeometryShader.cpp" />
@@ -512,6 +517,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\ResVertexShader.cpp" />
     <ClCompile Include="..\Private\ResVIBuffer.cpp" />
     <ClCompile Include="..\Private\ResViewPort.cpp" />
+    <ClCompile Include="..\private\SkeletonEntity.cpp" />
     <ClCompile Include="..\private\SoundManager.cpp" />
     <ClCompile Include="..\Private\TimeProvider.cpp" />
     <ClCompile Include="..\Private\Timer.cpp" />

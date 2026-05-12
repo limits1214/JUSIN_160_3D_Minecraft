@@ -313,14 +313,20 @@
     <Filter Include="Component\EntityModel\Mesh">
       <UniqueIdentifier>{16eaca4d-ea03-4900-b217-def3348405a4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource\Entity\Geometry\Player">
-      <UniqueIdentifier>{69d7874c-60de-470b-a8b6-451b71ddbaa2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameObject\Entity\Humanoid">
       <UniqueIdentifier>{566f54cc-bf1a-47f4-ba7d-5431adb6b815}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObject\Entity\Humanoid\Player">
-      <UniqueIdentifier>{5f7bead0-d4fa-4773-99dd-1a5910bd56e8}</UniqueIdentifier>
+    <Filter Include="GameObject\Entity\Player">
+      <UniqueIdentifier>{99b382f9-7824-4fde-8cf3-b34cd58cec1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Player\Steve">
+      <UniqueIdentifier>{11483744-e884-41fb-bd62-dd832c0d21fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\Skeleton">
+      <UniqueIdentifier>{802a4e1c-c217-40ef-94e2-b74535fee6f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Steve">
+      <UniqueIdentifier>{69d7874c-60de-470b-a8b6-451b71ddbaa2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -633,14 +639,23 @@
     <ClInclude Include="..\public\EntityModelMesh.h">
       <Filter>Component\EntityModel\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\ResEnttGeoPlayer.h">
-      <Filter>Resource\Entity\Geometry\Player</Filter>
+    <ClInclude Include="..\public\ResEnttGeoSteve.h">
+      <Filter>Resource\Entity\Geometry\Steve</Filter>
     </ClInclude>
     <ClInclude Include="..\public\HumanoidEntityObject.h">
       <Filter>GameObject\Entity\Humanoid</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\PlayerEntity.h">
-      <Filter>GameObject\Entity\Humanoid\Player</Filter>
+    <ClInclude Include="..\public\MonsterEntityObject.h">
+      <Filter>GameObject\Entity\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\PlayerSteveEntity.h">
+      <Filter>GameObject\Entity\Player\Steve</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\PlayerEntityObject.h">
+      <Filter>GameObject\Entity\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\SkeletonEntity.h">
+      <Filter>GameObject\Entity\Monster\Skeleton</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -941,14 +956,23 @@
     <ClCompile Include="..\private\EntityModelMesh.cpp">
       <Filter>Component\EntityModel\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\ResEnttGeoPlayer.cpp">
-      <Filter>Resource\Entity\Geometry\Player</Filter>
+    <ClCompile Include="..\private\ResEnttGeoSteve.cpp">
+      <Filter>Resource\Entity\Geometry\Steve</Filter>
     </ClCompile>
     <ClCompile Include="..\private\HumanoidEntityObject.cpp">
       <Filter>GameObject\Entity\Humanoid</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\PlayerEntity.cpp">
-      <Filter>GameObject\Entity\Humanoid\Player</Filter>
+    <ClCompile Include="..\private\MonsterEntityObject.cpp">
+      <Filter>GameObject\Entity\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PlayerSteveEntity.cpp">
+      <Filter>GameObject\Entity\Player\Steve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PlayerEntityObject.cpp">
+      <Filter>GameObject\Entity\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\SkeletonEntity.cpp">
+      <Filter>GameObject\Entity\Monster\Skeleton</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

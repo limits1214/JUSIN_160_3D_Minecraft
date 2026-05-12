@@ -1,8 +1,8 @@
-#include "ResEnttGeoPlayer.h"
+#include "ResEnttGeoSteve.h"
 
 NS_USING(Engine)
 
-HRESULT CResEnttGeoPlayer::Load(const std::any& arg)
+HRESULT CResEnttGeoSteve::Load(const std::any& arg)
 {
     if (m_eState == STATE::LOADED)
     {
@@ -154,21 +154,21 @@ HRESULT CResEnttGeoPlayer::Load(const std::any& arg)
     return S_OK;
 }
 
-HRESULT CResEnttGeoPlayer::Unload(const std::any& arg)
+HRESULT CResEnttGeoSteve::Unload(const std::any& arg)
 {
     return S_OK;
 }
 
-CResEnttGeoPlayer::CResEnttGeoPlayer(const _string& sPath)
+CResEnttGeoSteve::CResEnttGeoSteve(const _string& sPath)
     : CResEnttGeo{ sPath }
 {
 }
 
-CResEnttGeoPlayer::~CResEnttGeoPlayer()
+CResEnttGeoSteve::~CResEnttGeoSteve()
 {
 }
 
-SPtr<CResEnttGeoPlayer> CResEnttGeoPlayer::Create()
+SPtr<CResEnttGeoSteve> CResEnttGeoSteve::Create()
 {
-    return ToSPtr(new CResEnttGeoPlayer{ "" });
+    return ToSPtr(new CResEnttGeoSteve{ "" });
 }

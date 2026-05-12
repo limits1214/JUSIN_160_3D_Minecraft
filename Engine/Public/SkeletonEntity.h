@@ -1,22 +1,22 @@
 #pragma once
-#include "HumanoidEntityObject.h"
+#include "MonsterEntityObject.h"
 
 NS_BEGIN(Engine)
 class CComEntityModel;
-class ENGINE_DLL CPlayerEntity : public CHumanoidEntityObject
+class ENGINE_DLL CSkeletonEntity : public CMonsterEntityObject
 {
 public:
-	typedef struct tagDesc : CHumanoidEntityObject::DESC
+	typedef struct tagDesc : CMonsterEntityObject::DESC
 	{
 
 	}DESC;
 
 public:
-	DECLARE_DERIVED_TYPE(CPlayerEntity, CHumanoidEntityObject)
+	DECLARE_DERIVED_TYPE(CSkeletonEntity, CMonsterEntityObject)
 
 private:
-	explicit CPlayerEntity();
-	~CPlayerEntity() override;
+	explicit CSkeletonEntity();
+	~CSkeletonEntity() override;
 
 public:
 	HRESULT Initialize(void* pArg) override;
@@ -31,7 +31,7 @@ private:
 private:
 	CComEntityModel* m_pComEntityModel{};
 public:
-	static UPtr<CPlayerEntity> Create();
+	static UPtr<CSkeletonEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
 };
 

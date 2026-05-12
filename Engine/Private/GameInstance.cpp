@@ -515,13 +515,13 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
-		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Player", CResEnttGeoPlayer::Create()))
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Steve", CResEnttGeoSteve::Create()))
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Player", CResEnttVIBuffer::Create()))
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Steve", CResEnttVIBuffer::Create()))
 				{
-					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Player"} });
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Steve"} });
 				}
 			}
 		}

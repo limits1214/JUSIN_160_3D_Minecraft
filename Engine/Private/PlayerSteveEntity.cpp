@@ -1,4 +1,4 @@
-#include "PlayerEntity.h"
+#include "PlayerSteveEntity.h"
 
 #include "Resources.h"
 #include "GameInstance.h"
@@ -9,17 +9,17 @@ NS_USING(Engine)
 
 
 
-CPlayerEntity::CPlayerEntity()
+CPlayerSteveEntity::CPlayerSteveEntity()
 {
 }
 
-CPlayerEntity::~CPlayerEntity()
+CPlayerSteveEntity::~CPlayerSteveEntity()
 {
 }
 
-HRESULT CPlayerEntity::Initialize(void* pArg)
+HRESULT CPlayerSteveEntity::Initialize(void* pArg)
 {
-    if (FAILED(CHumanoidEntityObject::Initialize(pArg)))
+    if (FAILED(CPlayerEntityObject::Initialize(pArg)))
     {
         return E_FAIL;
     }
@@ -27,8 +27,8 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
     {
         CComEntityModel::DESC componentDesc{};
         componentDesc.pGameObject = this;
-        componentDesc.viBufferId = { "MC_ENTITY_VIBuffer", "Player" };
-        componentDesc.geometryId = { "MC_ENTITY_GEOMETRY", "Player" };
+        componentDesc.viBufferId = { "MC_ENTITY_VIBuffer", "Steve" };
+        componentDesc.geometryId = { "MC_ENTITY_GEOMETRY", "Steve" };
         auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_EntityModel", &componentDesc);
         if (pProto == nullptr)
         {
@@ -40,22 +40,22 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
     return S_OK;
 }
 
-void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
+void CPlayerSteveEntity::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CPlayerEntity::Update(E::_float fTimeDelta)
+void CPlayerSteveEntity::Update(E::_float fTimeDelta)
 {
     m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
 }
 
-void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
+void CPlayerSteveEntity::LateUpdate(E::_float fTimeDelta)
 {
     CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
     GetTransform().Update();
 }
 
-HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CPlayerSteveEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
     {
         auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
@@ -80,24 +80,24 @@ HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
     return S_OK;
 }
 
-UPtr<CPlayerEntity> CPlayerEntity::Create()
+UPtr<CPlayerSteveEntity> CPlayerSteveEntity::Create()
 {
-    auto pInstance = ToUPtr(new CPlayerEntity{});
+    auto pInstance = ToUPtr(new CPlayerSteveEntity{});
     if (FAILED(pInstance->InitializePrototype()))
     {
-        MSG_BOX("Failed to Create: CPlayerEntity");
+        MSG_BOX("Failed to Create: CPlayerSteveEntity");
         return nullptr;
     }
 
     return pInstance;
 }
 
-UPtr<CPrototype> CPlayerEntity::Clone(void* pArg)
+UPtr<CPrototype> CPlayerSteveEntity::Clone(void* pArg)
 {
-    auto pInstance = ToUPtr(new CPlayerEntity{ *this });
+    auto pInstance = ToUPtr(new CPlayerSteveEntity{ *this });
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX("Failed to Cloned: CPlayerEntity");
+        MSG_BOX("Failed to Cloned: CPlayerSteveEntity");
         return nullptr;
     }
 

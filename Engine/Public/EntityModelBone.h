@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Engine_Defines.h"
 
 NS_BEGIN(Engine)
@@ -22,9 +22,9 @@ public:
     const _float4x4* GetOffsetMatrix() const { return &m_OffsetMatrix; }
     void SetOffsetMatrix(const _float4x4& o) { m_OffsetMatrix = o; }
 
-    void UpdateTransformationMatrix(_fmatrix localTransform)   // Å°ÇÁ·¹ÀÓ¿¡¼­ ¿Â Local TRS
+    void UpdateTransformationMatrix(_fmatrix localTransform)   // í‚¤í”„ë ˆì„ì—ì„œ ì˜¨ Local TRS
     {
-        // LocalPivot = Bind Pose¿¡¼­ÀÇ ºÎ¸ğ ±âÁØ Local Position
+        // LocalPivot = Bind Poseì—ì„œì˜ ë¶€ëª¨ ê¸°ì¤€ Local Position
         XMMATRIX OffsetFromParentPivot = XMMatrixTranslationFromVector(XMLoadFloat3(&m_vLocalPivot));
         XMStoreFloat4x4(&m_TransformationMatrix, localTransform * OffsetFromParentPivot);
     }
