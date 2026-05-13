@@ -19,7 +19,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
                  .name = "body",
                  .pivot = {0.0f, 8.0f, 0.0f},
                  .cubes = {
-                     {.origin = {-3.0f, 4.0f, -3.0f}, .size = {6.0f, 8.0f, 6.0f}, .rotation = {90.0f, 0.0f, 0.0f}, .uv {0.0f, 9.0f}, .texIndex = PackTexId(0, 0) },
+                     {.origin = {-3.0f, 4.0f, -3.0f}, .size = {6.0f, 8.0f, 6.0f}, .rotation = {90.0f, 0.0f, 0.0f}, .uv {0.0f, 9.0f}, .texIndex = PackTexId(7, 0) },
                  },
                  .locators = {
                      {"lead_hold", {0.0f, 28.0f, 0.0f}}
@@ -29,7 +29,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
                  .name = "head",
                  .pivot = {0.0f, 9.0f, -4.0f},
                  .cubes = {
-                     {.origin = {-2.0f, 9.0f, -6.0f}, .size = {4.0f, 6.0f, 3.0f}, .uv {0.0f, 0.0f}, .texIndex = PackTexId(0, 0)},
+                     {.origin = {-2.0f, 9.0f, -6.0f}, .size = {4.0f, 6.0f, 3.0f}, .uv {0.0f, 0.0f}, .texIndex = PackTexId(7, 0)},
                  },
                  .locators = {
                      {"lead", {0.0f, 9.0f, -4.0f}}
@@ -40,7 +40,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
                  .parent = "head",
                  .pivot = {0.0f, 9.0f, -4.0f},
                  .cubes = {
-                     {.origin = {-1.0f, 9.0f, -7.0f}, .size = {2.0f, 2.0f, 2.0f}, .uv {14.0f, 4.0f}, .texIndex = PackTexId(0, 0)},
+                     {.origin = {-1.0f, 9.0f, -7.0f}, .size = {2.0f, 2.0f, 2.0f}, .uv {14.0f, 4.0f}, .texIndex = PackTexId(7, 0)},
                  },
              },
              {
@@ -48,35 +48,35 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
                  .parent = "head",
                  .pivot = {0.0f, 9.0f, -4.0f},
                  .cubes = {
-                     {.origin = {-2.0f, 11.0f, -8.0f}, .size = {4.0f, 2.0f, 2.0f}, .uv {14.0f, 0.0f}, .texIndex = PackTexId(0, 0)},
+                     {.origin = {-2.0f, 11.0f, -8.0f}, .size = {4.0f, 2.0f, 2.0f}, .uv {14.0f, 0.0f}, .texIndex = PackTexId(7, 0)},
                  },
              },
              {
                  .name = "leg0",
                  .pivot = {-2.0f, 5.0f, 1.0f},
                  .cubes = {
-                     {.origin = {-3.0f, 0.0f, -2.0f}, .size = {3.0f, 5.0f, 3.0f}, .uv {26.0f, 0.0f}, .texIndex = PackTexId(0, 0)},
+                     {.origin = {-3.0f, 0.0f, -2.0f}, .size = {3.0f, 5.0f, 3.0f}, .uv {26.0f, 0.0f}, .texIndex = PackTexId(7, 0)},
                  },
              },
              {
                  .name = "leg1",
                  .pivot = {1.0f, 5.0f, 1.0f},
                  .cubes = {
-                     {.origin = {0.0f, 0.0f, -2.0f}, .size = {3.0f, 5.0f, 3.0f}, .uv {26.0f, 0.0f}, .texIndex = PackTexId(0, 0)},
+                     {.origin = {0.0f, 0.0f, -2.0f}, .size = {3.0f, 5.0f, 3.0f}, .uv {26.0f, 0.0f}, .texIndex = PackTexId(7, 0)},
                  },
              },
              {
                  .name = "wing0",
                  .pivot = {-3.0f, 11.0f, 0.0f},
                  .cubes = {
-                     {.origin = {-4.0f, 7.0f, -3.0f}, .size = {1.0f, 4.0f, 6.0f}, .uv {24.0f, 13.0f}, .texIndex = PackTexId(0, 0)},
+                     {.origin = {-4.0f, 7.0f, -3.0f}, .size = {1.0f, 4.0f, 6.0f}, .uv {24.0f, 13.0f}, .texIndex = PackTexId(7, 0)},
                  },
              },
              {
                  .name = "wing1",
                  .pivot = {3.0f, 11.0f, 0.0f},
                  .cubes = {
-                     {.origin = {3.0f, 7.0f, -3.0f}, .size = {1.0f, 4.0f, 6.0f}, .uv {24.0f, 13.0f}, .texIndex = PackTexId(0, 0)},
+                     {.origin = {3.0f, 7.0f, -3.0f}, .size = {1.0f, 4.0f, 6.0f}, .uv {24.0f, 13.0f}, .texIndex = PackTexId(7, 0)},
                  },
              },
         };

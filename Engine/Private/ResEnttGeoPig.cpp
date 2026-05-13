@@ -29,8 +29,8 @@ HRESULT CResEnttGeoPig::Load(const std::any& arg)
                 .parent = "root",
                 .pivot = {0, 12, -7},
                 .cubes = {
-                    {.origin = {-4, 8, -15}, .size = {8, 8, 8}, .uv {0,0}, .texIndex = PackTexId(1, 0) },
-                    {.origin = {-2, 9, -16}, .size = {4, 3, 1}, .uv {16, 16}, .texIndex = PackTexId(1, 0) }
+                    {.origin = {-4, 8, -15}, .size = {8, 8, 8}, .uv {0,0}, .texIndex = PackTexId(8, 0) },
+                    {.origin = {-2, 9, -16}, .size = {4, 3, 1}, .uv {16, 16}, .texIndex = PackTexId(8, 0) }
                 },
                 .locators = {
                     {"lead", {0, 12, -7}}
@@ -41,8 +41,8 @@ HRESULT CResEnttGeoPig::Load(const std::any& arg)
                 .parent = "root",
                 .pivot = {0,0,0},
                 .cubes = {
-                     {.origin = {-5, 2, -5}, .size = {10, 16, 8}, .rotation = {90, 0, 0},.uv {28, 32}, .texIndex = PackTexId(1, 1), .inflate = 0.5  },
-                     {.origin = {-5, 2, -5}, .size = {10, 16, 8}, .rotation = {90, 0, 0},.uv {28, 8}, .texIndex = PackTexId(1, 0)  },
+                     {.origin = {-5, 2, -5}, .size = {10, 16, 8}, .rotation = {90, 0, 0},.uv {28, 32}, .texIndex = PackTexId(8, 1), .inflate = 0.5  },
+                     {.origin = {-5, 2, -5}, .size = {10, 16, 8}, .rotation = {90, 0, 0},.uv {28, 8}, .texIndex = PackTexId(8, 0)  },
                 },
                 .locators = {
                     {"lead_hold", {0, 32, 1}}
@@ -53,7 +53,7 @@ HRESULT CResEnttGeoPig::Load(const std::any& arg)
                 .parent = "root",
                 .pivot = {-3, 6, 6},
                 .cubes = {
-                     {.origin = {-5, 0, 4}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = PackTexId(1, 0)  },
+                     {.origin = {-5, 0, 4}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = PackTexId(8, 0)  },
                 }
             },
 
@@ -62,7 +62,7 @@ HRESULT CResEnttGeoPig::Load(const std::any& arg)
                 .parent = "root",
                 .pivot = {3, 6, 6},
                 .cubes = {
-                     {.origin = {1, 0, 4}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = PackTexId(1, 0)  },
+                     {.origin = {1, 0, 4}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = PackTexId(8, 0)  },
                 },
                 .mirror = true,
             },
@@ -72,7 +72,7 @@ HRESULT CResEnttGeoPig::Load(const std::any& arg)
                 .parent = "root",
                 .pivot = {3, 6, -6},
                 .cubes = {
-                     {.origin = { 1, 0, -8}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = PackTexId(1, 0)  },
+                     {.origin = { 1, 0, -8}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = PackTexId(8, 0)  },
                 },
                 .mirror = true,
             },
@@ -82,7 +82,7 @@ HRESULT CResEnttGeoPig::Load(const std::any& arg)
                .parent = "root",
                .pivot = {-3, 6, -6},
                .cubes = {
-                    {.origin = { -5, 0, -8}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = PackTexId(1, 0)  },
+                    {.origin = { -5, 0, -8}, .size = {4, 6, 4}, .uv {0, 16}, .texIndex = PackTexId(8, 0)  },
                }
             }
         };

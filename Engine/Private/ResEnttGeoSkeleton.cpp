@@ -29,7 +29,7 @@ HRESULT CResEnttGeoSkeleton::Load(const std::any& arg)
                 .parent = "waist",
                 .pivot = {0.0f, 24.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-4.0f, 12.0f, -2.0f}, .size = {8, 12, 4}, .uv = {16, 16}, .texIndex = PackTexId(0, 1)}
+                    {.origin = {-4.0f, 12.0f, -2.0f}, .size = {8, 12, 4}, .uv = {16, 16}, .texIndex = PackTexId(7, 1)}
                 }
             },
             {
@@ -37,7 +37,7 @@ HRESULT CResEnttGeoSkeleton::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {0.0f, 24.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-4.0f, 24.0f, -4.0f}, .size = {8, 8, 8}, .uv = {0, 0}, .texIndex = PackTexId(0, 1)}
+                    {.origin = {-4.0f, 24.0f, -4.0f}, .size = {8, 8, 8}, .uv = {0, 0}, .texIndex = PackTexId(7, 1)}
                 }
             },
              {
@@ -45,7 +45,7 @@ HRESULT CResEnttGeoSkeleton::Load(const std::any& arg)
                 .parent = "head",
                 .pivot = {0.0, 24.0, 0.0},
                 .cubes = {
-                    {.origin = {-4.0, 24.0, -4.0}, .size = {8, 8, 8}, .uv = {32, 0}, .texIndex = PackTexId(0, 1), .inflate = 0.5}
+                    {.origin = {-4.0, 24.0, -4.0}, .size = {8, 8, 8}, .uv = {32, 0}, .texIndex = PackTexId(7, 1), .inflate = 0.5}
                 }
             },
             {
@@ -53,7 +53,7 @@ HRESULT CResEnttGeoSkeleton::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {-5.0f, 22.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-6.0f, 12.0f, -1.0f}, .size = {2, 12, 2}, .uv = {40, 16}, .texIndex = PackTexId(0, 1)}
+                    {.origin = {-6.0f, 12.0f, -1.0f}, .size = {2, 12, 2}, .uv = {40, 16}, .texIndex = PackTexId(7, 1)}
                 }
             },
             {
@@ -66,7 +66,7 @@ HRESULT CResEnttGeoSkeleton::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {5.0f, 22.0f, 0.0f},
                 .cubes = {
-                    {.origin = {4.0f, 12.0f, -1.0f}, .size = {2, 12, 2}, .uv = {40, 16}, .texIndex = PackTexId(0, 1)}
+                    {.origin = {4.0f, 12.0f, -1.0f}, .size = {2, 12, 2}, .uv = {40, 16}, .texIndex = PackTexId(7, 1)}
                 }
                 , .mirror = true
             },
@@ -80,7 +80,7 @@ HRESULT CResEnttGeoSkeleton::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {-2.0f, 12.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-3.0f, 0.0f, -1.0f}, .size = {2, 12, 2}, .uv = {0, 16}, .texIndex = PackTexId(0, 1)}
+                    {.origin = {-3.0f, 0.0f, -1.0f}, .size = {2, 12, 2}, .uv = {0, 16}, .texIndex = PackTexId(7, 1)}
                 }
             },
             {
@@ -88,7 +88,7 @@ HRESULT CResEnttGeoSkeleton::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {2.0f, 12.0f, 0.0f},
                 .cubes = {
-                    {.origin = {1.0f, 0.0f, -1.0f}, .size = {2, 12, 2}, .uv = {0, 16}, .texIndex = PackTexId(0, 1), }
+                    {.origin = {1.0f, 0.0f, -1.0f}, .size = {2, 12, 2}, .uv = {0, 16}, .texIndex = PackTexId(7, 1), }
                 },
                 .mirror = true
             }

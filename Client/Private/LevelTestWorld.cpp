@@ -10,6 +10,7 @@
 #include "PlayerSteveEntity.h"
 #include "SkeletonEntity.h"
 #include "DropItem.h"
+#include "ExperienceOrbItem.h"
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -75,6 +76,11 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
+
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_ExperienceOrb", E::CExperienceOrbItem::Create())))
+		{
+			int x = 0;
+		}
 		
 	}
 
@@ -128,6 +134,15 @@ HRESULT CLevelTestWorld::Initialize()
 			E::CDropItem::DESC Desc{};
 			Desc.sObjectTag = "DropItem";
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::DROPITEM), &Desc))
+			{
+			}
+		}
+
+		{
+			E::CExperienceOrbItem::DESC Desc{};
+			Desc.sObjectTag = "ExperienceOrb";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
 				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::DROPITEM), &Desc))
 			{
 			}

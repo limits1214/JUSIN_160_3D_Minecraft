@@ -1,20 +1,20 @@
-#include "ResItemVIBuffer.h"
+#include "ResExtrudedItemVIBuffer.h"
 
 #include "GameInstance.h"
 #include "ResTexture2D.h"
 
 NS_USING(Engine)
 
-CResItemVIBuffer::CResItemVIBuffer(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
+CResExtrudedItemVIBuffer::CResExtrudedItemVIBuffer(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
     : CResVIBuffer{ sPath, pDevice, pContext }
 {
 }
 
-CResItemVIBuffer::~CResItemVIBuffer()
+CResExtrudedItemVIBuffer::~CResExtrudedItemVIBuffer()
 {
 }
 
-HRESULT CResItemVIBuffer::Load(const std::any& arg)
+HRESULT CResExtrudedItemVIBuffer::Load(const std::any& arg)
 {
     auto argDesc = std::any_cast<DESC>(&arg);
     if (!argDesc)
@@ -243,12 +243,12 @@ HRESULT CResItemVIBuffer::Load(const std::any& arg)
     return S_OK;
 }
 
-HRESULT CResItemVIBuffer::Unload(const std::any& arg)
+HRESULT CResExtrudedItemVIBuffer::Unload(const std::any& arg)
 {
     return S_OK;
 }
 
-SPtr<CResItemVIBuffer> CResItemVIBuffer::Create()
+SPtr<CResExtrudedItemVIBuffer> CResExtrudedItemVIBuffer::Create()
 {
-    return ToSPtr(new CResItemVIBuffer{ "", CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
+    return ToSPtr(new CResExtrudedItemVIBuffer{ "", CGameInstance::Get().GetGraphicDevice() , CGameInstance::Get().GetGraphicDeviceContext() });
 }

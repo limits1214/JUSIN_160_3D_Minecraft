@@ -361,6 +361,15 @@
     <Filter Include="GameObject\Item\ExperienceOrb">
       <UniqueIdentifier>{ece6a9f2-bb91-4e58-ab01-e9b9d8d5539d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded">
+      <UniqueIdentifier>{4d2708e9-1b02-4d45-bc68-dbebdfcc0fee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer\Cube">
+      <UniqueIdentifier>{74b4283f-2a4a-4a93-b9e1-fca2b6a6f477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer\Quad">
+      <UniqueIdentifier>{bffbc420-6a7d-4da9-bc66-259fd6c50744}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -711,11 +720,17 @@
     <ClInclude Include="..\public\ItemWoodPickaxe.h">
       <Filter>Game\Item\Pickaxe\Wood</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\ResItemVIBuffer.h">
-      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\ExperienceOrbItem.h">
       <Filter>GameObject\Item\ExperienceOrb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResExtrudedItemVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResCubeItemVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResQuadItemVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Quad</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1055,11 +1070,17 @@
     <ClCompile Include="..\private\ItemWoodPickaxe.cpp">
       <Filter>Game\Item\Pickaxe\Wood</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\ResItemVIBuffer.cpp">
-      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer</Filter>
-    </ClCompile>
     <ClCompile Include="..\private\ExperienceOrbItem.cpp">
       <Filter>GameObject\Item\ExperienceOrb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResExtrudedItemVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResCubeItemVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResQuadItemVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Quad</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -289,6 +289,22 @@ HRESULT CGameInstance::InitializeResources()
 			return E_FAIL;
 		}
 	}
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerQuadItemAnim", E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_QUADITEM_ANIM) })))
+		{
+			return E_FAIL;
+		}
+
+		D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+		if (SUCCEEDED(GetGraphicDeviceContext()->Map(res->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+		{
+			E::CB_PER_QUADITEM_ANIM cbPerQuadItemAnim{};
+			memcpy(mappedSubResource.pData, &cbPerQuadItemAnim, sizeof(cbPerQuadItemAnim));
+			GetGraphicDeviceContext()->Unmap(res->GetCBuffer().Get(), 0);
+		}
+		GetGraphicDeviceContext()->VSSetConstantBuffers(5, 1, res->GetCBuffer().GetAddressOf());
+	}
 
 	
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_LINEAR_WRAP, CResSamplerState::Create()))
@@ -457,10 +473,11 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				//if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResItemVIBuffer::Create()))
-				//{
-				//	res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 });
-				//}
+				
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "ExperienceOrb", CResQuadItemVIBuffer::Create()))
+				{
+					res->Load(CResQuadItemVIBuffer::DESC{ .textureId = {"MC_TEX_64_64", "TEXTURES"}, .resourceIdx = 4 });
+				}
 			}
 		}
 
@@ -579,9 +596,9 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "WoodPickaxe", CResItemVIBuffer::Create()))
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "WoodPickaxe", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 0 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 0 });
 				}
 			}
 		}
@@ -591,9 +608,9 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "String", CResItemVIBuffer::Create()))
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "String", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 1 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 1 });
 				}
 			}
 		}
@@ -603,9 +620,9 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "PorkchopRaw", CResItemVIBuffer::Create()))
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "PorkchopRaw", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 2 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 2 });
 				}
 			}
 		}
@@ -615,9 +632,9 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "ChickenRaw", CResItemVIBuffer::Create()))
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "ChickenRaw", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 3 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 3 });
 				}
 			}
 		}
@@ -627,9 +644,9 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "BeefRaw", CResItemVIBuffer::Create()))
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "BeefRaw", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 4 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 4 });
 				}
 			}
 		}
@@ -639,9 +656,9 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResItemVIBuffer::Create()))
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 });
 				}
 			}
 		}
