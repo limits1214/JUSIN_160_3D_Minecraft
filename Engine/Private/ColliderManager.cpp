@@ -60,7 +60,7 @@ HRESULT CColliderManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX
 
     m_Vertices.clear();
 
-    if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+    if (auto cam = E::CGameInstance::Get().GetActiveGameCamera())
     {
         CB_COLL_PER_FRAME cbPerFrame{};
         cbPerFrame.viewProjMatrix = cam->GetView() * cam->GetProj();

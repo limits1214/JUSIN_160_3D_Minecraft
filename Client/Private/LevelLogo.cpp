@@ -50,10 +50,16 @@ HRESULT CLevelLogo::Initialize()
 		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
 			E::ETOUI(LEVEL_LOADING_LAYERS::CAMERA), &Desc))
 		{
-			if (FAILED(E::CGameInstance::Get().SetCameraObject("GAME", flyCam.value())))
+			//if (FAILED(E::CGameInstance::Get().SetCameraObject("GAME", flyCam.value())))
+			//{
+			//	int x = 0;
+			//}
+
+			if (FAILED(E::CGameInstance::Get().RegistGameCamera("FLY", flyCam.value())))
 			{
 				int x = 0;
 			}
+			E::CGameInstance::Get().SetActiveGameCamera("FLY");
 		}
 	}
 
@@ -70,10 +76,16 @@ HRESULT CLevelLogo::Initialize()
 		if (auto uiCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_UICamera",
 			E::ETOUI(LEVEL_LOADING_LAYERS::CAMERA), &Desc))
 		{
-			if (FAILED(E::CGameInstance::Get().SetCameraObject("UI", uiCam.value())))
+			//if (FAILED(E::CGameInstance::Get().SetCameraObject("UI", uiCam.value())))
+			//{
+			//	int x = 0;
+			//}
+
+			if (FAILED(E::CGameInstance::Get().RegistUICamera("UI", uiCam.value())))
 			{
 				int x = 0;
 			}
+			E::CGameInstance::Get().SetActiveUICamera("UI");
 
 			// dynamic_cast vs static_cast benchmark 
 			// dynamic_cast: 472ms, static_cast: 41ms

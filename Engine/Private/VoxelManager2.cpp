@@ -83,7 +83,7 @@ void CVoxelManager2::UpdateGUI()
 
     if (ImGui::Button("SetChunkLoadCenter Cam"))
     {
-        if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera())
         {
             float fx = cam->GetTransform().GetPosition().x;
             float fy = cam->GetTransform().GetPosition().y;
@@ -102,7 +102,7 @@ void CVoxelManager2::UpdateGUI()
 
     if (ImGui::Button("Release Cam"))
     {
-        if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera())
         {
             float fx = cam->GetTransform().GetPosition().x;
             float fy = cam->GetTransform().GetPosition().y;
@@ -122,7 +122,7 @@ void CVoxelManager2::UpdateGUI()
 
     if (ImGui::Button("Picking"))
     {
-        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+        if (auto cam = E::CGameInstance::Get().GetActiveGameCamera())
         {
             RECT rect;
             GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
@@ -186,7 +186,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
 
 
             {
-                if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+                if (auto cam = CGameInstance::Get().GetActiveGameCamera())
                 {
                     float fx = cam->GetTransform().GetPosition().x;
                     float fy = cam->GetTransform().GetPosition().y;
@@ -205,7 +205,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
             }
 
             {
-                if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+                if (auto cam = CGameInstance::Get().GetActiveGameCamera())
                 {
                     float fx = cam->GetTransform().GetPosition().x;
                     float fy = cam->GetTransform().GetPosition().y;
@@ -228,7 +228,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
 
     if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
     {
-        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+        if (auto cam = E::CGameInstance::Get().GetActiveGameCamera())
         {
             RECT rect;
             GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
@@ -307,7 +307,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
 
     if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
     {
-        if (auto cam = E::CGameInstance::Get().GetCameraObject("GAME"))
+        if (auto cam = E::CGameInstance::Get().GetActiveGameCamera())
         {
             E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
             E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);

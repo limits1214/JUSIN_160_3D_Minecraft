@@ -55,7 +55,7 @@ HRESULT CRenderer::Draw()
 
 
     {
-        auto pGameCam = CGameInstance::Get().GetCameraObject("GAME");
+        auto pGameCam = CGameInstance::Get().GetActiveGameCamera();
         if (!pGameCam)
         {
             return S_OK;
@@ -116,7 +116,7 @@ HRESULT CRenderer::Draw()
 
 
     {
-        auto pUICame = CGameInstance::Get().GetCameraObject("UI");
+        auto pUICame = CGameInstance::Get().GetActiveUICamera();
         if (!pUICame)
         {
             return S_OK;

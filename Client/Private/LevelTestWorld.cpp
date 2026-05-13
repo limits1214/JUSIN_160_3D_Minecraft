@@ -40,10 +40,11 @@ HRESULT CLevelTestWorld::Initialize()
 		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
 			E::ETOUI(LEVEL_TEST_WORLD_LAYERS::CAMERA), &Desc))
 		{
-			if (FAILED(E::CGameInstance::Get().SetCameraObject("GAME", flyCam.value())))
+			if (FAILED(E::CGameInstance::Get().RegistGameCamera("FLY", flyCam.value())))
 			{
 				int x = 0;
 			}
+			E::CGameInstance::Get().SetActiveGameCamera("FLY");
 		}
 	}
 

@@ -35,10 +35,15 @@ HRESULT CLevelTestSimpleGreedy::Initialize()
 		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
 			E::ETOUI(LEVEL_TEST_SIMPLE_GREEDY_LAYERS::CAMERA), &Desc))
 		{
-			if (FAILED(E::CGameInstance::Get().SetCameraObject("GAME", flyCam.value())))
+			//if (FAILED(E::CGameInstance::Get().SetCameraObject("GAME", flyCam.value())))
+			//{
+			//	int x = 0;
+			//}
+			if (FAILED(E::CGameInstance::Get().RegistGameCamera("FLY", flyCam.value())))
 			{
 				int x = 0;
 			}
+			E::CGameInstance::Get().SetActiveGameCamera("FLY");
 		}
 	}
 

@@ -194,8 +194,19 @@ public:
 
 #pragma region CAMERA_MANAGER
 public:
-	const CCameraObject* GetCameraObject(const StringID& GroupID) const;
-	HRESULT SetCameraObject(const StringID& GroupID, const CHandle& handle);
+	//const CCameraObject* GetCameraObject(const StringID& GroupID) const;
+	//HRESULT SetCameraObject(const StringID& GroupID, const CHandle& handle);
+
+	const CCameraObject* GetActiveGameCamera() const;
+	HRESULT SetActiveGameCamera(const StringID& CameraID);
+	const CCameraObject* GetActiveUICamera() const;
+	HRESULT SetActiveUICamera(const StringID& CameraID);
+
+	const CCameraObject* GetGameCamera(const StringID& CameraID) const;
+	const CCameraObject* GetUICamera(const StringID& CameraID) const;
+
+	HRESULT RegistGameCamera(const StringID& CameraID, const CHandle& handle);
+	HRESULT RegistUICamera(const StringID& CameraID, const CHandle& handle);
 #pragma endregion
 
 

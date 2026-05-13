@@ -284,6 +284,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\MonsterEntityObject.h" />
     <ClInclude Include="..\Public\MyTreeNode.h" />
     <ClInclude Include="..\public\PigEntity.h" />
+    <ClInclude Include="..\public\PlayerCamera.h" />
     <ClInclude Include="..\public\PlayerEntityObject.h" />
     <ClInclude Include="..\public\PlayerSteveEntity.h" />
     <ClInclude Include="..\public\Prototype.h" />
@@ -491,6 +492,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\LightManager.cpp" />
     <ClCompile Include="..\private\MonsterEntityObject.cpp" />
     <ClCompile Include="..\private\PigEntity.cpp" />
+    <ClCompile Include="..\private\PlayerCamera.cpp" />
     <ClCompile Include="..\private\PlayerEntityObject.cpp" />
     <ClCompile Include="..\private\PlayerSteveEntity.cpp" />
     <ClCompile Include="..\private\Prototype.cpp" />

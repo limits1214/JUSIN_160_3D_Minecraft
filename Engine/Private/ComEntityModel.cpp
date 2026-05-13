@@ -167,7 +167,7 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
         
     }
 
-    if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+    if (auto cam = CGameInstance::Get().GetActiveGameCamera())
     {
         CEntityModelBone* headBone{};
         for (auto& bone : m_Bones)
