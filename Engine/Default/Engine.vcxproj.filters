@@ -370,6 +370,9 @@
     <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer\Quad">
       <UniqueIdentifier>{bffbc420-6a7d-4da9-bc66-259fd6c50744}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Camera\PlayerCamera">
+      <UniqueIdentifier>{b1727cca-31f6-417a-9a28-39c714513478}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -732,6 +735,9 @@
     <ClInclude Include="..\public\ResQuadItemVIBuffer.h">
       <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Quad</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\PlayerCamera.h">
+      <Filter>GameObject\Camera\PlayerCamera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1081,6 +1087,9 @@
     </ClCompile>
     <ClCompile Include="..\private\ResQuadItemVIBuffer.cpp">
       <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Quad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PlayerCamera.cpp">
+      <Filter>GameObject\Camera\PlayerCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

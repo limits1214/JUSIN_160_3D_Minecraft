@@ -1020,13 +1020,53 @@ std::optional<CHandle> CGameInstance::GetFreeHandle() const
 
 
 #pragma region CAMERA_MANAGER
-const CCameraObject* CGameInstance::GetCameraObject(const StringID& GroupID) const
+//const CCameraObject* CGameInstance::GetCameraObject(const StringID& GroupID) const
+//{
+//	return m_pCameraManager->GetCameraObject(GroupID);
+//}
+//HRESULT CGameInstance::SetCameraObject(const StringID& GroupID, const CHandle& handle)
+//{
+//	return m_pCameraManager->SetCameraObject(GroupID, handle);
+//}
+
+const CCameraObject* CGameInstance::GetActiveGameCamera() const
 {
-	return m_pCameraManager->GetCameraObject(GroupID);
+	return m_pCameraManager->GetActiveGameCamera();
 }
-HRESULT CGameInstance::SetCameraObject(const StringID& GroupID, const CHandle& handle)
+
+HRESULT CGameInstance::SetActiveGameCamera(const StringID& CameraID)
 {
-	return m_pCameraManager->SetCameraObject(GroupID, handle);
+	return m_pCameraManager->SetActiveGameCamera(CameraID);
+}
+
+const CCameraObject* CGameInstance::GetActiveUICamera() const
+{
+	return m_pCameraManager->GetActiveUICamera();
+}
+
+HRESULT CGameInstance::SetActiveUICamera(const StringID& CameraID)
+{
+	return m_pCameraManager->SetActiveUICamera(CameraID);
+}
+
+const CCameraObject* CGameInstance::GetGameCamera(const StringID& CameraID) const
+{
+	return m_pCameraManager->GetGameCamera(CameraID);
+}
+
+const CCameraObject* CGameInstance::GetUICamera(const StringID& CameraID) const
+{
+	return m_pCameraManager->GetUICamera(CameraID);
+}
+
+HRESULT CGameInstance::RegistGameCamera(const StringID& CameraID, const CHandle& handle)
+{
+	return m_pCameraManager->RegistGameCamera(CameraID, handle);
+}
+
+HRESULT CGameInstance::RegistUICamera(const StringID& CameraID, const CHandle& handle)
+{
+	return m_pCameraManager->RegistUICamera(CameraID, handle);
 }
 
 #pragma endregion

@@ -68,13 +68,8 @@ HRESULT CBackGround::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& 
 	pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
 
 
-	if (auto pUICam = E::CGameInstance::Get().GetCameraObject("UI"))
 	{
-		int x = 0;
-	}
-
-	{
-		auto pUICam = E::CGameInstance::Get().GetCameraObject("UI");
+		auto pUICam = E::CGameInstance::Get().GetActiveUICamera();
 		{
 			auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
 			D3D11_MAPPED_SUBRESOURCE mappedSubResource;

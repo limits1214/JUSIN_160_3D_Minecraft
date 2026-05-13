@@ -78,7 +78,7 @@ void CVoxelManager::UpdateGUI()
 
     if (ImGui::Button("SetChunkLoadCenter Cam"))
     {
-        if (auto cam = CGameInstance::Get().GetCameraObject("GAME"))
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera())
         {
             float fx = cam->GetTransform().GetPosition().x;
             float fy = cam->GetTransform().GetPosition().y;

@@ -113,7 +113,7 @@ HRESULT CExperienceOrbItem::Render(ID3D11DeviceContext* pContext, const E::RENDE
 			_float3 scale =
 				GetTransform().GetScale();
 
-			auto pGameCam = CGameInstance::Get().GetCameraObject("GAME");
+			auto pGameCam = CGameInstance::Get().GetActiveGameCamera();
 
 			// 카메라 월드축 추출
 			XMMATRIX matInvView = pGameCam->GetTransform().GetLoadedWorldMatrix();
