@@ -14,6 +14,7 @@ public:
 	{
 		std::pair<StringID, StringID> textureId;
 		uint32_t resourceIdx{};
+		uint32_t texIndex{};
 	} DESC;
 
 private:
