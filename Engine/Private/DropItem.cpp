@@ -38,9 +38,20 @@ void CDropItem::LateUpdate(E::_float fTimeDelta)
 
 HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
+	{
+		auto pResCBuf = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerQuadItemAnim");
+		D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+		if (SUCCEEDED(pContext->Map(pResCBuf->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+		{
+			E::CB_PER_QUADITEM_ANIM cbPerQuadItemAnim{};
+			memcpy(mappedSubResource.pData, &cbPerQuadItemAnim, sizeof(cbPerQuadItemAnim));
+			pContext->Unmap(pResCBuf->GetCBuffer().Get(), 0);
+		}
+		pContext->VSSetConstantBuffers(5, 1, pResCBuf->GetCBuffer().GetAddressOf());
+	}
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Item");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Item");
-	const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResItemVIBuffer>("MC_ITEM_VIBuffer", "MuttonRaw");
+	const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResExtrudedItemVIBuffer>("MC_ITEM_VIBuffer", "MuttonRaw");
 
 	pContext->IASetInputLayout(vs->GetInputLayout().Get());
 	pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);

@@ -28,6 +28,9 @@ public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
+	int m_iFrameIndex = 0;
+	int m_iFrameCol{};
+	int m_iFrameRow{};
 public:
 	static UPtr<CExperienceOrbItem> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

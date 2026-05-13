@@ -155,6 +155,12 @@ namespace Engine
 		_float4x4 matBone[64];
 	} CB_PER_BONE;
 
+	typedef struct tagConstantBufferPerQuadItemAnim
+	{
+		_float2 uvOffset{ 0,0 };
+		_float2 uvScale{1,1};
+	} CB_PER_QUADITEM_ANIM;
+
 	typedef struct tagVoxQuad
 	{
 		_float3 v1;
