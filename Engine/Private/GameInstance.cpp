@@ -405,7 +405,24 @@ HRESULT CGameInstance::InitializeResources()
 
 HRESULT CGameInstance::InitializeMCResource()
 {
-	// initialize entity shaders
+	// initialize block shader(voxel)
+	{
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block", "./Resources/Shader/Block/Block.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block", "./Resources/Shader/Block/Block.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+	}
+		// initialize entity shaders
 	{
 		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Entity", "./Resources/Shader/Entity/Entity.hlsl"))
 		{
@@ -426,6 +443,72 @@ HRESULT CGameInstance::InitializeMCResource()
 		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Item", "./Resources/Shader/Item/Item.hlsl"))
 		{
 			res->Load();
+		}
+	}
+
+
+
+	// initialize voxel texture
+	{
+		{
+			{
+				//0
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/dirt.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+			}
+
+			{
+				//1
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/stone.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+			}
+
+			{
+				//2
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/sand.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+			}
+		}
+
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURE_ARRAY", pTextureArray);
+
+
+			GetGraphicDeviceContext()->PSSetShaderResources(9, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+	}
+
+	// initialize cube item
+	{
+		if (auto res = AddResource("MC_ITEM_VIBuffer", "CubeItemDirt", CResCubeItemVIBuffer::Create()))
+		{
+			uint32_t tmp[ETOUI(FACE_DIR::END)]{PackTexId(9, 0),PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
+
+			CResCubeItemVIBuffer::DESC desc{};
+			desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
+			desc.resourceIdx = 0;
+			memcpy(desc.texIndices, tmp, sizeof(tmp));
+
+			res->Load(desc);
 		}
 	}
 
@@ -473,10 +556,9 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				
 				if (auto res = AddResource("MC_ITEM_VIBuffer", "ExperienceOrb", CResQuadItemVIBuffer::Create()))
 				{
-					res->Load(CResQuadItemVIBuffer::DESC{ .textureId = {"MC_TEX_64_64", "TEXTURES"}, .resourceIdx = 4 });
+					res->Load(CResQuadItemVIBuffer::DESC{ .textureId = {"MC_TEX_64_64", "TEXTURES"}, .resourceIdx = 4, .texIndex = PackTexId(8, 4) });
 				}
 			}
 		}
@@ -598,7 +680,7 @@ HRESULT CGameInstance::InitializeMCResource()
 			{
 				if (auto res = AddResource("MC_ITEM_VIBuffer", "WoodPickaxe", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 0 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 0, .texIndex = PackTexId(6, 0)});
 				}
 			}
 		}
@@ -610,7 +692,7 @@ HRESULT CGameInstance::InitializeMCResource()
 			{
 				if (auto res = AddResource("MC_ITEM_VIBuffer", "String", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 1 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 1, .texIndex = PackTexId(6, 1) });
 				}
 			}
 		}
@@ -622,7 +704,7 @@ HRESULT CGameInstance::InitializeMCResource()
 			{
 				if (auto res = AddResource("MC_ITEM_VIBuffer", "PorkchopRaw", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 2 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 2, .texIndex = PackTexId(6, 2) });
 				}
 			}
 		}
@@ -634,7 +716,7 @@ HRESULT CGameInstance::InitializeMCResource()
 			{
 				if (auto res = AddResource("MC_ITEM_VIBuffer", "ChickenRaw", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 3 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 3, .texIndex = PackTexId(6, 3) });
 				}
 			}
 		}
@@ -646,7 +728,7 @@ HRESULT CGameInstance::InitializeMCResource()
 			{
 				if (auto res = AddResource("MC_ITEM_VIBuffer", "BeefRaw", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 4 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 4, .texIndex = PackTexId(6, 4) });
 				}
 			}
 		}
@@ -658,7 +740,7 @@ HRESULT CGameInstance::InitializeMCResource()
 			{
 				if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResExtrudedItemVIBuffer::Create()))
 				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 });
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 , .texIndex = PackTexId(6, 5) });
 				}
 			}
 		}

@@ -8,7 +8,7 @@ class ENGINE_DLL CDropItem : public CItemObject
 public:
 	typedef struct tagDesc : CItemObject::DESC
 	{
-
+		std::pair<StringID, StringID> viBufferId{};
 	}DESC;
 
 public:
@@ -28,6 +28,7 @@ public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
+	std::pair<StringID, StringID> m_viBufferID{};
 public:
 	static UPtr<CDropItem> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

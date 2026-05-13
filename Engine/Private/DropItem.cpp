@@ -14,6 +14,9 @@ CDropItem::~CDropItem()
 
 HRESULT CDropItem::Initialize(void* pArg)
 {
+	auto pDesc = static_cast<DESC*>(pArg);
+
+	m_viBufferID = pDesc->viBufferId;
     if (FAILED(CItemObject::Initialize(pArg)))
     {
         return E_FAIL;
@@ -51,7 +54,8 @@ HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 	}
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Item");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Item");
-	const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResExtrudedItemVIBuffer>("MC_ITEM_VIBuffer", "MuttonRaw");
+	//const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>("MC_ITEM_VIBuffer", "CubeItemDirt");
+	const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>(m_viBufferID.first, m_viBufferID.second);
 
 	pContext->IASetInputLayout(vs->GetInputLayout().Get());
 	pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);

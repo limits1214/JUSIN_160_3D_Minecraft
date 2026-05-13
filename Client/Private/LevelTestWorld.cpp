@@ -132,7 +132,18 @@ HRESULT CLevelTestWorld::Initialize()
 
 		{
 			E::CDropItem::DESC Desc{};
-			Desc.sObjectTag = "DropItem";
+			Desc.sObjectTag = "DropItem_CubeItemDirt";
+			Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::DROPITEM), &Desc))
+			{
+			}
+		}
+
+		{
+			E::CDropItem::DESC Desc{};
+			Desc.sObjectTag = "DropItem_WoodPickaxe";
+			Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
 				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::DROPITEM), &Desc))
 			{

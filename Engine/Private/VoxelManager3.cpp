@@ -185,7 +185,6 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
         pContext->RSSetState(rasterizer->GetRasterizerState().Get());
     }
 
-    pContext->PSSetShaderResources(9, 1, m_pResBlocksTexutreArray->GetSRV().GetAddressOf());
     pContext->PSSetSamplers(9, 1, m_pResSamplerPointWrap->GetSamplerState().GetAddressOf());
 
     for (const auto& [key, val] : m_mapChunks)
@@ -1171,65 +1170,11 @@ HRESULT CVoxelManager3::Initialize()
 
     //
     {
-        if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block", "./Resources/Shader/Block/Block.hlsl"))
-        {
-            if (FAILED(res->Load()))
-            {
-                return E_FAIL;
-            }
-            m_pResVertexShader = res;
-        }
-        if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block", "./Resources/Shader/Block/Block.hlsl"))
-        {
-            if (FAILED(res->Load()))
-            {
-                return E_FAIL;
-            }
-            m_pResPixelShader = res;
-        }
+        m_pResVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block");
+        m_pResPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block");
     }
     {
-        {
-            //0
-            auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/dirt.png");
-            if (FAILED(pTexture->Load()))
-            {
-                return E_FAIL;
-            }
-            CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
-        }
-
-        {
-            //1
-            auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/stone.png");
-            if (FAILED(pTexture->Load()))
-            {
-                return E_FAIL;
-            }
-            CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
-        }
-
-        {
-            //2
-            auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/sand.png");
-            if (FAILED(pTexture->Load()))
-            {
-                return E_FAIL;
-            }
-            CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
-        }
-    }
-
-    {
-        CResTexture2DArray::DESC desc{};
-        desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
-        auto pTextureArray = CResTexture2DArray::Create();
-        if (FAILED(pTextureArray->Load(desc)))
-        {
-            return E_FAIL;
-        }
-        m_pResBlocksTexutreArray = pTextureArray;
-        CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURE_ARRAY", pTextureArray);
+        m_pResBlocksTexutreArray = CGameInstance::Get().GetResourceFirst<E::CResTexture2DArray>("VOXEL_MANAGER_TEX", "TEXTURE_ARRAY");;
     }
     {
         m_pResSamplerPointWrap = CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
