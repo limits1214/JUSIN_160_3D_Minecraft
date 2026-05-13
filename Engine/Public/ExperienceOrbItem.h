@@ -3,7 +3,7 @@
 
 NS_BEGIN(Engine)
 class CComEntityModel;
-class ENGINE_DLL CDropItem : public CItemObject
+class ENGINE_DLL CExperienceOrbItem : public CItemObject
 {
 public:
 	typedef struct tagDesc : CItemObject::DESC
@@ -12,11 +12,11 @@ public:
 	}DESC;
 
 public:
-	DECLARE_DERIVED_TYPE(CDropItem, CItemObject)
+	DECLARE_DERIVED_TYPE(CExperienceOrbItem, CItemObject)
 
 private:
-	explicit CDropItem();
-	~CDropItem() override;
+	explicit CExperienceOrbItem();
+	~CExperienceOrbItem() override;
 
 public:
 	HRESULT Initialize(void* pArg) override;
@@ -29,7 +29,7 @@ public:
 
 private:
 public:
-	static UPtr<CDropItem> Create();
+	static UPtr<CExperienceOrbItem> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
 };
 

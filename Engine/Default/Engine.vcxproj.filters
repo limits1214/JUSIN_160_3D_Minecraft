@@ -352,6 +352,15 @@
     <Filter Include="Game\Item\Pickaxe\Wood">
       <UniqueIdentifier>{385c43bc-4ff1-4964-ac9c-86dd70870534}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer">
+      <UniqueIdentifier>{be8b1ed9-9d5a-4e89-979d-3337b2bbd10f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Item">
+      <UniqueIdentifier>{f4c1913b-cc14-4a0e-9938-203d6882240b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\ExperienceOrb">
+      <UniqueIdentifier>{ece6a9f2-bb91-4e58-ab01-e9b9d8d5539d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -702,6 +711,12 @@
     <ClInclude Include="..\public\ItemWoodPickaxe.h">
       <Filter>Game\Item\Pickaxe\Wood</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResItemVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ExperienceOrbItem.h">
+      <Filter>GameObject\Item\ExperienceOrb</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1040,6 +1055,12 @@
     <ClCompile Include="..\private\ItemWoodPickaxe.cpp">
       <Filter>Game\Item\Pickaxe\Wood</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\ResItemVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ExperienceOrbItem.cpp">
+      <Filter>GameObject\Item\ExperienceOrb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1053,6 +1074,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Entity.hlsl">
       <Filter>100.Shaders\Entity</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Item.hlsl">
+      <Filter>100.Shaders\Item</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

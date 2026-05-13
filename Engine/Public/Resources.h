@@ -8,6 +8,7 @@
 #include "ResQuadFullscreenTexBuffer.h"
 #include "ResQuadTexBuffer.h"
 #include "ResEnttVIBuffer.h"
+#include "ResItemVIBuffer.h"
 
 #include "ResFmodSound.h"
 

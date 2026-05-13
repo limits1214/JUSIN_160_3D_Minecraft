@@ -1,42 +1,42 @@
-#include "DropItem.h"
+#include "ExperienceOrbItem.h"
 #include "GameInstance.h"
 #include "Resources.h"
 
 NS_USING(Engine)
 
-CDropItem::CDropItem()
+CExperienceOrbItem::CExperienceOrbItem()
 {
 }
 
-CDropItem::~CDropItem()
+CExperienceOrbItem::~CExperienceOrbItem()
 {
 }
 
-HRESULT CDropItem::Initialize(void* pArg)
+HRESULT CExperienceOrbItem::Initialize(void* pArg)
 {
-    if (FAILED(CItemObject::Initialize(pArg)))
-    {
-        return E_FAIL;
-    }
+	if (FAILED(CItemObject::Initialize(pArg)))
+	{
+		return E_FAIL;
+	}
 
 	return S_OK;
 }
 
-void CDropItem::PriorityUpdate(E::_float fTimeDelta)
+void CExperienceOrbItem::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CDropItem::Update(E::_float fTimeDelta)
+void CExperienceOrbItem::Update(E::_float fTimeDelta)
 {
 }
 
-void CDropItem::LateUpdate(E::_float fTimeDelta)
+void CExperienceOrbItem::LateUpdate(E::_float fTimeDelta)
 {
-    E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
-    GetTransform().Update();
+	E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
+	GetTransform().Update();
 }
 
-HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CExperienceOrbItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Item");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Item");
@@ -64,7 +64,7 @@ HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 		D3D11_MAPPED_SUBRESOURCE mappedSubResource;
 		if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
 		{
-			
+
 			E::CB_PER_OBJECT cbPerObject{};
 			cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
 			XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
@@ -85,26 +85,26 @@ HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 	return S_OK;
 }
 
-UPtr<CDropItem> CDropItem::Create()
+UPtr<CExperienceOrbItem> CExperienceOrbItem::Create()
 {
-    auto pInstance = ToUPtr(new CDropItem{});
-    if (FAILED(pInstance->InitializePrototype()))
-    {
-        MSG_BOX("Failed to Create: CDropItem");
-        return nullptr;
-    }
+	auto pInstance = ToUPtr(new CExperienceOrbItem{});
+	if (FAILED(pInstance->InitializePrototype()))
+	{
+		MSG_BOX("Failed to Create: CExperienceOrbItem");
+		return nullptr;
+	}
 
-    return pInstance;
+	return pInstance;
 }
 
-UPtr<CPrototype> CDropItem::Clone(void* pArg)
+UPtr<CPrototype> CExperienceOrbItem::Clone(void* pArg)
 {
-    auto pInstance = ToUPtr(new CDropItem{ *this });
-    if (FAILED(pInstance->Initialize(pArg)))
-    {
-        MSG_BOX("Failed to Cloned: CDropItem");
-        return nullptr;
-    }
+	auto pInstance = ToUPtr(new CExperienceOrbItem{ *this });
+	if (FAILED(pInstance->Initialize(pArg)))
+	{
+		MSG_BOX("Failed to Cloned: CExperienceOrbItem");
+		return nullptr;
+	}
 
-    return pInstance;
+	return pInstance;
 }

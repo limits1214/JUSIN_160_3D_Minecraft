@@ -119,6 +119,14 @@ namespace Engine
 		uint32_t texIndex{};  //  4 bytes
 	} VTX_ENTITY;
 
+	typedef struct tagVertexItem
+	{
+		_float3 pos{};   // 12 bytes
+		_float3 normal{};     // 12 bytes  (조명 계산용)
+		_float2 texCoord{}; //  8 bytes
+		uint32_t texIndex{};  //  4 bytes
+	} VTX_ITEM;
+
 
 	typedef struct tagConstantBufferPerFrame
 	{

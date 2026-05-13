@@ -15,6 +15,7 @@ private:
 public:
 	ComPtr<ID3D11ShaderResourceView> GetSRV() const { return m_pSRV; }
 	ComPtr<ID3D11Texture2D> GetTexture() const { return m_pTexture; }
+	const D3D11_TEXTURE2D_DESC& GetTexture2DDesc() const { return m_Texture2DDesc; }
 
 public:
 	HRESULT Load(const std::any& arg = {}) override;

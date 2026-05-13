@@ -263,6 +263,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\EntityModelBone.h" />
     <ClInclude Include="..\public\EntityModelMesh.h" />
     <ClInclude Include="..\public\EntityObject.h" />
+    <ClInclude Include="..\public\ExperienceOrbItem.h" />
     <ClInclude Include="..\public\FlyCamera.h" />
     <ClInclude Include="..\public\GameInstance.h" />
     <ClInclude Include="..\public\GameManager.h" />
@@ -307,6 +308,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ResFmodSound.h" />
     <ClInclude Include="..\Public\ResGeometryShader.h" />
     <ClInclude Include="..\Public\ResGeoShaderStreamOut.h" />
+    <ClInclude Include="..\public\ResItemVIBuffer.h" />
     <ClInclude Include="..\Public\ResJson.h" />
     <ClInclude Include="..\Public\ResOffscreenTexture.h" />
     <ClInclude Include="..\Public\Resource.h" />
@@ -468,6 +470,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\EntityModelBone.cpp" />
     <ClCompile Include="..\private\EntityModelMesh.cpp" />
     <ClCompile Include="..\private\EntityObject.cpp" />
+    <ClCompile Include="..\private\ExperienceOrbItem.cpp" />
     <ClCompile Include="..\private\FlyCamera.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />
     <ClCompile Include="..\private\GameManager.cpp" />
@@ -510,6 +513,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\ResFmodSound.cpp" />
     <ClCompile Include="..\Private\ResGeometryShader.cpp" />
     <ClCompile Include="..\Private\ResGeoShaderStreamOut.cpp" />
+    <ClCompile Include="..\private\ResItemVIBuffer.cpp" />
     <ClCompile Include="..\Private\ResJson.cpp" />
     <ClCompile Include="..\Private\ResOffscreenTexture.cpp" />
     <ClCompile Include="..\Private\Resource.cpp" />
@@ -557,6 +561,10 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Entity.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Item.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
