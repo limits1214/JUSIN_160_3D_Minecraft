@@ -56,6 +56,7 @@ namespace Client
 	enum class LEVEL_TEST_WORLD_LAYERS
 	{
 		ENTITY,
+		DROPITEM,
 		CAMERA,
 		END
 	};
@@ -65,6 +66,7 @@ namespace Client
 		switch (idx)
 		{
 		case E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY): return "ENTITY";
+		case E::ETOUI(LEVEL_TEST_WORLD_LAYERS::DROPITEM): return "DROPITEM";
 		case E::ETOUI(LEVEL_TEST_WORLD_LAYERS::CAMERA): return "CAMERA";
 		};
 

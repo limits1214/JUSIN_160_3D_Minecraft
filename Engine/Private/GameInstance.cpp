@@ -401,6 +401,18 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// initialize item shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Item", "./Resources/Shader/Item/Item.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Item", "./Resources/Shader/Item/Item.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
 	// initialize entity textures
 	{
 		// 0: Pig
@@ -436,6 +448,19 @@ HRESULT CGameInstance::InitializeMCResource()
 			if (FAILED(pRes->Load()))
 			{
 				int x = 0;
+			}
+		}
+
+
+		// 4: experience_orb.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_64", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/experience_orb.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				//if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResItemVIBuffer::Create()))
+				//{
+				//	res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 });
+				//}
 			}
 		}
 
@@ -547,8 +572,95 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// initialize item texture
+	{
+		// 0: woodPickaxe
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Pickaxe/wood_pickaxe.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "WoodPickaxe", CResItemVIBuffer::Create()))
+				{
+					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 0 });
+				}
+			}
+		}
+
+		// 1: string
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/string.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "String", CResItemVIBuffer::Create()))
+				{
+					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 1 });
+				}
+			}
+		}
+
+		// 2: porkchop_raw
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/porkchop_raw.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "PorkchopRaw", CResItemVIBuffer::Create()))
+				{
+					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 2 });
+				}
+			}
+		}
+
+		// 3: chicken_raw
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/chicken_raw.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "ChickenRaw", CResItemVIBuffer::Create()))
+				{
+					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 3 });
+				}
+			}
+		}
+
+		// 4: beef_raw.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/beef_raw.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "BeefRaw", CResItemVIBuffer::Create()))
+				{
+					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 4 });
+				}
+			}
+		}
+
+		// 5: mutton_raw.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/mutton_raw.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResItemVIBuffer::Create()))
+				{
+					res->Load(CResItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 });
+				}
+			}
+		}
 
 
+
+		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_TEX_ITEM_16_16", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(6, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+	}
 
 
 	return S_OK;
