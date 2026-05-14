@@ -135,19 +135,19 @@ public:
 	auto WorkerEnqueueWithFuture(_string_view svTaskName, Func&& f, Args&&... args)
 		-> std::future<std::invoke_result_t<Func, Args...>>
 	{
-		return m_pWorkerManager->WorkerEnqueueWithFuture(
+		return m_pChunkLoadWorkerManager->WorkerEnqueueWithFuture(
 			svTaskName,
 			std::forward<Func>(f),
 			std::forward<Args>(args)...
 		);
 	}
 
-	void WorkerHighEnqueue(_string_view svTaskName, _Func func);
+	void ChunkLoadWorkerEnqueue(_string_view svTaskName, _Func func);
 	template<typename Func, typename... Args>
-	auto WorkerHighEnqueueWithFuture(_string_view svTaskName, Func&& f, Args&&... args)
+	auto ChunkLoadWorkerEnqueueWithFuture(_string_view svTaskName, Func&& f, Args&&... args)
 		-> std::future<std::invoke_result_t<Func, Args...>>
 	{
-		return m_pHighWorkerManager->WorkerEnqueueWithFuture(
+		return m_pChunkLoadWorkerManager->WorkerEnqueueWithFuture(
 			svTaskName,
 			std::forward<Func>(f),
 			std::forward<Args>(args)...
@@ -247,7 +247,7 @@ private:
 	UPtr<CDInputManager> m_pDInputManager{};
 	UPtr<CLevelManager> m_pLevelManager{};
 	UPtr<CWorkerManager> m_pWorkerManager{};
-	UPtr<CWorkerManager> m_pHighWorkerManager{};
+	UPtr<CWorkerManager> m_pChunkLoadWorkerManager{};
 	UPtr<CTimeProvider> m_pTimeProvider{};
 	UPtr<CPrototypeManager> m_pPrototypeManager{};
 	UPtr<CGameObjectManager> m_pGameObjectManager{};
