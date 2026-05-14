@@ -49,6 +49,27 @@ HRESULT CLevelTestWorld::Initialize()
 	}
 
 	{
+		E::CCameraObject::CAMERA_DESC Desc{};
+		Desc.eProj = E::CCameraObject::PROJ::PERSPECTIVE;
+		Desc.vAt = { 0.f, 0.f, 0.f };
+		Desc.vEye = { 0.f, 10.f, -10.f };
+		Desc.fAspect = { g_iWinSizeX / (E::_float)g_iWinSizeY };
+		Desc.fFovY = 75.f;
+		Desc.fNear = 0.1f;
+		Desc.fFar = 1000.f;
+		Desc.sObjectTag = "PlayerCam";
+
+		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_PlayerCamera",
+			E::ETOUI(LEVEL_TEST_WORLD_LAYERS::CAMERA), &Desc))
+		{
+			if (FAILED(E::CGameInstance::Get().RegistGameCamera("Player", flyCam.value())))
+			{
+				int x = 0;
+			}
+		}
+	}
+
+	{
 		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_CowEntity", E::CCowEntity::Create())))
 		{
 			int x = 0;

@@ -22,6 +22,7 @@
 
 #include "FlyCamera.h"
 #include "UICamera.h"
+#include "PlayerCamera.h"
 
 #include "Resources.h"
 
@@ -784,6 +785,11 @@ HRESULT CGameInstance::InitializePrototype()
 	}
 
 	if (AddPrototype("CAMERAS", "Prototype_GameObject_UICamera", CUICamera::Create()))
+	{
+		return E_FAIL;
+	}
+
+	if (AddPrototype("CAMERAS", "Prototype_GameObject_PlayerCamera", CPlayerCamera::Create()))
 	{
 		return E_FAIL;
 	}
