@@ -313,7 +313,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
                             E::CSkeletonEntity::DESC Desc{};
                             Desc.sObjectTag = "Skeleton";
                             if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_SkeletonEntity",
-                                E::ETOUI(0), &Desc))
+                                "E::ETOUI(0)", &Desc))
                             {
                                 if (auto skeleton = CGameInstance::Get().GetGameObjectByHandle(handle.value()))
                                 {

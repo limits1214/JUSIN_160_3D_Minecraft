@@ -23,8 +23,6 @@ CLevelTestWorld::~CLevelTestWorld()
 HRESULT CLevelTestWorld::Initialize()
 {
 	E::CGameInstance::Get().GameObjectAllReset();
-	E::CGameInstance::Get().GameObjectLayerInitialize(E::ETOUI(LEVEL_TEST_WORLD_LAYERS::END), LevelTestWorldLayersToString);
-
 
 	{
 		E::CCameraObject::CAMERA_DESC Desc{};
@@ -38,7 +36,7 @@ HRESULT CLevelTestWorld::Initialize()
 		Desc.sObjectTag = "FlyCam";
 
 		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
-			E::ETOUI(LEVEL_TEST_WORLD_LAYERS::CAMERA), &Desc))
+			"99_CAMERA", &Desc))
 		{
 			if (FAILED(E::CGameInstance::Get().RegistGameCamera("FLY", flyCam.value())))
 			{
@@ -60,7 +58,7 @@ HRESULT CLevelTestWorld::Initialize()
 		Desc.sObjectTag = "PlayerCam";
 
 		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_PlayerCamera",
-			E::ETOUI(LEVEL_TEST_WORLD_LAYERS::CAMERA), &Desc))
+			"99_CAMERA", &Desc))
 		{
 			if (FAILED(E::CGameInstance::Get().RegistGameCamera("Player", flyCam.value())))
 			{
@@ -138,7 +136,7 @@ HRESULT CLevelTestWorld::Initialize()
 			E::CPlayerEntity::DESC Desc{};
 			Desc.sObjectTag = "Player";
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+				"00_ENTITY", &Desc))
 			{
 			}
 		}
@@ -158,7 +156,7 @@ HRESULT CLevelTestWorld::Initialize()
 			Desc.sObjectTag = "DropItem_CubeItemDirt";
 			Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::DROPITEM), &Desc))
+				"01_DROPITEM", &Desc))
 			{
 			}
 		}
@@ -168,7 +166,7 @@ HRESULT CLevelTestWorld::Initialize()
 			Desc.sObjectTag = "DropItem_WoodPickaxe";
 			Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::DROPITEM), &Desc))
+				"01_DROPITEM", &Desc))
 			{
 			}
 		}
@@ -177,7 +175,7 @@ HRESULT CLevelTestWorld::Initialize()
 			E::CExperienceOrbItem::DESC Desc{};
 			Desc.sObjectTag = "ExperienceOrb";
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
-				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::DROPITEM), &Desc))
+				"01_DROPITEM", &Desc))
 			{
 			}
 		}
