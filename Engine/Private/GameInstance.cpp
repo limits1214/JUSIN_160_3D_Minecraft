@@ -171,6 +171,24 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 {
 	m_pDInputManager->Update_InputDev();
 
+	if (CGameInstance::Get().KeyDown(DIK_TAB))
+	{
+		
+		m_bMouseFix = !m_bMouseFix;
+		if (!m_bMouseFix)
+		{
+			ShowCursor(TRUE);
+		}
+		else
+		{
+			ShowCursor(FALSE);
+		}
+	}
+	if (m_bMouseFix)
+	{
+		MouseFix();
+	}
+
 	m_pVoxelManager3->Update(fTimeDelta);
 
 	m_pGameObjectManager->PriorityUpdate(fTimeDelta);
@@ -1035,7 +1053,7 @@ std::optional<CHandle> CGameInstance::GetFreeHandle() const
 //	return m_pCameraManager->SetCameraObject(GroupID, handle);
 //}
 
-const CCameraObject* CGameInstance::GetActiveGameCamera() const
+CCameraObject* CGameInstance::GetActiveGameCamera() const
 {
 	return m_pCameraManager->GetActiveGameCamera();
 }
@@ -1045,7 +1063,7 @@ HRESULT CGameInstance::SetActiveGameCamera(const StringID& CameraID)
 	return m_pCameraManager->SetActiveGameCamera(CameraID);
 }
 
-const CCameraObject* CGameInstance::GetActiveUICamera() const
+CCameraObject* CGameInstance::GetActiveUICamera() const
 {
 	return m_pCameraManager->GetActiveUICamera();
 }
@@ -1055,22 +1073,22 @@ HRESULT CGameInstance::SetActiveUICamera(const StringID& CameraID)
 	return m_pCameraManager->SetActiveUICamera(CameraID);
 }
 
-const CCameraObject* CGameInstance::GetActiveGameCamera(const StringID& CameraID) const
+CCameraObject* CGameInstance::GetActiveGameCamera(const StringID& CameraID) const
 {
 	return m_pCameraManager->GetActiveGameCamera(CameraID);
 }
 
-const CCameraObject* CGameInstance::GetActiveUICamera(const StringID& CameraID) const
+CCameraObject* CGameInstance::GetActiveUICamera(const StringID& CameraID) const
 {
 	return m_pCameraManager->GetActiveUICamera(CameraID);
 }
 
-const CCameraObject* CGameInstance::GetGameCamera(const StringID& CameraID) const
+CCameraObject* CGameInstance::GetGameCamera(const StringID& CameraID) const
 {
 	return m_pCameraManager->GetGameCamera(CameraID);
 }
 
-const CCameraObject* CGameInstance::GetUICamera(const StringID& CameraID) const
+CCameraObject* CGameInstance::GetUICamera(const StringID& CameraID) const
 {
 	return m_pCameraManager->GetUICamera(CameraID);
 }
@@ -1144,4 +1162,28 @@ CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 	//return m_pVoxelManager->GetChunk(x, y, z);
 	//return nullptr;
 }
+
 #pragma endregion
+
+
+
+void CGameInstance::MouseFix() const
+{
+	RECT rect;
+	GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+	//POINT ul = { rect.left, rect.top };
+	//POINT lr = { rect.right, rect.bottom };
+	//ClientToScreen(CGameInstance::Get().GetHwnd(), &ul);
+	//ClientToScreen(CGameInstance::Get().GetHwnd(), &lr);
+
+	//RECT clipRect = { ul.x, ul.y, lr.x, lr.y };
+
+	//ClipCursor(&clipRect); 
+
+	POINT center;
+	center.x = (rect.right - rect.left) / 2;
+	center.y = (rect.bottom - rect.top) / 2;
+
+	ClientToScreen(CGameInstance::Get().GetHwnd(), &center);
+	SetCursorPos(center.x, center.y);
+}

@@ -197,16 +197,16 @@ public:
 	//const CCameraObject* GetCameraObject(const StringID& GroupID) const;
 	//HRESULT SetCameraObject(const StringID& GroupID, const CHandle& handle);
 
-	const CCameraObject* GetActiveGameCamera() const;
+	CCameraObject* GetActiveGameCamera() const;
 	HRESULT SetActiveGameCamera(const StringID& CameraID);
-	const CCameraObject* GetActiveUICamera() const;
+	CCameraObject* GetActiveUICamera() const;
 	HRESULT SetActiveUICamera(const StringID& CameraID);
 
-	const CCameraObject* GetActiveGameCamera(const StringID& CameraID) const;
-	const CCameraObject* GetActiveUICamera(const StringID& CameraID) const;
+	CCameraObject* GetActiveGameCamera(const StringID& CameraID) const;
+	CCameraObject* GetActiveUICamera(const StringID& CameraID) const;
 
-	const CCameraObject* GetGameCamera(const StringID& CameraID) const;
-	const CCameraObject* GetUICamera(const StringID& CameraID) const;
+	CCameraObject* GetGameCamera(const StringID& CameraID) const;
+	CCameraObject* GetUICamera(const StringID& CameraID) const;
 
 	HRESULT RegistGameCamera(const StringID& CameraID, const CHandle& handle);
 	HRESULT RegistUICamera(const StringID& CameraID, const CHandle& handle);
@@ -258,6 +258,15 @@ private:
 	UPtr<CVoxelManager> m_pVoxelManager{};
 	UPtr<CVoxelManager2> m_pVoxelManager2{};
 	UPtr<CVoxelManager3> m_pVoxelManager3{};
+
+
+public:
+	_bool GetMouseFix() const { return m_bMouseFix; }
+private:
+	_bool m_bMouseFix{};
+
+private:
+	void MouseFix() const;
 };
 
 NS_END

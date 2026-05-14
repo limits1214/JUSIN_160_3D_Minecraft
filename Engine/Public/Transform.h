@@ -50,6 +50,100 @@ public:
 		return XMVectorSet(0.f, 0.f, 0.f, 0.f);
 	}
 
+	void SetState(STATE eState, _vector vec)
+	{
+		switch (eState)
+		{
+		case STATE::RIGHT:
+		{
+			// 현재 UP, LOOK 벡터 가져오기
+			_vector vUp = GetState(STATE::UP);
+			_vector vLook = GetState(STATE::LOOK);
+
+			// 정규화
+			vec = XMVector3Normalize(vec);
+			vUp = XMVector3Normalize(vUp);
+
+			// RIGHT가 변경되면 LOOK도 재계산 (RIGHT × UP = LOOK)
+			_vector vNewLook = XMVector3Cross(vUp, vec);
+			vNewLook = XMVector3Normalize(vNewLook);
+
+			// 다시 UP 재계산 (RIGHT × LOOK = UP)
+			_vector vNewUp = XMVector3Cross(vNewLook, vec);
+			vNewUp = XMVector3Normalize(vNewUp);
+
+			// 3개의 축으로부터 쿼터니언 생성
+			_matrix mat = XMMatrixIdentity();
+			mat.r[0] = XMVectorSetW(vec, 0.f);       // RIGHT
+			mat.r[1] = XMVectorSetW(vNewUp, 0.f);    // UP
+			mat.r[2] = XMVectorSetW(vNewLook, 0.f);  // LOOK
+
+			XMVECTOR quat = XMQuaternionRotationMatrix(mat);
+			XMStoreFloat4(&m_vQuat, quat);
+		}
+		break;
+
+		case STATE::UP:
+		{
+			_vector vRight = GetState(STATE::RIGHT);
+			_vector vLook = GetState(STATE::LOOK);
+
+			vec = XMVector3Normalize(vec);
+			vRight = XMVector3Normalize(vRight);
+
+			// UP이 변경되면 RIGHT도 재계산 (LOOK × UP = RIGHT)
+			_vector vNewRight = XMVector3Cross(vec, vLook);
+			vNewRight = XMVector3Normalize(vNewRight);
+
+			// 다시 LOOK 재계산 (UP × RIGHT = LOOK)
+			_vector vNewLook = XMVector3Cross(vNewRight, vec);
+			vNewLook = XMVector3Normalize(vNewLook);
+
+			_matrix mat = XMMatrixIdentity();
+			mat.r[0] = XMVectorSetW(vNewRight, 0.f);  // RIGHT
+			mat.r[1] = XMVectorSetW(vec, 0.f);        // UP
+			mat.r[2] = XMVectorSetW(vNewLook, 0.f);   // LOOK
+
+			XMVECTOR quat = XMQuaternionRotationMatrix(mat);
+			XMStoreFloat4(&m_vQuat, quat);
+		}
+		break;
+
+		case STATE::LOOK:
+		{
+			_vector vRight = GetState(STATE::RIGHT);
+			_vector vUp = GetState(STATE::UP);
+
+			vec = XMVector3Normalize(vec);
+			vRight = XMVector3Normalize(vRight);
+
+			// LOOK이 변경되면 RIGHT도 재계산 (UP × LOOK = RIGHT)
+			_vector vNewRight = XMVector3Cross(vUp, vec);
+			vNewRight = XMVector3Normalize(vNewRight);
+
+			// 다시 UP 재계산 (LOOK × RIGHT = UP)
+			_vector vNewUp = XMVector3Cross(vec, vNewRight);
+			vNewUp = XMVector3Normalize(vNewUp);
+
+			_matrix mat = XMMatrixIdentity();
+			mat.r[0] = XMVectorSetW(vNewRight, 0.f);  // RIGHT
+			mat.r[1] = XMVectorSetW(vNewUp, 0.f);     // UP
+			mat.r[2] = XMVectorSetW(vec, 0.f);        // LOOK
+
+			XMVECTOR quat = XMQuaternionRotationMatrix(mat);
+			XMStoreFloat4(&m_vQuat, quat);
+		}
+		break;
+
+		case STATE::POSITION:
+		{
+			XMStoreFloat3(&m_vPos, vec);
+		}
+		break;
+		}
+		m_bDirty = true;
+	}
+
 	//{ return XMLoadFloat4(reinterpret_cast<const _float4*>(&GetWorldMatrix()->m[ETOUI(eState)][0])); }
 
 	void AddRotation(_vector vAxis, _float fAngleDegree)
@@ -122,6 +216,8 @@ public:
 public:
 	const _float4x4* GetWorldMatrix() const { return &m_WorldMatrix; }
 	_matrix GetLoadedWorldMatrix() const { return XMLoadFloat4x4(&m_WorldMatrix); }
+
+	//void SetWorldMatrix(const _float4x4& world) { m_WorldMatrix = world; };
 
 
 private:
