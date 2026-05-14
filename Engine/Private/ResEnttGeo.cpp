@@ -10,7 +10,7 @@ CResEnttGeo::~CResEnttGeo()
 {
 }
 
-void CResEnttGeo::ZReverse()
+void CResEnttGeo::RightToLeft()
 { 
     //uint32_t iCntCube{};
     for (auto& bone : m_entityGeometry.bones)
@@ -48,6 +48,41 @@ void CResEnttGeo::ZReverse()
                 locator.second.z = -locator.second.z;
                 locator.second.x = -locator.second.x;
             }
+        }
+    }
+}
+
+void CResEnttGeo::Scaling()
+{
+    float fScale = 0.0625f;  // 원하는 스케일값
+
+    for (auto& bone : m_entityGeometry.bones)
+    {
+        // pivot 스케일
+        bone.pivot.x *= fScale;
+        bone.pivot.y *= fScale;
+        bone.pivot.z *= fScale;
+
+        // 각 큐브의 스케일
+        for (auto& cube : bone.cubes)
+        {
+            cube.origin.x *= fScale;
+            cube.origin.y *= fScale;
+            cube.origin.z *= fScale;
+
+            cube.size.x *= fScale;
+            cube.size.y *= fScale;
+            cube.size.z *= fScale;
+
+            cube.inflate *= fScale;
+        }
+
+        // locators 스케일 (있으면)
+        for (auto& [name, pos] : bone.locators)
+        {
+            pos.x *= fScale;
+            pos.y *= fScale;
+            pos.z *= fScale;
         }
     }
 }

@@ -27,11 +27,34 @@ CColliderManager::~CColliderManager()
 void CColliderManager::UpdateGUI()
 {
     ImGui::Begin("CColliderManager");
-
-    if (ImGui::Button("Render"))
+    
     {
-        m_bRender = !m_bRender;
+        ImGui::Text("RenderEnable: %i", m_bRender);
+        ImGui::SameLine();
+        if (ImGui::Button("RenderEnable"))
+        {
+            m_bRender = !m_bRender;
+        }
     }
+
+    for (const auto& [key, coll] : m_Colliders)
+    {
+        auto [iter, inserted] = m_DbgRenders.try_emplace(key, true);
+
+        ImGui::PushID(key.GetDbgStr());
+
+        ImGui::Text("%s: %i", key.GetDbgStr(), iter->second);
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Render"))
+        {
+            iter->second = !iter->second;
+        }
+
+        ImGui::PopID();
+    }
+
     ImGui::End();
 }
 
@@ -99,6 +122,22 @@ HRESULT CColliderManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX
 
     for (const auto& [key, value] : m_Colliders)
     {
+        {
+            auto iter = m_DbgRenders.find(key);
+            if (iter == m_DbgRenders.end())
+            {
+                continue;
+            }
+            else
+            {
+                if (!iter->second)
+                {
+                    continue;
+                }
+            }
+        }
+
+
         for (auto pCollider : value)
         {
             switch (pCollider->GetCollType())

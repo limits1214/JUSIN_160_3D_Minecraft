@@ -202,6 +202,9 @@ public:
 	const CCameraObject* GetActiveUICamera() const;
 	HRESULT SetActiveUICamera(const StringID& CameraID);
 
+	const CCameraObject* GetActiveGameCamera(const StringID& CameraID) const;
+	const CCameraObject* GetActiveUICamera(const StringID& CameraID) const;
+
 	const CCameraObject* GetGameCamera(const StringID& CameraID) const;
 	const CCameraObject* GetUICamera(const StringID& CameraID) const;
 

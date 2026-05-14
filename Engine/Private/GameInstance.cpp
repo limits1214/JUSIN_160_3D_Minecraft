@@ -1055,6 +1055,16 @@ HRESULT CGameInstance::SetActiveUICamera(const StringID& CameraID)
 	return m_pCameraManager->SetActiveUICamera(CameraID);
 }
 
+const CCameraObject* CGameInstance::GetActiveGameCamera(const StringID& CameraID) const
+{
+	return m_pCameraManager->GetActiveGameCamera(CameraID);
+}
+
+const CCameraObject* CGameInstance::GetActiveUICamera(const StringID& CameraID) const
+{
+	return m_pCameraManager->GetActiveUICamera(CameraID);
+}
+
 const CCameraObject* CGameInstance::GetGameCamera(const StringID& CameraID) const
 {
 	return m_pCameraManager->GetGameCamera(CameraID);

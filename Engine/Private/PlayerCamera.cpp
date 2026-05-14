@@ -42,7 +42,7 @@ void CPlayerCamera::PriorityUpdate(E::_float fTimeDelta)
 
     m_pComTransform->Update();
 
-    E::CGameInstance::Get().AddColliderGroup("Coll_FlyCamera", m_pCollider.get());
+    E::CGameInstance::Get().AddColliderGroup("Coll_PlayerCamera", m_pCollider.get());
 
     m_pCollider->Transform(m_pComTransform->GetLoadedWorldMatrix());
 

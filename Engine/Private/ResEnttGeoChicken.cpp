@@ -82,7 +82,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
         };
 
 
-        ZReverse();
+        RightToLeft();
 
     }
     m_eState = STATE::LOADED;
