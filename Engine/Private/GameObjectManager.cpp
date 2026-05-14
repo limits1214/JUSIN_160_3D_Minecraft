@@ -52,10 +52,9 @@ void CGameObjectManager::UpdateGUI()
 	{
 		for (uint32_t i = 0; i < m_Layers.size(); ++i)
 		{
-			std::string LayerName = m_LayerToStringFunc ? m_LayerToStringFunc(i) : std::to_string(i);
-			if (ImGui::TreeNode(LayerName.c_str()))
+			if (ImGui::TreeNode(m_Layers[i].first.c_str()))
 			{
-				for (const auto& handle : m_Layers[i])
+				for (const auto& handle : m_Layers[i].second)
 				{
 					if (auto* pObj = CGameInstance::Get().GetGameObjectByHandle(handle))
 					{
@@ -71,6 +70,7 @@ void CGameObjectManager::UpdateGUI()
 
 				ImGui::TreePop();
 			}
+
 		}
 		ImGui::TreePop();
 	}
@@ -123,7 +123,7 @@ void CGameObjectManager::FrameStart()
 	}
 
 	m_TreePreparation.clear();
-	for (const auto& Layer : m_Layers)
+	for (const auto& [_, Layer] : m_Layers)
 	{
 		for (const auto& handle : Layer)
 		{
@@ -191,14 +191,25 @@ std::optional<CHandle> CGameObjectManager::GetFreeHandle()
 	return objectHandle;
 }
 
-std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag,
-	uint32_t iLayerIdx, void* pArg)
+void CGameObjectManager::SortLayer()
 {
-	if (m_Layers.size() <= iLayerIdx)
-	{
-		return std::nullopt;
-	}
+	std::sort(m_Layers.begin(), m_Layers.end(),
+		[](const std::pair<std::string, std::vector<CHandle>>& a,
+			const std::pair<std::string, std::vector<CHandle>>& b) {
+				return a.first < b.first;
+		});
 
+	m_LookupLayers.clear();
+	m_LookupLayers.reserve(m_Layers.size());
+
+	for (size_t i = 0; i < m_Layers.size(); ++i)
+	{
+		m_LookupLayers.emplace(m_Layers[i].first, i);
+	}
+}
+
+std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, std::string_view sLayerName, void* pArg)
+{
 	auto pProto = CGameInstance::Get().ClonePrototype(siProtoGroupTag, siPrototypeTag, pArg);
 	auto pGameObject = static_uptr_cast<CGameObject>(std::move(pProto));
 	if (!pGameObject)
@@ -207,7 +218,7 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 	}
 
 	auto objHandle = pGameObject->GetHandle();
-	
+
 	auto iter = std::find(m_FreeSlots.begin(), m_FreeSlots.end(), objHandle.GetIndex());
 	if (iter != m_FreeSlots.end())
 	{
@@ -216,22 +227,51 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 
 	m_Objects[objHandle.GetIndex()].Set(std::move(pGameObject));
 
-	m_Layers[iLayerIdx].push_back(objHandle);
+	auto lookupIter = m_LookupLayers.find(sLayerName);
+	if (lookupIter == m_LookupLayers.end())
+	{
+		//m_LookupLayers2.emplace(sLayerName, m_Layers2.size());
+		std::pair<std::string, std::vector<CHandle>> layer{ std::string{sLayerName}, {objHandle} };
+		m_Layers.push_back(layer);
+		SortLayer();
+	}
+	else
+	{
+		m_Layers[lookupIter->second].second.push_back(objHandle);
+	}
 
 	m_bTreeReBuild = true;
 
 	return objHandle;
 }
 
-
-const std::vector<CHandle>* CGameObjectManager::GetLayer(uint32_t iLayerIdx) const
+const std::vector<CHandle>* CGameObjectManager::GetLayer(std::string_view sLayerName) const
 {
-	if (m_Layers.size() <= iLayerIdx)
+	auto iter = m_LookupLayers.find(sLayerName);
+	if (iter == m_LookupLayers.end())
 	{
 		return nullptr;
 	}
 
-	return &m_Layers[iLayerIdx];
+	return &m_Layers[iter->second].second;
+}
+
+void CGameObjectManager::DelLayer(std::string_view sLayerName)
+{
+	auto iter = m_LookupLayers.find(sLayerName);
+	if (iter == m_LookupLayers.end())
+	{
+		return;
+	}
+	for (const auto& handle : m_Layers[iter->second].second)
+	{
+		if (auto pObj = GetGameObjectByHandle(handle))
+		{
+			pObj->SetPendingDestroy();
+		}
+	}
+	m_Layers[iter->second].second.clear();
+	FrameEnd();
 }
 
 void CGameObjectManager::PriorityUpdate(_float fTimeDelta)
@@ -275,6 +315,7 @@ HRESULT CGameObjectManager::Initialize()
 	return S_OK;
 }
 
+
 UPtr<CGameObjectManager> CGameObjectManager::Create()
 {
 	auto pInstance = ToUPtr(new CGameObjectManager{});
@@ -301,32 +342,9 @@ void CGameObjectManager::AllReset()
 	FrameEnd();
 
 	m_Layers.clear();
+	m_LookupLayers.clear();
 	m_TreePreparation.clear();
 	m_Tree.clear();
-}
-
-void CGameObjectManager::DelLayer(uint32_t iLayerIdx)
-{
-	if (m_Layers.size() <= iLayerIdx)
-	{
-		return;
-	}
-
-	;
-	for (const auto& handle : m_Layers[iLayerIdx])
-	{
-		if (auto pObj = GetGameObjectByHandle(handle))
-		{
-			pObj->SetPendingDestroy();
-		}
-		m_Layers[iLayerIdx].clear();
-		FrameEnd();
-	}
-}
-
-void CGameObjectManager::LayerInitialize(uint32_t iNumLayers, std::function<std::string(uint32_t)> funcToString)
-{
-	m_Layers.resize(iNumLayers); m_LayerToStringFunc = funcToString;
 }
 
 void CGameObjectManager::Free()

@@ -24,13 +24,13 @@ CLevelLogo::~CLevelLogo()
 HRESULT CLevelLogo::Initialize()
 {
 	Engine::CGameInstance::Get().GameObjectAllReset();
-	Engine::CGameInstance::Get().GameObjectLayerInitialize(E::ETOUI(LEVEL_LOADING_LAYERS::END), LevelLoadingLayersToString);
+	//Engine::CGameInstance::Get().GameObjectLayerInitialize(E::ETOUI(LEVEL_LOADING_LAYERS::END), LevelLoadingLayersToString);
 
 	{
 		CBackGround::UIOBJECT_DESC Desc{};
 		Desc.sObjectTag = "BackGround";
 		if (!(E::CGameInstance::Get().AddGameObjectToLayer("LEVEL_LOGO", "Prototype_GameObject_BackGround",
-			E::ETOUI(LEVEL_LOADING_LAYERS::OBJECTS), &Desc)))
+			"00_OBJECTS", &Desc)))
 		{
 			return E_FAIL;
 		}
@@ -48,7 +48,7 @@ HRESULT CLevelLogo::Initialize()
 		Desc.sObjectTag = "FlyCam";
 
 		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
-			E::ETOUI(LEVEL_LOADING_LAYERS::CAMERA), &Desc))
+			"99_CAMERA", &Desc))
 		{
 			//if (FAILED(E::CGameInstance::Get().SetCameraObject("GAME", flyCam.value())))
 			//{
@@ -74,7 +74,7 @@ HRESULT CLevelLogo::Initialize()
 		Desc.vEye = { 0.f, 0.f, -0.1f };
 
 		if (auto uiCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_UICamera",
-			E::ETOUI(LEVEL_LOADING_LAYERS::CAMERA), &Desc))
+			"99_CAMERA", &Desc))
 		{
 			//if (FAILED(E::CGameInstance::Get().SetCameraObject("UI", uiCam.value())))
 			//{

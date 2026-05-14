@@ -19,7 +19,7 @@ CLevelTestSimpleGreedy::~CLevelTestSimpleGreedy()
 HRESULT CLevelTestSimpleGreedy::Initialize()
 {
 	E::CGameInstance::Get().GameObjectAllReset();
-	E::CGameInstance::Get().GameObjectLayerInitialize(E::ETOUI(LEVEL_TEST_SIMPLE_GREEDY_LAYERS::END), LevelTestSimpleGreedyLayersToString);
+	//E::CGameInstance::Get().GameObjectLayerInitialize(E::ETOUI(LEVEL_TEST_SIMPLE_GREEDY_LAYERS::END), LevelTestSimpleGreedyLayersToString);
 
 	{
 		E::CCameraObject::CAMERA_DESC Desc{};
@@ -33,7 +33,7 @@ HRESULT CLevelTestSimpleGreedy::Initialize()
 		Desc.sObjectTag = "FlyCam";
 
 		if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
-			E::ETOUI(LEVEL_TEST_SIMPLE_GREEDY_LAYERS::CAMERA), &Desc))
+			"99_CAMERA", &Desc))
 		{
 			//if (FAILED(E::CGameInstance::Get().SetCameraObject("GAME", flyCam.value())))
 			//{
@@ -57,7 +57,7 @@ HRESULT CLevelTestSimpleGreedy::Initialize()
 		E::CGameObject::GAMEOBJECT_DESC Desc{};
 		Desc.sObjectTag = "Chunk";
 		if (!(E::CGameInstance::Get().AddGameObjectToLayer("LEVEL_TEST_SIMPLE_GREEDY", "Prototype_GameObject_TestSImpleGreedyChunk",
-			E::ETOUI(LEVEL_TEST_SIMPLE_GREEDY_LAYERS::OBJECTS), &Desc)))
+			"00_OBJECTS", &Desc)))
 		{
 			return E_FAIL;
 		}

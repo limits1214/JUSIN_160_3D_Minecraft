@@ -38,10 +38,9 @@ private:
 	const CGameObject* _GetGameObjectByHandle(const CHandle& handle ) const;
 
 public:
-	std::optional<CHandle> AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, uint32_t iLayerIdx, void* pArg);
-	const std::vector<CHandle>* GetLayer(uint32_t iLayerIdx) const;
-	void DelLayer(uint32_t iLayerIdx);
-	void LayerInitialize(uint32_t iNumLayers, std::function<std::string(uint32_t)> funcToString);
+	std::optional<CHandle> AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, std::string_view sLayerName, void* pArg);
+	const std::vector<CHandle>* GetLayer(std::string_view sLayerName) const;
+	void DelLayer(std::string_view sLayerName);
 
 public:
 	void AllReset();
@@ -55,9 +54,28 @@ private:
 	std::vector<CSlot<CGameObject>> m_Objects{};
 	std::vector<size_t> m_FreeSlots{};
 
-	std::vector<std::vector<CHandle>> m_Layers{};
-	std::function<std::string(uint32_t)> m_LayerToStringFunc{};
+private:
+	struct StringHash {
+		using is_transparent = void;  // 이게 핵심
 
+		size_t operator()(std::string_view sv) const {
+			return std::hash<std::string_view>{}(sv);
+		}
+	};
+
+	struct StringEqual {
+		using is_transparent = void;  // 이것도 필요
+
+		bool operator()(std::string_view a, std::string_view b) const {
+			return a == b;
+		}
+	};
+
+	std::vector<std::pair<std::string, std::vector<CHandle>>> m_Layers{};
+	std::unordered_map<std::string, size_t, StringHash, StringEqual> m_LookupLayers{};
+	void SortLayer();
+
+private:
 	std::vector<CGameObject*> m_TreePreparation{};
 	std::vector<CGameObject*> m_Tree{};
 	std::vector<CGameObject*> m_DFSReserved{};
