@@ -13,12 +13,12 @@ private:
 public:
 	void UpdateGUI();
 
-public:
-	const CCameraObject* GetCameraObject(const StringID& GroupID) const;
-	HRESULT SetCameraObject(const StringID& GroupID, const CHandle& handle);
-
-private:
-	std::unordered_map<StringID, CHandle> m_ActiveCameras{};
+//public:
+//	const CCameraObject* GetCameraObject(const StringID& GroupID) const;
+//	HRESULT SetCameraObject(const StringID& GroupID, const CHandle& handle);
+//
+//private:
+//	std::unordered_map<StringID, CHandle> m_ActiveCameras{};
 
 public:
 	const CCameraObject* GetActiveGameCamera() const;
@@ -34,8 +34,8 @@ public:
 	HRESULT RegistUICamera(const StringID& CameraID, const CHandle& handle);
 
 private:
-	std::optional<CHandle> m_ActiveGameCamera{};
-	std::optional<CHandle> m_ActiveUICamera{};
+	std::optional<std::pair<StringID, CHandle>> m_ActiveGameCamera{};
+	std::optional<std::pair<StringID, CHandle>> m_ActiveUICamera{};
 	//std::unordered_map<StringID, CHandle> m_ActiveGameCamera{};
 
 	std::unordered_map<StringID, CHandle> m_GameCameras{};

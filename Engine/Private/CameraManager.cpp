@@ -31,53 +31,133 @@ void CCameraManager::UpdateGUI()
 	//	}
 	//}
 
+	std::string activeGameCamera{"GAME: "};
+	if (m_ActiveGameCamera.has_value())
+	{
+		if (auto c = GetGameCamera(m_ActiveGameCamera->first))
+		{
+			activeGameCamera += m_ActiveGameCamera->first.GetDbgStr();
+		}
+	}
+	ImGui::Text(activeGameCamera.c_str());
+
+	std::string activeUICamera{ "UI: " };
+	if (m_ActiveUICamera.has_value())
+	{
+		if (auto c = GetUICamera(m_ActiveUICamera->first))
+		{
+			activeUICamera += m_ActiveUICamera->first.GetDbgStr();
+		}
+	}
+	ImGui::Text(activeUICamera.c_str());
+
+	if (ImGui::TreeNode("RegisteredGameCamera"))
+	{
+		for (const auto& camHandle : m_GameCameras)
+		{
+			ImGui::PushID(camHandle.first.GetDbgStr());
+
+			if (ImGui::TreeNode(camHandle.first.GetDbgStr()))
+			{
+				auto pObj = CGameInstance::Get().GetGameObjectByHandle(camHandle.second);
+
+				if (pObj)
+				{
+					pObj->UpdateGUI();
+				}
+
+				ImGui::TreePop();
+			}
+
+			if (ImGui::Button("Active"))
+			{
+				SetActiveGameCamera(camHandle.first);
+			}
+
+			ImGui::PopID();
+		}
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("RegisteredUICamera"))
+	{
+		for (const auto& camHandle : m_UICameras)
+		{
+			ImGui::PushID(camHandle.first.GetDbgStr());
+
+			if (ImGui::TreeNode(camHandle.first.GetDbgStr()))
+			{
+				auto pObj = CGameInstance::Get().GetGameObjectByHandle(camHandle.second);
+
+				if (pObj)
+				{
+					pObj->UpdateGUI();
+				}
+
+				ImGui::TreePop();
+			}
+
+			if (ImGui::Button("Active"))
+			{
+				SetActiveUICamera(camHandle.first);
+			}
+
+			ImGui::PopID();
+		}
+
+		ImGui::TreePop();
+	}
+
+
+
 	ImGui::End();
 }
 
-const CCameraObject* CCameraManager::GetCameraObject(const StringID& GroupID) const
-{
-	auto iter = m_ActiveCameras.find(GroupID);
-	if (iter == m_ActiveCameras.end())
-	{
-		return nullptr;
-	}
-
-	auto pObj = CGameInstance::Get().GetGameObjectByHandle(iter->second);
-	if (!pObj)
-	{
-		return nullptr;
-	}
-	
-	if (!pObj->IsA(CCameraObject::StaticType))
-	{
-		return nullptr;
-	}
-
-	return static_cast<CCameraObject*>(pObj);
-}
-
-HRESULT CCameraManager::SetCameraObject(const StringID& GroupID, const CHandle& handle)
-{
-	auto pObj = CGameInstance::Get().GetGameObjectByHandle(handle);
-	if (!pObj)
-	{
-		return E_FAIL;
-	}
-
-	if (!pObj->IsA(CCameraObject::StaticType))
-	{
-		return E_FAIL;
-	}
-
-	auto iter = m_ActiveCameras.find(GroupID);
-	if (iter != m_ActiveCameras.end())
-	{
-		m_ActiveCameras.erase(iter);
-	}
-	m_ActiveCameras.emplace(GroupID, handle);
-
-	return S_OK;
-}
+//const CCameraObject* CCameraManager::GetCameraObject(const StringID& GroupID) const
+//{
+//	auto iter = m_ActiveCameras.find(GroupID);
+//	if (iter == m_ActiveCameras.end())
+//	{
+//		return nullptr;
+//	}
+//
+//	auto pObj = CGameInstance::Get().GetGameObjectByHandle(iter->second);
+//	if (!pObj)
+//	{
+//		return nullptr;
+//	}
+//	
+//	if (!pObj->IsA(CCameraObject::StaticType))
+//	{
+//		return nullptr;
+//	}
+//
+//	return static_cast<CCameraObject*>(pObj);
+//}
+//
+//HRESULT CCameraManager::SetCameraObject(const StringID& GroupID, const CHandle& handle)
+//{
+//	auto pObj = CGameInstance::Get().GetGameObjectByHandle(handle);
+//	if (!pObj)
+//	{
+//		return E_FAIL;
+//	}
+//
+//	if (!pObj->IsA(CCameraObject::StaticType))
+//	{
+//		return E_FAIL;
+//	}
+//
+//	auto iter = m_ActiveCameras.find(GroupID);
+//	if (iter != m_ActiveCameras.end())
+//	{
+//		m_ActiveCameras.erase(iter);
+//	}
+//	m_ActiveCameras.emplace(GroupID, handle);
+//
+//	return S_OK;
+//}
 
 const CCameraObject* CCameraManager::GetActiveGameCamera() const
 {
@@ -86,7 +166,7 @@ const CCameraObject* CCameraManager::GetActiveGameCamera() const
 		return nullptr;
 	}
 
-	auto pObj = CGameInstance::Get().GetGameObjectByHandle(m_ActiveGameCamera.value());
+	auto pObj = CGameInstance::Get().GetGameObjectByHandle(m_ActiveGameCamera->second);
 	if (!pObj)
 	{
 		return nullptr;
@@ -118,7 +198,7 @@ HRESULT CCameraManager::SetActiveGameCamera(const StringID& CameraID)
 		return E_FAIL;
 	}
 
-	m_ActiveGameCamera = iter->second;
+	m_ActiveGameCamera = *iter;
 
 	return S_OK;
 }
@@ -130,7 +210,7 @@ const CCameraObject* CCameraManager::GetActiveUICamera() const
 		return nullptr;
 	}
 
-	auto pObj = CGameInstance::Get().GetGameObjectByHandle(m_ActiveUICamera.value());
+	auto pObj = CGameInstance::Get().GetGameObjectByHandle(m_ActiveUICamera->second);
 	if (!pObj)
 	{
 		return nullptr;
@@ -162,7 +242,7 @@ HRESULT CCameraManager::SetActiveUICamera(const StringID& CameraID)
 		return E_FAIL;
 	}
 
-	m_ActiveUICamera = iter->second;
+	m_ActiveUICamera = *iter;
 
 	return S_OK;
 }

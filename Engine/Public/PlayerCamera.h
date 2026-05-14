@@ -22,10 +22,10 @@ public:
 	void Update(E::_float fTimeDelta) override;
 	void LateUpdate(E::_float fTimeDelta) override;
 
-private:
-	void MouseFix() const;
-private:
-	_bool m_bFix{ false };
+//private:
+//	void MouseFix() const;
+//private:
+//	_bool m_bFix{ false };
 
 private:
 	E::UPtr<E::CCollider> m_pCollider{};
