@@ -146,9 +146,9 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
         };
 
 
-        ZReverse();
+        RightToLeft();
 
-
+        Scaling();
     }
     m_eState = STATE::LOADED;
     return S_OK;

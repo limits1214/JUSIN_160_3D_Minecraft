@@ -247,6 +247,26 @@ HRESULT CCameraManager::SetActiveUICamera(const StringID& CameraID)
 	return S_OK;
 }
 
+const CCameraObject* CCameraManager::GetActiveGameCamera(const StringID& CameraID) const
+{
+	auto tmp = GetActiveGameCamera();
+	if (tmp != GetGameCamera(CameraID))
+	{
+		return nullptr;
+	}
+	return tmp;
+}
+
+const CCameraObject* CCameraManager::GetActiveUICamera(const StringID& CameraID) const
+{
+	auto tmp = GetActiveUICamera();
+	if (tmp != GetUICamera(CameraID))
+	{
+		return nullptr;
+	}
+	return tmp;
+}
+
 const CCameraObject* CCameraManager::GetGameCamera(const StringID& CameraID) const
 {
 	auto iter = m_GameCameras.find(CameraID);

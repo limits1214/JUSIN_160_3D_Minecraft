@@ -18,8 +18,8 @@ public:
 	const ENTITY_GEOMETRY& GetGeometry() const { return m_entityGeometry; }
 
 protected:
-	void ZReverse();
-
+	void RightToLeft();
+	void Scaling();
 protected:
 	ENTITY_GEOMETRY m_entityGeometry{};
 

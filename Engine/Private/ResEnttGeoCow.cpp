@@ -86,7 +86,7 @@ HRESULT CResEnttGeoCow::Load(const std::any& arg)
         };
 
 
-        ZReverse();
+        RightToLeft();
 
 
     }

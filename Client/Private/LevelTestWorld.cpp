@@ -133,14 +133,15 @@ HRESULT CLevelTestWorld::Initialize()
 		//	{
 		//	}
 		//}
-		//{
-		//	E::CPlayerSteveEntity::DESC Desc{};
-		//	Desc.sObjectTag = "PlayerSteve";
-		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerSteveEntity",
-		//		E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
-		//	{
-		//	}
-		//}
+		
+		{
+			E::CPlayerSteveEntity::DESC Desc{};
+			Desc.sObjectTag = "PlayerSteve";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerSteveEntity",
+				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
+			{
+			}
+		}
 
 		//{
 		//	E::CSkeletonEntity::DESC Desc{};

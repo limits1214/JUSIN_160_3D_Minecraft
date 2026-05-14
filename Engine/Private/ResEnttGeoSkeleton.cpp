@@ -95,7 +95,7 @@ HRESULT CResEnttGeoSkeleton::Load(const std::any& arg)
         };
 
 
-        ZReverse();
+        RightToLeft();
 
 
     }

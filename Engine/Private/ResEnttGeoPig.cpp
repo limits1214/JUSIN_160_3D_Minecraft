@@ -88,7 +88,7 @@ HRESULT CResEnttGeoPig::Load(const std::any& arg)
         };
 
 
-        ZReverse();
+        RightToLeft();
 
 
     }
