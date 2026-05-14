@@ -626,7 +626,7 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
     {
         return S_OK;
     }
-    CGameInstance::Get().WorkerEnqueue("TMP", [=]() {
+    CGameInstance::Get().ChunkLoadWorkerEnqueue("TMP", [=]() {
         
         
         int32_t minX = createDesc.iCenterX - m_iRenderDistance;
@@ -682,7 +682,7 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
             m_mapChunks.emplace(chunkCoord, std::move(CChunk3::Create(chunkDesc)));
 
 
-            std::future<uint64_t> fut = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_BLOCK_FILLING", [this, chunkCoord]()->uint64_t {
+            std::future<uint64_t> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture("FUT_BLOCK_FILLING", [this, chunkCoord]()->uint64_t {
                 auto iter = m_mapChunks.find(chunkCoord);
                 if (iter != m_mapChunks.end())
                 {
@@ -942,7 +942,7 @@ HRESULT CVoxelManager3::UpdateCheckQuduedQuadMessingChunk()
 
         if (!targetCoords.empty())
         {
-            std::future<std::vector<uint64_t>> fut = CGameInstance::Get().WorkerEnqueueWithFuture("FUT_QUAD_MESSING", [this, targetCoords]()->std::vector<uint64_t> {
+            std::future<std::vector<uint64_t>> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture("FUT_QUAD_MESSING", [this, targetCoords]()->std::vector<uint64_t> {
                 for (const auto& targetCoord : targetCoords)
                 {
                     auto iter = m_mapChunks.find(targetCoord);

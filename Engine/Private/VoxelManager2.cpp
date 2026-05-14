@@ -448,7 +448,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
 
                 if (auto* pNeighbor = pChunk->GetNeighborChunk(FACE_DIR::POS_X))
                 {
-                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
+                    std::future<CChunk2*> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
                         if (FAILED(pNeighbor->Messing()))
                         {
                             // TODO: MSGBOX
@@ -459,7 +459,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
                 }
                 if (auto* pNeighbor = pChunk->GetNeighborChunk(FACE_DIR::NEG_X))
                 {
-                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
+                    std::future<CChunk2*> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
                         if (FAILED(pNeighbor->Messing()))
                         {
                             // TODO: MSGBOX
@@ -470,7 +470,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
                 }
                 if (auto* pNeighbor = pChunk->GetNeighborChunk(FACE_DIR::POS_Z))
                 {
-                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
+                    std::future<CChunk2*> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
                         if (FAILED(pNeighbor->Messing()))
                         {
                             // TODO: MSGBOX
@@ -481,7 +481,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
                 }
                 if (auto* pNeighbor = pChunk->GetNeighborChunk(FACE_DIR::NEG_Z))
                 {
-                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
+                    std::future<CChunk2*> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pNeighbor]()->CChunk2* {
                         if (FAILED(pNeighbor->Messing()))
                         {
                             // TODO: MSGBOX
@@ -494,7 +494,7 @@ void CVoxelManager2::Update(_float fTimeDelta)
                 
                     
                 {
-                    std::future<CChunk2*> fut = CGameInstance::Get().WorkerHighEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pChunk]()->CChunk2* {
+                    std::future<CChunk2*> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture("FUT_PROCESS_CHUNKT_REBUILD", [pChunk]()->CChunk2* {
                         if (FAILED(pChunk->Messing()))
                         {
                             // TODO: MSGBOX
