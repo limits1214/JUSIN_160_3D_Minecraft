@@ -17,20 +17,6 @@ void CCameraManager::UpdateGUI()
 {
 	ImGui::Begin("CCameraManager");
 
-	//for (const auto& [GroupID, handle] : m_ActiveCameras)
-	//{
-	//	if (ImGui::TreeNode(GroupID.GetDbgStr()))
-	//	{
-	//		auto pObj = CGameInstance::Get().GetGameObjectByHandle(handle);
-	//		if (pObj)
-	//		{
-	//			pObj->UpdateGUI();
-	//		}
-
-	//		ImGui::TreePop();
-	//	}
-	//}
-
 	std::string activeGameCamera{"GAME: "};
 	if (m_ActiveGameCamera.has_value())
 	{
@@ -68,7 +54,7 @@ void CCameraManager::UpdateGUI()
 
 				ImGui::TreePop();
 			}
-
+			ImGui::SameLine();
 			if (ImGui::Button("Active"))
 			{
 				SetActiveGameCamera(camHandle.first);
@@ -97,7 +83,7 @@ void CCameraManager::UpdateGUI()
 
 				ImGui::TreePop();
 			}
-
+			ImGui::SameLine();
 			if (ImGui::Button("Active"))
 			{
 				SetActiveUICamera(camHandle.first);
@@ -159,7 +145,7 @@ void CCameraManager::UpdateGUI()
 //	return S_OK;
 //}
 
-const CCameraObject* CCameraManager::GetActiveGameCamera() const
+CCameraObject* CCameraManager::GetActiveGameCamera() const
 {
 	if (!m_ActiveGameCamera.has_value())
 	{
@@ -203,7 +189,7 @@ HRESULT CCameraManager::SetActiveGameCamera(const StringID& CameraID)
 	return S_OK;
 }
 
-const CCameraObject* CCameraManager::GetActiveUICamera() const
+CCameraObject* CCameraManager::GetActiveUICamera() const
 {
 	if (!m_ActiveUICamera.has_value())
 	{
@@ -247,7 +233,7 @@ HRESULT CCameraManager::SetActiveUICamera(const StringID& CameraID)
 	return S_OK;
 }
 
-const CCameraObject* CCameraManager::GetActiveGameCamera(const StringID& CameraID) const
+CCameraObject* CCameraManager::GetActiveGameCamera(const StringID& CameraID) const
 {
 	auto tmp = GetActiveGameCamera();
 	if (tmp != GetGameCamera(CameraID))
@@ -257,7 +243,7 @@ const CCameraObject* CCameraManager::GetActiveGameCamera(const StringID& CameraI
 	return tmp;
 }
 
-const CCameraObject* CCameraManager::GetActiveUICamera(const StringID& CameraID) const
+CCameraObject* CCameraManager::GetActiveUICamera(const StringID& CameraID) const
 {
 	auto tmp = GetActiveUICamera();
 	if (tmp != GetUICamera(CameraID))
@@ -267,7 +253,7 @@ const CCameraObject* CCameraManager::GetActiveUICamera(const StringID& CameraID)
 	return tmp;
 }
 
-const CCameraObject* CCameraManager::GetGameCamera(const StringID& CameraID) const
+CCameraObject* CCameraManager::GetGameCamera(const StringID& CameraID) const
 {
 	auto iter = m_GameCameras.find(CameraID);
 	if (iter == m_GameCameras.end())
@@ -288,7 +274,7 @@ const CCameraObject* CCameraManager::GetGameCamera(const StringID& CameraID) con
 	return static_cast<CCameraObject*>(pObj);
 }
 
-const CCameraObject* CCameraManager::GetUICamera(const StringID& CameraID) const
+CCameraObject* CCameraManager::GetUICamera(const StringID& CameraID) const
 {
 	auto iter = m_UICameras.find(CameraID);
 	if (iter == m_UICameras.end())

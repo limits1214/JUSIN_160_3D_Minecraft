@@ -21,18 +21,18 @@ public:
 //	std::unordered_map<StringID, CHandle> m_ActiveCameras{};
 
 public:
-	const CCameraObject* GetActiveGameCamera() const;
+	CCameraObject* GetActiveGameCamera() const;
 	HRESULT SetActiveGameCamera(const StringID& CameraID);
-	const CCameraObject* GetActiveUICamera() const;
+	CCameraObject* GetActiveUICamera() const;
 	HRESULT SetActiveUICamera(const StringID& CameraID);
 
-	const CCameraObject* GetActiveGameCamera(const StringID& CameraID) const;
-	const CCameraObject* GetActiveUICamera(const StringID& CameraID) const;
+	CCameraObject* GetActiveGameCamera(const StringID& CameraID) const;
+	CCameraObject* GetActiveUICamera(const StringID& CameraID) const;
 
 
 
-	const CCameraObject* GetGameCamera(const StringID& CameraID) const;
-	const CCameraObject* GetUICamera(const StringID& CameraID) const;
+	CCameraObject* GetGameCamera(const StringID& CameraID) const;
+	CCameraObject* GetUICamera(const StringID& CameraID) const;
 	HRESULT RegistGameCamera(const StringID& CameraID, const CHandle& handle);
 	HRESULT RegistUICamera(const StringID& CameraID, const CHandle& handle);
 

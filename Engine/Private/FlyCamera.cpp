@@ -60,33 +60,8 @@ void CFlyCamera::PriorityUpdate(E::_float fTimeDelta)
             GetTransform().GoRight(fTimeDelta * 10.f);
         }
 
-
-
-        if (CGameInstance::Get().KeyDown(DIK_TAB))
+        if (CGameInstance::Get().GetMouseFix())
         {
-            m_bFix = !m_bFix;
-            if (!m_bFix)
-            {
-                ShowCursor(TRUE);
-            }
-            else
-            {
-                ShowCursor(FALSE);
-            }
-        }
-        if (m_bFix)
-        {
-            MouseFix();
-
-
-            //if (CGameInstance::Get().KeyPressing(DIK_J))
-            //{
-            //    GetTransform().AddRotation(vUp, fTimeDelta * -90.f);
-            //}
-            //if (CGameInstance::Get().KeyPressing(DIK_L))
-            //{
-            //    GetTransform().AddRotation(vUp, fTimeDelta * 90.f);
-            //}
             if (auto a = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::X))
             {
                 _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
@@ -138,10 +113,7 @@ void CFlyCamera::PriorityUpdate(E::_float fTimeDelta)
                 }
             }
         }
-        else
-        {
 
-        }
     }
 
 

@@ -11,6 +11,8 @@ public:
     int32_t GetParentIndex() const { return m_iParentIndex; }
     void SetParentIndex(uint32_t i) { m_iParentIndex = i; }
     const _float4x4* GetCombinedTransformationMatrix() const { return &m_CombinedTransformationMatrix; }
+    const _float4x4* GeTransformationMatrix() const { return &m_TransformationMatrix; }
+
     void SetPivot(const _float3& pivot) { m_vPivot = pivot; }
     const _float3& GetPivot() const { return m_vPivot; }
     void SetLocalPivot(const _float3& pivot) { m_vLocalPivot = pivot; }

@@ -35,8 +35,11 @@ HRESULT CComEntityModel::Initialize(void* pArg)
         auto b = CEntityModelBone{ bone.name };
         b.SetPivot(bone.pivot);
         b.SetParentName(bone.parent);
+        m_BonesLookup.emplace(bone.name, m_Bones.size());
         m_Bones.push_back(b);
     }
+
+    assert(m_BonesLookup.size() == m_Bones.size());
 
     for (uint32_t i = 0; i < m_Bones.size(); ++i)
     {
@@ -126,6 +129,18 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
         //    bone.UpdateTransformationMatrix(local);
         //}
 
+    if (CGameInstance::Get().KeyPressing(DIK_RIGHT))
+    {
+        _matrix tmp = XMLoadFloat4x4(GetBone("head")->GeTransformationMatrix());
+        GetBone("head")->UpdateTransformationMatrix(XMMatrixRotationY(XMConvertToRadians(1.f)) * tmp);
+    }
+
+    if (CGameInstance::Get().KeyPressing(DIK_LEFT))
+    {
+        _matrix tmp = XMLoadFloat4x4(GetBone("head")->GeTransformationMatrix());
+        GetBone("head")->UpdateTransformationMatrix(XMMatrixRotationY(XMConvertToRadians(-1.f)) * tmp);
+    }
+
     if (false)
     {
         for (auto& bone : m_Bones)
@@ -164,72 +179,72 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
             bone.UpdateTransformationMatrix(local);
         }
    
-        
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera())
+        {
+            CEntityModelBone* headBone{};
+            for (auto& bone : m_Bones)
+            {
+                if (bone.GetName() == "head")
+                {
+                    headBone = &bone;
+                    break;
+                }
+            }
+            if (headBone)
+            {
+                // 카메라 → 엔티티 방향 벡터
+                const _float3& camPos = cam->GetTransform().GetPosition();
+
+                auto entityWorld = GetGameObject()->GetTransform().GetLoadedWorldMatrix();
+                //auto a = entityWorld.r[0];
+                //XMLoadFloat3(entityWorld->m[0])
+                //auto entityPos = GetGameObject()->GetTransform().GetPosition();
+
+                //_matrix mat = XMMatrixIdentity();
+                //mat.r[0] = XMVector3Normalize(entityWorld.r[0]);
+                //mat.r[1] = XMVector3Normalize(entityWorld.r[1]);
+                //mat.r[2] = XMVector3Normalize(entityWorld.r[2]);
+                //mat.r[3] = entityWorld.r[3];
+                //mat.r[3] = XMVectorSet(entityPos.x, entityPos.y, entityPos.z, 1.f);
+
+
+                XMVECTOR vHeadWorld = XMVector3TransformCoord(XMLoadFloat3(&headBone->GetPivot()),
+                    entityWorld);
+
+                XMVECTOR vCam = XMLoadFloat3(&camPos);
+
+                XMVECTOR vDir = XMVector3Normalize(vCam - vHeadWorld); // 엔티티 → 카메라
+
+                {
+                    _vector vLook = vDir;
+
+                    _vector worldUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+                    //_vector fallback = XMVectorSet(1.f, 0.f, 0.f, 0.f);
+                    //float   dot = XMVectorGetX(XMVector3Dot(vLook, worldUp));
+                    //_vector refUp = (fabsf(dot) > 0.99f) ? fallback : worldUp;
+
+                    _vector vRight = XMVector3Normalize(XMVector3Cross(worldUp, vLook));
+                    _vector vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight));
+
+                    //_float3 scale = GetGameObject()->GetTransform().GetScale();
+                    //SetState(STATE::RIGHT, XMVector3Normalize(vRight) * scale.x);
+                    //SetState(STATE::UP, XMVector3Normalize(vUp) * scale.y);
+                    //SetState(STATE::LOOK, XMVector3Normalize(vLook) * scale.z);
+
+                    _matrix matRot = XMMatrixIdentity();
+                    matRot.r[0] = XMVectorSetW(vRight, 0.f);
+                    matRot.r[1] = XMVectorSetW(vUp, 0.f);
+                    matRot.r[2] = XMVectorSetW(vLook, 0.f);
+
+
+                    headBone->UpdateTransformationMatrix(matRot);
+                }
+            }
+
+        }
     }
 
-    if (auto cam = CGameInstance::Get().GetActiveGameCamera())
-    {
-        CEntityModelBone* headBone{};
-        for (auto& bone : m_Bones)
-        {
-            if (bone.GetName() == "head")
-            {
-                headBone = &bone;
-                break;
-            }
-        }
-        if (headBone)
-        {
-            // 카메라 → 엔티티 방향 벡터
-            const _float3& camPos = cam->GetTransform().GetPosition();
-            
-            auto entityWorld = GetGameObject()->GetTransform().GetLoadedWorldMatrix();
-            //auto a = entityWorld.r[0];
-            //XMLoadFloat3(entityWorld->m[0])
-            //auto entityPos = GetGameObject()->GetTransform().GetPosition();
-            
-            //_matrix mat = XMMatrixIdentity();
-            //mat.r[0] = XMVector3Normalize(entityWorld.r[0]);
-            //mat.r[1] = XMVector3Normalize(entityWorld.r[1]);
-            //mat.r[2] = XMVector3Normalize(entityWorld.r[2]);
-            //mat.r[3] = entityWorld.r[3];
-            //mat.r[3] = XMVectorSet(entityPos.x, entityPos.y, entityPos.z, 1.f);
-
-
-            XMVECTOR vHeadWorld =  XMVector3TransformCoord(XMLoadFloat3(&headBone->GetPivot()),
-                entityWorld);
-
-            XMVECTOR vCam = XMLoadFloat3(&camPos);
-
-            XMVECTOR vDir = XMVector3Normalize(vCam - vHeadWorld); // 엔티티 → 카메라
-
-            {
-                _vector vLook = vDir;
-
-                _vector worldUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-                //_vector fallback = XMVectorSet(1.f, 0.f, 0.f, 0.f);
-                //float   dot = XMVectorGetX(XMVector3Dot(vLook, worldUp));
-                //_vector refUp = (fabsf(dot) > 0.99f) ? fallback : worldUp;
-
-                _vector vRight = XMVector3Normalize(XMVector3Cross(worldUp, vLook));
-                _vector vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight));
-
-                //_float3 scale = GetGameObject()->GetTransform().GetScale();
-                //SetState(STATE::RIGHT, XMVector3Normalize(vRight) * scale.x);
-                //SetState(STATE::UP, XMVector3Normalize(vUp) * scale.y);
-                //SetState(STATE::LOOK, XMVector3Normalize(vLook) * scale.z);
-
-                _matrix matRot = XMMatrixIdentity();
-                matRot.r[0] = XMVectorSetW(vRight, 0.f);
-                matRot.r[1] = XMVectorSetW(vUp, 0.f);
-                matRot.r[2] = XMVectorSetW(vLook, 0.f);
-
-
-                headBone->UpdateTransformationMatrix(matRot);
-            }
-        }
-
-    }
+    
     for (uint32_t i = 0; i < m_Bones.size(); ++i)
     {
         auto& bone = m_Bones[i];
