@@ -7,7 +7,7 @@
 #include "PigEntity.h"
 #include "CowEntity.h"
 #include "ChickenEntity.h"
-#include "PlayerSteveEntity.h"
+#include "PlayerEntity.h"
 #include "SkeletonEntity.h"
 #include "DropItem.h"
 #include "ExperienceOrbItem.h"
@@ -84,7 +84,7 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
-		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PlayerSteveEntity", E::CPlayerSteveEntity::Create())))
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PlayerEntity", E::CPlayerEntity::Create())))
 		{
 			int x = 0;
 		}
@@ -135,9 +135,9 @@ HRESULT CLevelTestWorld::Initialize()
 		//}
 		
 		{
-			E::CPlayerSteveEntity::DESC Desc{};
-			Desc.sObjectTag = "PlayerSteve";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerSteveEntity",
+			E::CPlayerEntity::DESC Desc{};
+			Desc.sObjectTag = "Player";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
 				E::ETOUI(LEVEL_TEST_WORLD_LAYERS::ENTITY), &Desc))
 			{
 			}

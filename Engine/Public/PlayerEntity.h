@@ -3,7 +3,7 @@
 
 NS_BEGIN(Engine)
 class CComEntityModel;
-class ENGINE_DLL CPlayerSteveEntity : public CPlayerEntityObject
+class ENGINE_DLL CPlayerEntity : public CPlayerEntityObject
 {
 public:
 	typedef struct tagDesc : CPlayerEntityObject::DESC
@@ -12,11 +12,11 @@ public:
 	}DESC;
 
 public:
-	DECLARE_DERIVED_TYPE(CPlayerSteveEntity, CPlayerEntityObject)
+	DECLARE_DERIVED_TYPE(CPlayerEntity, CPlayerEntityObject)
 
 private:
-	explicit CPlayerSteveEntity();
-	~CPlayerSteveEntity() override;
+	explicit CPlayerEntity();
+	~CPlayerEntity() override;
 
 public:
 	HRESULT Initialize(void* pArg) override;
@@ -31,7 +31,7 @@ private:
 private:
 	CComEntityModel* m_pComEntityModel{};
 public:
-	static UPtr<CPlayerSteveEntity> Create();
+	static UPtr<CPlayerEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
 };
 
