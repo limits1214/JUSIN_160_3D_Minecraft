@@ -693,7 +693,7 @@
     <ClInclude Include="..\public\MonsterEntityObject.h">
       <Filter>GameObject\Entity\Monster</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\PlayerSteveEntity.h">
+    <ClInclude Include="..\public\PlayerEntity.h">
       <Filter>GameObject\Entity\Player\Steve</Filter>
     </ClInclude>
     <ClInclude Include="..\public\PlayerEntityObject.h">
@@ -1046,7 +1046,7 @@
     <ClCompile Include="..\private\MonsterEntityObject.cpp">
       <Filter>GameObject\Entity\Monster</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\PlayerSteveEntity.cpp">
+    <ClCompile Include="..\private\PlayerEntity.cpp">
       <Filter>GameObject\Entity\Player\Steve</Filter>
     </ClCompile>
     <ClCompile Include="..\private\PlayerEntityObject.cpp">

@@ -1,4 +1,4 @@
-#include "PlayerSteveEntity.h"
+#include "PlayerEntity.h"
 
 #include "Resources.h"
 #include "GameInstance.h"
@@ -9,15 +9,15 @@ NS_USING(Engine)
 
 
 
-CPlayerSteveEntity::CPlayerSteveEntity()
+CPlayerEntity::CPlayerEntity()
 {
 }
 
-CPlayerSteveEntity::~CPlayerSteveEntity()
+CPlayerEntity::~CPlayerEntity()
 {
 }
 
-HRESULT CPlayerSteveEntity::Initialize(void* pArg)
+HRESULT CPlayerEntity::Initialize(void* pArg)
 {
     if (FAILED(CPlayerEntityObject::Initialize(pArg)))
     {
@@ -40,22 +40,22 @@ HRESULT CPlayerSteveEntity::Initialize(void* pArg)
     return S_OK;
 }
 
-void CPlayerSteveEntity::PriorityUpdate(E::_float fTimeDelta)
+void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CPlayerSteveEntity::Update(E::_float fTimeDelta)
+void CPlayerEntity::Update(E::_float fTimeDelta)
 {
     m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
 }
 
-void CPlayerSteveEntity::LateUpdate(E::_float fTimeDelta)
+void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 {
     CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
     GetTransform().Update();
 }
 
-HRESULT CPlayerSteveEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
     {
         auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
@@ -80,24 +80,24 @@ HRESULT CPlayerSteveEntity::Render(ID3D11DeviceContext* pContext, const E::RENDE
     return S_OK;
 }
 
-UPtr<CPlayerSteveEntity> CPlayerSteveEntity::Create()
+UPtr<CPlayerEntity> CPlayerEntity::Create()
 {
-    auto pInstance = ToUPtr(new CPlayerSteveEntity{});
+    auto pInstance = ToUPtr(new CPlayerEntity{});
     if (FAILED(pInstance->InitializePrototype()))
     {
-        MSG_BOX("Failed to Create: CPlayerSteveEntity");
+        MSG_BOX("Failed to Create: CPlayerEntity");
         return nullptr;
     }
 
     return pInstance;
 }
 
-UPtr<CPrototype> CPlayerSteveEntity::Clone(void* pArg)
+UPtr<CPrototype> CPlayerEntity::Clone(void* pArg)
 {
-    auto pInstance = ToUPtr(new CPlayerSteveEntity{ *this });
+    auto pInstance = ToUPtr(new CPlayerEntity{ *this });
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX("Failed to Cloned: CPlayerSteveEntity");
+        MSG_BOX("Failed to Cloned: CPlayerEntity");
         return nullptr;
     }
 
