@@ -176,12 +176,12 @@ std::optional<CHandle> CGameObjectManager::GetFreeHandle()
 
 		objectHandle = CHandle{ idx, gen };
 		m_Objects.push_back({});
-		m_FreeSlots.push_back(idx);
+		//m_FreeSlots.push_back(idx);
 	}
 	else
 	{
 		size_t emptyIdx = m_FreeSlots.back();
-		//m_FreeSlots.pop_back();
+		m_FreeSlots.pop_back();
 
 		size_t idx = emptyIdx;
 		uint32_t gen = m_Objects[emptyIdx].GetGeneration();
@@ -189,23 +189,6 @@ std::optional<CHandle> CGameObjectManager::GetFreeHandle()
 		objectHandle = CHandle{ idx, gen };
 	}
 	return objectHandle;
-}
-
-void CGameObjectManager::SortLayer()
-{
-	std::sort(m_Layers.begin(), m_Layers.end(),
-		[](const std::pair<std::string, std::vector<CHandle>>& a,
-			const std::pair<std::string, std::vector<CHandle>>& b) {
-				return a.first < b.first;
-		});
-
-	m_LookupLayers.clear();
-	m_LookupLayers.reserve(m_Layers.size());
-
-	for (size_t i = 0; i < m_Layers.size(); ++i)
-	{
-		m_LookupLayers.emplace(m_Layers[i].first, i);
-	}
 }
 
 std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, std::string_view sLayerName, void* pArg)
@@ -219,11 +202,11 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 
 	auto objHandle = pGameObject->GetHandle();
 
-	auto iter = std::find(m_FreeSlots.begin(), m_FreeSlots.end(), objHandle.GetIndex());
-	if (iter != m_FreeSlots.end())
-	{
-		m_FreeSlots.erase(iter);
-	}
+	//auto iter = std::find(m_FreeSlots.begin(), m_FreeSlots.end(), objHandle.GetIndex());
+	//if (iter != m_FreeSlots.end())
+	//{
+	//	m_FreeSlots.erase(iter);
+	//}
 
 	m_Objects[objHandle.GetIndex()].Set(std::move(pGameObject));
 
@@ -241,6 +224,23 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 	m_bTreeReBuild = true;
 
 	return objHandle;
+}
+
+void CGameObjectManager::SortLayer()
+{
+	std::sort(m_Layers.begin(), m_Layers.end(),
+		[](const std::pair<std::string, std::vector<CHandle>>& a,
+			const std::pair<std::string, std::vector<CHandle>>& b) {
+				return a.first < b.first;
+		});
+
+	m_LookupLayers.clear();
+	m_LookupLayers.reserve(m_Layers.size());
+
+	for (size_t i = 0; i < m_Layers.size(); ++i)
+	{
+		m_LookupLayers.emplace(m_Layers[i].first, i);
+	}
 }
 
 const std::vector<CHandle>* CGameObjectManager::GetLayer(std::string_view sLayerName) const
