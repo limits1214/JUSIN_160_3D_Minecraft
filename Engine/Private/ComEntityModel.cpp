@@ -267,6 +267,9 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
     for (uint32_t i = 0; i < m_Bones.size(); ++i)
     {
         auto& bone = m_Bones[i];
+
+        bone.BuildTransformMatrix();
+
         int32_t parentIdx = bone.GetParentIndex(); // -1이면 루트
         bone.UpdateCombinedMatrix(parentIdx >= 0
             ? m_Bones[parentIdx].GetCombinedTransformationMatrix()

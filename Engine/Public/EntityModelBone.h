@@ -42,6 +42,47 @@ public:
             XMStoreFloat4x4(&m_CombinedTransformationMatrix, local);
     }
 
+public:
+    _float3* GetTranslatoin()   { return &m_Translation; }
+    _float3* GetRotation() { return &m_Rotation; }
+    _float3* GetScale() { return &m_Scale; }
+
+    void SetTranslation(const _float3& trs) { m_Translation = trs; }
+    void SetRotation(const _float3& rot) { m_Rotation = rot; }
+    void SetScale(const _float3& scale) { m_Scale = scale; }
+
+    void AddTranslation(const _float3& trs) {
+        m_Translation.x += trs.x; 
+        m_Translation.y += trs.y;
+        m_Translation.z += trs.z;
+    }
+
+    void AddRotation(const _float3& rot) {
+        m_Rotation.x += rot.x;
+        m_Rotation.y += rot.y;
+        m_Rotation.z += rot.z;
+    }
+
+    void AddScale(const _float3& scale) {
+        m_Scale.x *= scale.x;
+        m_Scale.y *= scale.y;
+        m_Scale.z *= scale.z;
+    }
+
+    void BuildTransformMatrix()
+    {
+        auto t = XMMatrixTranslation(m_Translation.x, m_Translation.y, m_Translation.z);
+        auto r = XMMatrixRotationX(m_Rotation.x) * XMMatrixRotationY(m_Rotation.y) * XMMatrixRotationZ(m_Rotation.z);
+        auto s = XMMatrixScaling(m_Scale.x, m_Scale.y, m_Scale.z);
+        auto rs = s * r * t;
+        XMStoreFloat4x4(&m_TransformationMatrix, s * r * t);
+    }
+
+private:
+    _float3 m_Translation{};
+    _float3 m_Rotation{};
+    _float3 m_Scale{ 1.f, 1.f, 1.f };
+
 private:
     std::string m_sName{};
     std::string m_sParentName{};

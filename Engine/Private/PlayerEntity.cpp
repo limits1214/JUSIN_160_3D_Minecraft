@@ -105,6 +105,23 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
     GetTransform().Update();
 
+
+    //if (CGameInstance::Get().KeyPressing(DIK_RIGHT))
+    //{
+    //    if (auto pHeadBone = m_pComEntityModel->GetBone("head"))
+    //    {
+    //        pHeadBone->AddRotation({0.f, XMConvertToRadians(90.f) * fTimeDelta, 0.f});
+    //    }
+    //}
+
+    //if (CGameInstance::Get().KeyPressing(DIK_LEFT))
+    //{
+    //    if (auto pHeadBone = m_pComEntityModel->GetBone("head"))
+    //    {
+    //        pHeadBone->AddRotation({ 0.f, -XMConvertToRadians(90.f) * fTimeDelta, 0.f });
+    //    }
+    //}
+
     if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
     {
         if (auto item = m_pComEntityModel->GetBone("rightItem"))
@@ -123,7 +140,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
         if (auto pHeadBone = m_pComEntityModel->GetBone("head"))
         {
-            if (CGameInstance::Get().GetMouseFix())
+            if (false && CGameInstance::Get().GetMouseFix())
             {
                 if (auto mouseX = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::X))
                 {
@@ -285,7 +302,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
     //UpdateAttackAnimation(fTimeDelta);
 
-
+    if(false)
     {
         constexpr float fScale = 0.0625f;
 
@@ -364,7 +381,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
             pRightLeg->UpdateTransformationMatrix(matRot);
         }
     }
-    if(1)
+    if (1)
     {
         static float fTmp2 = 0;
         fTmp2 += fTimeDelta;;
@@ -373,14 +390,16 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
         if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
         {
-            _matrix matLeftArmRot = XMMatrixRotationZ(XMConvertToRadians(-bob));
-            pLeftArm->UpdateTransformationMatrix(matLeftArmRot);
+            pLeftArm->SetRotation({0,0, XMConvertToRadians(-bob) });
+            //_matrix matLeftArmRot = XMMatrixRotationZ(XMConvertToRadians(-bob));
+            //pLeftArm->UpdateTransformationMatrix(matLeftArmRot);
         }
 
         if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
         {
-            _matrix matRightArmRot = XMMatrixRotationZ(XMConvertToRadians(bob));
-            pRightArm->UpdateTransformationMatrix(matRightArmRot);
+            pRightArm->SetRotation({ 0,0, XMConvertToRadians(bob) });
+            //_matrix matRightArmRot = XMMatrixRotationZ(XMConvertToRadians(bob));
+            //pRightArm->UpdateTransformationMatrix(matRightArmRot);
         }
     }
 
