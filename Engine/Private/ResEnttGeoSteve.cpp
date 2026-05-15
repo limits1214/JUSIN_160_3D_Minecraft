@@ -30,7 +30,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "waist",
                 .pivot = {0.0f, 24.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-4.0f, 12.0f, -2.0f}, .size = {8, 12, 4}, .uv = {16, 16}, .texIndex = PackTexId(8, 3)}
+                    {.origin = {-4.0f, 12.0f, -2.0f}, .size = {8, 12, 4}, .uv = {16, 16}}
                 }
             },
             {
@@ -38,7 +38,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {0.0f, 24.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-4.0f, 12.0f, -2.0f}, .size = {8, 12, 4}, .uv = {16, 32}, .texIndex = PackTexId(8, 3), .inflate = 0.25f}
+                    {.origin = {-4.0f, 12.0f, -2.0f}, .size = {8, 12, 4}, .uv = {16, 32}, .inflate = 0.25f}
                 }
             },
             {
@@ -46,7 +46,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {0.0f, 24.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-4.0f, 24.0f, -4.0f}, .size = {8, 8, 8}, .uv = {0, 0}, .texIndex = PackTexId(8, 3)}
+                    {.origin = {-4.0f, 24.0f, -4.0f}, .size = {8, 8, 8}, .uv = {0, 0}}
                 }
             },
             {
@@ -54,7 +54,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "head",
                 .pivot = {0.0f, 24.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-4.0f, 24.0f, -4.0f}, .size = {8, 8, 8}, .uv = {32, 0}, .texIndex = PackTexId(8, 3), .inflate = 0.5f}
+                    {.origin = {-4.0f, 24.0f, -4.0f}, .size = {8, 8, 8}, .uv = {32, 0}, .inflate = 0.5f}
                 }
             },
             {
@@ -67,7 +67,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {-5.0f, 22.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-8.0f, 12.0f, -2.0f}, .size = {4, 12, 4}, .uv = {40, 16}, .texIndex = PackTexId(8, 3)}
+                    {.origin = {-8.0f, 12.0f, -2.0f}, .size = {4, 12, 4}, .uv = {40, 16}}
                 }
             },
             {
@@ -75,7 +75,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "rightArm",
                 .pivot = {-5.0f, 22.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-8.0f, 12.0f, -2.0f}, .size = {4, 12, 4}, .uv = {40, 32}, .texIndex = PackTexId(8, 3), .inflate = 0.25f}
+                    {.origin = {-8.0f, 12.0f, -2.0f}, .size = {4, 12, 4}, .uv = {40, 32}, .inflate = 0.25f}
                 }
             },
             {
@@ -91,7 +91,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "body",
                 .pivot = {5.0f, 22.0f, 0.0f},
                 .cubes = {
-                    {.origin = {4.0f, 12.0f, -2.0f}, .size = {4, 12, 4}, .uv = {32, 48}, .texIndex = PackTexId(8, 3)}
+                    {.origin = {4.0f, 12.0f, -2.0f}, .size = {4, 12, 4}, .uv = {32, 48}}
                 }
             },
             {
@@ -99,7 +99,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "leftArm",
                 .pivot = {5.0f, 22.0f, 0.0f},
                 .cubes = {
-                    {.origin = {4.0f, 12.0f, -2.0f}, .size = {4, 12, 4}, .uv = {48, 48}, .texIndex = PackTexId(8, 3), .inflate = 0.25f}
+                    {.origin = {4.0f, 12.0f, -2.0f}, .size = {4, 12, 4}, .uv = {48, 48}, .inflate = 0.25f}
                 }
             },
             {
@@ -112,7 +112,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "root",
                 .pivot = {-1.9f, 12.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-3.9f, 0.0f, -2.0f}, .size = {4, 12, 4}, .uv = {0, 16}, .texIndex = PackTexId(8, 3)}
+                    {.origin = {-3.9f, 0.0f, -2.0f}, .size = {4, 12, 4}, .uv = {0, 16}}
                 }
             },
             {
@@ -120,7 +120,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "rightLeg",
                 .pivot = {-1.9f, 12.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-3.9f, 0.0f, -2.0f}, .size = {4, 12, 4}, .uv = {0, 32}, .texIndex = PackTexId(8, 3), .inflate = 0.25f}
+                    {.origin = {-3.9f, 0.0f, -2.0f}, .size = {4, 12, 4}, .uv = {0, 32}, .inflate = 0.25f}
                 }
             },
             {
@@ -128,7 +128,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "root",
                 .pivot = {1.9f, 12.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-0.1f, 0.0f, -2.0f}, .size = {4, 12, 4}, .uv = {16, 48}, .texIndex = PackTexId(8, 3)}
+                    {.origin = {-0.1f, 0.0f, -2.0f}, .size = {4, 12, 4}, .uv = {16, 48}}
                 }
             },
             {
@@ -136,7 +136,7 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
                 .parent = "leftLeg",
                 .pivot = {1.9f, 12.0f, 0.0f},
                 .cubes = {
-                    {.origin = {-0.1f, 0.0f, -2.0f}, .size = {4, 12, 4}, .uv = {0, 48}, .texIndex = PackTexId(8, 3), .inflate = 0.25f}
+                    {.origin = {-0.1f, 0.0f, -2.0f}, .size = {4, 12, 4}, .uv = {0, 48}, .inflate = 0.25f}
                 }
             }
         };

@@ -105,11 +105,6 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
     GetTransform().Update();
 
-    {
-       
-    }
-
-
     if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
     {
         if (auto item = m_pComEntityModel->GetBone("rightItem"))
@@ -134,7 +129,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
                 {
                     m_vHeadRotation.y += 10.f * fTimeDelta * mouseX;
                 }
-
+                    
                 if (auto mouseY = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::Y))
                 {
                     float nextPitch = m_vHeadRotation.x + 10.f * fTimeDelta * (mouseY);
@@ -290,6 +285,105 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
     //UpdateAttackAnimation(fTimeDelta);
 
+
+    {
+        constexpr float fScale = 0.0625f;
+
+        if (auto pRoot = m_pComEntityModel->GetBone("root"))
+        {
+            _matrix matRot =
+                XMMatrixRotationX(
+                    XMConvertToRadians(28.f));
+
+            _matrix matPos =
+                XMMatrixTranslation(
+                    0.f,
+                    1.25f * fScale,
+                    -9.f * fScale);
+
+            pRoot->UpdateTransformationMatrix(
+                matRot * matPos);
+        }
+
+        if (auto pBody = m_pComEntityModel->GetBone("body"))
+        {
+            _matrix matPos =
+                XMMatrixTranslation(
+                    0.f,
+                    -2.f * fScale,
+                    0.f);
+
+            pBody->UpdateTransformationMatrix(matPos);
+        }
+
+        if (auto pHead = m_pComEntityModel->GetBone("head"))
+        {
+            auto tmp = XMLoadFloat4x4(pHead->GeTransformationMatrix());
+            _matrix matPos =
+                XMMatrixTranslation(
+                    0.f,
+                    -1.f * fScale,
+                    0.f);
+
+            pHead->UpdateTransformationMatrix(tmp * matPos );
+        }
+
+        if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+        {
+            _matrix matRot =
+                XMMatrixRotationX(
+                    XMConvertToRadians(-5.7f));
+
+            pLeftArm->UpdateTransformationMatrix(matRot);
+        }
+
+        if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+        {
+            _matrix matRot =
+                XMMatrixRotationX(
+                    XMConvertToRadians(-5.7f));
+
+            pRightArm->UpdateTransformationMatrix(matRot);
+        }
+
+        if (auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg"))
+        {
+            _matrix matRot =
+                XMMatrixRotationX(
+                    XMConvertToRadians(-28.f));
+
+            pLeftLeg->UpdateTransformationMatrix(matRot);
+        }
+
+        if (auto pRightLeg = m_pComEntityModel->GetBone("rightLeg"))
+        {
+            _matrix matRot =
+                XMMatrixRotationX(
+                    XMConvertToRadians(-28.f));
+
+            pRightLeg->UpdateTransformationMatrix(matRot);
+        }
+    }
+    if(1)
+    {
+        static float fTmp2 = 0;
+        fTmp2 += fTimeDelta;;
+        float lifeTime = fTmp2;
+        float bob = (cosf(lifeTime * XMConvertToRadians(103.2f)) * 2.865f) + 2.865f;
+
+        if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+        {
+            _matrix matLeftArmRot = XMMatrixRotationZ(XMConvertToRadians(-bob));
+            pLeftArm->UpdateTransformationMatrix(matLeftArmRot);
+        }
+
+        if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+        {
+            _matrix matRightArmRot = XMMatrixRotationZ(XMConvertToRadians(bob));
+            pRightArm->UpdateTransformationMatrix(matRightArmRot);
+        }
+    }
+
     if(false)
     {
         bool bMoving = CGameInstance::Get().KeyPressing(DIK_W) ||
@@ -309,7 +403,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
             float tcos0 = cos(fWalkCycle) * 30;
 
             // leftarm, leftleg, rightarm, rightleg 회전 적용
-                if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+            if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
             {
                 _matrix matLeftArmRot = XMMatrixRotationX(XMConvertToRadians(tcos0));
                 _matrix leftArmBaseMat = XMLoadFloat4x4(pLeftArm->GeTransformationMatrix());

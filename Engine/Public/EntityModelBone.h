@@ -27,12 +27,13 @@ public:
     void UpdateTransformationMatrix(_fmatrix localTransform)   // 키프레임에서 온 Local TRS
     {
         // LocalPivot = Bind Pose에서의 부모 기준 Local Position
-        XMMATRIX OffsetFromParentPivot = XMMatrixTranslationFromVector(XMLoadFloat3(&m_vLocalPivot));
-        XMStoreFloat4x4(&m_TransformationMatrix, localTransform * OffsetFromParentPivot);
+        
+        XMStoreFloat4x4(&m_TransformationMatrix, localTransform );
     }
     void UpdateCombinedMatrix(const _float4x4* pParentCombined)
     {
-        XMMATRIX local = XMLoadFloat4x4(&m_TransformationMatrix);
+        XMMATRIX OffsetFromParentPivot = XMMatrixTranslationFromVector(XMLoadFloat3(&m_vLocalPivot));
+        XMMATRIX local = XMLoadFloat4x4(&m_TransformationMatrix) * OffsetFromParentPivot;
 
         if (pParentCombined)
             XMStoreFloat4x4(&m_CombinedTransformationMatrix,

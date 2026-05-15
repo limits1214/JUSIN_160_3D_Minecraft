@@ -12,7 +12,9 @@ public:
 public:
 	typedef struct tagDesc
 	{
-		std::pair<StringID, StringID> geometryId;
+		std::pair<StringID, StringID> geometryId{};
+		std::optional<uint32_t> baseTexId{};
+		std::unordered_map<_string, uint32_t> specificCubeTexIds{};
 	} DESC;
 
 private:

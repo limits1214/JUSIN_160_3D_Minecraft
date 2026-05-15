@@ -30,8 +30,39 @@ HRESULT CComEntityModel::Initialize(void* pArg)
     auto resources = CGameInstance::Get().GetResourceFirst<CResEnttGeo>(pDesc->geometryId.first, pDesc->geometryId.second);
     const auto& geometry = resources->GetGeometry();
 
-    for (const auto& bone : geometry.bones)
+    // 1. 이름 → 인덱스 임시 맵
+    std::unordered_map<std::string, size_t> tempLookup;
+    for (size_t i = 0; i < geometry.bones.size(); ++i)
+        tempLookup.emplace(geometry.bones[i].name, i);
+
+    // 2. 위상 정렬
+    std::vector<size_t> sorted;
+    std::vector<bool> visited(geometry.bones.size(), false);
+
+    std::function<void(size_t)> visit = [&](size_t idx)
+        {
+            if (visited[idx]) return;
+            visited[idx] = true;
+
+            // 부모 먼저
+            const auto& parentName = geometry.bones[idx].parent;
+            if (!parentName.empty())
+            {
+                auto it = tempLookup.find(parentName);
+                if (it != tempLookup.end())
+                    visit(it->second);
+            }
+
+            sorted.push_back(idx);
+        };
+
+    for (size_t i = 0; i < geometry.bones.size(); ++i)
+        visit(i);
+
+    // 3. 정렬된 순서로 bones 구성
+    for (size_t i = 0; i < sorted.size(); ++i)
     {
+        const auto& bone = geometry.bones[sorted[i]];
         auto b = CEntityModelBone{ bone.name };
         b.SetPivot(bone.pivot);
         b.SetParentName(bone.parent);
@@ -46,14 +77,9 @@ HRESULT CComEntityModel::Initialize(void* pArg)
         const std::string& parentName = m_Bones[i].GetParentName();
         if (!parentName.empty())
         {
-            for (uint32_t j = 0; j < i; ++j)
-            {
-                if (m_Bones[j].GetName() == parentName)
-                {
-                    m_Bones[i].SetParentIndex(j);
-                    break;
-                }
-            }
+            auto it = m_BonesLookup.find(parentName);
+            if (it != m_BonesLookup.end())
+                m_Bones[i].SetParentIndex(it->second);
         }
     }
 
@@ -69,6 +95,10 @@ HRESULT CComEntityModel::Initialize(void* pArg)
             _float3 localPivot;
             XMStoreFloat3(&localPivot, XMLoadFloat3(&bone.GetPivot()) - XMLoadFloat3(&m_Bones[parentIdx].GetPivot()));
             bone.SetLocalPivot(localPivot);
+            if (bone.GetName() == "waist")
+            {
+                int x = 0;
+            }
         }
         else
         {
@@ -129,17 +159,6 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
         //    bone.UpdateTransformationMatrix(local);
         //}
 
-    if (CGameInstance::Get().KeyPressing(DIK_RIGHT))
-    {
-        _matrix tmp = XMLoadFloat4x4(GetBone("head")->GeTransformationMatrix());
-        GetBone("head")->UpdateTransformationMatrix(XMMatrixRotationY(XMConvertToRadians(1.f)) * tmp);
-    }
-
-    if (CGameInstance::Get().KeyPressing(DIK_LEFT))
-    {
-        _matrix tmp = XMLoadFloat4x4(GetBone("head")->GeTransformationMatrix());
-        GetBone("head")->UpdateTransformationMatrix(XMMatrixRotationY(XMConvertToRadians(-1.f)) * tmp);
-    }
 
     if (false)
     {
