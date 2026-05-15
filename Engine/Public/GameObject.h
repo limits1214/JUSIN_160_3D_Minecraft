@@ -20,6 +20,7 @@ public:
 public:
 	typedef struct tagGameObjectDesc
 	{
+		CHandle __handle{};
 		_string sObjectTag{};
 	}GAMEOBJECT_DESC;
 

@@ -1031,10 +1031,10 @@ void CGameInstance::DelGameObjectLayer(std::string_view sLayerName)
 {
 	return m_pGameObjectManager->DelLayer(sLayerName);
 }
-std::optional<CHandle> CGameInstance::GetFreeHandle() const
-{
-	return m_pGameObjectManager->GetFreeHandle();
-}
+//std::optional<CHandle> CGameInstance::GetFreeHandle() const
+//{
+//	return m_pGameObjectManager->GetFreeHandle();
+//}
 #pragma endregion
 
 
