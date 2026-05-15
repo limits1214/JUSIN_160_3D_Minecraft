@@ -78,8 +78,8 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 {
     m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
 }
-/*
 
+/*
 root
 ├─ waist
 │  └─ body
@@ -98,15 +98,34 @@ root
 └─ leftLeg (parent="root")
    └─ leftPants
 */
+
 void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 {
     CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
 
     GetTransform().Update();
 
+    {
+       
+    }
+
 
     if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
     {
+        if (auto item = m_pComEntityModel->GetBone("rightItem"))
+        {
+            for (auto& child : GetChildrenNode())
+            {
+                if (child->GetObjectTag() == "DropItem_WoodPickaxe")
+                {
+                    _float4x4 mat;
+                    auto tmp = XMLoadFloat4x4(item->GetCombinedTransformationMatrix()) * GetTransform().GetLoadedCombinedWorldMatrix();
+                    XMStoreFloat4x4(&mat, tmp);
+                    child->GetTransform().SetParentWorldMatrix(mat);
+                }
+            }
+        }
+
         if (auto pHeadBone = m_pComEntityModel->GetBone("head"))
         {
             if (CGameInstance::Get().GetMouseFix())
@@ -339,6 +358,11 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
 HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
+    if (m_eCameraType == CAMERA_TYPE::FPS)
+    {
+        return S_OK;
+    }
+
     {
         auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
         D3D11_MAPPED_SUBRESOURCE mappedSubResource;

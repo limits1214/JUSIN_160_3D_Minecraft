@@ -87,7 +87,7 @@ public:
     const std::vector<T*>& GetChildrenNode() const { return m_pChildrenNode; }
     //std::vector<T*>& GetChildrenNode() { return m_pChildrenNode; }
 
-protected:
+public:
     void SetParentNode(T* pNewParentNode)
     {
         if (pNewParentNode)

@@ -135,11 +135,37 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			E::CPlayerEntity::DESC Desc{};
 			Desc.sObjectTag = "Player";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
+			if (auto playerHandle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
 				"00_ENTITY", &Desc))
 			{
+				if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandle(playerHandle.value()))
+				{
+					E::CDropItem::DESC Desc{};
+					Desc.sObjectTag = "DropItem_WoodPickaxe";
+					Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
+					if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+						"01_DROPITEM", &Desc))
+					{
+						if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandle(woodPixaxeHandle.value()))
+						{
+							woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
+							woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
+							woodPixaxeObj->SetParentNode(playerObj);
+						}
+					}
+				}
 			}
 		}
+
+		//{
+		//	E::CDropItem::DESC Desc{};
+		//	Desc.sObjectTag = "DropItem_WoodPickaxe";
+		//	Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
+		//	if (auto woodPixaxe = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+		//		"01_DROPITEM", &Desc))
+		//	{
+		//	}
+		//}
 
 		//{
 		//	E::CSkeletonEntity::DESC Desc{};
@@ -161,15 +187,7 @@ HRESULT CLevelTestWorld::Initialize()
 			}
 		}
 
-		{
-			E::CDropItem::DESC Desc{};
-			Desc.sObjectTag = "DropItem_WoodPickaxe";
-			Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-				"01_DROPITEM", &Desc))
-			{
-			}
-		}
+
 
 		{
 			E::CExperienceOrbItem::DESC Desc{};
