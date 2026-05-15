@@ -11,12 +11,8 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
     m_eState = STATE::LOADING;
     {
 
-
-
-
         m_entityGeometry.texHeight = 64;
         m_entityGeometry.texWidth = 64;
-
 
 
         m_entityGeometry.bones = {

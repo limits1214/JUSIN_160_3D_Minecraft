@@ -373,6 +373,9 @@
     <Filter Include="GameObject\Entity\Player\Player">
       <UniqueIdentifier>{11483744-e884-41fb-bd62-dd832c0d21fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor">
+      <UniqueIdentifier>{10b64d3f-0319-4a57-8b0b-3d3935e19e06}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">

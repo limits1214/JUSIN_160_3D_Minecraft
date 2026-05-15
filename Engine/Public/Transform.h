@@ -12,7 +12,7 @@ public:
 
 private:
 	explicit CTransform();
-	explicit CTransform(const CTransform& rhs);
+	//explicit CTransform(const CTransform& rhs);
 	~CTransform() override;
 
 public:
@@ -216,9 +216,8 @@ public:
 public:
 	const _float4x4* GetWorldMatrix() const { return &m_WorldMatrix; }
 	_matrix GetLoadedWorldMatrix() const { return XMLoadFloat4x4(&m_WorldMatrix); }
-
-	//void SetWorldMatrix(const _float4x4& world) { m_WorldMatrix = world; };
-
+	const _float4x4* GetCombinedWorldMatrix() const { return &m_CombinedWorldMatrix; }
+	_matrix GetLoadedCombinedWorldMatrix() const { return XMLoadFloat4x4(&m_CombinedWorldMatrix); }
 
 private:
 	_float3 m_vPos{};
@@ -227,19 +226,21 @@ private:
 
 	_float3 m_vEuler{};
 
-	_bool m_bParentScaleNormalize{ false };
+	//_bool m_bParentScaleNormalize{ false };
 
 	_bool m_bDirty{ true };
 public:
 	void SetDirty(_bool b) { m_bDirty = b; }
+	_bool GetDirty() const { return m_bDirty; }
 
 public:
-	void SetParentWorldMatrix(const std::optional<_float4x4>& mat) { m_ParentWorldMatrix = mat; };
+	void SetParentWorldMatrix(const std::optional<_float4x4>& mat) { m_ParentWorldMatrix = mat; m_bDirty = true; };
 private:
 	std::optional<_float4x4> m_ParentWorldMatrix{};
 
 private:
 	_float4x4 m_WorldMatrix{};
+	_float4x4 m_CombinedWorldMatrix{};
 
 public:
 	static UPtr<CTransform> Create();

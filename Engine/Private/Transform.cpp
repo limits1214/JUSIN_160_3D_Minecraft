@@ -38,10 +38,10 @@ CTransform::CTransform()
 {
 }
 
-CTransform::CTransform(const CTransform& rhs)
-    : CComponent{ rhs }
-{
-}
+//CTransform::CTransform(const CTransform& rhs)
+//    : CComponent{ rhs }
+//{
+//}
 
 CTransform::~CTransform()
 {
@@ -59,31 +59,39 @@ void CTransform::Update()
 
         _matrix matWorld = matScale * matRotation * matTranslation;
 
-        if (m_pGameObject)
-        {
-                if (auto* pParentObj = m_pGameObject->GetParentNode())
-                {
-                    _matrix matParent = XMLoadFloat4x4(pParentObj->GetTransform().GetWorldMatrix());
+        //if (m_pGameObject)
+        //{
+        //        if (auto* pParentObj = m_pGameObject->GetParentNode())
+        //        {
+        //            _matrix matParent = XMLoadFloat4x4(pParentObj->GetTransform().GetWorldMatrix());
 
-                    if (m_bParentScaleNormalize)
-                    {
-                        matParent.r[0] = XMVector3Normalize(matParent.r[0]);
-                        matParent.r[1] = XMVector3Normalize(matParent.r[1]);
-                        matParent.r[2] = XMVector3Normalize(matParent.r[2]);
-                    }
+        //            if (m_bParentScaleNormalize)
+        //            {
+        //                matParent.r[0] = XMVector3Normalize(matParent.r[0]);
+        //                matParent.r[1] = XMVector3Normalize(matParent.r[1]);
+        //                matParent.r[2] = XMVector3Normalize(matParent.r[2]);
+        //            }
 
-                    matWorld *= matParent;
-                }
-            
-               
-            for (const auto& pChildObj : m_pGameObject->GetChildrenNode())
-            {
-                    pChildObj->GetTransform().SetDirty(true);
-            }
+        //            matWorld *= matParent;
+        //        }
+        //    
+        //       
+        //    for (const auto& pChildObj : m_pGameObject->GetChildrenNode())
+        //    {
+        //            pChildObj->GetTransform().SetDirty(true);
+        //    }
+        //}
 
-        }
         XMStoreFloat4x4(&m_WorldMatrix, matWorld);
 
+        if (m_ParentWorldMatrix)
+        {
+            XMStoreFloat4x4(&m_CombinedWorldMatrix, matWorld * XMLoadFloat4x4(&m_ParentWorldMatrix.value()));
+        }
+        else
+        {
+            XMStoreFloat4x4(&m_CombinedWorldMatrix, matWorld);
+        }
 
         UpdateEulerFromQuat();
 

@@ -81,8 +81,8 @@ HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 		{
 			
 			E::CB_PER_OBJECT cbPerObject{};
-			cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
-			XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
+			cbPerObject.matWorld = *GetTransform().GetCombinedWorldMatrix();
+			XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
 
 			memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
 			pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
