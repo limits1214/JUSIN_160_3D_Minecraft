@@ -175,7 +175,7 @@ public:
 	const std::vector<CHandle>* GetGameObjectLayer(std::string_view sLayerName) const;
 	void DelGameObjectLayer(std::string_view sLayerName);
 
-	std::optional<CHandle> GetFreeHandle() const;
+	//std::optional<CHandle> GetFreeHandle() const;
 
 	inline CGameObject* GetGameObjectByHandle(const CHandle& handle);
 	template<typename T>

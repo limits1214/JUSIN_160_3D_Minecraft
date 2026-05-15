@@ -193,10 +193,20 @@ std::optional<CHandle> CGameObjectManager::GetFreeHandle()
 
 std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, std::string_view sLayerName, void* pArg)
 {
+	auto pDesc = static_cast<CGameObject::GAMEOBJECT_DESC*>(pArg);
+	auto allocHandle = GetFreeHandle();
+	if (!allocHandle)
+	{
+		return std::nullopt;
+	}
+	pDesc->__handle = allocHandle.value();
+
 	auto pProto = CGameInstance::Get().ClonePrototype(siProtoGroupTag, siPrototypeTag, pArg);
 	auto pGameObject = static_uptr_cast<CGameObject>(std::move(pProto));
 	if (!pGameObject)
 	{
+		m_Objects[allocHandle.value().GetIndex()].Reset();
+		m_FreeSlots.push_back(allocHandle.value().GetIndex());
 		return std::nullopt;
 	}
 
