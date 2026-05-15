@@ -230,9 +230,7 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 	auto lookupIter = m_LookupLayers.find(sLayerName);
 	if (lookupIter == m_LookupLayers.end())
 	{
-		//m_LookupLayers2.emplace(sLayerName, m_Layers2.size());
-		std::pair<std::string, std::vector<CHandle>> layer{ std::string{sLayerName}, {objHandle} };
-		m_Layers.push_back(layer);
+		m_Layers.push_back({ std::string{sLayerName}, {objHandle} });
 		SortLayer();
 	}
 	else
@@ -272,6 +270,8 @@ void CGameObjectManager::DelLayer(std::string_view sLayerName)
 	}
 	m_Layers[iter->second].second.clear();
 	FrameEnd();
+
+	SortLayer();
 }
 
 void CGameObjectManager::PriorityUpdate(_float fTimeDelta)
