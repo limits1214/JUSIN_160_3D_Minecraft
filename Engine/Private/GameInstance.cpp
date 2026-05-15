@@ -615,6 +615,24 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 2: Item Cloth 1
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/cloth_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+		// 3: Item Cloth 2
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/cloth_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+
 		// Entity_64_32_Ted2d_Array
 		{
 			CResTexture2DArray::DESC desc{};
@@ -673,7 +691,7 @@ HRESULT CGameInstance::InitializeMCResource()
 			{
 				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Steve", CResEnttVIBuffer::Create()))
 				{
-					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Steve"} });
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Steve"} , .baseTexId = PackTexId(8, 3)});
 				}
 			}
 		}
@@ -685,6 +703,17 @@ HRESULT CGameInstance::InitializeMCResource()
 				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Skeleton", CResEnttVIBuffer::Create()))
 				{
 					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Skeleton"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmor", CResEnttGeoPlayerArmor::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmor", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmor"}, .baseTexId = PackTexId(7, 2), .specificCubeTexIds = {{"armor2", PackTexId(7, 3)}}});
 				}
 			}
 		}

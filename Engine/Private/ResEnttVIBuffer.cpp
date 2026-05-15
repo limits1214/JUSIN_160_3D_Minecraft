@@ -217,9 +217,26 @@ HRESULT CResEnttVIBuffer::Load(const std::any& arg)
                     }
                 }
 
+
+                
                 for (int i = 0; i < 24; i++) {
                     vertices[24 * tmpI + i].boneIndex = boneIdx;
-                    vertices[24 * tmpI + i].texIndex = cube.texIndex;
+                    if (argDesc->baseTexId.has_value())
+                    {
+                        auto iter = argDesc->specificCubeTexIds.find(cube.annotation);
+                        if (iter != argDesc->specificCubeTexIds.end())
+                        {
+                            vertices[24 * tmpI + i].texIndex = iter->second;
+                        }
+                        else
+                        {
+                            vertices[24 * tmpI + i].texIndex = argDesc->baseTexId.value();
+                        }
+                    }
+                    else
+                    {
+                        vertices[24 * tmpI + i].texIndex = cube.texIndex;
+                    }
                 }
 
                 ++tmpI;

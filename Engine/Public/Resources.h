@@ -43,6 +43,7 @@
 #include "ResEnttGeoChicken.h"
 #include "ResEnttGeoSteve.h"
 #include "ResEnttGeoSkeleton.h"
+#include "ResEnttGeoPlayerArmor.h"
 
 
 static const char* TAG_RES_GRP_PERMANENT_BUFFER = "PERMANENT_BUFFER";

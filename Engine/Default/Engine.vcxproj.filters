@@ -741,6 +741,9 @@
     <ClInclude Include="..\public\PlayerCamera.h">
       <Filter>GameObject\Camera\PlayerCamera</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmor.h">
+      <Filter>Resource\Entity\Geometry\Armor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1093,6 +1096,9 @@
     </ClCompile>
     <ClCompile Include="..\private\PlayerCamera.cpp">
       <Filter>GameObject\Camera\PlayerCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmor.cpp">
+      <Filter>Resource\Entity\Geometry\Armor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

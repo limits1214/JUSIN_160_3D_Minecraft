@@ -181,6 +181,7 @@ namespace Engine
 		_float inflate;
 		_float3 uvSize{};
 		_float3 pivot{};
+		_string annotation{};
 	} ENTITY_CUBE;
 
 	typedef struct tagEntityBone
@@ -191,6 +192,7 @@ namespace Engine
 		std::vector<ENTITY_CUBE> cubes{};
 		_bool mirror{ false };
 		std::vector<std::pair<std::string, _float3>> locators{};
+		bool neverRender{};
 	} ENTITY_BONE;
 
 	typedef struct tagEntityModel
