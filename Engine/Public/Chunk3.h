@@ -10,7 +10,7 @@ constexpr static uint32_t VOXEL_CHUNK_X_SIZE3 = 32;
 constexpr static uint32_t VOXEL_CHUNK_Z_SIZE3 = 32;
 constexpr static uint32_t VOXEL_CHUNK_Y_SIZE3 = 256;
 
-class CChunk3 final : public CEngineBase
+class ENGINE_DLL CChunk3 final : public CEngineBase
 {
 public:
 	typedef struct tagDesc

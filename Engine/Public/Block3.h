@@ -1,7 +1,7 @@
 #pragma once
 #include "Engine_Defines.h"
 NS_BEGIN(Engine)
-class CBlock3
+class ENGINE_DLL CBlock3
 {
 public:
 	enum class TYPE : uint8_t

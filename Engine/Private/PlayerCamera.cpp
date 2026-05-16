@@ -40,13 +40,7 @@ void CPlayerCamera::PriorityUpdate(E::_float fTimeDelta)
 {
     
 
-    m_pComTransform->Update();
-
-    E::CGameInstance::Get().AddColliderGroup("Coll_PlayerCamera", m_pCollider.get());
-
-    m_pCollider->Transform(m_pComTransform->GetLoadedWorldMatrix());
-
-    CCameraObject::UpdateViewMatrix();
+    
 }
 
 void CPlayerCamera::Update(E::_float fTimeDelta)
@@ -56,25 +50,13 @@ void CPlayerCamera::Update(E::_float fTimeDelta)
 
 void CPlayerCamera::LateUpdate(E::_float fTimeDelta)
 {
-    m_iColliderIntersect = 0;
-    //if (auto colliders = E::CGameInstance::Get().GetColliders())
-    //{
-    //    for (const auto& [key, value] : *colliders)
-    //    {
-    //        for (const auto& p : value)
-    //        {
-    //            if (m_pCollider.get() == p)
-    //            {
-    //                continue;
-    //            }
+    m_pComTransform->Update();
 
-    //            if (m_pCollider->Intersect(*p))
-    //            {
-    //                ++m_iColliderIntersect;
-    //            }
-    //        }
-    //    }
-    //}
+    E::CGameInstance::Get().AddColliderGroup("Coll_PlayerCamera", m_pCollider.get());
+
+    m_pCollider->Transform(m_pComTransform->GetLoadedWorldMatrix());
+
+    CCameraObject::UpdateViewMatrix();
 }
 
 
