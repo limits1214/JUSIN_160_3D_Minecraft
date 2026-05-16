@@ -376,6 +376,9 @@
     <Filter Include="Resource\Entity\Geometry\Armor">
       <UniqueIdentifier>{10b64d3f-0319-4a57-8b0b-3d3935e19e06}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Collider\Capsule">
+      <UniqueIdentifier>{9955575c-bb2c-4893-836b-454c1c63dab2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">

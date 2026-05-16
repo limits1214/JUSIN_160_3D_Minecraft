@@ -36,6 +36,7 @@ public:
 
 private:
 	explicit CPlayerEntity();
+	CPlayerEntity(const CPlayerEntity& rhs);
 	~CPlayerEntity() override;
 
 public:
@@ -92,6 +93,13 @@ private:
 	_bool m_bMousePressingRight{ false };
 
 private:
+	UPtr<CCollider> m_pCenterCollider{};
+
+private:
+	CCameraObject* m_pPlayerCamera{};
+	_bool m_bPlayerCameraLookBack{false};
+private:
+	_float3 m_vVelocity{};
 
 
 public:

@@ -1187,6 +1187,11 @@ CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 	//return nullptr;
 }
 
+std::optional<CBlock3> CGameInstance::GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const
+{
+	return m_pVoxelManager3->GetBlock(wbx, wby, wbz);
+}
+
 #pragma endregion
 
 

@@ -119,13 +119,6 @@ void CFlyCamera::PriorityUpdate(E::_float fTimeDelta)
 
     
 
-    m_pComTransform->Update();
-
-    E::CGameInstance::Get().AddColliderGroup("Coll_FlyCamera", m_pCollider.get());
-
-    m_pCollider->Transform(m_pComTransform->GetLoadedWorldMatrix());
-
-    CCameraObject::UpdateViewMatrix();
 }
 
 void CFlyCamera::Update(E::_float fTimeDelta)
@@ -135,6 +128,15 @@ void CFlyCamera::Update(E::_float fTimeDelta)
 
 void CFlyCamera::LateUpdate(E::_float fTimeDelta)
 {
+
+    m_pComTransform->Update();
+
+    E::CGameInstance::Get().AddColliderGroup("Coll_FlyCamera", m_pCollider.get());
+
+    m_pCollider->Transform(m_pComTransform->GetLoadedWorldMatrix());
+
+    CCameraObject::UpdateViewMatrix();
+
     m_iColliderIntersect = 0;
     //if (auto colliders = E::CGameInstance::Get().GetColliders())
     //{
