@@ -14,6 +14,17 @@ public:
 		TPS_BACK,
 	};
 
+	enum class MODE_TYPE
+	{
+		GOD,
+		GRAVITY,
+	};
+
+	enum class MOVE_STATE
+	{
+		CROUCH
+	};
+
 public:
 	typedef struct tagDesc : CPlayerEntityObject::DESC
 	{
@@ -43,6 +54,7 @@ private:
 	//CPlayerCamera* m_pPlayerCamera{};
 	_float3 m_vHeadRotation = { 0.f, 0.f, 0.f };
 	CAMERA_TYPE m_eCameraType{ CAMERA_TYPE ::TPS };
+	MODE_TYPE m_eModeType{ MODE_TYPE::GOD };
 private:
 	CComEntityModel* m_pComEntityModel{};
 
@@ -60,6 +72,28 @@ private:
 
 	// LateUpdate에서
 	void UpdateAttackAnimation(float fTimeDelta);
+
+
+private:
+	_bool m_bControl{ false };
+	_bool m_bKeyPressingW{ false };
+	_bool m_bKeyPressingA{ false };
+	_bool m_bKeyPressingS{ false };
+	_bool m_bKeyPressingD{ false };
+	_bool m_bKeyPressingQ{ false };
+	_bool m_bKeyPressingE{ false };
+	_bool m_bKeyPressingShift{ false };
+	_bool m_bKeyPressingSpace{ false };
+	_bool m_iNumKeyPressing[10]{};
+	int32_t m_iMouseMoveX{ 0 };
+	int32_t m_iMouseMoveY{ 0 };
+	int32_t m_iMouseMoveZ{ 0 };
+	_bool m_bMousePressingLeft{ false };
+	_bool m_bMousePressingRight{ false };
+
+private:
+
+
 public:
 	static UPtr<CPlayerEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
