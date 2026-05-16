@@ -21,9 +21,34 @@ void CPlayerEntity::UpdateGUI()
 {
     CPlayerEntityObject::UpdateGUI();
 
-    if (ImGui::Button("FREE_FLY"))
+    if (ImGui::TreeNode("Control"))
     {
+        ImGui::Text("Control: %i", m_bControl);
+        ImGui::Text("KeyPressingW: %i", m_bKeyPressingW);
+        ImGui::Text("KeyPressingA: %i", m_bKeyPressingA);
+        ImGui::Text("KeyPressingS: %i", m_bKeyPressingS);
+        ImGui::Text("KeyPressingD: %i", m_bKeyPressingD);
+        ImGui::Text("KeyPressingQ: %i", m_bKeyPressingQ);
+        ImGui::Text("KeyPressingE: %i", m_bKeyPressingE);
+        ImGui::Text("KeyPressingShift: %i", m_bKeyPressingShift);
+        ImGui::Text("KeyPressingSpace: %i", m_bKeyPressingSpace);
+        ImGui::Text("MouseMoveX: %i", m_iMouseMoveX);
+        ImGui::Text("MouseMoveY: %i", m_iMouseMoveY);
+        ImGui::Text("MouseMoveZ: %i", m_iMouseMoveZ);
+        ImGui::Text("MousePressingLeft: %i", m_bMousePressingLeft);
+        ImGui::Text("MousePressingRight: %i", m_bMousePressingRight);
 
+        ImGui::Text("NumKeyPressing_1: %i", m_iNumKeyPressing[1]);
+        ImGui::Text("NumKeyPressing_2: %i", m_iNumKeyPressing[2]);
+        ImGui::Text("NumKeyPressing_3: %i", m_iNumKeyPressing[3]);
+        ImGui::Text("NumKeyPressing_4: %i", m_iNumKeyPressing[4]);
+        ImGui::Text("NumKeyPressing_5: %i", m_iNumKeyPressing[5]);
+        ImGui::Text("NumKeyPressing_6: %i", m_iNumKeyPressing[6]);
+        ImGui::Text("NumKeyPressing_7: %i", m_iNumKeyPressing[7]);
+        ImGui::Text("NumKeyPressing_8: %i", m_iNumKeyPressing[8]);
+        ImGui::Text("NumKeyPressing_9: %i", m_iNumKeyPressing[9]);
+
+        ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("CAMERATYPE"))
@@ -72,11 +97,50 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
 
 void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
 {
-}
+    m_bControl = CGameInstance::Get().GetMouseFix() && CGameInstance::Get().GetActiveGameCamera("Player");
+    if (m_bControl)
+    {
+        m_bKeyPressingW = CGameInstance::Get().KeyPressing(DIK_W);
+        m_bKeyPressingA = CGameInstance::Get().KeyPressing(DIK_A);
+        m_bKeyPressingS = CGameInstance::Get().KeyPressing(DIK_S);
+        m_bKeyPressingD = CGameInstance::Get().KeyPressing(DIK_D);
+        m_bKeyPressingQ = CGameInstance::Get().KeyPressing(DIK_Q);
+        m_bKeyPressingE = CGameInstance::Get().KeyPressing(DIK_E);
+        m_bKeyPressingShift = CGameInstance::Get().KeyPressing(DIK_LSHIFT);
+        m_bKeyPressingSpace = CGameInstance::Get().KeyPressing(DIK_SPACE);
+        m_iMouseMoveX = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::X);
+        m_iMouseMoveY = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::Y);
+        m_iMouseMoveZ = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::Z);
+        m_bMousePressingLeft = CGameInstance::Get().MousePressing(MOUSEKEYSTATE::LB);
+        m_bMousePressingRight = CGameInstance::Get().MousePressing(MOUSEKEYSTATE::RB);
+        m_iNumKeyPressing[1] = CGameInstance::Get().KeyPressing(DIK_1);
+        m_iNumKeyPressing[2] = CGameInstance::Get().KeyPressing(DIK_2);
+        m_iNumKeyPressing[3] = CGameInstance::Get().KeyPressing(DIK_3);
+        m_iNumKeyPressing[4] = CGameInstance::Get().KeyPressing(DIK_4);
+        m_iNumKeyPressing[5] = CGameInstance::Get().KeyPressing(DIK_5);
+        m_iNumKeyPressing[6] = CGameInstance::Get().KeyPressing(DIK_6);
+        m_iNumKeyPressing[7] = CGameInstance::Get().KeyPressing(DIK_7);
+        m_iNumKeyPressing[8] = CGameInstance::Get().KeyPressing(DIK_8);
+        m_iNumKeyPressing[9] = CGameInstance::Get().KeyPressing(DIK_9);
 
-void CPlayerEntity::Update(E::_float fTimeDelta)
-{
-    m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
+    }
+    else
+    {
+        m_bKeyPressingW = false;
+        m_bKeyPressingA = false;
+        m_bKeyPressingS = false;
+        m_bKeyPressingD = false;
+        m_bKeyPressingQ = false;
+        m_bKeyPressingE = false;
+        m_bKeyPressingShift = false;
+        m_bKeyPressingSpace = false;
+        m_iMouseMoveX = 0;
+        m_iMouseMoveY = 0;
+        m_iMouseMoveZ = 0;
+        m_bMousePressingLeft = false;
+        m_bMousePressingRight = false;
+        memset(&m_iNumKeyPressing, 0, sizeof(m_iNumKeyPressing));
+    }
 }
 
 /*
@@ -98,11 +162,17 @@ root
 └─ leftLeg (parent="root")
    └─ leftPants
 */
+void CPlayerEntity::Update(E::_float fTimeDelta)
+{
+    //
+}
+
+
 
 void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 {
     CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
-
+    m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
     GetTransform().Update();
 
 
