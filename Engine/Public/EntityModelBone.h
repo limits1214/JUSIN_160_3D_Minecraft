@@ -78,6 +78,13 @@ public:
         XMStoreFloat4x4(&m_TransformationMatrix, s * r * t);
     }
 
+    void ResetChannels()
+    {
+        m_Translation = {};
+        m_Rotation = {};
+        m_Scale = { 1.f, 1.f, 1.f };
+    }
+
 private:
     _float3 m_Translation{};
     _float3 m_Rotation{};

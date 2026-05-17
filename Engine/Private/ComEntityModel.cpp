@@ -294,6 +294,14 @@ void CComEntityModel::BindBoneMatrix() const
     pContext->VSSetConstantBuffers(4, 1, pCbPerBone->GetCBuffer().GetAddressOf());
 }
 
+void CComEntityModel::ResetBonesChannel()
+{
+    for (auto& bone : m_Bones)
+    {
+        bone.ResetChannels();
+    }
+}
+
 HRESULT CComEntityModel::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx, uint32_t iMeshIdx)
 {
     const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Entity");
