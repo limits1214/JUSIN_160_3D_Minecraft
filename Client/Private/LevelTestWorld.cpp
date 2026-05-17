@@ -11,6 +11,8 @@
 #include "SkeletonEntity.h"
 #include "DropItem.h"
 #include "ExperienceOrbItem.h"
+#include "UICrosshair.h"
+#include "UICamera.h"
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -102,6 +104,10 @@ HRESULT CLevelTestWorld::Initialize()
 			int x = 0;
 		}
 		
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UICrosshair", E::CUICrosshair::Create())))
+		{
+			int x = 0;
+		}
 	}
 
 	{
@@ -187,8 +193,6 @@ HRESULT CLevelTestWorld::Initialize()
 			}
 		}
 
-
-
 		{
 			E::CExperienceOrbItem::DESC Desc{};
 			Desc.sObjectTag = "ExperienceOrb";
@@ -199,11 +203,43 @@ HRESULT CLevelTestWorld::Initialize()
 		}
 
 	}
+
+
+	{
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "Crosshair";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UICrosshair",
+			"80_CrossHair", &Desc))
+		{
+		}
+
+	}
 	//if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
 	//	E::ETOUI(LEVEL_TEST_WORLD_LAYERS::CAMERA), &Desc))
 	//{
 	//	
 	//}
+
+	{
+		E::CCameraObject::CAMERA_DESC Desc{};
+		Desc.eProj = E::CCameraObject::PROJ::ORTHOGRAPHIC;
+		Desc.fNear = 0.f;
+		Desc.fFar = 1.f;
+		Desc.fWidth = g_iWinSizeX;
+		Desc.fHeight = g_iWinSizeY;
+		Desc.sObjectTag = "UICam";
+		Desc.vEye = { 0.f, 0.f, -0.1f };
+
+		if (auto uiCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_UICamera",
+			"99_CAMERA", &Desc))
+		{
+			if (FAILED(E::CGameInstance::Get().RegistUICamera("UI", uiCam.value())))
+			{
+				int x = 0;
+			}
+			E::CGameInstance::Get().SetActiveUICamera("UI");
+		}
+	}
 
 	return S_OK;
 }
