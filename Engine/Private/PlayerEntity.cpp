@@ -5,6 +5,7 @@
 #include "ComEntityModel.h"
 
 #include "CollSphere.h"
+#include "CollBox.h"
 NS_USING(Engine)
 
 
@@ -113,6 +114,8 @@ void CPlayerEntity::UpdateGUI()
 
         ImGui::Text("root x: %f, y: %f, ", XMConvertToDegrees(pRootBone->GetRotation()->x), XMConvertToDegrees(pRootBone->GetRotation()->y));
     }
+
+    ImGui::Text("m_fRootRotRadY: %f", m_fRootRotRadY);
 }
 
 HRESULT CPlayerEntity::Initialize(void* pArg)
@@ -136,7 +139,8 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
     }
 
     
-    m_pCenterCollider = CCollSphere::Create({0.f, 0.3f, 0.f}, 0.3f);
+    //m_pCenterCollider = CCollSphere::Create({0.f, 0.3f, 0.f}, 0.3f);
+    m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.5f, 1.f, 0.5f });
 
     return S_OK;
 }
@@ -211,12 +215,137 @@ root
 */
 void CPlayerEntity::Update(E::_float fTimeDelta)
 {
-    
+    m_pComEntityModel->ResetBonesChannel();
    
+    /*
+        머리 돌리기
+        카메라 위치로 머리를 돌려야함
+        이때 머리는 루트의 영향을 받아버림
+        머리가 45도 이상 돌릴때는 머리가 아니라 루트를 돌려야함
+        y축을 돌릴때는 머리와 루트를 두개 고려해야하지만
+        x축을 돌리는건 오직 머리만 고려함
+    */
+    {
+        if (m_pPlayerCamera)
+        {
+            auto pHeadBone = m_pComEntityModel->GetBone("head");
+            auto pRootBone = m_pComEntityModel->GetBone("root");
+
+            if (pHeadBone && pRootBone)
+            {
+                _float adjustY = 0.f;
+                _float adjustX = 1.f;
+                if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
+                {
+                    adjustY = XMConvertToRadians(180.f);
+                    adjustX = -1.f;
+                }
+
+                // 목표는 카메라가 돌린 x,y 값
+                float targetRotYRad = XMConvertToRadians(m_pPlayerCamera->GetTransform().GetRotationEuler().y);
+                float targetRotXRad = XMConvertToRadians(m_pPlayerCamera->GetTransform().GetRotationEuler().x);
+
+                bool bMovingLeftRight = m_bKeyPressingA || m_bKeyPressingD;
+                bool bMovingForwardBackward = m_bKeyPressingW || m_bKeyPressingS;
+
+
+
+                // 왼쪽 오른쪽로 움직이고 있으면 Root는 각 45도 방향으로
+                if (bMovingLeftRight)
+                {
+                    float sign;
+                    if(m_bKeyPressingA)
+                    {
+                        sign = -1.f;
+                    }
+                    else
+                    {
+                        sign = 1.f;
+                    }
+
+                    float threshold = XMConvertToRadians(45.f);
+
+                    float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;;
+
+                    while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                    while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                    //(sign * threshold)
+
+                    float delta = (toRotYRadDiff + (threshold * sign)) * 5.f * fTimeDelta;
+                    m_fRootRotRadY += delta;
+                    //pHeadBone->GetRotation()->y += (threshold * sign);
+                    pHeadBone->GetRotation()->y += toRotYRadDiff;
+                    pHeadBone->GetRotation()->x += targetRotXRad;
+
+                    pRootBone->GetRotation()->y += m_fRootRotRadY;
+                }
+
+                // 앞뒤로 움직이고 있으면 Root는 보고 있는 방향으로
+                else if (bMovingForwardBackward)
+                {
+                    float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;
+
+                    while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                    while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                    float sign = toRotYRadDiff > 0 ? 1.f : -1.f;
+
+                    float threshold = XMConvertToRadians(0.f);
+
+                    if (fabsf(toRotYRadDiff) > threshold)
+                    {
+                        float delta = (toRotYRadDiff - (threshold * sign)) * 5.f * fTimeDelta;
+                        m_fRootRotRadY += delta;
+
+                        pHeadBone->GetRotation()->y += toRotYRadDiff;
+                    }
+                    else
+                    {
+                        pHeadBone->GetRotation()->y += (threshold * sign);
+                    }
+
+
+                    pRootBone->GetRotation()->y += m_fRootRotRadY;
+
+                    pHeadBone->GetRotation()->x += targetRotXRad;
+                }
+                // 움직이지 않는 상태
+                else
+                {
+                    float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;
+
+                    while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                    while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                    float sign = toRotYRadDiff > 0 ? 1.f : -1.f;
+
+                    float threshold = XMConvertToRadians(45.f);
+
+                    if (fabsf(toRotYRadDiff) > threshold )
+                    {
+                        float delta = (toRotYRadDiff - (threshold * sign)) * 5.f * fTimeDelta;
+                        m_fRootRotRadY += delta;
+                        pHeadBone->GetRotation()->y += (threshold * sign);
+                    }
+                    else
+                    {
+                        pHeadBone->GetRotation()->y += toRotYRadDiff;
+                    }
+
+
+                    pRootBone->GetRotation()->y += m_fRootRotRadY;
+
+                    pHeadBone->GetRotation()->x += targetRotXRad;
+                }
+            }
+        }
+    }
+
 
     // move head bone
     {
-        if (m_pPlayerCamera)
+        if (false && m_pPlayerCamera)
         {
             auto pHeadBone = m_pComEntityModel->GetBone("head");
             auto pRootBone = m_pComEntityModel->GetBone("root");
@@ -230,129 +359,190 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
                     adjustX = -1.f;
                 }
 
-
                 auto playerCamEulerRot = m_pPlayerCamera->GetTransform().GetRotationEuler();
-
-
-
-               
                 float targetHeadY = XMConvertToRadians(playerCamEulerRot.y) + adjustY;
                 float targetHeadX = XMConvertToRadians(playerCamEulerRot.x) * adjustX;
 
-                while (targetHeadY > XM_PI) targetHeadY -= XM_2PI;
+                // targetHeadY 정규화
+                while (targetHeadY > XM_PI)  targetHeadY -= XM_2PI;
                 while (targetHeadY < -XM_PI) targetHeadY += XM_2PI;
 
-                float currRootRotY = pRootBone->GetRotation()->y;
+                // 멤버에서 읽되, 비교용으로만 정규화
+                float currRootNorm = m_fRootRotRadY;
+                while (currRootNorm > XM_PI)  currRootNorm -= XM_2PI;
+                while (currRootNorm < -XM_PI) currRootNorm += XM_2PI;
 
-                // currRootRotY 도 정규화
-                while (currRootRotY > XM_PI) currRootRotY -= XM_2PI;
-                while (currRootRotY < -XM_PI) currRootRotY += XM_2PI;
-
-                float relativeAngle = targetHeadY - currRootRotY;
-                while (relativeAngle > XM_PI) relativeAngle -= XM_2PI;
+                // head가 root 기준으로 얼마나 돌아있나
+                float relativeAngle = targetHeadY - currRootNorm;
+                while (relativeAngle > XM_PI)  relativeAngle -= XM_2PI;
                 while (relativeAngle < -XM_PI) relativeAngle += XM_2PI;
 
                 const float HEAD_LIMIT = XMConvertToRadians(45.f);
+                const float ROOT_SPEED = 10.f;
                 bool bForwardMoving = m_bKeyPressingW || m_bKeyPressingS;
                 bool bLRMoving = m_bKeyPressingA || m_bKeyPressingD;
 
-                // 이동 중엔 빠르게, 정지 중엔 느리게
-                float ROOT_SPEED = (bForwardMoving || bLRMoving) ? 10.f : 10.f;
-
-                //bool bMoving = m_bKeyPressingW || m_bKeyPressingS || m_bKeyPressingA || m_bKeyPressingD;
+                // root를 얼마나 틀지 계산하는 람다
+                auto SmoothRoot = [&](float targetRootY) -> float
+                    {
+                        float delta = targetRootY - currRootNorm;
+                        while (delta > XM_PI)  delta -= XM_2PI;
+                        while (delta < -XM_PI) delta += XM_2PI;
+                        // m_fRootRotY에 delta만큼 더함 (정규화 없이 누적)
+                        return m_fRootRotRadY + delta * ROOT_SPEED * fTimeDelta;
+                    };
 
                 if (bLRMoving)
                 {
-                    // A = 왼쪽(-45도), D = 오른쪽(+45도)
-                    float sideOffset = 0.f;
-                    if (m_bKeyPressingA) sideOffset = -HEAD_LIMIT;
-                    if (m_bKeyPressingD) sideOffset = HEAD_LIMIT;
+                    float sideOffset = m_bKeyPressingA ? -HEAD_LIMIT : HEAD_LIMIT;
+                    float targetRootY = targetHeadY + sideOffset;
 
-                    // Root 목표 = 카메라 방향 + 옆 오프셋
-                    float newRootY = targetHeadY + sideOffset;
-                    float rootDelta = newRootY - currRootRotY;
-                    while (rootDelta > XM_PI) rootDelta -= XM_2PI;
-                    while (rootDelta < -XM_PI) rootDelta += XM_2PI;
+                    m_fRootRotRadY = SmoothRoot(targetRootY);
 
-                    float smoothRootY = currRootRotY + rootDelta * ROOT_SPEED * fTimeDelta;
-                    while (smoothRootY > XM_PI) smoothRootY -= XM_2PI;
-                    while (smoothRootY < -XM_PI) smoothRootY += XM_2PI;
+                    // 새 root 기준 head 상대각
+                    float newRootNorm = m_fRootRotRadY;
+                    while (newRootNorm > XM_PI)  newRootNorm -= XM_2PI;
+                    while (newRootNorm < -XM_PI) newRootNorm += XM_2PI;
 
-                    auto rootRot = *pRootBone->GetRotation();
-                    rootRot.y = smoothRootY;
-                    pRootBone->SetRotation(rootRot);
-
-                    // Head 는 새 Root 기준 상대각 — 45도 clamp
-                    float newRelative = targetHeadY - smoothRootY;
-                    while (newRelative > XM_PI) newRelative -= XM_2PI;
+                    float newRelative = targetHeadY - newRootNorm;
+                    while (newRelative > XM_PI)  newRelative -= XM_2PI;
                     while (newRelative < -XM_PI) newRelative += XM_2PI;
-                    newRelative = std::max(-HEAD_LIMIT, std::min(HEAD_LIMIT, newRelative));
+                    newRelative = std::clamp(newRelative, -HEAD_LIMIT, HEAD_LIMIT);
 
-                    auto headRot = *pHeadBone->GetRotation();
-                    headRot.x = targetHeadX;
-                    headRot.y = newRelative;
-                    pHeadBone->SetRotation(headRot);
+                    pRootBone->AddRotation({ 0.f, newRootNorm, 0.f });
+                    pHeadBone->AddRotation({ targetHeadX, newRelative, 0.f });
                 }
                 else if (bForwardMoving)
                 {
-                    // Root 를 카메라 방향으로 빠르게 맞춤
-                    float rootDelta = targetHeadY - currRootRotY;
-                    while (rootDelta > XM_PI) rootDelta -= XM_2PI;
-                    while (rootDelta < -XM_PI) rootDelta += XM_2PI;
+                    m_fRootRotRadY = SmoothRoot(targetHeadY);
 
-                    float smoothRootY = currRootRotY + rootDelta * ROOT_SPEED * fTimeDelta;
-                    while (smoothRootY > XM_PI) smoothRootY -= XM_2PI;
-                    while (smoothRootY < -XM_PI) smoothRootY += XM_2PI;
+                    float newRootNorm = m_fRootRotRadY;
+                    while (newRootNorm > XM_PI)  newRootNorm -= XM_2PI;
+                    while (newRootNorm < -XM_PI) newRootNorm += XM_2PI;
 
-                    auto rootRot = *pRootBone->GetRotation();
-                    rootRot.y = smoothRootY;
-                    pRootBone->SetRotation(rootRot);
-
-                    // Head 는 새 Root 기준 상대각 — 45도 clamp 유지
-                    float newRelative = targetHeadY - smoothRootY;
-                    while (newRelative > XM_PI) newRelative -= XM_2PI;
+                    float newRelative = targetHeadY - newRootNorm;
+                    while (newRelative > XM_PI)  newRelative -= XM_2PI;
                     while (newRelative < -XM_PI) newRelative += XM_2PI;
-                    newRelative = std::max(-HEAD_LIMIT, std::min(HEAD_LIMIT, newRelative));
+                    newRelative = std::clamp(newRelative, -HEAD_LIMIT, HEAD_LIMIT);
 
-                    auto headRot = *pHeadBone->GetRotation();
-                    headRot.x = targetHeadX;
-                    headRot.y = newRelative;
-                    pHeadBone->SetRotation(headRot);
+                    pRootBone->AddRotation({ 0.f, newRootNorm, 0.f });
+                    pHeadBone->AddRotation({ targetHeadX, newRelative, 0.f });
                 }
                 else
                 {
-                    // 정지 중 — 45도 제한
-                    if (abs(relativeAngle) < HEAD_LIMIT)
+                    // 정지: head가 45도 안이면 root 안 움직임
+                    if (fabsf(relativeAngle) <= HEAD_LIMIT)
                     {
-                        auto headRot = *pHeadBone->GetRotation();
-                        headRot.x = targetHeadX;
-                        headRot.y = relativeAngle;
-                        pHeadBone->SetRotation(headRot);
+                        // m_fRootRotY 변경 없음
+                        pRootBone->AddRotation({ 0.f, currRootNorm, 0.f });
+                        pHeadBone->AddRotation({ targetHeadX, relativeAngle, 0.f });
                     }
                     else
                     {
+                        // 45도 초과 → root를 head 방향으로 밀어줌
                         float sign = (relativeAngle > 0.f) ? 1.f : -1.f;
+                        float targetRootY = targetHeadY - sign * HEAD_LIMIT;
 
-                        float newRootY = targetHeadY - sign * HEAD_LIMIT;
-                        float rootDelta = newRootY - currRootRotY;
-                        while (rootDelta > XM_PI) rootDelta -= XM_2PI;
-                        while (rootDelta < -XM_PI) rootDelta += XM_2PI;
+                        m_fRootRotRadY = SmoothRoot(targetRootY);
 
-                        float smoothRootY = currRootRotY + rootDelta * ROOT_SPEED * fTimeDelta;
-                        while (smoothRootY > XM_PI) smoothRootY -= XM_2PI;
-                        while (smoothRootY < -XM_PI) smoothRootY += XM_2PI;
+                        float newRootNorm = m_fRootRotRadY;
+                        while (newRootNorm > XM_PI)  newRootNorm -= XM_2PI;
+                        while (newRootNorm < -XM_PI) newRootNorm += XM_2PI;
 
-                        auto rootRot = *pRootBone->GetRotation();
-                        rootRot.y = smoothRootY;
-                        pRootBone->SetRotation(rootRot);
-
-                        auto headRot = *pHeadBone->GetRotation();
-                        headRot.x = targetHeadX;
-                        headRot.y = sign * HEAD_LIMIT;
-                        pHeadBone->SetRotation(headRot);
+                        pRootBone->AddRotation({ 0.f, newRootNorm, 0.f });
+                        pHeadBone->AddRotation({ targetHeadX, sign * HEAD_LIMIT, 0.f });
                     }
                 }
             }
+        }
+    }
+
+    if(1)
+    {
+        static float fTmp2 = 0;
+        fTmp2 += fTimeDelta;;
+        float lifeTime = fTmp2;
+        float bob = (cosf(lifeTime * XMConvertToRadians(103.2f)) * 2.865f) + 2.865f;
+
+        if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+        {
+            pLeftArm->GetRotation()->z += XMConvertToRadians(-bob);
+            //pLeftArm->SetRotation({ 0,0, XMConvertToRadians(-bob) });
+        }
+
+        if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+        {
+            pRightArm->GetRotation()->z += XMConvertToRadians(bob);
+            //pRightArm->SetRotation({ 0,0, XMConvertToRadians(bob) });
+        }
+    }
+
+    if (1)
+    {
+        static float fWalkCycle = 0.f;
+        bool bMoving = m_bKeyPressingA || m_bKeyPressingD || m_bKeyPressingW || m_bKeyPressingS;
+        if (bMoving)
+        {
+            fWalkCycle += fTimeDelta * 6.28f;
+            if (fWalkCycle > 6.28f) {
+                fWalkCycle -= 6.28f;
+            }
+
+            float tcos0 = cos(fWalkCycle) * 30;
+
+            // leftarm, leftleg, rightarm, rightleg 회전 적용
+            if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+            {
+                pLeftArm->GetRotation()->x += XMConvertToRadians(tcos0);
+                //_matrix matLeftArmRot = XMMatrixRotationX(XMConvertToRadians(tcos0));
+                //_matrix leftArmBaseMat = XMLoadFloat4x4(pLeftArm->GeTransformationMatrix());
+                //_vector leftArmPos = leftArmBaseMat.r[3];
+                //_matrix leftArmFinalMat = matLeftArmRot;
+                //leftArmFinalMat.r[3] = leftArmPos;
+                //pLeftArm->UpdateTransformationMatrix(leftArmFinalMat);
+            }
+
+            if (auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg"))
+            {
+                pLeftLeg->GetRotation()->x += XMConvertToRadians(tcos0 * -1.4f);
+
+                //_matrix matLeftLegRot = XMMatrixRotationX(XMConvertToRadians(tcos0 * -1.4f));
+                //_matrix leftLegBaseMat = XMLoadFloat4x4(pLeftLeg->GeTransformationMatrix());
+                //_vector leftLegPos = leftLegBaseMat.r[3];
+                //_matrix leftLegFinalMat = matLeftLegRot;
+                //leftLegFinalMat.r[3] = leftLegPos;
+                //pLeftLeg->UpdateTransformationMatrix(leftLegFinalMat);
+            }
+
+            if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+            {
+                pRightArm->GetRotation()->x += XMConvertToRadians(-tcos0);
+
+
+                //_matrix matRightArmRot = XMMatrixRotationX(XMConvertToRadians(-tcos0));
+                //_matrix rightArmBaseMat = XMLoadFloat4x4(pRightArm->GeTransformationMatrix());
+                //_vector rightArmPos = rightArmBaseMat.r[3];
+                //_matrix rightArmFinalMat = matRightArmRot;
+                //rightArmFinalMat.r[3] = rightArmPos;
+                //pRightArm->UpdateTransformationMatrix(rightArmFinalMat);
+            }
+
+            if (auto pRightLeg = m_pComEntityModel->GetBone("rightLeg"))
+            {
+                pRightLeg->GetRotation()->x += XMConvertToRadians(tcos0 * 1.4f);
+
+
+                //_matrix matRightLegRot = XMMatrixRotationX(XMConvertToRadians(tcos0 * 1.4f));
+                //_matrix rightLegBaseMat = XMLoadFloat4x4(pRightLeg->GeTransformationMatrix());
+                //_vector rightLegPos = rightLegBaseMat.r[3];
+                //_matrix rightLegFinalMat = matRightLegRot;
+                //rightLegFinalMat.r[3] = rightLegPos;
+                //pRightLeg->UpdateTransformationMatrix(rightLegFinalMat);
+            }
+        }
+        else
+        {
+            // Idle 상태 - 애니메이션 적용 안함
         }
     }
 
@@ -389,8 +579,9 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
     {
         if (m_pPlayerCamera)
         {
-            auto trsf = m_pPlayerCamera->GetTransform().GetLoadedWorldMatrix();
-            auto next = GetTransform().GetLoadedPostion() + trsf.r[2] * 10.f * fTimeDelta;
+            auto camLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
+            //auto trsf = m_pPlayerCamera->GetTransform().GetLoadedWorldMatrix();
+            auto next = GetTransform().GetLoadedPostion() + camLook * 10.f * fTimeDelta;
             GetTransform().SetPosition(next);
         }
     }
@@ -398,8 +589,9 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
     {
         if (m_pPlayerCamera)
         {
-            auto trsf = m_pPlayerCamera->GetTransform().GetLoadedWorldMatrix();
-            auto next = GetTransform().GetLoadedPostion() + trsf.r[0] * 10.f * -fTimeDelta;
+            auto camRight = m_pPlayerCamera->GetTransform().GetState(STATE::RIGHT);
+            //auto trsf = m_pPlayerCamera->GetTransform().GetLoadedWorldMatrix();
+            auto next = GetTransform().GetLoadedPostion() + camRight * 10.f * -fTimeDelta;
             GetTransform().SetPosition(next);
         }
     }
@@ -407,8 +599,10 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
     {
         if (m_pPlayerCamera)
         {
-            auto trsf = m_pPlayerCamera->GetTransform().GetLoadedWorldMatrix();
-            auto next = GetTransform().GetLoadedPostion() + trsf.r[2] * 10.f * -fTimeDelta;
+            auto camLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
+
+            //auto trsf = m_pPlayerCamera->GetTransform().GetLoadedWorldMatrix();
+            auto next = GetTransform().GetLoadedPostion() + camLook * 10.f * -fTimeDelta;
             GetTransform().SetPosition(next);
         }
     }
@@ -416,11 +610,279 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
     {
         if (m_pPlayerCamera)
         {
-            auto trsf = m_pPlayerCamera->GetTransform().GetLoadedWorldMatrix();
-            auto next = GetTransform().GetLoadedPostion() + trsf.r[0] * 10.f * fTimeDelta;
+            auto camRight = m_pPlayerCamera->GetTransform().GetState(STATE::RIGHT);
+            //auto trsf = m_pPlayerCamera->GetTransform().GetLoadedWorldMatrix();
+            auto next = GetTransform().GetLoadedPostion() + camRight * 10.f * fTimeDelta;
             GetTransform().SetPosition(next);
         }
     }
+
+
+
+    /////
+
+    if (1)
+    {
+        if (m_bKeyPressingShift)
+        {
+            constexpr float fScale = 0.0625f;
+
+            if (auto pWaist = m_pComEntityModel->GetBone("waist"))
+            {
+                pWaist->GetRotation()->x += XMConvertToRadians(28.f);
+                pWaist->GetTranslatoin()->y -= 1.f * fScale;
+            }
+
+            if (auto pHead = m_pComEntityModel->GetBone("head"))
+            {
+                pHead->GetRotation()->x += -XMConvertToRadians(28.f);
+
+            }
+        }
+    }
+    if(0)
+    {
+        if(m_bKeyPressingShift)
+        {
+            constexpr float fScale = 0.0625f;
+
+            if (auto pRoot = m_pComEntityModel->GetBone("root"))
+            {
+                pRoot->GetRotation()->x += XMConvertToRadians(28.f);
+
+                pRoot->GetTranslatoin()->y += 1.25f * fScale;
+                pRoot->GetTranslatoin()->z += -9.f * fScale;
+
+                //_matrix matRot =
+                //    XMMatrixRotationX(
+                //        XMConvertToRadians(28.f));
+
+                //_matrix matPos =
+                //    XMMatrixTranslation(
+                //        0.f,
+                //        1.25f * fScale,
+                //        -9.f * fScale);
+
+                //pRoot->UpdateTransformationMatrix(
+                //    matRot * matPos);
+            }
+
+            if (auto pBody = m_pComEntityModel->GetBone("body"))
+            {
+                pBody->GetTranslatoin()->y += -2.f * fScale;
+                //_matrix matPos =
+                //    XMMatrixTranslation(
+                //        0.f,
+                //        -2.f * fScale,
+                //        0.f);
+
+                //pBody->UpdateTransformationMatrix(matPos);
+            }
+
+            if (auto pHead = m_pComEntityModel->GetBone("head"))
+            {
+                //pHead->GetRotation()->x += -XMConvertToRadians(28.f);
+                //pHead->GetTranslatoin()->y = -1.f * fScale;
+
+                //auto tmp = XMLoadFloat4x4(pHead->GeTransformationMatrix());
+                //_matrix matPos =
+                //    XMMatrixTranslation(
+                //        0.f,
+                //        -1.f * fScale,
+                //        0.f);
+
+                //pHead->UpdateTransformationMatrix(tmp * matPos);
+            }
+
+            if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+            {
+                pLeftArm->GetRotation()->x += XMConvertToRadians(-5.7f);
+
+
+                //_matrix matRot =
+                //    XMMatrixRotationX(
+                //        XMConvertToRadians(-5.7f));
+
+                //pLeftArm->UpdateTransformationMatrix(matRot);
+            }
+
+            if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+            {
+                pRightArm->GetRotation()->x += XMConvertToRadians(-5.7f);
+
+
+                //_matrix matRot =
+                //    XMMatrixRotationX(
+                //        XMConvertToRadians(-5.7f));
+
+                //pRightArm->UpdateTransformationMatrix(matRot);
+            }
+
+            if (auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg"))
+            {
+                pLeftLeg->GetRotation()->x += XMConvertToRadians(-28.f);
+
+
+                //_matrix matRot =
+                //    XMMatrixRotationX(
+                //        XMConvertToRadians(-28.f));
+
+                //pLeftLeg->UpdateTransformationMatrix(matRot);
+            }
+
+            if (auto pRightLeg = m_pComEntityModel->GetBone("rightLeg"))
+            {
+                pRightLeg->GetRotation()->x += XMConvertToRadians(-28.f);
+
+
+                //_matrix matRot =
+                //    XMMatrixRotationX(
+                //        XMConvertToRadians(-28.f));
+
+                //pRightLeg->UpdateTransformationMatrix(matRot);
+            }
+        }
+        //else
+        //{
+        //    constexpr float fScale = 0.0625f;
+
+        //    if (auto pRoot = m_pComEntityModel->GetBone("root"))
+        //    {
+        //        pRoot->GetRotation()->x = 0;
+
+        //        pRoot->GetTranslatoin()->y = 0;
+        //        pRoot->GetTranslatoin()->z = 0;
+
+        //    }
+
+        //    if (auto pBody = m_pComEntityModel->GetBone("body"))
+        //    {
+        //        pBody->GetTranslatoin()->y = 0;
+        //        
+        //    }
+
+        //    if (auto pHead = m_pComEntityModel->GetBone("head"))
+        //    {
+        //        //pHead->GetRotation()->x += -XMConvertToRadians(28.f);
+        //        //pHead->GetTranslatoin()->y = -1.f * fScale;
+
+        //        //auto tmp = XMLoadFloat4x4(pHead->GeTransformationMatrix());
+        //        //_matrix matPos =
+        //        //    XMMatrixTranslation(
+        //        //        0.f,
+        //        //        -1.f * fScale,
+        //        //        0.f);
+
+        //        //pHead->UpdateTransformationMatrix(tmp * matPos);
+        //    }
+
+        //    if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+        //    {
+        //        pLeftArm->GetRotation()->x = 0;
+
+        //    }
+
+        //    if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+        //    {
+        //        pRightArm->GetRotation()->x = 0;
+        //    }
+
+        //    if (auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg"))
+        //    {
+        //        pLeftLeg->GetRotation()->x =0;
+        //    }
+
+        //    if (auto pRightLeg = m_pComEntityModel->GetBone("rightLeg"))
+        //    {
+        //        pRightLeg->GetRotation()->x = 0;
+        //    }
+        //}
+    }
+    
+
+    {
+        if (m_bMousePressingLeft)
+        {
+            m_bAttacking = true;
+        }
+
+        if (m_bAttacking)
+        {
+            // attack_time: 0.0 ~ 1.0
+            m_fAttackTime += fTimeDelta / m_fAttackDuration;
+            m_fAttackTime = std::min(m_fAttackTime, 1.0f);
+
+            float attackTime = m_fAttackTime;
+            float attackBodyRotY = m_iMouseMoveX;  // 현재 head 회전값
+
+            // body 회전
+            if (auto pBody = m_pComEntityModel->GetBone("body"))
+            {
+                float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                float leftArmRotX = -(sin(t * 3.14159f) * 1.2f + sin(attackTime * 3.14159f)) * 10.0f;
+                //pBody->GetRotation()->y += XMConvertToRadians(leftArmRotX);
+
+
+                //_matrix matBodyRot = XMMatrixRotationY(XMConvertToRadians(attackBodyRotY));
+                //_matrix bodyBaseMat = XMLoadFloat4x4(pBody->GeTransformationMatrix());
+                //_vector bodyPos = bodyBaseMat.r[3];
+                //_matrix bodyFinalMat = matBodyRot;
+                //bodyFinalMat.r[3] = bodyPos;
+                //pBody->UpdateTransformationMatrix(bodyFinalMat);
+            }
+
+            // leftarm 회전
+            if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+            {
+                float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                float leftArmRotX = -(sin(t * 3.14159f) * 1.2f + sin(attackTime * 3.14159f)) * 10.0f;
+
+                pLeftArm->GetRotation()->x += XMConvertToRadians(leftArmRotX);
+
+                //_matrix matLeftArmRot = XMMatrixRotationX(XMConvertToRadians(leftArmRotX));
+                //_matrix leftArmBaseMat = XMLoadFloat4x4(pLeftArm->GeTransformationMatrix());
+                //_vector leftArmPos = leftArmBaseMat.r[3];
+                //_matrix leftArmFinalMat = matLeftArmRot;
+                ////leftArmFinalMat.r[3] = leftArmPos;
+                //pLeftArm->UpdateTransformationMatrix(leftArmFinalMat);
+            }
+
+            // rightarm 회전
+            if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+            {
+                float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                float sinT = sin(t * 3.14159f);
+
+                float rightArmRotX = -(sinT * 1.2f + sin(attackTime * 3.14159f)) * 30.0f;
+
+                float rightArmRotY = -(sinT != 0.0f ?
+                    (-90.0f * sinT) + 30.0f :
+                    0.0f);
+
+                pRightArm->GetRotation()->x += XMConvertToRadians(rightArmRotX);
+                pRightArm->GetRotation()->y += XMConvertToRadians(rightArmRotY);
+
+                //_matrix matRightArmRot =
+                //    XMMatrixRotationX(XMConvertToRadians(rightArmRotX)) *
+                //    XMMatrixRotationY(XMConvertToRadians(rightArmRotY));
+
+                //_matrix rightArmBaseMat = XMLoadFloat4x4(pRightArm->GeTransformationMatrix());
+                //_vector rightArmPos = rightArmBaseMat.r[3];
+                //_matrix rightArmFinalMat = matRightArmRot;
+                ////rightArmFinalMat.r[3] = rightArmPos;
+                //pRightArm->UpdateTransformationMatrix(rightArmFinalMat);
+            }
+
+            // 공격 완료
+            if (m_fAttackTime >= 1.0f)
+            {
+                m_bAttacking = false;
+                m_fAttackTime = 0.0f;
+            }
+        }
+    }
+
+    
 
 
     if (m_pPlayerCamera)
@@ -503,6 +965,20 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
 
 
+    if (auto item = m_pComEntityModel->GetBone("rightItem"))
+    {
+        for (auto& child : GetChildrenNode())
+        {
+            if (child->GetObjectTag() == "DropItem_WoodPickaxe")
+            {
+                _float4x4 mat;
+                auto tmp = XMLoadFloat4x4(item->GetCombinedTransformationMatrix()) * GetTransform().GetLoadedCombinedWorldMatrix();
+                XMStoreFloat4x4(&mat, tmp);
+                child->GetTransform().SetParentWorldMatrix(mat);
+            }
+        }
+    }
+
     //if (CGameInstance::Get().KeyPressing(DIK_RIGHT))
     //{
     //    if (auto pHeadBone = m_pComEntityModel->GetBone("head"))
@@ -518,172 +994,175 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     //        pHeadBone->AddRotation({ 0.f, -XMConvertToRadians(90.f) * fTimeDelta, 0.f });
     //    }
     //}
-
-    if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
+    if (false)
     {
-        if (auto item = m_pComEntityModel->GetBone("rightItem"))
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
         {
-            for (auto& child : GetChildrenNode())
+            if (auto item = m_pComEntityModel->GetBone("rightItem"))
             {
-                if (child->GetObjectTag() == "DropItem_WoodPickaxe")
+                for (auto& child : GetChildrenNode())
                 {
-                    _float4x4 mat;
-                    auto tmp = XMLoadFloat4x4(item->GetCombinedTransformationMatrix()) * GetTransform().GetLoadedCombinedWorldMatrix();
-                    XMStoreFloat4x4(&mat, tmp);
-                    child->GetTransform().SetParentWorldMatrix(mat);
+                    if (child->GetObjectTag() == "DropItem_WoodPickaxe")
+                    {
+                        _float4x4 mat;
+                        auto tmp = XMLoadFloat4x4(item->GetCombinedTransformationMatrix()) * GetTransform().GetLoadedCombinedWorldMatrix();
+                        XMStoreFloat4x4(&mat, tmp);
+                        child->GetTransform().SetParentWorldMatrix(mat);
+                    }
                 }
             }
-        }
 
-        if (auto pHeadBone = m_pComEntityModel->GetBone("head"))
-        {
-            if (false && CGameInstance::Get().GetMouseFix())
+            if (auto pHeadBone = m_pComEntityModel->GetBone("head"))
             {
-                if (auto mouseX = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::X))
+                if (false && CGameInstance::Get().GetMouseFix())
                 {
-                    m_vHeadRotation.y += 10.f * fTimeDelta * mouseX;
-                }
-                    
-                if (auto mouseY = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::Y))
-                {
-                    float nextPitch = m_vHeadRotation.x + 10.f * fTimeDelta * (mouseY);
-
-                    if (nextPitch <= 89.f && nextPitch >= -89.f)
+                    if (auto mouseX = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::X))
                     {
-                        m_vHeadRotation.x = nextPitch;
+                        m_vHeadRotation.y += 10.f * fTimeDelta * mouseX;
                     }
-                }
 
-                float headAbsoluteYaw = m_vHeadRotation.y;
-                float headAbsolutePitch = m_vHeadRotation.x;
-
-                static float rootAccumulatedYaw = 0.f;
-
-                // ✅ 이동 키 확인
-                bool bMoving = CGameInstance::Get().KeyPressing(DIK_W) ||
-                    CGameInstance::Get().KeyPressing(DIK_S) ||
-                    CGameInstance::Get().KeyPressing(DIK_A) ||
-                    CGameInstance::Get().KeyPressing(DIK_D);
-
-                float headRelativeYaw;
-
-                if (bMoving)
-                {
-                    // ✅ 이동 중일 때: 부드럽게 root를 head 방향으로 회전
-                    float targetRootYaw = headAbsoluteYaw;
-                    float diff = targetRootYaw - rootAccumulatedYaw;
-
-                    // ±180도 범위 정규화
-                    if (diff > 180.f) diff -= 360.f;
-                    if (diff < -180.f) diff += 360.f;
-
-                    // 부드럽게 회전 (보간)
-                    float lerpSpeed = 5.f * fTimeDelta;  // 속도 조정 가능
-                    rootAccumulatedYaw += diff * lerpSpeed;
-
-                    headRelativeYaw = headAbsoluteYaw - rootAccumulatedYaw;
-                }
-                else
-                {
-                    // ✅ 정지 중일 때: 45도 제한
-                    headRelativeYaw = headAbsoluteYaw - rootAccumulatedYaw;
-
-                    if (headRelativeYaw > 45.f)
+                    if (auto mouseY = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::Y))
                     {
-                        float excess = headRelativeYaw - 45.f;
-                        rootAccumulatedYaw += excess;
-                        headRelativeYaw = 45.f;
+                        float nextPitch = m_vHeadRotation.x + 10.f * fTimeDelta * (mouseY);
+
+                        if (nextPitch <= 89.f && nextPitch >= -89.f)
+                        {
+                            m_vHeadRotation.x = nextPitch;
+                        }
                     }
-                    else if (headRelativeYaw < -45.f)
+
+                    float headAbsoluteYaw = m_vHeadRotation.y;
+                    float headAbsolutePitch = m_vHeadRotation.x;
+
+                    static float rootAccumulatedYaw = 0.f;
+
+                    // ✅ 이동 키 확인
+                    bool bMoving = CGameInstance::Get().KeyPressing(DIK_W) ||
+                        CGameInstance::Get().KeyPressing(DIK_S) ||
+                        CGameInstance::Get().KeyPressing(DIK_A) ||
+                        CGameInstance::Get().KeyPressing(DIK_D);
+
+                    float headRelativeYaw;
+
+                    if (bMoving)
                     {
-                        float excess = headRelativeYaw + 45.f;
-                        rootAccumulatedYaw += excess;
-                        headRelativeYaw = -45.f;
+                        // ✅ 이동 중일 때: 부드럽게 root를 head 방향으로 회전
+                        float targetRootYaw = headAbsoluteYaw;
+                        float diff = targetRootYaw - rootAccumulatedYaw;
+
+                        // ±180도 범위 정규화
+                        if (diff > 180.f) diff -= 360.f;
+                        if (diff < -180.f) diff += 360.f;
+
+                        // 부드럽게 회전 (보간)
+                        float lerpSpeed = 5.f * fTimeDelta;  // 속도 조정 가능
+                        rootAccumulatedYaw += diff * lerpSpeed;
+
+                        headRelativeYaw = headAbsoluteYaw - rootAccumulatedYaw;
                     }
-                }
+                    else
+                    {
+                        // ✅ 정지 중일 때: 45도 제한
+                        headRelativeYaw = headAbsoluteYaw - rootAccumulatedYaw;
 
-                // root 회전 적용
-                if (auto pRootBone = m_pComEntityModel->GetBone("root"))
-                {
-                    _matrix matRootRot = XMMatrixRotationY(XMConvertToRadians(rootAccumulatedYaw));
-                    _matrix rootBaseMat = XMLoadFloat4x4(pRootBone->GeTransformationMatrix());
-                    _vector rootPos = rootBaseMat.r[3];
+                        if (headRelativeYaw > 45.f)
+                        {
+                            float excess = headRelativeYaw - 45.f;
+                            rootAccumulatedYaw += excess;
+                            headRelativeYaw = 45.f;
+                        }
+                        else if (headRelativeYaw < -45.f)
+                        {
+                            float excess = headRelativeYaw + 45.f;
+                            rootAccumulatedYaw += excess;
+                            headRelativeYaw = -45.f;
+                        }
+                    }
 
-                    _matrix rootFinalMat = matRootRot;
-                    //rootFinalMat.r[3] = rootPos;
+                    // root 회전 적용
+                    if (auto pRootBone = m_pComEntityModel->GetBone("root"))
+                    {
+                        _matrix matRootRot = XMMatrixRotationY(XMConvertToRadians(rootAccumulatedYaw));
+                        _matrix rootBaseMat = XMLoadFloat4x4(pRootBone->GeTransformationMatrix());
+                        _vector rootPos = rootBaseMat.r[3];
 
-                    pRootBone->UpdateTransformationMatrix(rootFinalMat);
-                }
+                        _matrix rootFinalMat = matRootRot;
+                        //rootFinalMat.r[3] = rootPos;
 
-                // head 회전 적용
-                _matrix matHeadRot =
-                    XMMatrixRotationX(XMConvertToRadians(headAbsolutePitch)) *
-                    XMMatrixRotationY(XMConvertToRadians(headRelativeYaw));
+                        pRootBone->UpdateTransformationMatrix(rootFinalMat);
+                    }
 
-                _matrix headBaseMat = XMLoadFloat4x4(pHeadBone->GeTransformationMatrix());
-                _vector headPos = headBaseMat.r[3];
+                    // head 회전 적용
+                    _matrix matHeadRot =
+                        XMMatrixRotationX(XMConvertToRadians(headAbsolutePitch)) *
+                        XMMatrixRotationY(XMConvertToRadians(headRelativeYaw));
 
-                _matrix headFinalMat = matHeadRot;
-                //headFinalMat.r[3] = headPos;
+                    _matrix headBaseMat = XMLoadFloat4x4(pHeadBone->GeTransformationMatrix());
+                    _vector headPos = headBaseMat.r[3];
 
-                pHeadBone->UpdateTransformationMatrix(headFinalMat);
+                    _matrix headFinalMat = matHeadRot;
+                    //headFinalMat.r[3] = headPos;
 
-                // 카메라 회전
-                _matrix matCamRot =
-                    XMMatrixRotationX(XMConvertToRadians(headAbsolutePitch)) *
-                    XMMatrixRotationY(XMConvertToRadians(headAbsoluteYaw));
+                    pHeadBone->UpdateTransformationMatrix(headFinalMat);
 
-                cam->GetTransform().SetState(STATE::RIGHT, matCamRot.r[0]);
-                cam->GetTransform().SetState(STATE::UP, matCamRot.r[1]);
-                cam->GetTransform().SetState(STATE::LOOK, matCamRot.r[2]);
+                    // 카메라 회전
+                    _matrix matCamRot =
+                        XMMatrixRotationX(XMConvertToRadians(headAbsolutePitch)) *
+                        XMMatrixRotationY(XMConvertToRadians(headAbsoluteYaw));
 
-                // 이동
-                if (CGameInstance::Get().KeyPressing(DIK_W))
-                {
-                    _vector vCurrentPos = GetTransform().GetLoadedPostion();
-                    _vector vLookDir = XMVector3Normalize(matCamRot.r[2]);
-                    _vector vNewPos = vCurrentPos + vLookDir * 10.f * fTimeDelta;
-                    GetTransform().SetPosition(vNewPos);
-                }
+                    cam->GetTransform().SetState(STATE::RIGHT, matCamRot.r[0]);
+                    cam->GetTransform().SetState(STATE::UP, matCamRot.r[1]);
+                    cam->GetTransform().SetState(STATE::LOOK, matCamRot.r[2]);
 
-                if (CGameInstance::Get().KeyPressing(DIK_S))
-                {
-                    _vector vCurrentPos = GetTransform().GetLoadedPostion();
-                    _vector vLookDir = XMVector3Normalize(matCamRot.r[2]);
-                    _vector vNewPos = vCurrentPos - vLookDir * 10.f * fTimeDelta;
-                    GetTransform().SetPosition(vNewPos);
-                }
+                    // 이동
+                    if (CGameInstance::Get().KeyPressing(DIK_W))
+                    {
+                        _vector vCurrentPos = GetTransform().GetLoadedPostion();
+                        _vector vLookDir = XMVector3Normalize(matCamRot.r[2]);
+                        _vector vNewPos = vCurrentPos + vLookDir * 10.f * fTimeDelta;
+                        GetTransform().SetPosition(vNewPos);
+                    }
 
-                if (CGameInstance::Get().KeyPressing(DIK_A))
-                {
-                    _vector vCurrentPos = GetTransform().GetLoadedPostion();
-                    _vector vRightDir = XMVector3Normalize(matCamRot.r[0]);
-                    _vector vNewPos = vCurrentPos - vRightDir * 10.f * fTimeDelta;
-                    GetTransform().SetPosition(vNewPos);
-                }
+                    if (CGameInstance::Get().KeyPressing(DIK_S))
+                    {
+                        _vector vCurrentPos = GetTransform().GetLoadedPostion();
+                        _vector vLookDir = XMVector3Normalize(matCamRot.r[2]);
+                        _vector vNewPos = vCurrentPos - vLookDir * 10.f * fTimeDelta;
+                        GetTransform().SetPosition(vNewPos);
+                    }
 
-                if (CGameInstance::Get().KeyPressing(DIK_D))
-                {
-                    _vector vCurrentPos = GetTransform().GetLoadedPostion();
-                    _vector vRightDir = XMVector3Normalize(matCamRot.r[0]);
-                    _vector vNewPos = vCurrentPos + vRightDir * 10.f * fTimeDelta;
-                    GetTransform().SetPosition(vNewPos);
-                }
+                    if (CGameInstance::Get().KeyPressing(DIK_A))
+                    {
+                        _vector vCurrentPos = GetTransform().GetLoadedPostion();
+                        _vector vRightDir = XMVector3Normalize(matCamRot.r[0]);
+                        _vector vNewPos = vCurrentPos - vRightDir * 10.f * fTimeDelta;
+                        GetTransform().SetPosition(vNewPos);
+                    }
 
-                auto pos = GetTransform().GetPosition();
-                cam->GetTransform().SetState(STATE::POSITION, XMVectorSet(pos.x, pos.y + 1.7f, pos.z, 1.f));
+                    if (CGameInstance::Get().KeyPressing(DIK_D))
+                    {
+                        _vector vCurrentPos = GetTransform().GetLoadedPostion();
+                        _vector vRightDir = XMVector3Normalize(matCamRot.r[0]);
+                        _vector vNewPos = vCurrentPos + vRightDir * 10.f * fTimeDelta;
+                        GetTransform().SetPosition(vNewPos);
+                    }
 
-                if (m_eCameraType == CAMERA_TYPE::FPS)
-                {
-                    cam->GetTransform().GoStraight(0.4f);
-                }
-                else if (m_eCameraType == CAMERA_TYPE::TPS)
-                {
-                    cam->GetTransform().GoStraight(-5.f);
+                    auto pos = GetTransform().GetPosition();
+                    cam->GetTransform().SetState(STATE::POSITION, XMVectorSet(pos.x, pos.y + 1.7f, pos.z, 1.f));
+
+                    if (m_eCameraType == CAMERA_TYPE::FPS)
+                    {
+                        cam->GetTransform().GoStraight(0.4f);
+                    }
+                    else if (m_eCameraType == CAMERA_TYPE::TPS)
+                    {
+                        cam->GetTransform().GoStraight(-5.f);
+                    }
                 }
             }
         }
     }
+    
 
     //if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
     //{
@@ -898,7 +1377,7 @@ HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 
 void CPlayerEntity::UpdateAttackAnimation(float fTimeDelta)
 {
-    //if (!m_bAttacking) return;
+    if (!m_bAttacking) return;
 
     // attack_time: 0.0 ~ 1.0
     m_fAttackTime += fTimeDelta / m_fAttackDuration;

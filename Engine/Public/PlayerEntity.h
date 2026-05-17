@@ -59,6 +59,13 @@ private:
 private:
 	CComEntityModel* m_pComEntityModel{};
 
+private:
+	float m_fRootRotRadY = 0.f;   // 리셋에 영향 안 받는 영구 상태
+	float m_fHeadRotRadX = 0.f;
+	float m_fHeadRotRadY = 0.f;
+
+private:
+
 
 	bool m_bAttacking = false;
 	float m_fAttackTime = 0.0f;

@@ -27,6 +27,7 @@ private:
 public:
 	void UpdateBoneMatrix(_float fTimeDelta);
 	void BindBoneMatrix() const;
+	void ResetBonesChannel();
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx, uint32_t iMeshIdx = 0);
 	const std::vector<CEntityModelBone>& GetBones() const { return m_Bones; }
 	CEntityModelBone* GetBone(const std::string& name)
