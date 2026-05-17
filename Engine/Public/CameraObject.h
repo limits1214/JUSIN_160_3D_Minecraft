@@ -36,6 +36,28 @@ public:
 	_matrix GetProj() const { return XMLoadFloat4x4(&m_matProj); }
 	const _float4* GetFrustumFarCorner() const { return m_FrustumFarCorner; }
 
+	std::pair<_float3, _float3> GetRay() const
+	{
+		//RECT rect;
+		//GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+
+		E::_float4x4 P;
+		XMStoreFloat4x4(&P, GetProj());
+
+		E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+		E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+		E::_matrix V = GetView();
+		auto detV = XMMatrixDeterminant(V);
+		E::_matrix invView = XMMatrixInverse(&detV, V);
+
+		_float3 vecrayOrigin;
+		_float3 vecrayDir;
+		XMStoreFloat3(&vecrayOrigin, XMVector3TransformCoord(rayOrigin, invView));
+		XMStoreFloat3(&vecrayDir, XMVector3TransformNormal(rayDir, invView));
+		return { vecrayOrigin ,vecrayDir };
+	}
+
 public:
 	HRESULT Initialize(void* pArg) override;
 	//void PriorityUpdate(E::_float fTimeDelta) override;

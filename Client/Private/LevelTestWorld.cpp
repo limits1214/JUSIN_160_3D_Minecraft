@@ -13,6 +13,8 @@
 #include "ExperienceOrbItem.h"
 #include "UICrosshair.h"
 #include "UICamera.h"
+
+#include "BlockOutline.h"
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -105,6 +107,11 @@ HRESULT CLevelTestWorld::Initialize()
 		}
 		
 		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UICrosshair", E::CUICrosshair::Create())))
+		{
+			int x = 0;
+		}
+		
+		if (FAILED(E::CGameInstance::Get().AddPrototype("BLOCK_OUTLINE", "Prototype_GameObject_BlockOutline", E::CBlockOutline::Create())))
 		{
 			int x = 0;
 		}
@@ -204,6 +211,18 @@ HRESULT CLevelTestWorld::Initialize()
 
 	}
 
+	//block outline
+	{
+		//CBlockOutline
+		E::CGameObject::GAMEOBJECT_DESC Desc{};
+		Desc.sObjectTag = "BlockOutline";
+
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("BLOCK_OUTLINE", "Prototype_GameObject_BlockOutline",
+			"81_BlockOutline", &Desc))
+		{
+		}
+	}
+
 
 	{
 		E::CUIObject::UIOBJECT_DESC Desc{};
@@ -214,11 +233,6 @@ HRESULT CLevelTestWorld::Initialize()
 		}
 
 	}
-	//if (auto flyCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_FlyCamera",
-	//	E::ETOUI(LEVEL_TEST_WORLD_LAYERS::CAMERA), &Desc))
-	//{
-	//	
-	//}
 
 	{
 		E::CCameraObject::CAMERA_DESC Desc{};

@@ -3,7 +3,7 @@
 #include "ResourceManager.h"
 #include "WorkerManager.h"
 #include "GameObjectManager.h"
-#include "Block3.h"
+#include "VoxelManager3.h"
 struct FMOD_SOUND;
 
 NS_BEGIN(Engine)
@@ -23,7 +23,7 @@ class CRenderer;
 class CLightManager;
 class CVoxelManager;
 class CVoxelManager2;
-class CVoxelManager3;
+//class CVoxelManager3;
 class CChunk3;
 class CCameraObject;
 
@@ -238,6 +238,10 @@ public:
 	_float GetVoxelHeightNoise(_float x, _float z) const;
 	CChunk3* GetVoxelChunk(int32_t x, int32_t y, int32_t z) const;
 	std::optional<CBlock3> GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
+	_bool VoxelBlockRaycast(const _float3& rayOrigin,
+		const _float3& rayDir,
+		float fMaxDist,
+		CVoxelManager3::BLOCK_RAY_RESULT& outResult) const;
 #pragma endregion
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};

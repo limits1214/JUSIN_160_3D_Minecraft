@@ -110,10 +110,17 @@ _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayD
             auto block = GetBlockByChunkCoord(pChunk->GetCoordIdx(), lx, ly, lz).value();
             if (block.GetType() != CBlock3::TYPE::AIR)
             {
-                outResult.pChunk = pChunk;
-                outResult.iX = lx;
-                outResult.iY = ly;
-                outResult.iZ = lz;
+                //outResult.pChunk = pChunk;
+                outResult.iWorldBlockX = bx;
+                outResult.iWorldBlockY = by;
+                outResult.iWorldBlockZ = bz;
+                outResult.iChunkX = cx;
+                outResult.iChunkY = cy;
+                outResult.iChunkZ = cz;
+                outResult.iChunkBlockX = lx;
+                outResult.iChunkBlockY = ly;
+                outResult.iChunkBlockZ = lz;
+                outResult.block = block;
                 outResult.eHitFace = lastFace;
                 outResult.fDist = tCurrent; // 이 블록에 진입한 t (= 이전 스텝의 tMax)
                 return true;
@@ -243,11 +250,11 @@ void CVoxelManager3::Update(_float fTimeDelta)
                 BLOCK_RAY_RESULT res;
                 if (BlockRaycast(vecrayOrigin, vecrayDir, 15.f, res))
                 {
-                    const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+                    //const auto& [cx, cy, cz] = res.pChunk->GetCoord();
 
-                    int32_t worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
-                    int32_t worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
-                    int32_t worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
+                    int32_t worldBX = res.iWorldBlockX;
+                    int32_t worldBY = res.iWorldBlockY;
+                    int32_t worldBZ = res.iWorldBlockZ;
 
                     _vector verts[8] = {
                         XMVectorSet(worldBX,       worldBY,       worldBZ,       0),
@@ -338,36 +345,37 @@ void CVoxelManager3::Update(_float fTimeDelta)
         {
             if (auto cam = E::CGameInstance::Get().GetActiveGameCamera())
             {
-                RECT rect;
-                GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
+                //RECT rect;
+                //GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
 
-                E::_float4x4 P;
-                XMStoreFloat4x4(&P, cam->GetProj());
+                //E::_float4x4 P;
+                //XMStoreFloat4x4(&P, cam->GetProj());
 
-                E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
-                E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+                //E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+                //E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
 
-                E::_matrix V = cam->GetView();
-                auto detV = XMMatrixDeterminant(V);
-                E::_matrix invView = XMMatrixInverse(&detV, V);
+                //E::_matrix V = cam->GetView();
+                //auto detV = XMMatrixDeterminant(V);
+                //E::_matrix invView = XMMatrixInverse(&detV, V);
 
-                rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
-                rayDir = XMVector3TransformNormal(rayDir, invView);
-                _float3 vecrayOrigin;
-                _float3 vecrayDir;
+                //rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+                //rayDir = XMVector3TransformNormal(rayDir, invView);
+                //_float3 vecrayOrigin;
+                //_float3 vecrayDir;
 
-                XMStoreFloat3(&vecrayOrigin, rayOrigin);
-                XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
+                //XMStoreFloat3(&vecrayOrigin, rayOrigin);
+                //XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
 
+                const auto& [rayOrigin2, rayDir2] = cam->GetRay();
 
                 BLOCK_RAY_RESULT res;
-                if (BlockRaycast(vecrayOrigin, vecrayDir, 5.f, res))
+                if (BlockRaycast(rayOrigin2, rayDir2, 5.f, res))
                 {
-                    const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+                    //const auto& [cx, cy, cz] = res.pChunk->GetCoord();
 
-                    auto worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
-                    auto worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
-                    auto worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
+                    auto worldBX = res.iWorldBlockX;
+                    auto worldBY = res.iWorldBlockY;
+                    auto worldBZ = res.iWorldBlockZ;
 
                     CBlock3 block{};
                     block.SetType(CBlock3::TYPE::AIR);
@@ -406,11 +414,11 @@ void CVoxelManager3::Update(_float fTimeDelta)
                 BLOCK_RAY_RESULT res;
                 if (BlockRaycast(vecrayOrigin, vecrayDir, 5.f, res))
                 {
-                    const auto& [cx, cy, cz] = res.pChunk->GetCoord();
+                    //const auto& [cx, cy, cz] = res.pChunk->GetCoord();
 
-                    auto worldBX = VOXEL_CHUNK_X_SIZE3 * cx + res.iX;
-                    auto worldBY = VOXEL_CHUNK_Y_SIZE3 * cy + res.iY;
-                    auto worldBZ = VOXEL_CHUNK_Z_SIZE3 * cz + res.iZ;
+                    auto worldBX = res.iWorldBlockX;
+                    auto worldBY = res.iWorldBlockY;
+                    auto worldBZ = res.iWorldBlockZ;
                     if (res.eHitFace == FACE_DIR::POS_X)
                     {
                         worldBX += 1;
@@ -480,7 +488,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
     if (m_queueFutBlockFilling.empty()
         && m_queuedQuadMessingChunks.empty()
         && m_queueFutQuadMessing.empty()
-        && m_queueFutEdit.empty())
+        )
     {
         // TODO: flag check
         for (auto iter = m_mapChunks.begin(); iter != m_mapChunks.end();)

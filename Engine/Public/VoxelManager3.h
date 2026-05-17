@@ -10,7 +10,7 @@ class CResVertexShader;
 class CResPixelShader;
 class CResSamplerState;
 
-class CVoxelManager3 final : public CEngineBase, public IRenderable
+class ENGINE_DLL CVoxelManager3 final : public CEngineBase, public IRenderable
 {
 public:
 	typedef struct tagInRangeChunkCreateDesc
@@ -25,19 +25,22 @@ public:
 		int32_t iCenterX{}, iCenterY{}, iCenterZ{};
 	}OUT_RANGE_CHUNK_RELEASE_DESC;
 
-	typedef struct tagChunkEditDesc
-	{
-		int32_t iWorldBlockX{};
-		int32_t iWorldBlockY{};
-		int32_t iWorldBlockZ{};
-		CBlock3 block{};
-	}CHUNK_EDIT_DESC;
+	//typedef struct tagChunkEditDesc
+	//{
+	//	int32_t iWorldBlockX{};
+	//	int32_t iWorldBlockY{};
+	//	int32_t iWorldBlockZ{};
+	//	CBlock3 block{};
+	//}CHUNK_EDIT_DESC;
 
 	std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>> m_EditShadow{};
 
 	typedef struct tagRaycastResult {
-		CChunk3* pChunk{};
-		uint32_t iX{}, iY{}, iZ{};// 청크기준
+		//CChunk3* pChunk{};
+		int32_t iWorldBlockX{}, iWorldBlockY{}, iWorldBlockZ{};
+		int32_t iChunkX{}, iChunkY{}, iChunkZ{};
+		uint32_t iChunkBlockX{}, iChunkBlockY{}, iChunkBlockZ{};
+		std::optional<CBlock3> block{};
 		FACE_DIR eHitFace;
 		float fDist{};
 	} BLOCK_RAY_RESULT;
@@ -60,7 +63,7 @@ private:
 
 	std::list<std::vector<uint64_t>> m_queuedQuadMessingChunks{};
 
-	std::list<std::future<CHUNK_EDIT_DESC>> m_queueFutEdit{};
+	//std::list<std::future<CHUNK_EDIT_DESC>> m_queueFutEdit{};
 	std::list<std::vector<std::future<uint64_t>>> m_queueFutBlockFilling{};
 	std::list<std::future<std::vector<uint64_t>>> m_queueFutQuadMessing{};
 

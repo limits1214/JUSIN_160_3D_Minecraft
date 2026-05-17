@@ -234,6 +234,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\Block.h" />
     <ClInclude Include="..\public\Block2.h" />
     <ClInclude Include="..\public\Block3.h" />
+    <ClInclude Include="..\public\BlockOutline.h" />
     <ClInclude Include="..\public\CameraManager.h" />
     <ClInclude Include="..\public\CameraObject.h" />
     <ClInclude Include="..\public\ChickenEntity.h" />
@@ -455,6 +456,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Block.cpp" />
     <ClCompile Include="..\private\Block2.cpp" />
     <ClCompile Include="..\private\Block3.cpp" />
+    <ClCompile Include="..\private\BlockOutline.cpp" />
     <ClCompile Include="..\private\CameraManager.cpp" />
     <ClCompile Include="..\private\CameraObject.cpp" />
     <ClCompile Include="..\private\ChickenEntity.cpp" />
@@ -566,6 +568,10 @@ call CopyClient.bat</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\BlockOutline\BlockOutline.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
