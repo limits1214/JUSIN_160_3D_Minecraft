@@ -66,13 +66,14 @@ HRESULT CGameObject::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx
 
 void CGameObject::UpdateGUI()
 {
-    if (ImGui::Button("Destroy"))
-    {
-        SetPendingDestroy();
-    }
     if (ImGui::Button("DestroyCascade"))
     {
         SetPendingDestroyCascade();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Destroy"))
+    {
+        SetPendingDestroy();
     }
     //ImGui::Text("dest: %s", m_bPendingDestroy ? "true" : "false");
     if (ImGui::TreeNode("Components"))

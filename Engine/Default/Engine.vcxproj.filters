@@ -379,6 +379,12 @@
     <Filter Include="Collider\Capsule">
       <UniqueIdentifier>{9955575c-bb2c-4893-836b-454c1c63dab2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="100.Shaders\CrossHair">
+      <UniqueIdentifier>{73694d35-4833-4cf4-9d46-868f040497d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\Crosshair">
+      <UniqueIdentifier>{d0052be7-c03d-4c31-9fde-b3ef45fb55b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -747,6 +753,9 @@
     <ClInclude Include="..\public\ResEnttGeoPlayerArmor.h">
       <Filter>Resource\Entity\Geometry\Armor</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\UICrosshair.h">
+      <Filter>GameObject\UI\Crosshair</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1103,6 +1112,9 @@
     <ClCompile Include="..\private\ResEnttGeoPlayerArmor.cpp">
       <Filter>Resource\Entity\Geometry\Armor</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\UICrosshair.cpp">
+      <Filter>GameObject\UI\Crosshair</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1119,6 +1131,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Item.hlsl">
       <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Crosshair\CrossHair.hlsl">
+      <Filter>100.Shaders\CrossHair</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

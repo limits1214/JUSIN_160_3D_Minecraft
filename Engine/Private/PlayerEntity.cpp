@@ -947,7 +947,6 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
             m_pPlayerCamera->GetTransform().SetPosition(tmp);
         }
-
     }
 }
 

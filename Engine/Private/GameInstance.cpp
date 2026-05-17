@@ -465,6 +465,18 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// cross hair shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Crosshair", "./Resources/Shader/Crosshair/CrossHair.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Crosshair", "./Resources/Shader/Crosshair/CrossHair.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
 
 
 	// initialize voxel texture
