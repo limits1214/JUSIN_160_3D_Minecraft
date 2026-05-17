@@ -385,6 +385,12 @@
     <Filter Include="GameObject\UI\Crosshair">
       <UniqueIdentifier>{d0052be7-c03d-4c31-9fde-b3ef45fb55b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="100.Shaders\BlockOutline">
+      <UniqueIdentifier>{2afb5049-4606-4ad5-af98-df986cf5f942}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\BlockOutline">
+      <UniqueIdentifier>{ee6a1042-f8ee-406e-aee0-eed57ad1973e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -756,6 +762,9 @@
     <ClInclude Include="..\public\UICrosshair.h">
       <Filter>GameObject\UI\Crosshair</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\BlockOutline.h">
+      <Filter>GameObject\BlockOutline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1115,6 +1124,9 @@
     <ClCompile Include="..\private\UICrosshair.cpp">
       <Filter>GameObject\UI\Crosshair</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\BlockOutline.cpp">
+      <Filter>GameObject\BlockOutline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1134,6 +1146,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Crosshair\CrossHair.hlsl">
       <Filter>100.Shaders\CrossHair</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\BlockOutline\BlockOutline.hlsl">
+      <Filter>100.Shaders\BlockOutline</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

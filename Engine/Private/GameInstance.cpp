@@ -325,6 +325,14 @@ HRESULT CGameInstance::InitializeResources()
 		GetGraphicDeviceContext()->VSSetConstantBuffers(5, 1, res->GetCBuffer().GetAddressOf());
 	}
 
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerBlockOutline", E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_BLOCKOUTLINE) })))
+		{
+			return E_FAIL;
+		}
+	}
+
 	
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_LINEAR_WRAP, CResSamplerState::Create()))
 	{
@@ -472,6 +480,22 @@ HRESULT CGameInstance::InitializeMCResource()
 			res->Load();
 		}
 		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Crosshair", "./Resources/Shader/Crosshair/CrossHair.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
+	// blockoutline shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_BlockOutline", "./Resources/Shader/BlockOutline/BlockOutline.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_BlockOutline", "./Resources/Shader/BlockOutline/BlockOutline.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResGeometryShader>(TAG_RES_GRP_PERMANENT_SHADER, "GS_BlockOutline", "./Resources/Shader/BlockOutline/BlockOutline.hlsl"))
 		{
 			res->Load();
 		}
@@ -1202,6 +1226,11 @@ CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 std::optional<CBlock3> CGameInstance::GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const
 {
 	return m_pVoxelManager3->GetBlock(wbx, wby, wbz);
+}
+
+_bool CGameInstance::VoxelBlockRaycast(const _float3& rayOrigin, const _float3& rayDir, float fMaxDist, CVoxelManager3::BLOCK_RAY_RESULT& outResult) const
+{
+	return m_pVoxelManager3->BlockRaycast(rayOrigin, rayDir, fMaxDist , outResult);
 }
 
 #pragma endregion

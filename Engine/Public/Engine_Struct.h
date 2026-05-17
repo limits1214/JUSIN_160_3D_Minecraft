@@ -161,6 +161,15 @@ namespace Engine
 		_float2 uvScale{1,1};
 	} CB_PER_QUADITEM_ANIM;
 
+	typedef struct tagConstantBufferPerBlockOutline
+	{
+		_float3 vBlockPos{};
+		_float fThickness{};
+		_float4 vColor{};
+		_float3 vExtents{};
+		_float _pad{};
+	} CB_PER_BLOCKOUTLINE;
+
 	typedef struct tagVoxQuad
 	{
 		_float3 v1;
@@ -225,4 +234,5 @@ namespace Engine
 		_bool mirror{ false };
 		std::vector<std::pair<std::string, _float3>> locators{};
 	};
+
 }
