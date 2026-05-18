@@ -242,6 +242,8 @@ public:
 		const _float3& rayDir,
 		float fMaxDist,
 		CVoxelManager3::BLOCK_RAY_RESULT& outResult) const;
+
+	bool VoxelAABBOverlap(const _float3& pos, const _float3& halfExtents) const;
 #pragma endregion
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};

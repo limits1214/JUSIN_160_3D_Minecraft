@@ -53,6 +53,86 @@ public:
 		const _float3& rayDir,     // normalized
 		float fMaxDist,
 		BLOCK_RAY_RESULT& outResult) const;
+
+	bool VoxelAABBOverlap(const _float3& pos, const _float3& halfExtents) const
+	{
+		// AABB가 차지하는 블록 범위
+		int xMin = (int)floorf(pos.x - halfExtents.x);
+		int xMax = (int)floorf(pos.x + halfExtents.x);
+		int yMin = (int)floorf(pos.y - halfExtents.y);
+		int yMax = (int)floorf(pos.y + halfExtents.y);
+		int zMin = (int)floorf(pos.z - halfExtents.z);
+		int zMax = (int)floorf(pos.z + halfExtents.z);
+
+		for (int x = xMin; x <= xMax; x++)
+			for (int y = yMin; y <= yMax; y++)
+				for (int z = zMin; z <= zMax; z++)
+				{
+					auto block = GetBlock(x, y, z);
+					if (block && block->GetType() != CBlock3::TYPE::AIR)
+						return true;
+				}
+		return false;
+	}
+
+
+	struct AABB_OVERLAP_RESULT
+	{
+		bool        bOverlap = false;
+		CBlock3     block{};
+		int         x{}, y{}, z{};  // 충돌한 블록 좌표
+	};
+
+	AABB_OVERLAP_RESULT VoxelAABBOverlapResult(const _float3& pos, const _float3& halfExtents) const
+	{
+		int xMin = (int)floorf(pos.x - halfExtents.x);
+		int xMax = (int)floorf(pos.x + halfExtents.x);
+		int yMin = (int)floorf(pos.y - halfExtents.y);
+		int yMax = (int)floorf(pos.y + halfExtents.y);
+		int zMin = (int)floorf(pos.z - halfExtents.z);
+		int zMax = (int)floorf(pos.z + halfExtents.z);
+
+		for (int x = xMin; x <= xMax; x++)
+			for (int y = yMin; y <= yMax; y++)
+				for (int z = zMin; z <= zMax; z++)
+				{
+					auto block = GetBlock(x, y, z);
+					if (!block) continue;
+
+					switch (block->GetType())
+					{
+					case CBlock3::TYPE::AIR:
+					//case CBlock3::TYPE::WATER:   // 물은 통과
+					//case CBlock3::TYPE::LAVA:    // 용암도 통과 (데미지는 별도)
+						continue;
+
+					default:  // 일반 솔리드 블록
+						return { true, *block, x, y, z };
+					}
+				}
+		return { false };
+	}
+
+	bool VoxelAABBContainsType(const _float3& pos, const _float3& halfExtents, CBlock3::TYPE type) const
+	{
+		int xMin = (int)floorf(pos.x - halfExtents.x);
+		int xMax = (int)floorf(pos.x + halfExtents.x);
+		int yMin = (int)floorf(pos.y - halfExtents.y);
+		int yMax = (int)floorf(pos.y + halfExtents.y);
+		int zMin = (int)floorf(pos.z - halfExtents.z);
+		int zMax = (int)floorf(pos.z + halfExtents.z);
+
+		for (int x = xMin; x <= xMax; x++)
+			for (int y = yMin; y <= yMax; y++)
+				for (int z = zMin; z <= zMax; z++)
+				{
+					auto block = GetBlock(x, y, z);
+					if (block && block->GetType() == type)
+						return true;
+				}
+		return false;
+	}
+public:
 	HRESULT QueuingInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& desc);
 	HRESULT QueuingOutRangeChunkRelease(const OUT_RANGE_CHUNK_RELEASE_DESC& desc);
 
@@ -103,7 +183,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 0 };
+	int32_t m_iRenderDistance{ 5 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 public:

@@ -152,6 +152,12 @@ public:
 		m_bDirty = true;
 	}
 
+	void AddPosition(_fvector vPos)
+	{
+		XMStoreFloat3(&m_vPos, GetLoadedPostion() + vPos);
+		m_bDirty = true;
+	}
+
 	//{ return XMLoadFloat4(reinterpret_cast<const _float4*>(&GetWorldMatrix()->m[ETOUI(eState)][0])); }
 
 	void AddRotation(_vector vAxis, _float fAngleDegree)
