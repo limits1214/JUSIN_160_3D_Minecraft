@@ -116,6 +116,8 @@ void CPlayerEntity::UpdateGUI()
     }
 
     ImGui::Text("m_fRootRotRadY: %f", m_fRootRotRadY);
+
+    ImGui::InputFloat3("vVelocity", (float*)&m_vVelocity, "%.3f", ImGuiInputTextFlags_ReadOnly);
 }
 
 HRESULT CPlayerEntity::Initialize(void* pArg)
@@ -141,15 +143,16 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
 
    
     //m_pCenterCollider = CCollSphere::Create({0.f, 0.3f, 0.f}, 0.3f);
-    m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.5f, 1.f, 0.5f });
+    m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.25f, 0.9f, 0.25f });
 
     return S_OK;
 }
 
 void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
 {
-    m_pPlayerCamera = CGameInstance::Get().GetActiveGameCamera("Player");
-    m_bControl = CGameInstance::Get().GetMouseFix() && m_pPlayerCamera;
+    m_pPlayerCamera = CGameInstance::Get().GetGameCamera("Player");
+    m_pActivePlayerCamera = CGameInstance::Get().GetActiveGameCamera("Player");
+    m_bControl = CGameInstance::Get().GetMouseFix() && m_pActivePlayerCamera;
     if (m_bControl)
     {
         m_bKeyPressingW = CGameInstance::Get().KeyPressing(DIK_W);
@@ -219,146 +222,16 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
     m_pComEntityModel->ResetBonesChannel();
     if (m_eCameraType == CAMERA_TYPE::FPS)
     {
-
-
-       
-
-        //if (m_pPlayerCamera)
-        //{
-        //    float targetRotXRad = XMConvertToRadians(m_pPlayerCamera->GetTransform().GetRotationEuler().x);
-        //    float targetRotYRad = XMConvertToRadians(m_pPlayerCamera->GetTransform().GetRotationEuler().y);
-        //   
-        //    if (auto pRightArm = m_pComEntityArmModel->GetBone("rightArm"))
-        //    {
-        //        float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;;
-
-        //        while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
-        //        while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
-
-
-        //        m_fRootRotRadY += toRotYRadDiff;
-
-        //        //pRightArm->GetRotation()->x += XMConvertToRadians(-90.f);
-        //        //pRightArm->GetRotation()->y += XMConvertToRadians(targetRotYRad);
-        //        //pRightArm->GetRotation()->z += XMConvertToRadians(-115.f);
-
-        //        //pRightArm->GetRotation()->x += targetRotXRad;
-        //        pRightArm->GetRotation()->y += m_fRootRotRadY;
-        //        int x = 0;
-        //    }
-        //}
-        
-
-
-        if (m_bKeyPressingW)
-        {
-            if (m_pPlayerCamera)
-            {
-                auto camLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
-                auto next = GetTransform().GetLoadedPostion() + camLook * 10.f * fTimeDelta;
-                GetTransform().SetPosition(next);
-            }
-        }
-        if (m_bKeyPressingA)
-        {
-            if (m_pPlayerCamera)
-            {
-                auto camRight = m_pPlayerCamera->GetTransform().GetState(STATE::RIGHT);
-                auto next = GetTransform().GetLoadedPostion() + camRight * 10.f * -fTimeDelta;
-                GetTransform().SetPosition(next);
-            }
-        }
-        if (m_bKeyPressingS)
-        {
-            if (m_pPlayerCamera)
-            {
-                auto camLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
-                auto next = GetTransform().GetLoadedPostion() + camLook * 10.f * -fTimeDelta;
-                GetTransform().SetPosition(next);
-            }
-        }
-        if (m_bKeyPressingD)
-        {
-            if (m_pPlayerCamera)
-            {
-                auto camRight = m_pPlayerCamera->GetTransform().GetState(STATE::RIGHT);
-                auto next = GetTransform().GetLoadedPostion() + camRight * 10.f * fTimeDelta;
-                GetTransform().SetPosition(next);
-            }
-        }
-
+        PlayerMove(fTimeDelta);
 
         // camera control
         {
-            if (m_pPlayerCamera)
-            {
-                _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-                m_pPlayerCamera->GetTransform().AddRotation(vUp, fTimeDelta * 10.f * m_iMouseMoveX);
-
-                _float3 euler = m_pPlayerCamera->GetTransform().GetRotationEuler();
-
-                float delta = fTimeDelta * 10.f * m_iMouseMoveY;
-                if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
-                {
-                    delta *= -1.f;
-                }
-                float next = euler.x + delta;
-
-                if (next <= 89.f && next >= -89.f)
-                {
-                    _vector vRight = m_pPlayerCamera->GetTransform().GetState(STATE::RIGHT);
-                    m_pPlayerCamera->GetTransform().AddRotation(vRight, delta);
-                }
-
-                if (m_eCameraType == CAMERA_TYPE::FPS)
-                {
-                    if (m_bPlayerCameraLookBack)
-                    {
-                        m_bPlayerCameraLookBack = false;
-                        m_pPlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
-                    }
-
-                    auto playerPos = GetTransform().GetPosition();
-                    m_pPlayerCamera->GetTransform().SetPosition(XMVectorSet(playerPos.x, playerPos.y + 1.8f, playerPos.z + 0.f, 1.f));
-                }
-                else if (m_eCameraType == CAMERA_TYPE::TPS)
-                {
-                    if (m_bPlayerCameraLookBack)
-                    {
-                        m_bPlayerCameraLookBack = false;
-                        m_pPlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
-                    }
-
-                    auto playerLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
-                    auto playerPos = GetTransform().GetLoadedPostion();
-
-                    auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
-
-                    m_pPlayerCamera->GetTransform().SetPosition(tmp);
-                }
-                else
-                {
-                    if (!m_bPlayerCameraLookBack)
-                    {
-                        m_bPlayerCameraLookBack = true;
-                        m_pPlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
-                    }
-
-                    auto playerLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
-                    auto playerPos = GetTransform().GetLoadedPostion();
-
-                    auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
-
-                    m_pPlayerCamera->GetTransform().SetPosition(tmp);
-                }
-            }
+            PlayerCameraTrace(fTimeDelta);
         }
 
-        auto tmpCamera = CGameInstance::Get().GetGameCamera("Player");
-        if (tmpCamera)
+        if (auto tmpCamera = CGameInstance::Get().GetGameCamera("Player"))
         {
             //m_hRightItem
-
             if (m_hRightItem)
             {
                 if (auto item = CGameInstance::Get().GetGameObjectByHandle(m_hRightItem.value()))
@@ -377,29 +250,6 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
                     item->GetTransform().SetParentWorldMatrix(mat);
                 }
             }
-
-            //for (auto& child : GetChildrenNode())
-            //{
-            //    if (child->GetObjectTag() == "DropItem_WoodPickaxe")
-            //    {
-            //        static float elapsedTmp = 0;
-            //        elapsedTmp += fTimeDelta;
-            //        float t = fmodf(elapsedTmp, 1.f);  // 0~1 반복
-
-            //        //float rotX = -sinf(sqrtf(t) * XM_PI * 20.f) * XMConvertToRadians(25.f);
-            //        float rotX = -sinf(t * XM_PI * 12.f) * XMConvertToRadians(25.f);
-            //        XMMATRIX matAnim = XMMatrixRotationX(rotX);
-
-            //        XMMATRIX matBase =
-            //            XMMatrixRotationX(XMConvertToRadians(-50.f)) *
-            //            XMMatrixTranslation(0.3f, -0.6f, 0.3f);
-            //        m_pPlayerCamera->GetTransform().Update();
-            //        auto tmp = matAnim * matBase * m_pPlayerCamera->GetTransform().GetLoadedCombinedWorldMatrix();
-            //        _float4x4 mat;
-            //        XMStoreFloat4x4(&mat, tmp);
-            //        child->GetTransform().SetParentWorldMatrix(mat);
-            //    }
-            //}
         }
     } // End if FPS
     else // NOT FPS
@@ -413,7 +263,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
         x축을 돌리는건 오직 머리만 고려함
     */
         {
-            if (m_pPlayerCamera)
+            if (m_pActivePlayerCamera)
             {
                 auto pHeadBone = m_pComEntityModel->GetBone("head");
                 auto pRootBone = m_pComEntityModel->GetBone("root");
@@ -429,8 +279,8 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
                     }
 
                     // 목표는 카메라가 돌린 x,y 값
-                    float targetRotYRad = XMConvertToRadians(m_pPlayerCamera->GetTransform().GetRotationEuler().y);
-                    float targetRotXRad = XMConvertToRadians(m_pPlayerCamera->GetTransform().GetRotationEuler().x);
+                    float targetRotYRad = XMConvertToRadians(m_pActivePlayerCamera->GetTransform().GetRotationEuler().y);
+                    float targetRotXRad = XMConvertToRadians(m_pActivePlayerCamera->GetTransform().GetRotationEuler().x);
 
                     bool bMovingLeftRight = m_bKeyPressingA || m_bKeyPressingD;
                     bool bMovingForwardBackward = m_bKeyPressingW || m_bKeyPressingS;
@@ -532,7 +382,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
         // move head bone
         {
-            if (false && m_pPlayerCamera)
+            if (false && m_pActivePlayerCamera)
             {
                 auto pHeadBone = m_pComEntityModel->GetBone("head");
                 auto pRootBone = m_pComEntityModel->GetBone("root");
@@ -546,7 +396,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
                         adjustX = -1.f;
                     }
 
-                    auto playerCamEulerRot = m_pPlayerCamera->GetTransform().GetRotationEuler();
+                    auto playerCamEulerRot = m_pActivePlayerCamera->GetTransform().GetRotationEuler();
                     float targetHeadY = XMConvertToRadians(playerCamEulerRot.y) + adjustY;
                     float targetHeadX = XMConvertToRadians(playerCamEulerRot.x) * adjustX;
 
@@ -699,68 +549,9 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
             }
         }
 
-        if (m_eModeType == MODE_TYPE::GRAVITY)
-        {
-            float fGravity = 9.81f * 0.01f;
+        
 
-            _float3 pos = GetTransform().GetPosition();
-            int32_t wbx = (int32_t)floorf(pos.x);
-            int32_t wby = (int32_t)floorf(pos.y);
-            int32_t wbz = (int32_t)floorf(pos.z);
-
-            auto block = CGameInstance::Get().GetVoxelBlock(wbx, wby - 1, wbz);
-
-            if (block.has_value() && block.value().GetType() == CBlock3::TYPE::AIR)
-            {
-                m_vVelocity.y -= fGravity * fTimeDelta;
-
-                GetTransform().AddPosition(m_vVelocity);
-            }
-            else
-            {
-                m_vVelocity = {};
-                auto pos = GetTransform().GetPosition();
-                pos.y = wby;
-                GetTransform().SetPosition(pos);
-            }
-        }
-
-        if (m_bKeyPressingW)
-        {
-            if (m_pPlayerCamera)
-            {
-                auto camLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
-                auto next = GetTransform().GetLoadedPostion() + camLook * 10.f * fTimeDelta;
-                GetTransform().SetPosition(next);
-            }
-        }
-        if (m_bKeyPressingA)
-        {
-            if (m_pPlayerCamera)
-            {
-                auto camRight = m_pPlayerCamera->GetTransform().GetState(STATE::RIGHT);
-                auto next = GetTransform().GetLoadedPostion() + camRight * 10.f * -fTimeDelta;
-                GetTransform().SetPosition(next);
-            }
-        }
-        if (m_bKeyPressingS)
-        {
-            if (m_pPlayerCamera)
-            {
-                auto camLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
-                auto next = GetTransform().GetLoadedPostion() + camLook * 10.f * -fTimeDelta;
-                GetTransform().SetPosition(next);
-            }
-        }
-        if (m_bKeyPressingD)
-        {
-            if (m_pPlayerCamera)
-            {
-                auto camRight = m_pPlayerCamera->GetTransform().GetState(STATE::RIGHT);
-                auto next = GetTransform().GetLoadedPostion() + camRight * 10.f * fTimeDelta;
-                GetTransform().SetPosition(next);
-            }
-        }
+        PlayerMove(fTimeDelta);
 
 
 
@@ -852,68 +643,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
         // camera control
         {
-            if (m_pPlayerCamera)
-            { 
-                _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-                m_pPlayerCamera->GetTransform().AddRotation(vUp, fTimeDelta * 10.f * m_iMouseMoveX);
-
-                _float3 euler = m_pPlayerCamera->GetTransform().GetRotationEuler();
-
-                float delta = fTimeDelta * 10.f * m_iMouseMoveY;
-                if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
-                {
-                    delta *= -1.f;
-                }
-                float next = euler.x + delta;
-
-                if (next <= 89.f && next >= -89.f)
-                {
-                    _vector vRight = m_pPlayerCamera->GetTransform().GetState(STATE::RIGHT);
-                    m_pPlayerCamera->GetTransform().AddRotation(vRight, delta);
-                }
-
-                if (m_eCameraType == CAMERA_TYPE::FPS)
-                {
-                    if (m_bPlayerCameraLookBack)
-                    {
-                        m_bPlayerCameraLookBack = false;
-                        m_pPlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
-                    }
-
-                    auto playerPos = GetTransform().GetPosition();
-                    m_pPlayerCamera->GetTransform().SetPosition(XMVectorSet(playerPos.x, playerPos.y + 1.8f, playerPos.z + 0.f, 1.f));
-                }
-                else if (m_eCameraType == CAMERA_TYPE::TPS)
-                {
-                    if (m_bPlayerCameraLookBack)
-                    {
-                        m_bPlayerCameraLookBack = false;
-                        m_pPlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
-                    }
-
-                    auto playerLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
-                    auto playerPos = GetTransform().GetLoadedPostion();
-
-                    auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
-
-                    m_pPlayerCamera->GetTransform().SetPosition(tmp);
-                }
-                else
-                {
-                    if (!m_bPlayerCameraLookBack)
-                    {
-                        m_bPlayerCameraLookBack = true;
-                        m_pPlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
-                    }
-
-                    auto playerLook = m_pPlayerCamera->GetTransform().GetState(STATE::LOOK);
-                    auto playerPos = GetTransform().GetLoadedPostion();
-
-                    auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
-
-                    m_pPlayerCamera->GetTransform().SetPosition(tmp);
-                }
-            }
+            PlayerCameraTrace(fTimeDelta);
         }
     }
 }
@@ -977,6 +707,453 @@ HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
     }
     
     return S_OK;
+}
+
+void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)
+{
+    if (m_pActivePlayerCamera)
+    {
+        _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+        m_pActivePlayerCamera->GetTransform().AddRotation(vUp, fTimeDelta * 10.f * m_iMouseMoveX);
+
+        _float3 euler = m_pActivePlayerCamera->GetTransform().GetRotationEuler();
+
+        float delta = fTimeDelta * 10.f * m_iMouseMoveY;
+        if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
+        {
+            delta *= -1.f;
+        }
+        float next = euler.x + delta;
+
+        if (next <= 89.f && next >= -89.f)
+        {
+            _vector vRight = m_pActivePlayerCamera->GetTransform().GetState(STATE::RIGHT);
+            m_pActivePlayerCamera->GetTransform().AddRotation(vRight, delta);
+        }
+
+        if (m_eCameraType == CAMERA_TYPE::FPS)
+        {
+            if (m_bPlayerCameraLookBack)
+            {
+                m_bPlayerCameraLookBack = false;
+                m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+            }
+
+            auto playerPos = GetTransform().GetPosition();
+            m_pActivePlayerCamera->GetTransform().SetPosition(XMVectorSet(playerPos.x, playerPos.y + 1.62f, playerPos.z + 0.f, 1.f));
+        }
+        else if (m_eCameraType == CAMERA_TYPE::TPS)
+        {
+            if (m_bPlayerCameraLookBack)
+            {
+                m_bPlayerCameraLookBack = false;
+                m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+            }
+
+            auto playerLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+            auto playerPos = GetTransform().GetLoadedPostion();
+
+            auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
+
+            m_pActivePlayerCamera->GetTransform().SetPosition(tmp);
+        }
+        else
+        {
+            if (!m_bPlayerCameraLookBack)
+            {
+                m_bPlayerCameraLookBack = true;
+                m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+            }
+
+            auto playerLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+            auto playerPos = GetTransform().GetLoadedPostion();
+
+            auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
+
+            m_pActivePlayerCamera->GetTransform().SetPosition(tmp);
+        }
+    }
+}
+
+void CPlayerEntity::PlayerMove(_float fTimeDelta)
+{
+    XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
+
+    // 1. 수평 입력 → wishDir
+    XMVECTOR vWishDir = XMVectorZero();
+    if (m_pActivePlayerCamera)
+    {
+        XMVECTOR camLook = XMVector3Normalize(XMVectorSetY(m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK), 0.f));
+        XMVECTOR camRight = XMVector3Normalize(XMVectorSetY(m_pActivePlayerCamera->GetTransform().GetState(STATE::RIGHT), 0.f));
+
+        if (m_bKeyPressingW) vWishDir += camLook;
+        if (m_bKeyPressingS) vWishDir -= camLook;
+        if (m_bKeyPressingD) vWishDir += camRight;
+        if (m_bKeyPressingA) vWishDir -= camRight;
+
+        if (XMVectorGetX(XMVector3LengthSq(vWishDir)) > 0.f)
+            vWishDir = XMVector3Normalize(vWishDir);
+    }
+
+    if (m_eModeType == MODE_TYPE::GRAVITY)
+    {
+        // 2. 가속
+        float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
+        float fAddSpeed = m_fPlayerSpeed - fCurrSpeed;
+        if (fAddSpeed > 0.f)
+        {
+            float fAccel = m_bOnGround ? 40.f : 5.f;
+            float fAccelSpeed = std::min(fAccel * m_fPlayerSpeed * fTimeDelta, fAddSpeed);
+            vVel += vWishDir * fAccelSpeed;
+        }
+
+        // 3. 마찰 (입력 없을 때만)
+        bool bHasInput = XMVectorGetX(XMVector3LengthSq(vWishDir)) > 0.f;
+        if (m_bOnGround && !bHasInput)
+        {
+            float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
+            if (fSpeed > 0.f)
+            {
+                float fNewSpeed = std::max(fSpeed - fSpeed * 15.f * fTimeDelta, 0.f);
+                float vy = XMVectorGetY(vVel);
+                vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
+            }
+        }
+
+        // 중력
+        if (!m_bOnGround)
+            vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
+
+        // 점프
+        if (m_bKeyPressingSpace && m_bOnGround)
+        {
+            vVel = XMVectorSetY(vVel, 7.f);
+            m_bOnGround = false;
+        }
+
+        // AABB 충돌
+        const XMFLOAT3 halfExtents = { 0.25f, 0.9f, 0.25f };
+        XMFLOAT3 pos = GetTransform().GetPosition();
+        XMFLOAT3 c = { pos.x, pos.y + 1.f, pos.z };
+
+        // Y
+        float velY = XMVectorGetY(vVel);
+        float prevY = c.y;  // 이동 전 저장
+        c.y += velY * fTimeDelta;
+        if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+        {
+            if (velY < 0.f)  // 내려가다 충돌 → 땅
+            {
+                c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y;
+                m_bOnGround = true;
+            }
+            else  // 올라가다 천장
+            {
+                c.y = prevY;  // ← 그냥 이전 위치로 복구
+            }
+            vVel = XMVectorSetY(vVel, 0.f);
+        }
+        else m_bOnGround = false;
+
+        // X
+        float px = c.x;
+        c.x += XMVectorGetX(vVel) * fTimeDelta;
+        if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+        {
+            c.x = px; vVel = XMVectorSetX(vVel, 0.f);
+        }
+
+        // Z
+        float pz = c.z;
+        c.z += XMVectorGetZ(vVel) * fTimeDelta;
+        if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+        {
+            c.z = pz; vVel = XMVectorSetZ(vVel, 0.f);
+        }
+
+        GetTransform().SetPosition(_float3{ c.x, c.y - 1.f, c.z });
+    }
+    else  // GOD - 마찰/가속 없이 즉시 이동
+    {
+        XMVECTOR vHorizVel = vWishDir * m_fPlayerSpeed;
+
+        if (m_bKeyPressingSpace) vHorizVel = XMVectorSetY(vHorizVel, 20.f);
+        else if (m_bKeyPressingShift) vHorizVel = XMVectorSetY(vHorizVel, -20.f);
+        else                          vHorizVel = XMVectorSetY(vHorizVel, 0.f);
+
+        vVel = vHorizVel;  // velocity 직접 세팅 (관성 없음)
+        GetTransform().AddPosition(vVel * fTimeDelta);
+    }
+
+    XMStoreFloat3(&m_vVelocity, vVel);
+}
+
+void CPlayerEntity::PlayerMoveX(_float fTimeDelta)
+{
+    XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
+
+    // 1. 수평 입력 → wishDir
+    XMVECTOR vWishDir = XMVectorZero();
+    if (m_pActivePlayerCamera)
+    {
+        XMVECTOR camLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+        XMVECTOR camRight = m_pActivePlayerCamera->GetTransform().GetState(STATE::RIGHT);
+
+        // 수평만
+        camLook = XMVector3Normalize(XMVectorSetY(camLook, 0.f));
+        camRight = XMVector3Normalize(XMVectorSetY(camRight, 0.f));
+
+        if (m_bKeyPressingW) vWishDir += camLook;
+        if (m_bKeyPressingS) vWishDir -= camLook;
+        if (m_bKeyPressingD) vWishDir += camRight;
+        if (m_bKeyPressingA) vWishDir -= camRight;
+
+        if (XMVectorGetX(XMVector3LengthSq(vWishDir)) > 0.f)
+            vWishDir = XMVector3Normalize(vWishDir);
+    }
+
+    // 2. 가속
+    float fMaxSpeed = m_fPlayerSpeed;
+    float fAccel = m_bOnGround ? 40.f : 5.f;
+
+    XMVECTOR vHorizVel = XMVectorSetY(vVel, 0.f);
+    float    fCurrSpeed = XMVectorGetX(XMVector3Dot(vHorizVel, vWishDir));
+    float    fAddSpeed = fMaxSpeed - fCurrSpeed;
+
+    if (fAddSpeed > 0.f)
+    {
+        float fAccelSpeed = std::min(fAccel * fMaxSpeed * fTimeDelta, fAddSpeed);
+        vVel += vWishDir * fAccelSpeed;
+    }
+
+    // 3. 마찰 (지면일 때만)
+    if (m_bOnGround)
+    {
+        float fFriction = 15.f;
+        float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
+        if (fSpeed > 0.f)
+        {
+            float fNewSpeed = std::max(fSpeed - fSpeed * fFriction * fTimeDelta, 0.f);
+            // Y 따로 보존
+            float vy = XMVectorGetY(vVel);
+            vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
+        }
+    }
+
+    // 4. 중력 / 지면 체크
+    if (m_eModeType == MODE_TYPE::GRAVITY)
+    {
+        //v3
+        {
+            XMFLOAT3 halfExtents = { 0.25f, 0.9f, 0.25f };
+            XMFLOAT3 pos = GetTransform().GetPosition();
+
+            // 콜라이더 센터 (발 위치 + 오프셋)
+            XMFLOAT3 collCenter = { pos.x, pos.y + 1.f, pos.z };
+
+            if (!m_bOnGround)
+                vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
+
+            // Y축
+            float nextY = collCenter.y + XMVectorGetY(vVel) * fTimeDelta;
+            collCenter.y = nextY;
+            if (CGameInstance::Get().VoxelAABBOverlap(collCenter, halfExtents))
+            {
+                if (XMVectorGetY(vVel) < 0)  // 내려가다 충돌 → 땅
+                {
+                    collCenter.y = floorf(collCenter.y - halfExtents.y) + 1.f + halfExtents.y;
+                    m_bOnGround = true;
+                }
+                else  // 올라가다 천장
+                {
+                    collCenter.y = ceilf(collCenter.y + halfExtents.y) - halfExtents.y;
+                }
+                vVel = XMVectorSetY(vVel, 0.f);
+            }
+            else
+            {
+                m_bOnGround = false;
+            }
+
+            // X축
+            float prevX = collCenter.x;
+            collCenter.x += XMVectorGetX(vVel) * fTimeDelta;
+            if (CGameInstance::Get().VoxelAABBOverlap(collCenter, halfExtents))
+            {
+                collCenter.x = prevX;
+                vVel = XMVectorSetX(vVel, 0.f);
+            }
+
+            // Z축
+            float prevZ = collCenter.z;
+            collCenter.z += XMVectorGetZ(vVel) * fTimeDelta;
+            if (CGameInstance::Get().VoxelAABBOverlap(collCenter, halfExtents))
+            {
+                collCenter.z = prevZ;
+                vVel = XMVectorSetZ(vVel, 0.f);
+            }
+
+            // 센터 → 발 위치로 변환해서 적용
+            pos = { collCenter.x, collCenter.y - 1.f, collCenter.z };
+            GetTransform().SetPosition(pos);
+        }
+
+        //v2
+        if(false)
+        {
+            _float3 pos = GetTransform().GetPosition();
+
+            // 점프
+            if (m_bKeyPressingSpace && m_bOnGround)
+            {
+                vVel = XMVectorSetY(vVel, 7.f);
+                m_bOnGround = false;  // 즉시 공중으로
+            }
+
+            float fVelY = XMVectorGetY(vVel);
+
+            if (fVelY <= 0.f)  // 떨어지는 중일 때만 지면 체크
+            {
+                float fRayLen = fabsf(fVelY * fTimeDelta) + 0.1f;
+
+                CVoxelManager3::BLOCK_RAY_RESULT result{};
+                if (CGameInstance::Get().VoxelBlockRaycast(pos, { 0.f, -1.f, 0.f }, fRayLen, result))
+                {
+                    m_bOnGround = true;
+                    vVel = XMVectorSetY(vVel, 0.f);
+                    pos.y = (float)result.iWorldBlockY + 1.f;
+                    GetTransform().SetPosition(pos);
+                }
+                else
+                {
+                    m_bOnGround = false;
+                    vVel = XMVectorSetY(vVel, fVelY - 20.f * fTimeDelta);
+                }
+            }
+            else  // 올라가는 중
+            {
+                m_bOnGround = false;
+                vVel = XMVectorSetY(vVel, fVelY - 20.f * fTimeDelta);
+            }
+        }
+        
+        //CGameInstance::Get().VoxelBlockRaycast()
+
+
+        if (false)
+        {
+
+            _float3 pos = GetTransform().GetPosition();
+            int32_t wbx = (int32_t)floorf(pos.x);
+            int32_t wby = (int32_t)floorf(pos.y);
+            int32_t wbz = (int32_t)floorf(pos.z);
+
+
+            auto currBlock = CGameInstance::Get().GetVoxelBlock(wbx, wby, wbz);
+            if (currBlock && currBlock.value().GetType() == CBlock3::TYPE::AIR)
+            {
+                auto downBlock = CGameInstance::Get().GetVoxelBlock(wbx, wby - 1, wbz);
+                if (downBlock && downBlock.value().GetType() != CBlock3::TYPE::AIR)
+                {
+                    if (pos.y < wby + 0.1f)
+                    {
+                        // 땅
+                        m_bOnGround = true;
+                        vVel = XMVectorSetY(vVel, 0.f);
+
+                        // 바닥에 스냅
+                        pos.y = (float)wby;
+                        GetTransform().SetPosition(pos);
+                    }
+                    else
+                    {
+                        // 떨어지는중
+                        m_bOnGround = false;
+                        vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
+                    }
+
+                }
+                else
+                {
+                    // 떨어지는중
+                    m_bOnGround = false;
+                    vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
+                }
+            }
+            else
+            {
+                // 묻힌상태
+                int x = 0;
+                int currY{};
+                for (currY = wby; currY < VOXEL_CHUNK_Y_SIZE3; ++currY)
+                {
+                    auto block = CGameInstance::Get().GetVoxelBlock(wbx, currY, wbz);
+                    if (block)
+                    {
+                        if (block.value().GetType() != CBlock3::TYPE::AIR)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+
+                m_bOnGround = true;
+                vVel = XMVectorSetY(vVel, 0.f);
+
+                // 바닥에 스냅
+                pos.y = (float)currY + 1;
+                GetTransform().SetPosition(pos);
+
+            }
+        }
+
+        //auto block = CGameInstance::Get().GetVoxelBlock(wbx, wby - 1, wbz);
+        //bool bAir = block.has_value() && block.value().GetType() == CBlock3::TYPE::AIR;
+
+        //if (bAir)
+        //{
+        //    m_bOnGround = false;
+        //    vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
+        //}
+        //else
+        //{
+        //    m_bOnGround = true;
+        //    vVel = XMVectorSetY(vVel, 0.f);
+
+        //    // 바닥에 스냅
+        //    pos.y = (float)wby;
+        //    GetTransform().SetPosition(pos);
+        //}
+
+        // 5. 점프
+        if(false)
+        if (m_bKeyPressingSpace && m_bOnGround)
+            vVel = XMVectorSetY(vVel, 7.f);
+    }
+    else
+    {
+        m_bOnGround = true;
+        // GOD 모드 수직 이동
+        if (m_bKeyPressingSpace) vVel = XMVectorSetY(vVel, 20.f);
+        if (m_bKeyPressingShift) vVel = XMVectorSetY(vVel, -20.f);
+        if (!m_bKeyPressingSpace && !m_bKeyPressingShift)
+            vVel = XMVectorSetY(vVel, 0.f);
+
+
+        // 6. 최종 적용
+        XMStoreFloat3(&m_vVelocity, vVel);
+
+        _float3 final;
+        XMStoreFloat3(&final, XMLoadFloat3(&m_vVelocity)* fTimeDelta);
+        GetTransform().AddPosition(XMLoadFloat3(&m_vVelocity)* fTimeDelta);
+    }
+
+
 }
 
 UPtr<CPlayerEntity> CPlayerEntity::Create()

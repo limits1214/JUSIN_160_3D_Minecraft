@@ -1245,6 +1245,11 @@ _bool CGameInstance::VoxelBlockRaycast(const _float3& rayOrigin, const _float3& 
 	return m_pVoxelManager3->BlockRaycast(rayOrigin, rayDir, fMaxDist , outResult);
 }
 
+bool CGameInstance::VoxelAABBOverlap(const _float3& pos, const _float3& halfExtents) const
+{
+	return m_pVoxelManager3->VoxelAABBOverlap(pos, halfExtents);
+}
+
 #pragma endregion
 
 

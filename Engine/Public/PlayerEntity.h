@@ -48,22 +48,26 @@ public:
 	void Update(E::_float fTimeDelta) override;
 	void LateUpdate(E::_float fTimeDelta) override;
 
-
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
-	//CPlayerCamera* m_pPlayerCamera{};
 	_float3 m_vHeadRotation = { 0.f, 0.f, 0.f };
 	CAMERA_TYPE m_eCameraType{ CAMERA_TYPE ::FPS };
 	MODE_TYPE m_eModeType{ MODE_TYPE::GOD };
 private:
 	CComEntityModel* m_pComEntityModel{};
-	//CComEntityModel* m_pComEntityArmModel{};
 
 public:
 	void SetRightItemHandle(std::optional<CHandle> h) { m_hRightItem = h; }
 private:
 	std::optional<CHandle> m_hRightItem{};
+
+private:
+	void PlayerCameraTrace(_float fTimeDelta);
+	void PlayerMove(_float fTimeDelta);
+	void PlayerMoveX(_float fTimeDelta);
+private:
+	float m_fPlayerSpeed = 10.f;
 
 private:
 	float m_fRootRotRadY = 0.f;   // 리셋에 영향 안 받는 영구 상태
@@ -106,11 +110,12 @@ private:
 	UPtr<CCollider> m_pCenterCollider{};
 
 private:
+	CCameraObject* m_pActivePlayerCamera{};
 	CCameraObject* m_pPlayerCamera{};
 	_bool m_bPlayerCameraLookBack{false};
 private:
 	_float3 m_vVelocity{};
-
+	bool     m_bOnGround{ false };
 
 public:
 	static UPtr<CPlayerEntity> Create();
