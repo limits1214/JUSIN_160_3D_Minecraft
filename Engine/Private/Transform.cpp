@@ -21,9 +21,9 @@ void CTransform::UpdateGUI()
     {
         m_bDirty = true;
     }
-    _float3 look;
-    XMStoreFloat3(&look, GetState(STATE::LOOK));
-    ImGui::InputFloat4("look", (float*)&look, "%.3f", ImGuiInputTextFlags_ReadOnly);
+    //_float3 look;
+    //XMStoreFloat3(&look, GetState(STATE::LOOK));
+    //ImGui::InputFloat4("look", (float*)&look, "%.3f", ImGuiInputTextFlags_ReadOnly);
 
     if (ImGui::DragFloat3("Euler", (float*)&m_vEuler, 0.1f))
     {

@@ -732,6 +732,18 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "SteveArm", CResEnttGeoSteveArm::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "SteveArm", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "SteveArm"} , .baseTexId = PackTexId(8, 3) });
+				}
+			}
+		}
+
+
 		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Skeleton", CResEnttGeoSkeleton::Create()))
 		{
 			if (SUCCEEDED(pRes->Load()))

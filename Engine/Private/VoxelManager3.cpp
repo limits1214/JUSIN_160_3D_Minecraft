@@ -186,9 +186,9 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     pContext->IASetInputLayout(vs->GetInputLayout().Get());
     pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
     pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
-    if (0)
+    if (1)
     {
-        const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_WIREFRAME_NOCULL);
+        const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
         pContext->RSSetState(rasterizer->GetRasterizerState().Get());
     }
 

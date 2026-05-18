@@ -15,6 +15,8 @@
 #include "UICamera.h"
 
 #include "BlockOutline.h"
+
+#include "PlayerFPSArm.h"
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -115,6 +117,12 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
+
+		//PlayerFPSArm
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_PlayerFPSArm", E::CPlayerFPSArm::Create())))
+		{
+			int x = 0;
+		}
 	}
 
 	{
@@ -151,19 +159,48 @@ HRESULT CLevelTestWorld::Initialize()
 			if (auto playerHandle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
 				"00_ENTITY", &Desc))
 			{
-				if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandle(playerHandle.value()))
+				if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CPlayerEntity>(playerHandle.value()))
 				{
-					E::CDropItem::DESC Desc{};
-					Desc.sObjectTag = "DropItem_WoodPickaxe";
-					Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
-					if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-						"01_DROPITEM", &Desc))
 					{
-						if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandle(woodPixaxeHandle.value()))
+						E::CDropItem::DESC Desc{};
+						Desc.sObjectTag = "DropItem_WoodPickaxe";
+						Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
+						if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+							"01_DROPITEM", &Desc))
 						{
-							woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
-							woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
-							woodPixaxeObj->SetParentNode(playerObj);
+							//playerObj->SetRightItemHandle(woodPixaxeHandle);
+							if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandle(woodPixaxeHandle.value()))
+							{
+								woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
+								woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
+								//woodPixaxeObj->SetParentNode(playerObj);
+							}
+						}
+					}
+
+
+					{
+						E::CPlayerFPSArm::DESC Desc{};
+						Desc.sObjectTag = "PlayerFPSArm";
+						if (auto fpsArmHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_PlayerFPSArm",
+							"10_PlayerArm", &Desc))
+						{
+							playerObj->SetRightItemHandle(fpsArmHandle);
+							if (auto fpsArmObj = E::CGameInstance::Get().GetGameObjectByHandle(fpsArmHandle.value()))
+							{
+								fpsArmObj->GetTransform().SetPosition(XMVectorSet(0.1f, -0.15f, 0.05f, 1.f));
+								//fpsArmObj->GetTransform().AddRotation(XMVectorSet(1.f, 0.f, 0.f, 0.f), -90.f);
+								//fpsArmObj->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 30.f);
+
+								fpsArmObj->GetTransform().AddQuaternion(XMQuaternionRotationRollPitchYaw(
+									XMConvertToRadians(-90.f),
+									XMConvertToRadians(30.f),
+									XMConvertToRadians(0.f)
+								));
+
+								fpsArmObj->GetTransform().SetScale(XMVectorSet(0.3f, 0.3f, 0.3f, 1.f));
+								//woodPixaxeObj->SetParentNode(playerObj);
+							}
 						}
 					}
 				}
@@ -208,6 +245,10 @@ HRESULT CLevelTestWorld::Initialize()
 			{
 			}
 		}
+
+
+
+		
 
 	}
 

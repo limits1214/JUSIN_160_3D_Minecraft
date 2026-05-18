@@ -54,10 +54,16 @@ public:
 private:
 	//CPlayerCamera* m_pPlayerCamera{};
 	_float3 m_vHeadRotation = { 0.f, 0.f, 0.f };
-	CAMERA_TYPE m_eCameraType{ CAMERA_TYPE ::TPS };
+	CAMERA_TYPE m_eCameraType{ CAMERA_TYPE ::FPS };
 	MODE_TYPE m_eModeType{ MODE_TYPE::GOD };
 private:
 	CComEntityModel* m_pComEntityModel{};
+	//CComEntityModel* m_pComEntityArmModel{};
+
+public:
+	void SetRightItemHandle(std::optional<CHandle> h) { m_hRightItem = h; }
+private:
+	std::optional<CHandle> m_hRightItem{};
 
 private:
 	float m_fRootRotRadY = 0.f;   // 리셋에 영향 안 받는 영구 상태
@@ -77,9 +83,6 @@ private:
 		m_fAttackTime = 0.0f;
 		m_fAttackDuration = 0.6f;  // 공격 지속 시간
 	}
-
-	// LateUpdate에서
-	void UpdateAttackAnimation(float fTimeDelta);
 
 
 private:
