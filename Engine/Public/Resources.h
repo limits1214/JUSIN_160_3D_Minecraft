@@ -42,6 +42,7 @@
 #include "ResEnttGeoCow.h"
 #include "ResEnttGeoChicken.h"
 #include "ResEnttGeoSteve.h"
+#include "ResEnttGeoSteveArm.h"
 #include "ResEnttGeoSkeleton.h"
 #include "ResEnttGeoPlayerArmor.h"
 

@@ -52,7 +52,6 @@ void CUICrosshair::LateUpdate(E::_float fTimeDelta)
 
 HRESULT CUICrosshair::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
-	//VS_QuadTex
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Crosshair");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Crosshair");
 	
@@ -72,8 +71,12 @@ HRESULT CUICrosshair::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 	//pContext->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
 	//pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
 	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-
+	
+	{
+		const auto& rasterizer = CGameInstance::Get().GetResourceFirst<CResRasterizerState>(
+			TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
+		pContext->RSSetState(rasterizer->GetRasterizerState().Get());
+	}
 
 	pContext->Draw(3, 0);
 

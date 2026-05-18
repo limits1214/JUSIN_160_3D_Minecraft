@@ -173,6 +173,14 @@ public:
 		m_bDirty = true;
 	}
 
+	void AddQuaternion(_vector qDeltaRot)
+	{
+		_vector qPrevRot = XMLoadFloat4(&m_vQuat);
+		_vector qNewRot = XMQuaternionMultiply(qPrevRot, qDeltaRot);
+		XMStoreFloat4(&m_vQuat, XMQuaternionNormalize(qNewRot));
+		m_bDirty = true;
+	}
+
 	const _float3& GetRotationEuler() const { return m_vEuler; }
 
 	void SetRotationEuler(const _float3& vRotationAmount)

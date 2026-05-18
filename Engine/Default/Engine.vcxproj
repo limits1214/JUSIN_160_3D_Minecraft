@@ -288,6 +288,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\PlayerCamera.h" />
     <ClInclude Include="..\public\PlayerEntityObject.h" />
     <ClInclude Include="..\public\PlayerEntity.h" />
+    <ClInclude Include="..\public\PlayerFPSArm.h" />
     <ClInclude Include="..\public\Prototype.h" />
     <ClInclude Include="..\public\PrototypeManager.h" />
     <ClInclude Include="..\public\Renderer.h" />
@@ -308,6 +309,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\ResEnttGeoSkeleton.h" />
     <ClInclude Include="..\public\ResEnttGeoSteve.h" />
     <ClInclude Include="..\public\ResEnttGeoPlayerArmor.h" />
+    <ClInclude Include="..\public\ResEnttGeoSteveArm.h" />
     <ClInclude Include="..\public\ResEnttVIBuffer.h" />
     <ClInclude Include="..\Public\ResFmodSound.h" />
     <ClInclude Include="..\Public\ResGeometryShader.h" />
@@ -499,6 +501,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\PlayerCamera.cpp" />
     <ClCompile Include="..\private\PlayerEntityObject.cpp" />
     <ClCompile Include="..\private\PlayerEntity.cpp" />
+    <ClCompile Include="..\private\PlayerFPSArm.cpp" />
     <ClCompile Include="..\private\Prototype.cpp" />
     <ClCompile Include="..\private\PrototypeManager.cpp" />
     <ClCompile Include="..\private\Renderer.cpp" />
@@ -519,6 +522,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ResEnttGeoSkeleton.cpp" />
     <ClCompile Include="..\private\ResEnttGeoSteve.cpp" />
     <ClCompile Include="..\private\ResEnttGeoPlayerArmor.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoSteveArm.cpp" />
     <ClCompile Include="..\private\ResEnttVIBuffer.cpp" />
     <ClCompile Include="..\Private\ResFmodSound.cpp" />
     <ClCompile Include="..\Private\ResGeometryShader.cpp" />

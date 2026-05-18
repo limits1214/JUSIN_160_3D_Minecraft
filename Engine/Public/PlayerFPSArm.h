@@ -2,7 +2,8 @@
 #include "ItemObject.h"
 
 NS_BEGIN(Engine)
-class ENGINE_DLL CDropItem : public CItemObject
+class CComEntityModel;
+class ENGINE_DLL CPlayerFPSArm : public CItemObject
 {
 public:
 	typedef struct tagDesc : CItemObject::DESC
@@ -14,8 +15,8 @@ public:
 	DECLARE_DERIVED_TYPE(CDropItem, CItemObject)
 
 private:
-	explicit CDropItem();
-	~CDropItem() override;
+	explicit CPlayerFPSArm();
+	~CPlayerFPSArm() override;
 
 public:
 	HRESULT Initialize(void* pArg) override;
@@ -27,9 +28,11 @@ public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
-	std::pair<StringID, StringID> m_viBufferID{};
+	//std::pair<StringID, StringID> m_viBufferID{};
+
+	CComEntityModel* m_pComEntityArmModel{};
 public:
-	static UPtr<CDropItem> Create();
+	static UPtr<CPlayerFPSArm> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
 };
 

@@ -120,7 +120,7 @@ private:
 private:
 	ComPtr<ID3D11Device> m_pDevice{};
 	ComPtr<ID3D11DeviceContext> m_pContext{};
-	std::mutex m_Mutex{};
+	//std::mutex m_Mutex{};
 	std::atomic<_bool> m_bCreating{ false };
 
 private:

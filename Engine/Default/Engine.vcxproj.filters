@@ -391,6 +391,12 @@
     <Filter Include="GameObject\BlockOutline">
       <UniqueIdentifier>{ee6a1042-f8ee-406e-aee0-eed57ad1973e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\Steve\Arm">
+      <UniqueIdentifier>{5c7021ed-ac7d-4a28-87b8-539c0a50cf5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\PlayerFPSArm">
+      <UniqueIdentifier>{6e5e5c7f-24db-4137-ab66-24f335d6ec64}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -765,6 +771,12 @@
     <ClInclude Include="..\public\BlockOutline.h">
       <Filter>GameObject\BlockOutline</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoSteveArm.h">
+      <Filter>Resource\Entity\Geometry\Steve\Arm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\PlayerFPSArm.h">
+      <Filter>GameObject\Item\PlayerFPSArm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1126,6 +1138,12 @@
     </ClCompile>
     <ClCompile Include="..\private\BlockOutline.cpp">
       <Filter>GameObject\BlockOutline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoSteveArm.cpp">
+      <Filter>Resource\Entity\Geometry\Steve\Arm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PlayerFPSArm.cpp">
+      <Filter>GameObject\Item\PlayerFPSArm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
