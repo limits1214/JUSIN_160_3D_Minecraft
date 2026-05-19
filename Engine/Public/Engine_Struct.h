@@ -128,6 +128,21 @@ namespace Engine
 	} VTX_ITEM;
 
 
+	typedef struct tagVertexPointParticle
+	{
+		_float3 pos{};   // 12 bytes
+		_float2 texCoord{}; //  8 bytes
+		_float2 uvSize{}; // textureSize
+		_float2 size{}; //  world size
+		_float rotation{};
+		_float4 color{};
+		uint32_t texIndex{};  //  4 bytes
+		uint32_t frameIndex{};
+		uint32_t flag{};
+		uint32_t _pad;
+	} VTX_POINT_PARTICLE;
+
+
 	typedef struct tagConstantBufferPerFrame
 	{
 		DIRECTIONAL_LIGHT dirLight{};
@@ -213,26 +228,30 @@ namespace Engine
 
 	
 
-	struct EntityCube
-	{
-		_float3 origin{};
-		_float3 size{};
-		_float3 rotation{};
-		_float2 uv{};
-		uint32_t texIndex{};
-		_float inflate;
-		_float3 uvSize{};
-		_float3 pivot{};
-	};
+	//struct EntityCube
+	//{
+	//	_float3 origin{};
+	//	_float3 size{};
+	//	_float3 rotation{};
+	//	_float2 uv{};
+	//	uint32_t texIndex{};
+	//	_float inflate;
+	//	_float3 uvSize{};
+	//	_float3 pivot{};
+	//};
 
-	struct EntityBone
-	{
-		std::string name{};
-		std::string parent{};
-		_float3 pivot{};
-		std::vector<EntityCube> cubes{};
-		_bool mirror{ false };
-		std::vector<std::pair<std::string, _float3>> locators{};
-	};
+	//struct EntityBone
+	//{
+	//	std::string name{};
+	//	std::string parent{};
+	//	_float3 pivot{};
+	//	std::vector<EntityCube> cubes{};
+	//	_bool mirror{ false };
+	//	std::vector<std::pair<std::string, _float3>> locators{};
+	//};
+
+
+
+
 
 }

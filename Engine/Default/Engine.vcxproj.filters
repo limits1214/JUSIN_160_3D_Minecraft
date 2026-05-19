@@ -397,6 +397,15 @@
     <Filter Include="GameObject\Item\PlayerFPSArm">
       <UniqueIdentifier>{6e5e5c7f-24db-4137-ab66-24f335d6ec64}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Particle">
+      <UniqueIdentifier>{7547f2c7-321b-40d5-a03d-9c6629ef60cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particle\Manager">
+      <UniqueIdentifier>{22733b5e-6b7c-4143-a0e0-c3d82cdcebf6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Particle">
+      <UniqueIdentifier>{63b45132-d4c4-4448-8c72-6160ece1ff48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -777,6 +786,9 @@
     <ClInclude Include="..\public\PlayerFPSArm.h">
       <Filter>GameObject\Item\PlayerFPSArm</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ParticleManager.h">
+      <Filter>Particle\Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1145,6 +1157,9 @@
     <ClCompile Include="..\private\PlayerFPSArm.cpp">
       <Filter>GameObject\Item\PlayerFPSArm</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\ParticleManager.cpp">
+      <Filter>Particle\Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1167,6 +1182,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\BlockOutline\BlockOutline.hlsl">
       <Filter>100.Shaders\BlockOutline</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Particle\Particle.hlsl">
+      <Filter>100.Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
