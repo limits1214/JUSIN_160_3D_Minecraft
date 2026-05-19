@@ -27,6 +27,7 @@ class CVoxelManager2;
 class CChunk3;
 class CCameraObject;
 
+class CParticleManager;
 class ENGINE_DLL CGameInstance final : public Singleton<CGameInstance>
 {
 	friend Singleton<CGameInstance>;
@@ -264,6 +265,7 @@ private:
 	UPtr<CVoxelManager> m_pVoxelManager{};
 	UPtr<CVoxelManager2> m_pVoxelManager2{};
 	UPtr<CVoxelManager3> m_pVoxelManager3{};
+	UPtr<CParticleManager> m_pParticleManager{};
 
 
 public:

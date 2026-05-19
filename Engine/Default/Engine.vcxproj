@@ -284,6 +284,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\LightManager.h" />
     <ClInclude Include="..\public\MonsterEntityObject.h" />
     <ClInclude Include="..\Public\MyTreeNode.h" />
+    <ClInclude Include="..\public\ParticleManager.h" />
     <ClInclude Include="..\public\PigEntity.h" />
     <ClInclude Include="..\public\PlayerCamera.h" />
     <ClInclude Include="..\public\PlayerEntityObject.h" />
@@ -497,6 +498,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\LevelManager.cpp" />
     <ClCompile Include="..\private\LightManager.cpp" />
     <ClCompile Include="..\private\MonsterEntityObject.cpp" />
+    <ClCompile Include="..\private\ParticleManager.cpp" />
     <ClCompile Include="..\private\PigEntity.cpp" />
     <ClCompile Include="..\private\PlayerCamera.cpp" />
     <ClCompile Include="..\private\PlayerEntityObject.cpp" />
@@ -589,6 +591,10 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Item.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Particle\Particle.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

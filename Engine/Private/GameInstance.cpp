@@ -12,6 +12,7 @@
 #include "VoxelManager.h"
 #include "VoxelManager2.h"
 #include "VoxelManager3.h"
+#include "ParticleManager.h"
 
 #include "GameObject.h"
 #include "CameraManager.h"
@@ -27,6 +28,8 @@
 #include "Resources.h"
 
 #include "ComEntityModel.h"
+
+
 
 NS_USING(Engine)
 
@@ -163,6 +166,14 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
+	m_pParticleManager = CParticleManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pParticleManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+
+
 
 	return S_OK;
 }
@@ -191,6 +202,8 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 
 	m_pVoxelManager3->Update(fTimeDelta);
 
+	m_pParticleManager->Update(fTimeDelta);
+
 	m_pGameObjectManager->PriorityUpdate(fTimeDelta);
 	m_pGameObjectManager->Update(fTimeDelta);
 	m_pGameObjectManager->LateUpdate(fTimeDelta);
@@ -199,6 +212,7 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 
 	AddRenderObject(RENDERGROUP::NONBLEND, m_pVoxelManager3.get());
 	AddRenderObject(RENDERGROUP::COLLIDER, m_pColliderManager.get());
+	AddRenderObject(RENDERGROUP::NONBLEND, m_pParticleManager.get());
 }
 
 HRESULT CGameInstance::Draw()
@@ -231,6 +245,8 @@ void CGameInstance::UpdateGUI()
 	m_pLevelManager->UpdateGUI();
 
 	m_pColliderManager->UpdateGUI();
+
+	m_pParticleManager->UpdateGUI();
 
 	m_pLightManager->UpdateGUI();
 
@@ -266,6 +282,7 @@ void CGameInstance::Release_Engine()
 	m_pGameObjectManager.reset();
 	m_pLevelManager.reset();
 	m_pColliderManager.reset();
+	m_pParticleManager.reset();
 	m_pWorkerManager.reset();
 	m_pChunkLoadWorkerManager.reset();
 	m_pPrototypeManager.reset();
