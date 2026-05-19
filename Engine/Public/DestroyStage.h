@@ -1,0 +1,55 @@
+#pragma once
+#include "GameObject.h"
+
+NS_BEGIN(Engine)
+class CResDynamicVIBuffer;
+class ENGINE_DLL CDestroyStage : public CGameObject
+{
+public:
+	struct DestroyQuad
+	{
+		VTX_DESTROY_STAGE v[4]; // 로컬 쿼드 4개 버텍스
+	};
+public:
+	DECLARE_DERIVED_TYPE(CDestroyStage, CGameObject)
+
+private:
+	explicit CDestroyStage();
+	~CDestroyStage() override;
+
+public:
+	HRESULT InitializePrototype(void* pArg = nullptr) override;
+	HRESULT Initialize(void* pArg) override;
+	void PriorityUpdate(E::_float fTimeDelta) override;
+	void Update(E::_float fTimeDelta) override;
+	void LateUpdate(E::_float fTimeDelta) override;
+
+
+	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
+	void SetQuads(const std::vector<DestroyQuad>& quads)
+	{
+		m_quads = quads;
+		m_bDirty = true; // 다음 렌더때 VB 업데이트
+	}
+private:
+	void UpdateVertexBuffer(ID3D11DeviceContext* pContext);
+
+private:
+	SPtr<CResDynamicVIBuffer> m_pVIBuffer{};
+	uint32_t m_currentIndexCount{};
+private:
+	_bool m_bRender{ true };
+
+	_bool m_bDirty{ true };
+
+private:
+	std::vector<DestroyQuad> m_quads{};
+	_float m_fElapsed{ 0 };
+	uint32_t m_iFrameIndex{ 0 };
+
+public:
+	static UPtr<CDestroyStage> Create();
+	UPtr<CPrototype> Clone(void* pArg) override;
+};
+
+NS_END

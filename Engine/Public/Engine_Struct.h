@@ -142,6 +142,13 @@ namespace Engine
 		uint32_t _pad;
 	} VTX_POINT_PARTICLE;
 
+	typedef struct tagVertexDestroyStage
+	{
+		_float3 pos;
+		_float3 normal;
+		_float2 texCoord;
+	} VTX_DESTROY_STAGE;
+
 
 	typedef struct tagConstantBufferPerFrame
 	{
@@ -184,6 +191,13 @@ namespace Engine
 		_float3 vExtents{};
 		_float _pad{};
 	} CB_PER_BLOCKOUTLINE;
+
+	typedef struct tagConstantBufferPerDestroyStage
+	{
+		uint32_t   destroyStage;  // 0~9
+		//_float crackTiling;   // 블록 크기에 맞게 조절 (보통 1.0)
+		_float3 _pad;
+	}CB_PER_DESTROYSTAGE;
 
 	typedef struct tagVoxQuad
 	{
