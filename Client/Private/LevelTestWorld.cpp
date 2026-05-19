@@ -17,6 +17,7 @@
 #include "BlockOutline.h"
 
 #include "PlayerFPSArm.h"
+#include "DestroyStage.h"
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -120,6 +121,11 @@ HRESULT CLevelTestWorld::Initialize()
 
 		//PlayerFPSArm
 		if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_PlayerFPSArm", E::CPlayerFPSArm::Create())))
+		{
+			int x = 0;
+		}
+
+		if (FAILED(E::CGameInstance::Get().AddPrototype("DESTROY_STAGE", "Prototype_GameObject_DestroyStage", E::CDestroyStage::Create())))
 		{
 			int x = 0;
 		}
@@ -273,6 +279,19 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 		}
 
+	}
+
+
+	// destroy stage
+	{
+		//"DESTROY_STAGE", "Prototype_GameObject_DestroyStage"
+		E::CGameObject::GAMEOBJECT_DESC Desc{};
+		Desc.sObjectTag = "DestroyStage";
+
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("DESTROY_STAGE", "Prototype_GameObject_DestroyStage",
+			"82_DestroyStage", &Desc))
+		{
+		}
 	}
 
 	{

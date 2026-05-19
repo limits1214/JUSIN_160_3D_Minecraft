@@ -406,6 +406,12 @@
     <Filter Include="100.Shaders\Particle">
       <UniqueIdentifier>{63b45132-d4c4-4448-8c72-6160ece1ff48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="100.Shaders\DestroyStage">
+      <UniqueIdentifier>{cc59ac85-6a6c-4582-859e-25fbd09f00d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\DestroyStage">
+      <UniqueIdentifier>{63c77358-fdf6-497c-9680-ddaa8485c719}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -789,6 +795,9 @@
     <ClInclude Include="..\public\ParticleManager.h">
       <Filter>Particle\Manager</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\DestroyStage.h">
+      <Filter>GameObject\DestroyStage</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1160,6 +1169,9 @@
     <ClCompile Include="..\private\ParticleManager.cpp">
       <Filter>Particle\Manager</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\DestroyStage.cpp">
+      <Filter>GameObject\DestroyStage</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1185,6 +1197,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Particle\Particle.hlsl">
       <Filter>100.Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\DestroyStage\DestroyStage.hlsl">
+      <Filter>100.Shaders\DestroyStage</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

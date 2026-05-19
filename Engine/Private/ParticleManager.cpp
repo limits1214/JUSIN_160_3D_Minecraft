@@ -27,7 +27,7 @@ void CParticleManager::UpdateGUI()
     if (ImGui::Button("TEST"))
     {
         
-        for (int i = 0; i < 30; ++i)
+        for (int i = 0; i < 130; ++i)
         {
             ATTRIBUTE att{};
             att.bAlive = true;
@@ -147,7 +147,7 @@ HRESULT CParticleManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX
         }
         {
             const auto& rasterizer = CGameInstance::Get().GetResourceFirst<CResRasterizerState>(
-                TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
+                TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
             pContext->RSSetState(rasterizer->GetRasterizerState().Get());
         }
         pContext->Draw(m_arrVertices[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].size(), 0);
@@ -246,6 +246,10 @@ HRESULT CParticleManager::RenderX(ID3D11DeviceContext* pContext, const RENDER_CT
 
 HRESULT CParticleManager::AddParticle(PARTICLE_TYPE eType, const ATTRIBUTE& particle)
 {
+    if (m_arrParticles[ETOUI(eType)].size() >= PARTICLE_MAX_CNT)
+    {
+        return S_OK;
+    }
     m_arrParticles[ETOUI(eType)].push_back(particle);
     return S_OK;
 }

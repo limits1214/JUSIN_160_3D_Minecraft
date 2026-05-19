@@ -350,6 +350,14 @@ HRESULT CGameInstance::InitializeResources()
 		}
 	}
 
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerDestroyStage", E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_DESTROYSTAGE) })))
+		{
+			return E_FAIL;
+		}
+	}
+
 	
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_LINEAR_WRAP, CResSamplerState::Create()))
 	{
@@ -375,6 +383,19 @@ HRESULT CGameInstance::InitializeResources()
 			.MaxLOD = D3D11_FLOAT32_MAX,
 			});
 	}
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP_NOMIP, CResSamplerState::Create()))
+	{
+		res->Load(D3D11_SAMPLER_DESC{
+			.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT,
+			.AddressU = D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressV = D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressW = D3D11_TEXTURE_ADDRESS_WRAP,
+			.ComparisonFunc = D3D11_COMPARISON_NEVER,
+			.MinLOD = 0,
+			.MaxLOD = 0.0f,
+			});
+	}
+		
 	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_QuadTex", "./Resources/Shader/QuadTex/QuadTex.hlsl"))
 	{
 		res->Load();
@@ -518,7 +539,46 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// destroystage shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DestroyStage", "./Resources/Shader/DestroyStage/DestroyStage.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DestroyStage", "./Resources/Shader/DestroyStage/DestroyStage.hlsl"))
+		{
+			res->Load();
+		}
+	}
 
+	// initialize destroy stage texture
+	{
+		{
+			for (uint32_t i = 0; i < 10; ++i)
+			{
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/DestroyStage/destroy_stage_" + std::to_string(i) + ".png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("DESTROY_STAGE", "TEXTURES", pTexture);
+			}
+		}
+
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "DESTROY_STAGE", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("DESTROY_STAGE", "TEXTURE_ARRAY", pTextureArray);
+
+
+			GetGraphicDeviceContext()->PSSetShaderResources(11, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+	}
 
 	// initialize voxel texture
 	{

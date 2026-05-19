@@ -63,15 +63,15 @@ private:
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 
 private:
-	static constexpr uint32_t PARTICLE_MAX_CNT{ 2000 };
+	static constexpr uint32_t PARTICLE_MAX_CNT{ 5000 };
 	SPtr<CResDynamicVIBuffer> m_pResVIBuffer{};
 
 	std::array<std::vector<ATTRIBUTE>, ETOUI(PARTICLE_TYPE::END)> m_arrParticles{};
 
 	std::array<std::vector<VTX_POINT_PARTICLE>, ETOUI(PARTICLE_TYPE::END)> m_arrVertices{};
 
-	uint32_t m_iVbOffset{ 0 };
-	const uint32_t m_iVbBatchSize{ 500 };
+	//uint32_t m_iVbOffset{ 0 };
+	//const uint32_t m_iVbBatchSize{ 500 };
 
 private:
 	//std::vector<ATTRIBUTE> m_vecAttributes{};
