@@ -155,7 +155,7 @@ HRESULT CRenderer::Draw()
 
 
     
-	E::CGameInstance::Get().FontDraw("NeoDGM_20px", L"취업 하고 싶다.", {});
+	E::CGameInstance::Get().FontDraw("NeoDGM_20px", L"흙이 운다 흙흑", {});
 
     // TODO: 제거
     {

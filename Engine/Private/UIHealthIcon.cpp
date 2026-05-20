@@ -1,20 +1,20 @@
 #include "pch.h"
-#include "UIHealthBar.h"
+#include "UIHealthIcon.h"
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
 NS_USING(Engine)
 
-CUIHealthBar::CUIHealthBar()
+CUIHealthIcon::CUIHealthIcon()
 {
 }
 
 
-CUIHealthBar::~CUIHealthBar()
+CUIHealthIcon::~CUIHealthIcon()
 {
 }
 
-void CUIHealthBar::UpdateGUI()
+void CUIHealthIcon::UpdateGUI()
 {
 	CUIObject::UpdateGUI();
 
@@ -24,14 +24,14 @@ void CUIHealthBar::UpdateGUI()
 	}
 }
 
-HRESULT CUIHealthBar::Initialize(void* pArg)
+HRESULT CUIHealthIcon::Initialize(void* pArg)
 {
 	auto pDesc = static_cast<CUIObject::UIOBJECT_DESC*>(pArg);
 	pDesc->fSizeX = 9.f * MC_UI_SCALE;
 	pDesc->fSizeY = 9.f * MC_UI_SCALE;
 
-	pDesc->fX = (1280.f * 0.5f) - (91.f * MC_UI_SCALE) + (pDesc->fSizeY * 0.5f) + (pDesc->fSizeY * 0.f);
-	pDesc->fY = 720.f - pDesc->fSizeY * 0.5f - ((24.f + 8.f) * MC_UI_SCALE);
+	pDesc->fX = 0.f;
+	pDesc->fY = 0.f;
 	if (FAILED(CUIObject::Initialize(pArg)))
 		return E_FAIL;
 
@@ -40,37 +40,25 @@ HRESULT CUIHealthBar::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CUIHealthBar::PriorityUpdate(E::_float fTimeDelta)
+void CUIHealthIcon::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CUIHealthBar::Update(E::_float fTimeDelta)
+void CUIHealthIcon::Update(E::_float fTimeDelta)
 {
 }
 
-void CUIHealthBar::LateUpdate(E::_float fTimeDelta)
+void CUIHealthIcon::LateUpdate(E::_float fTimeDelta)
 {
 	if (m_bRender)
 	{
-		//E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
+		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
 	}
 
 	GetTransform().Update();
-
-	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
-	{
-		GetChildrenNode()[i]->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i), 0.f, 0.f, 0.f));
-	}
-
-	//for (auto& pChild : GetChildrenNode())
-	//{
-	//	
-	//	//pChild->GetTransform().SetParentWorldMatrix(*GetTransform().GetCombinedWorldMatrix());
-	//}
 }
 
-HRESULT CUIHealthBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CUIHealthIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_UI");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI");
@@ -142,23 +130,23 @@ HRESULT CUIHealthBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 	return S_OK;
 }
 
-E::UPtr<CUIHealthBar> CUIHealthBar::Create()
+E::UPtr<CUIHealthIcon> CUIHealthIcon::Create()
 {
-	auto pInstance = E::ToUPtr(new CUIHealthBar{});
+	auto pInstance = E::ToUPtr(new CUIHealthIcon{});
 	if (FAILED(pInstance->InitializePrototype()))
 	{
-		MSG_BOX("Failed to Created : CUIHealthBar");
+		MSG_BOX("Failed to Created : CUIHealthIcon");
 		return nullptr;
 	}
 	return  pInstance;
 }
 
-E::UPtr<E::CPrototype> CUIHealthBar::Clone(void* pArg)
+E::UPtr<E::CPrototype> CUIHealthIcon::Clone(void* pArg)
 {
-	auto	pInstance = E::ToUPtr(new CUIHealthBar{ *this });
+	auto	pInstance = E::ToUPtr(new CUIHealthIcon{ *this });
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned : CUIHealthBar");
+		MSG_BOX("Failed to Cloned : CUIHealthIcon");
 		return nullptr;
 	}
 

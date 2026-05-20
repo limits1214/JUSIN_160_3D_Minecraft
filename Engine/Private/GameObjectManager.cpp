@@ -147,22 +147,52 @@ void CGameObjectManager::FrameStart()
 	//m_bTreeReBuild = false;
 }
 
+// 지울대상의 루트만 추리고
+// 그대상에대해서 정렬하고
+// 뒤에서부터 지워야함;;;
+// 왜냐면 앞에서부터 지우면 루프도중에 지워져서 크래시남;;
 void CGameObjectManager::FrameEnd()
 {
+	_bool bDeleted{ false };
+
 	for (size_t i = 0; i < m_Objects.size(); ++i)
 	{
 		if (m_Objects[i].IsOccupied())
 		{
 			if (m_Objects[i].Get()->GetPendingDestroy())
 			{
-				m_bTreeReBuild = true;
-
-				m_Objects[i].Reset();
-				m_FreeSlots.push_back(i);
+				bDeleted = true;
+				if (!m_Objects[i].Get()->GetParentNode())
+				{
+					m_vecRootObjsForFrameEnd.push_back(m_Objects[i].Get());
+				}
+				m_mapMapIdxForFrameEnd.emplace(m_Objects[i].Get(), i);
 			}
 		}
 	}
 
+	for (const auto& pRootObj : m_vecRootObjsForFrameEnd)
+	{
+		MyTreeDFS(pRootObj, [&](auto* pObj)
+			{
+				m_vecDelTargetsForFrameEnd.push_back(pObj);
+			}, &m_DFSReserved);
+	}
+
+	for (auto iter = m_vecDelTargetsForFrameEnd.rbegin(); iter != m_vecDelTargetsForFrameEnd.rend(); ++iter )
+	{
+		m_Objects[m_mapMapIdxForFrameEnd[*iter]].Reset();
+		m_FreeSlots.push_back(m_mapMapIdxForFrameEnd[*iter]);
+	}
+
+	if (bDeleted)
+	{
+		m_bTreeReBuild = true;
+		m_mapMapIdxForFrameEnd.clear();
+		m_vecRootObjsForFrameEnd.clear();
+		m_vecDelTargetsForFrameEnd.clear();
+		m_DFSReserved.clear();
+	}
 
 }
 
