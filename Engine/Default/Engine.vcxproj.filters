@@ -873,16 +873,16 @@
     <ClInclude Include="..\public\UIExperienceBarGage.h">
       <Filter>GameObject\UI\ExperienceBar</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\UIHealthIcon.h">
+    <ClInclude Include="..\public\UIHealthBarIcon.h">
       <Filter>GameObject\UI\HealthBar</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\UIArmorIcon.h">
+    <ClInclude Include="..\public\UIArmorBarIcon.h">
       <Filter>GameObject\UI\ArmorBar</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\UIBreathIcon.h">
+    <ClInclude Include="..\public\UIBreathBarIcon.h">
       <Filter>GameObject\UI\BreathBar</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\UIHungerIcon.h">
+    <ClInclude Include="..\public\UIHungerBarIcon.h">
       <Filter>GameObject\UI\HungerBar</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1295,16 +1295,16 @@
     <ClCompile Include="..\private\UIExperienceBarGage.cpp">
       <Filter>GameObject\UI\ExperienceBar</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\UIHealthIcon.cpp">
+    <ClCompile Include="..\private\UIHealthBarIcon.cpp">
       <Filter>GameObject\UI\HealthBar</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\UIArmorIcon.cpp">
+    <ClCompile Include="..\private\UIArmorBarIcon.cpp">
       <Filter>GameObject\UI\ArmorBar</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\UIBreathIcon.cpp">
+    <ClCompile Include="..\private\UIBreathBarIcon.cpp">
       <Filter>GameObject\UI\BreathBar</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\UIHungerIcon.cpp">
+    <ClCompile Include="..\private\UIHungerBarIcon.cpp">
       <Filter>GameObject\UI\HungerBar</Filter>
     </ClCompile>
   </ItemGroup>
