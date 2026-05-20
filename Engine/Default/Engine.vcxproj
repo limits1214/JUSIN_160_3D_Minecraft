@@ -274,7 +274,9 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\GameObjectManager.h" />
     <ClInclude Include="..\public\GraphicDevice.h" />
     <ClInclude Include="..\public\UIArmorBar.h" />
+    <ClInclude Include="..\public\UIArmorIcon.h" />
     <ClInclude Include="..\public\UIBreathBar.h" />
+    <ClInclude Include="..\public\UIBreathIcon.h" />
     <ClInclude Include="..\public\UIExperienceBarGage.h" />
     <ClInclude Include="..\public\UIHealthBar.h" />
     <ClInclude Include="..\public\Helper.h" />
@@ -355,9 +357,11 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UICamera.h" />
     <ClInclude Include="..\public\UICrosshair.h" />
     <ClInclude Include="..\public\UIExperienceBar.h" />
+    <ClInclude Include="..\public\UIHealthIcon.h" />
     <ClInclude Include="..\public\UIHotBar.h" />
     <ClInclude Include="..\public\UIHotbarSelect.h" />
     <ClInclude Include="..\public\UIHungerBar.h" />
+    <ClInclude Include="..\public\UIHungerIcon.h" />
     <ClInclude Include="..\public\UIInventory.h" />
     <ClInclude Include="..\public\UIObject.h" />
     <ClInclude Include="..\public\VoxelManager.h" />
@@ -489,10 +493,13 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\CowEntity.cpp" />
     <ClCompile Include="..\private\UIArmorBar.cpp" />
+    <ClCompile Include="..\private\UIArmorIcon.cpp" />
     <ClCompile Include="..\private\UIBreathBar.cpp" />
+    <ClCompile Include="..\private\UIBreathIcon.cpp" />
     <ClCompile Include="..\private\UIExperienceBarGage.cpp" />
     <ClCompile Include="..\private\UIHealthBar.cpp" />
     <ClCompile Include="..\private\UIExperienceBar.cpp" />
+    <ClCompile Include="..\private\UIHealthIcon.cpp" />
     <ClCompile Include="..\private\UIHotBar.cpp" />
     <ClCompile Include="..\private\DestroyStage.cpp" />
     <ClCompile Include="..\private\DInputManager.cpp" />
@@ -584,6 +591,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UICrosshair.cpp" />
     <ClCompile Include="..\private\UIHotbarSelect.cpp" />
     <ClCompile Include="..\private\UIHungerBar.cpp" />
+    <ClCompile Include="..\private\UIHungerIcon.cpp" />
     <ClCompile Include="..\private\UIInventory.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
     <ClCompile Include="..\private\VoxelManager.cpp" />

@@ -21,6 +21,7 @@
 #include "UIHotbar.h"
 #include "UIHotbarSelect.h"
 #include "UIHealthBar.h"
+#include "UIHealthIcon.h"
 #include "UIExperienceBar.h"
 #include "UIExperienceBarGage.h"
 #include "UIArmorBar.h"
@@ -134,6 +135,11 @@ HRESULT CLevelTestWorld::Initialize()
 		}
 		//UIHealthBar
 		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHealthBar", E::CUIHealthBar::Create())))
+		{
+			int x = 0;
+		}
+		//UIHealthIcon
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHealthIcon", E::CUIHealthIcon::Create())))
 		{
 			int x = 0;
 		}
@@ -348,6 +354,7 @@ HRESULT CLevelTestWorld::Initialize()
 		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHotbarSelect",
 			"80_UI", &Desc))
 		{
+			
 		}
 	}
 
@@ -358,7 +365,34 @@ HRESULT CLevelTestWorld::Initialize()
 		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHealthBar",
 			"80_UI", &Desc))
 		{
+			if (auto pBarObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+			{
+				for (uint32_t i = 0; i < 10; ++i)
+				{
+					//Prototype_GameObject_UIHealthIcon
+					E::CUIObject::UIOBJECT_DESC Desc{};
+					Desc.sObjectTag = "HealthIcon";
+					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHealthIcon",
+						"80_UI", &Desc))
+					{
+						if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+						{
+							pObj->SetParentNode(pBarObj);
+						}
+					}
+				}
+			}
 		}
+	}
+
+	{
+		//Prototype_GameObject_UIHealthIcon
+		//E::CUIObject::UIOBJECT_DESC Desc{};
+		//Desc.sObjectTag = "HealthIcon";
+		//if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHealthIcon",
+		//	"80_UI", &Desc))
+		//{
+		//}
 	}
 
 	{

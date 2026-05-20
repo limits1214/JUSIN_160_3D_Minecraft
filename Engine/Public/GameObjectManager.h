@@ -81,6 +81,10 @@ private:
 	std::vector<CGameObject*> m_DFSReserved{};
 	_bool m_bTreeReBuild{ true };
 
+
+	std::unordered_map<CGameObject*, size_t> m_mapMapIdxForFrameEnd{};
+	std::vector<CGameObject*> m_vecRootObjsForFrameEnd{};
+	std::vector<CGameObject*> m_vecDelTargetsForFrameEnd{};
 public:
 	static UPtr< CGameObjectManager> Create();
 

@@ -873,6 +873,18 @@
     <ClInclude Include="..\public\UIExperienceBarGage.h">
       <Filter>GameObject\UI\ExperienceBar</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\UIHealthIcon.h">
+      <Filter>GameObject\UI\HealthBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIArmorIcon.h">
+      <Filter>GameObject\UI\ArmorBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIBreathIcon.h">
+      <Filter>GameObject\UI\BreathBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIHungerIcon.h">
+      <Filter>GameObject\UI\HungerBar</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1282,6 +1294,18 @@
     </ClCompile>
     <ClCompile Include="..\private\UIExperienceBarGage.cpp">
       <Filter>GameObject\UI\ExperienceBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIHealthIcon.cpp">
+      <Filter>GameObject\UI\HealthBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIArmorIcon.cpp">
+      <Filter>GameObject\UI\ArmorBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIBreathIcon.cpp">
+      <Filter>GameObject\UI\BreathBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIHungerIcon.cpp">
+      <Filter>GameObject\UI\HungerBar</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
