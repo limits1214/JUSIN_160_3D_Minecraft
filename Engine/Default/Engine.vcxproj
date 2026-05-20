@@ -146,7 +146,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DIRECTX_TOOLKIT_IMPORT;ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -173,7 +173,7 @@ call CopyClient.bat</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);NDEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DIRECTX_TOOLKIT_IMPORT;ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);NDEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -267,6 +267,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\EntityObject.h" />
     <ClInclude Include="..\public\ExperienceOrbItem.h" />
     <ClInclude Include="..\public\FlyCamera.h" />
+    <ClInclude Include="..\public\FontManager.h" />
     <ClInclude Include="..\public\GameInstance.h" />
     <ClInclude Include="..\public\GameManager.h" />
     <ClInclude Include="..\public\GameObject.h" />
@@ -300,6 +301,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ResCubeBuffer.h" />
     <ClInclude Include="..\Public\ResCubeColBuffer.h" />
     <ClInclude Include="..\public\ResCubeItemVIBuffer.h" />
+    <ClInclude Include="..\public\ResFontCustom.h" />
     <ClInclude Include="..\Public\ResDepthStencilState.h" />
     <ClInclude Include="..\Public\ResDynamicBuffer.h" />
     <ClInclude Include="..\Public\ResDynamicTexture2D.h" />
@@ -314,6 +316,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\ResEnttGeoSteveArm.h" />
     <ClInclude Include="..\public\ResEnttVIBuffer.h" />
     <ClInclude Include="..\Public\ResFmodSound.h" />
+    <ClInclude Include="..\public\ResFont.h" />
     <ClInclude Include="..\Public\ResGeometryShader.h" />
     <ClInclude Include="..\Public\ResGeoShaderStreamOut.h" />
     <ClInclude Include="..\public\ResExtrudedItemVIBuffer.h" />
@@ -484,6 +487,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\EntityObject.cpp" />
     <ClCompile Include="..\private\ExperienceOrbItem.cpp" />
     <ClCompile Include="..\private\FlyCamera.cpp" />
+    <ClCompile Include="..\private\FontManager.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />
     <ClCompile Include="..\private\GameManager.cpp" />
     <ClCompile Include="..\private\GameObject.cpp" />
@@ -515,6 +519,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\ResCubeBuffer.cpp" />
     <ClCompile Include="..\Private\ResCubeColBuffer.cpp" />
     <ClCompile Include="..\private\ResCubeItemVIBuffer.cpp" />
+    <ClCompile Include="..\private\ResFontCustom.cpp" />
     <ClCompile Include="..\Private\ResDepthStencilState.cpp" />
     <ClCompile Include="..\Private\ResDynamicBuffer.cpp" />
     <ClCompile Include="..\Private\ResDynamicTexture2D.cpp" />
@@ -529,6 +534,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ResEnttGeoSteveArm.cpp" />
     <ClCompile Include="..\private\ResEnttVIBuffer.cpp" />
     <ClCompile Include="..\Private\ResFmodSound.cpp" />
+    <ClCompile Include="..\private\ResFont.cpp" />
     <ClCompile Include="..\Private\ResGeometryShader.cpp" />
     <ClCompile Include="..\Private\ResGeoShaderStreamOut.cpp" />
     <ClCompile Include="..\private\ResExtrudedItemVIBuffer.cpp" />

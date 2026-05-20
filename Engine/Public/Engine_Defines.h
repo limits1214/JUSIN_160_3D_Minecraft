@@ -6,6 +6,8 @@
 #include <directxtk/SimpleMath.h>
 #include <directxtk/WICTextureLoader.h>
 #include <directxtk/DDSTextureLoader.h>
+#include <directxtk/SpriteFont.h>
+#include <directxtk/SpriteBatch.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
 //using namespace DirectX::SimpleMath;

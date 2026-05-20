@@ -97,6 +97,8 @@ HRESULT CBackGround::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& 
 
 	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
 
+
+
 	return S_OK;
 }
 

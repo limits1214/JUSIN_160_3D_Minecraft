@@ -412,6 +412,18 @@
     <Filter Include="GameObject\DestroyStage">
       <UniqueIdentifier>{63c77358-fdf6-497c-9680-ddaa8485c719}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Font">
+      <UniqueIdentifier>{9b2276a0-3fa9-44bb-98e8-7a941722ce9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Font\Manager">
+      <UniqueIdentifier>{f57f5ddc-dad8-4988-ad27-c134a88db2d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Font">
+      <UniqueIdentifier>{34065c1d-b0cc-49e2-8695-64d668ee5286}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Font\CustomFont">
+      <UniqueIdentifier>{7a96c4ea-4dbd-42ab-ab2a-dfb571171406}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -798,6 +810,15 @@
     <ClInclude Include="..\public\DestroyStage.h">
       <Filter>GameObject\DestroyStage</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\FontManager.h">
+      <Filter>Font\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResFont.h">
+      <Filter>Resource\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResFontCustom.h">
+      <Filter>Resource\Font\CustomFont</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1171,6 +1192,15 @@
     </ClCompile>
     <ClCompile Include="..\private\DestroyStage.cpp">
       <Filter>GameObject\DestroyStage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\FontManager.cpp">
+      <Filter>Font\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResFont.cpp">
+      <Filter>Resource\Font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResFontCustom.cpp">
+      <Filter>Resource\Font\CustomFont</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

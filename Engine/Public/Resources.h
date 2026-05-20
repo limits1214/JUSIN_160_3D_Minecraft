@@ -46,6 +46,9 @@
 #include "ResEnttGeoSkeleton.h"
 #include "ResEnttGeoPlayerArmor.h"
 
+#include "ResFont.h"
+#include "ResFontCustom.h"
+
 
 static const char* TAG_RES_GRP_PERMANENT_BUFFER = "PERMANENT_BUFFER";
 static const char* TAG_RES_GRP_PERMANENT_SHADER = "PERMANENT_SHADER";

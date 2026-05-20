@@ -23,6 +23,7 @@ class CRenderer;
 class CLightManager;
 class CVoxelManager;
 class CVoxelManager2;
+class CFontManager;
 //class CVoxelManager3;
 class CChunk3;
 class CCameraObject;
@@ -246,6 +247,10 @@ public:
 
 	bool VoxelAABBOverlap(const _float3& pos, const _float3& halfExtents) const;
 #pragma endregion
+	
+#pragma region FONT_MANAGER
+	void FontDraw(const StringID& fontName, const _tchar* pText, const _float2& vPosition, float fScale = 1.f, _fvector vColor = XMVectorSet(1.f, 1.f, 1.f, 1.f), _float fRotation = 0.f, const _float2& vOrigin = { 0.f, 0.f });
+#pragma
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};
 	UPtr<CImguiManager> m_pImguiManager{};
@@ -266,6 +271,7 @@ private:
 	UPtr<CVoxelManager2> m_pVoxelManager2{};
 	UPtr<CVoxelManager3> m_pVoxelManager3{};
 	UPtr<CParticleManager> m_pParticleManager{};
+	UPtr<CFontManager> m_pFontManager{};
 
 
 public:
