@@ -3,6 +3,8 @@
 #include "GameObject.h"
 NS_BEGIN(Engine)
 
+constexpr static float MC_UI_SCALE = 1.f;
+
 class ENGINE_DLL CUIObject : public CGameObject
 {
 public:
@@ -20,6 +22,9 @@ protected:
 
 public:
 	HRESULT Initialize(void* pArg) override;
+
+protected:
+	void CalcUICoord();
 
 protected:
 	_float m_fX{}, m_fY{}, m_fSizeX{}, m_fSizeY{};

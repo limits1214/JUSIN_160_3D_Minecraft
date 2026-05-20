@@ -424,6 +424,33 @@
     <Filter Include="Resource\Font\CustomFont">
       <UniqueIdentifier>{7a96c4ea-4dbd-42ab-ab2a-dfb571171406}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\UI\Inventory">
+      <UniqueIdentifier>{0b809416-b91f-410f-a30c-53f4e15ad74b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\UI">
+      <UniqueIdentifier>{cf4bc149-dd13-4368-a9cd-409d74be4299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\HotbarSelect">
+      <UniqueIdentifier>{d7832451-30d6-4a36-a76e-52a44beffcee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\HotBar">
+      <UniqueIdentifier>{295ddc5a-011e-4798-b413-ff1d0a1e8736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\ExperienceBar">
+      <UniqueIdentifier>{10c87a2d-d454-43c2-99af-8ed8c110dbaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\HealthBar">
+      <UniqueIdentifier>{f7e1798d-23da-4db7-8034-fdc246e67715}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\ArmorBar">
+      <UniqueIdentifier>{45b567d9-399d-4fd1-a976-38dc3012613d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\HungerBar">
+      <UniqueIdentifier>{5832d1d4-d2d5-43e8-90d2-e4f385eb50d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\BreathBar">
+      <UniqueIdentifier>{510e5af3-fb54-488d-98d4-316cc2d9b531}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -819,6 +846,33 @@
     <ClInclude Include="..\public\ResFontCustom.h">
       <Filter>Resource\Font\CustomFont</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\UIHotBar.h">
+      <Filter>GameObject\UI\HotBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIInventory.h">
+      <Filter>GameObject\UI\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIHotbarSelect.h">
+      <Filter>GameObject\UI\HotbarSelect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIExperienceBar.h">
+      <Filter>GameObject\UI\ExperienceBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIHealthBar.h">
+      <Filter>GameObject\UI\HealthBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIArmorBar.h">
+      <Filter>GameObject\UI\ArmorBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIHungerBar.h">
+      <Filter>GameObject\UI\HungerBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIBreathBar.h">
+      <Filter>GameObject\UI\BreathBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIExperienceBarGage.h">
+      <Filter>GameObject\UI\ExperienceBar</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1202,6 +1256,33 @@
     <ClCompile Include="..\private\ResFontCustom.cpp">
       <Filter>Resource\Font\CustomFont</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\UIHotBar.cpp">
+      <Filter>GameObject\UI\HotBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIInventory.cpp">
+      <Filter>GameObject\UI\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIHotbarSelect.cpp">
+      <Filter>GameObject\UI\HotbarSelect</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIExperienceBar.cpp">
+      <Filter>GameObject\UI\ExperienceBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIHealthBar.cpp">
+      <Filter>GameObject\UI\HealthBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIArmorBar.cpp">
+      <Filter>GameObject\UI\ArmorBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIHungerBar.cpp">
+      <Filter>GameObject\UI\HungerBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIBreathBar.cpp">
+      <Filter>GameObject\UI\BreathBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIExperienceBarGage.cpp">
+      <Filter>GameObject\UI\ExperienceBar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1230,6 +1311,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\DestroyStage\DestroyStage.hlsl">
       <Filter>100.Shaders\DestroyStage</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\UI\UI.hlsl">
+      <Filter>100.Shaders\UI</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
