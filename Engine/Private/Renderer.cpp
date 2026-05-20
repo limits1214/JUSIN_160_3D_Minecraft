@@ -155,7 +155,7 @@ HRESULT CRenderer::Draw()
 
 
     
-	E::CGameInstance::Get().FontDraw("NeoDGM_20px", L"쉬었음 청년", {});
+	E::CGameInstance::Get().FontDraw("NeoDGM_20px", L"취업 하고 싶다.", {});
 
     // TODO: 제거
     {

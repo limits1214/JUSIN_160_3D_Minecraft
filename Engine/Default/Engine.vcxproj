@@ -273,6 +273,10 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\GameObject.h" />
     <ClInclude Include="..\public\GameObjectManager.h" />
     <ClInclude Include="..\public\GraphicDevice.h" />
+    <ClInclude Include="..\public\UIArmorBar.h" />
+    <ClInclude Include="..\public\UIBreathBar.h" />
+    <ClInclude Include="..\public\UIExperienceBarGage.h" />
+    <ClInclude Include="..\public\UIHealthBar.h" />
     <ClInclude Include="..\public\Helper.h" />
     <ClInclude Include="..\public\HumanoidEntityObject.h" />
     <ClInclude Include="..\public\ImguiManager.h" />
@@ -350,6 +354,11 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\Transform.h" />
     <ClInclude Include="..\public\UICamera.h" />
     <ClInclude Include="..\public\UICrosshair.h" />
+    <ClInclude Include="..\public\UIExperienceBar.h" />
+    <ClInclude Include="..\public\UIHotBar.h" />
+    <ClInclude Include="..\public\UIHotbarSelect.h" />
+    <ClInclude Include="..\public\UIHungerBar.h" />
+    <ClInclude Include="..\public\UIInventory.h" />
     <ClInclude Include="..\public\UIObject.h" />
     <ClInclude Include="..\public\VoxelManager.h" />
     <ClInclude Include="..\public\VoxelManager2.h" />
@@ -479,6 +488,12 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ComEntityModel.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\CowEntity.cpp" />
+    <ClCompile Include="..\private\UIArmorBar.cpp" />
+    <ClCompile Include="..\private\UIBreathBar.cpp" />
+    <ClCompile Include="..\private\UIExperienceBarGage.cpp" />
+    <ClCompile Include="..\private\UIHealthBar.cpp" />
+    <ClCompile Include="..\private\UIExperienceBar.cpp" />
+    <ClCompile Include="..\private\UIHotBar.cpp" />
     <ClCompile Include="..\private\DestroyStage.cpp" />
     <ClCompile Include="..\private\DInputManager.cpp" />
     <ClCompile Include="..\private\DropItem.cpp" />
@@ -567,6 +582,9 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Transform.cpp" />
     <ClCompile Include="..\private\UICamera.cpp" />
     <ClCompile Include="..\private\UICrosshair.cpp" />
+    <ClCompile Include="..\private\UIHotbarSelect.cpp" />
+    <ClCompile Include="..\private\UIHungerBar.cpp" />
+    <ClCompile Include="..\private\UIInventory.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
     <ClCompile Include="..\private\VoxelManager.cpp" />
     <ClCompile Include="..\private\VoxelManager2.cpp" />
@@ -615,6 +633,10 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ShaderDefines.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\UI\UI.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

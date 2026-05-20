@@ -18,6 +18,15 @@
 
 #include "PlayerFPSArm.h"
 #include "DestroyStage.h"
+#include "UIHotbar.h"
+#include "UIHotbarSelect.h"
+#include "UIHealthBar.h"
+#include "UIExperienceBar.h"
+#include "UIExperienceBarGage.h"
+#include "UIArmorBar.h"
+#include "UIHungerBar.h"
+#include "UIBreathBar.h"
+
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -113,7 +122,48 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
-		
+		//UIHotbar
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHotbar", E::CUIHotBar::Create())))
+		{
+			int x = 0;
+		}
+		//UIHotbarSelect
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHotbarSelect", E::CUIHotBarSelect::Create())))
+		{
+			int x = 0;
+		}
+		//UIHealthBar
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHealthBar", E::CUIHealthBar::Create())))
+		{
+			int x = 0;
+		}
+		//UIExperienceBar
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIExperienceBar", E::CUIExperienceBar::Create())))
+		{
+			int x = 0;
+		}
+		//UIExperienceBarGage
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIExperienceBarGage", E::CUIExperienceBarGage::Create())))
+		{
+			int x = 0;
+		}
+		//UIArmorBar
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIArmorBar", E::CUIArmorBar::Create())))
+		{
+			int x = 0;
+		}
+		//UIHungerBar
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHungerBar", E::CUIHungerBar::Create())))
+		{
+			int x = 0;
+		}
+		//CUIBreathBar
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIBreathBar", E::CUIBreathBar::Create())))
+		{
+			int x = 0;
+		}
+
+
 		if (FAILED(E::CGameInstance::Get().AddPrototype("BLOCK_OUTLINE", "Prototype_GameObject_BlockOutline", E::CBlockOutline::Create())))
 		{
 			int x = 0;
@@ -281,6 +331,83 @@ HRESULT CLevelTestWorld::Initialize()
 
 	}
 
+	{
+		//Prototype_GameObject_UIHotbar
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "Hotbar";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHotbar",
+			"80_UI", &Desc))
+		{
+		}
+	}
+
+	{
+		//Prototype_GameObject_UIHotbarSelect
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "HotbarSelect";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHotbarSelect",
+			"80_UI", &Desc))
+		{
+		}
+	}
+
+	{
+		//Prototype_GameObject_UIHealthBar
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "HealthBar";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHealthBar",
+			"80_UI", &Desc))
+		{
+		}
+	}
+
+	{
+		//Prototype_GameObject_UIExperienceBar
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "ExperienceBar";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIExperienceBar",
+			"80_UI", &Desc))
+		{
+		}
+	}
+	{
+		//Prototype_GameObject_UIExperienceBarGage
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "ExperienceBarGage";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIExperienceBarGage",
+			"80_UI", &Desc))
+		{
+		}
+	}
+	{
+		//Prototype_GameObject_UIArmorBar
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "ArmorBar";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIArmorBar",
+			"80_UI", &Desc))
+		{
+		}
+	}
+
+	{
+		//Prototype_GameObject_UIHungerBar
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "HungerBar";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHungerBar",
+			"80_UI", &Desc))
+		{
+		}
+	}
+
+	{
+		//Prototype_GameObject_UIBreathBar
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "BreathBar";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIBreathBar",
+			"80_UI", &Desc))
+		{
+		}
+	}
 
 	// destroy stage
 	{

@@ -48,6 +48,9 @@ public:
 public:
 	void Release_Engine();
 
+public:
+	_float2 GetClientScreenSize() const { return m_vClientScreenSize; }
+
 private:
 	HRESULT InitializeResources();
 	HRESULT InitializeMCResource();
@@ -278,6 +281,9 @@ public:
 	_bool GetMouseFix() const { return m_bMouseFix; }
 private:
 	_bool m_bMouseFix{};
+
+
+	_float2 m_vClientScreenSize{1280.f, 720.f};
 
 private:
 	void MouseFix() const;

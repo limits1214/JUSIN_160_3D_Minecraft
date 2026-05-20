@@ -366,6 +366,14 @@ HRESULT CGameInstance::InitializeResources()
 		}
 	}
 
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerUI", E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_UI) })))
+		{
+			return E_FAIL;
+		}
+	}
+
 	
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_LINEAR_WRAP, CResSamplerState::Create()))
 	{
@@ -559,6 +567,19 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// ui shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_UI", "./Resources/Shader/UI/UI.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI", "./Resources/Shader/UI/UI.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
+
 	// initialize destroy stage texture
 	{
 		{
@@ -585,6 +606,78 @@ HRESULT CGameInstance::InitializeMCResource()
 
 
 			GetGraphicDeviceContext()->PSSetShaderResources(11, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+	}
+
+	// initialie 256 256 tex
+	{
+		{
+			{
+				//0
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/icons.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+			{
+				//1
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/gui2.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+			{
+				//2
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/inventory.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+			{
+				//3
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/crafting_table.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+			{
+				//4
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/blast_furnace.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+			{
+				//5
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/enchanting_table.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+		}
+
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_TEX_256_256", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(12, 1, pTextureArray->GetSRV().GetAddressOf());
 		}
 	}
 
