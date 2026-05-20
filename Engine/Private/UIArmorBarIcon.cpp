@@ -1,20 +1,20 @@
 #include "pch.h"
-#include "UIArmorBar.h"
+#include "UIArmorBarIcon.h"
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
 NS_USING(Engine)
 
-CUIArmorBar::CUIArmorBar()
+CUIArmorBarIcon::CUIArmorBarIcon()
 {
 }
 
 
-CUIArmorBar::~CUIArmorBar()
+CUIArmorBarIcon::~CUIArmorBarIcon()
 {
 }
 
-void CUIArmorBar::UpdateGUI()
+void CUIArmorBarIcon::UpdateGUI()
 {
 	CUIObject::UpdateGUI();
 
@@ -24,7 +24,7 @@ void CUIArmorBar::UpdateGUI()
 	}
 }
 
-HRESULT CUIArmorBar::Initialize(void* pArg)
+HRESULT CUIArmorBarIcon::Initialize(void* pArg)
 {
 	auto pDesc = static_cast<CUIObject::UIOBJECT_DESC*>(pArg);
 	pDesc->fSizeX = 9.f * MC_UI_SCALE;
@@ -40,32 +40,25 @@ HRESULT CUIArmorBar::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CUIArmorBar::PriorityUpdate(E::_float fTimeDelta)
+void CUIArmorBarIcon::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CUIArmorBar::Update(E::_float fTimeDelta)
+void CUIArmorBarIcon::Update(E::_float fTimeDelta)
 {
 }
 
-void CUIArmorBar::LateUpdate(E::_float fTimeDelta)
+void CUIArmorBarIcon::LateUpdate(E::_float fTimeDelta)
 {
 	if (m_bRender)
 	{
-		//E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
+		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
 	}
 
 	GetTransform().Update();
-
-
-	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
-	{
-		GetChildrenNode()[i]->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i), 0.f, 0.f, 0.f));
-	}
 }
 
-HRESULT CUIArmorBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CUIArmorBarIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_UI");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI");
@@ -137,23 +130,23 @@ HRESULT CUIArmorBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& 
 	return S_OK;
 }
 
-E::UPtr<CUIArmorBar> CUIArmorBar::Create()
+E::UPtr<CUIArmorBarIcon> CUIArmorBarIcon::Create()
 {
-	auto pInstance = E::ToUPtr(new CUIArmorBar{});
+	auto pInstance = E::ToUPtr(new CUIArmorBarIcon{});
 	if (FAILED(pInstance->InitializePrototype()))
 	{
-		MSG_BOX("Failed to Created : CUIHealthBar");
+		MSG_BOX("Failed to Created : CUIArmorBarIcon");
 		return nullptr;
 	}
 	return  pInstance;
 }
 
-E::UPtr<E::CPrototype> CUIArmorBar::Clone(void* pArg)
+E::UPtr<E::CPrototype> CUIArmorBarIcon::Clone(void* pArg)
 {
-	auto	pInstance = E::ToUPtr(new CUIArmorBar{ *this });
+	auto	pInstance = E::ToUPtr(new CUIArmorBarIcon{ *this });
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned : CUIArmorBar");
+		MSG_BOX("Failed to Cloned : CUIArmorBarIcon");
 		return nullptr;
 	}
 

@@ -1,20 +1,20 @@
 #include "pch.h"
-#include "UIHealthIcon.h"
+#include "UIHungerBarIcon.h"
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
 NS_USING(Engine)
 
-CUIHealthIcon::CUIHealthIcon()
+CUIHungerBarIcon::CUIHungerBarIcon()
 {
 }
 
 
-CUIHealthIcon::~CUIHealthIcon()
+CUIHungerBarIcon::~CUIHungerBarIcon()
 {
 }
 
-void CUIHealthIcon::UpdateGUI()
+void CUIHungerBarIcon::UpdateGUI()
 {
 	CUIObject::UpdateGUI();
 
@@ -24,14 +24,14 @@ void CUIHealthIcon::UpdateGUI()
 	}
 }
 
-HRESULT CUIHealthIcon::Initialize(void* pArg)
+HRESULT CUIHungerBarIcon::Initialize(void* pArg)
 {
 	auto pDesc = static_cast<CUIObject::UIOBJECT_DESC*>(pArg);
 	pDesc->fSizeX = 9.f * MC_UI_SCALE;
 	pDesc->fSizeY = 9.f * MC_UI_SCALE;
 
-	pDesc->fX = 0.f;
-	pDesc->fY = 0.f;
+	pDesc->fX = (1280.f * 0.5f) + (1.f * MC_UI_SCALE) + (pDesc->fSizeY * 0.5f) + (pDesc->fSizeY * 0.f);
+	pDesc->fY = 720.f - pDesc->fSizeY * 0.5f - ((24.f + 8.f) * MC_UI_SCALE);
 	if (FAILED(CUIObject::Initialize(pArg)))
 		return E_FAIL;
 
@@ -40,15 +40,15 @@ HRESULT CUIHealthIcon::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CUIHealthIcon::PriorityUpdate(E::_float fTimeDelta)
+void CUIHungerBarIcon::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CUIHealthIcon::Update(E::_float fTimeDelta)
+void CUIHungerBarIcon::Update(E::_float fTimeDelta)
 {
 }
 
-void CUIHealthIcon::LateUpdate(E::_float fTimeDelta)
+void CUIHungerBarIcon::LateUpdate(E::_float fTimeDelta)
 {
 	if (m_bRender)
 	{
@@ -58,7 +58,7 @@ void CUIHealthIcon::LateUpdate(E::_float fTimeDelta)
 	GetTransform().Update();
 }
 
-HRESULT CUIHealthIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CUIHungerBarIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_UI");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI");
@@ -95,7 +95,7 @@ HRESULT CUIHealthIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 			E::CB_PER_UI perUI{};
 
 			perUI.texIndex = PackTexId(12, 0);
-			perUI.texCoord = { 16.f / 256.f, 0.f };
+			perUI.texCoord = { 16.f / 256.f, 27.f / 256.f };
 			perUI.uvSize = { 9.f / 256.f, 9.f / 256.f };
 
 			memcpy(mappedSubResource.pData, &perUI, sizeof(perUI));
@@ -130,23 +130,23 @@ HRESULT CUIHealthIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 	return S_OK;
 }
 
-E::UPtr<CUIHealthIcon> CUIHealthIcon::Create()
+E::UPtr<CUIHungerBarIcon> CUIHungerBarIcon::Create()
 {
-	auto pInstance = E::ToUPtr(new CUIHealthIcon{});
+	auto pInstance = E::ToUPtr(new CUIHungerBarIcon{});
 	if (FAILED(pInstance->InitializePrototype()))
 	{
-		MSG_BOX("Failed to Created : CUIHealthIcon");
+		MSG_BOX("Failed to Created : CUIHungerBarIcon");
 		return nullptr;
 	}
 	return  pInstance;
 }
 
-E::UPtr<E::CPrototype> CUIHealthIcon::Clone(void* pArg)
+E::UPtr<E::CPrototype> CUIHungerBarIcon::Clone(void* pArg)
 {
-	auto	pInstance = E::ToUPtr(new CUIHealthIcon{ *this });
+	auto	pInstance = E::ToUPtr(new CUIHungerBarIcon{ *this });
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned : CUIHealthIcon");
+		MSG_BOX("Failed to Cloned : CUIHungerBarIcon");
 		return nullptr;
 	}
 

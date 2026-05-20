@@ -1,20 +1,20 @@
 #include "pch.h"
-#include "UIArmorBar.h"
+#include "UIBreathBarIcon.h"
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
 NS_USING(Engine)
 
-CUIArmorBar::CUIArmorBar()
+CUIBreathBarIcon::CUIBreathBarIcon()
 {
 }
 
 
-CUIArmorBar::~CUIArmorBar()
+CUIBreathBarIcon::~CUIBreathBarIcon()
 {
 }
 
-void CUIArmorBar::UpdateGUI()
+void CUIBreathBarIcon::UpdateGUI()
 {
 	CUIObject::UpdateGUI();
 
@@ -24,13 +24,13 @@ void CUIArmorBar::UpdateGUI()
 	}
 }
 
-HRESULT CUIArmorBar::Initialize(void* pArg)
+HRESULT CUIBreathBarIcon::Initialize(void* pArg)
 {
 	auto pDesc = static_cast<CUIObject::UIOBJECT_DESC*>(pArg);
 	pDesc->fSizeX = 9.f * MC_UI_SCALE;
 	pDesc->fSizeY = 9.f * MC_UI_SCALE;
 
-	pDesc->fX = (1280.f * 0.5f) - (91.f * MC_UI_SCALE) + (pDesc->fSizeY * 0.5f);
+	pDesc->fX = (1280.f * 0.5f) + (1.f * MC_UI_SCALE) + (pDesc->fSizeY * 0.5f) + (pDesc->fSizeY * 9.f);
 	pDesc->fY = 720.f - pDesc->fSizeY * 0.5f - ((24.f + 8.f + 11.f) * MC_UI_SCALE);
 	if (FAILED(CUIObject::Initialize(pArg)))
 		return E_FAIL;
@@ -40,32 +40,27 @@ HRESULT CUIArmorBar::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CUIArmorBar::PriorityUpdate(E::_float fTimeDelta)
+void CUIBreathBarIcon::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CUIArmorBar::Update(E::_float fTimeDelta)
+void CUIBreathBarIcon::Update(E::_float fTimeDelta)
 {
 }
 
-void CUIArmorBar::LateUpdate(E::_float fTimeDelta)
+void CUIBreathBarIcon::LateUpdate(E::_float fTimeDelta)
 {
 	if (m_bRender)
 	{
-		//E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
+		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
 	}
 
 	GetTransform().Update();
 
 
-	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
-	{
-		GetChildrenNode()[i]->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i), 0.f, 0.f, 0.f));
-	}
 }
 
-HRESULT CUIArmorBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CUIBreathBarIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_UI");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI");
@@ -102,7 +97,7 @@ HRESULT CUIArmorBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& 
 			E::CB_PER_UI perUI{};
 
 			perUI.texIndex = PackTexId(12, 0);
-			perUI.texCoord = { 16.f / 256.f, 9.f / 256.f };
+			perUI.texCoord = { 16.f / 256.f, 18.f / 256.f };
 			perUI.uvSize = { 9.f / 256.f, 9.f / 256.f };
 
 			memcpy(mappedSubResource.pData, &perUI, sizeof(perUI));
@@ -137,23 +132,23 @@ HRESULT CUIArmorBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& 
 	return S_OK;
 }
 
-E::UPtr<CUIArmorBar> CUIArmorBar::Create()
+E::UPtr<CUIBreathBarIcon> CUIBreathBarIcon::Create()
 {
-	auto pInstance = E::ToUPtr(new CUIArmorBar{});
+	auto pInstance = E::ToUPtr(new CUIBreathBarIcon{});
 	if (FAILED(pInstance->InitializePrototype()))
 	{
-		MSG_BOX("Failed to Created : CUIHealthBar");
+		MSG_BOX("Failed to Created : CUIBreathBarIcon");
 		return nullptr;
 	}
 	return  pInstance;
 }
 
-E::UPtr<E::CPrototype> CUIArmorBar::Clone(void* pArg)
+E::UPtr<E::CPrototype> CUIBreathBarIcon::Clone(void* pArg)
 {
-	auto	pInstance = E::ToUPtr(new CUIArmorBar{ *this });
+	auto	pInstance = E::ToUPtr(new CUIBreathBarIcon{ *this });
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned : CUIArmorBar");
+		MSG_BOX("Failed to Cloned : CUIBreathBarIcon");
 		return nullptr;
 	}
 

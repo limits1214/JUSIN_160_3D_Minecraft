@@ -52,10 +52,17 @@ void CUIHungerBar::LateUpdate(E::_float fTimeDelta)
 {
 	if (m_bRender)
 	{
-		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
+		//E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
 	}
 
 	GetTransform().Update();
+
+
+	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
+	{
+		GetChildrenNode()[i]->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i), 0.f, 0.f, 0.f));
+	}
 }
 
 HRESULT CUIHungerBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)

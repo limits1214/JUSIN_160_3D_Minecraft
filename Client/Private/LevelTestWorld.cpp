@@ -21,12 +21,15 @@
 #include "UIHotbar.h"
 #include "UIHotbarSelect.h"
 #include "UIHealthBar.h"
-#include "UIHealthIcon.h"
+#include "UIHealthBarIcon.h"
 #include "UIExperienceBar.h"
 #include "UIExperienceBarGage.h"
 #include "UIArmorBar.h"
+#include "UIArmorBarIcon.h"
 #include "UIHungerBar.h"
+#include "UIHungerBarIcon.h"
 #include "UIBreathBar.h"
+#include "UIBreathBarIcon.h"
 
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
@@ -139,7 +142,7 @@ HRESULT CLevelTestWorld::Initialize()
 			int x = 0;
 		}
 		//UIHealthIcon
-		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHealthIcon", E::CUIHealthIcon::Create())))
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHealthBarIcon", E::CUIHealthBarIcon::Create())))
 		{
 			int x = 0;
 		}
@@ -158,13 +161,25 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIArmorBarIcon", E::CUIArmorBarIcon::Create())))
+		{
+			int x = 0;
+		}
 		//UIHungerBar
 		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHungerBar", E::CUIHungerBar::Create())))
 		{
 			int x = 0;
 		}
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHungerBarIcon", E::CUIHungerBarIcon::Create())))
+		{
+			int x = 0;
+		}
 		//CUIBreathBar
 		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIBreathBar", E::CUIBreathBar::Create())))
+		{
+			int x = 0;
+		}
+		if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIBreathBarIcon", E::CUIBreathBarIcon::Create())))
 		{
 			int x = 0;
 		}
@@ -372,7 +387,7 @@ HRESULT CLevelTestWorld::Initialize()
 					//Prototype_GameObject_UIHealthIcon
 					E::CUIObject::UIOBJECT_DESC Desc{};
 					Desc.sObjectTag = "HealthIcon";
-					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHealthIcon",
+					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHealthBarIcon",
 						"80_UI", &Desc))
 					{
 						if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
@@ -420,6 +435,23 @@ HRESULT CLevelTestWorld::Initialize()
 		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIArmorBar",
 			"80_UI", &Desc))
 		{
+			if (auto pBarObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+			{
+				for (uint32_t i = 0; i < 10; ++i)
+				{
+					//Prototype_GameObject_UIArmorBarICon
+					E::CUIObject::UIOBJECT_DESC Desc{};
+					Desc.sObjectTag = "ArmorIcon";
+					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIArmorBarIcon",
+						"80_UI", &Desc))
+					{
+						if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+						{
+							pObj->SetParentNode(pBarObj);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -430,6 +462,23 @@ HRESULT CLevelTestWorld::Initialize()
 		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHungerBar",
 			"80_UI", &Desc))
 		{
+			if (auto pBarObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+			{
+				for (uint32_t i = 0; i < 10; ++i)
+				{
+					//Prototype_GameObject_UIHungerBarIcon
+					E::CUIObject::UIOBJECT_DESC Desc{};
+					Desc.sObjectTag = "HungerIcon";
+					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHungerBarIcon",
+						"80_UI", &Desc))
+					{
+						if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+						{
+							pObj->SetParentNode(pBarObj);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -440,6 +489,23 @@ HRESULT CLevelTestWorld::Initialize()
 		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIBreathBar",
 			"80_UI", &Desc))
 		{
+			if (auto pBarObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+			{
+				for (uint32_t i = 0; i < 10; ++i)
+				{
+					//Prototype_GameObject_UIBreathBarIcon
+					E::CUIObject::UIOBJECT_DESC Desc{};
+					Desc.sObjectTag = "BreathIcon";
+					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIBreathBarIcon",
+						"80_UI", &Desc))
+					{
+						if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+						{
+							pObj->SetParentNode(pBarObj);
+						}
+					}
+				}
+			}
 		}
 	}
 

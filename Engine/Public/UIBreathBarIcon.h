@@ -2,14 +2,14 @@
 #include "UIObject.h"
 NS_BEGIN(Engine)
 
-class ENGINE_DLL CUIHealthIcon final : public E::CUIObject
+class ENGINE_DLL CUIBreathBarIcon final : public E::CUIObject
 {
 public:
-	DECLARE_DERIVED_TYPE(CUIHealthIcon, CUIObject)
+	DECLARE_DERIVED_TYPE(CUIBreathBarIcon, CUIObject)
 
 private:
-	CUIHealthIcon();
-	~CUIHealthIcon() override;
+	CUIBreathBarIcon();
+	~CUIBreathBarIcon() override;
 
 public:
 	void UpdateGUI() override;
@@ -28,7 +28,7 @@ private:
 	_bool m_bRender{ true };
 
 public:
-	static E::UPtr<CUIHealthIcon> Create();
+	static E::UPtr<CUIBreathBarIcon> Create();
 	E::UPtr<E::CPrototype> Clone(void* pArg) override;
 };
 
