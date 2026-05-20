@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "ParticleManager.h"
 
 #include "Resources.h"

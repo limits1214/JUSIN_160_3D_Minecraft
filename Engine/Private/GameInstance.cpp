@@ -13,6 +13,7 @@
 #include "VoxelManager2.h"
 #include "VoxelManager3.h"
 #include "ParticleManager.h"
+#include "FontManager.h"
 
 #include "GameObject.h"
 #include "CameraManager.h"
@@ -172,6 +173,12 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
+	m_pFontManager = CFontManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pFontManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
 
 
 
@@ -222,10 +229,10 @@ HRESULT CGameInstance::Draw()
 		return E_FAIL;
 	}
 
-	if (FAILED(m_pLevelManager->Render()))
-	{
-		return E_FAIL;
-	}
+	//if (FAILED(m_pLevelManager->Render()))
+	//{
+	//	return E_FAIL;
+	//}
 	return S_OK;
 }
 
@@ -286,6 +293,7 @@ void CGameInstance::Release_Engine()
 	m_pWorkerManager.reset();
 	m_pChunkLoadWorkerManager.reset();
 	m_pPrototypeManager.reset();
+	m_pFontManager.reset();
 	m_pLightManager.reset();
 	m_pVoxelManager.reset();
 	m_pVoxelManager3.reset();
@@ -1325,6 +1333,13 @@ _bool CGameInstance::VoxelBlockRaycast(const _float3& rayOrigin, const _float3& 
 bool CGameInstance::VoxelAABBOverlap(const _float3& pos, const _float3& halfExtents) const
 {
 	return m_pVoxelManager3->VoxelAABBOverlap(pos, halfExtents);
+}
+#pragma endregion
+
+#pragma region FONT_MANAGER
+void CGameInstance::FontDraw(const StringID& fontName, const _tchar* pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
+{
+	m_pFontManager->Draw(fontName, pText, vPosition, fScale, vColor, fRotation, vOrigin);
 }
 
 #pragma endregion
