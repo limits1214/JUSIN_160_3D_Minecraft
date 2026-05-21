@@ -34,6 +34,7 @@ public:
 	const CGameObject* GetGameObjectByHandle(const CHandle& handle) const { return _GetGameObjectByHandle(handle); }
 	template<typename T> T* GetGameObjectByHandleT(const CHandle& handle);
 	template<typename T> const T* GetGameObjectByHandleT(const CHandle& handle) const;
+	std::optional<CHandle> GetHandleByGameObject(CGameObject* pObj) const;
 private:
 	const CGameObject* _GetGameObjectByHandle(const CHandle& handle ) const;
 
@@ -82,9 +83,6 @@ private:
 	_bool m_bTreeReBuild{ true };
 
 
-	std::unordered_map<CGameObject*, size_t> m_mapMapIdxForFrameEnd{};
-	std::vector<CGameObject*> m_vecRootObjsForFrameEnd{};
-	std::vector<CGameObject*> m_vecDelTargetsForFrameEnd{};
 public:
 	static UPtr< CGameObjectManager> Create();
 

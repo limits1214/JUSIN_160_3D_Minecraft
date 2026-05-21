@@ -22,6 +22,26 @@ void CUIHealthBar::UpdateGUI()
 	{
 		m_bRender = !m_bRender;
 	}
+
+
+	//if (ImGui::Button("TEST"))
+	//{
+	//	if (auto pLayer = CGameInstance::Get().GetGameObjectLayer("80_UIx"))
+	//	{
+	//		if (!pLayer->empty())
+	//		{
+	//			if (auto pObj = CGameInstance::Get().GetGameObjectByHandle(pLayer->front()))
+	//			{
+	//				auto copy = GetChildrenNode();
+	//				//80_UIHealthIcon
+	//				for (auto& icon : copy)
+	//				{
+	//					icon->SetParentNode(pObj);
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 HRESULT CUIHealthBar::Initialize(void* pArg)

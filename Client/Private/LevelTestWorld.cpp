@@ -388,7 +388,7 @@ HRESULT CLevelTestWorld::Initialize()
 					E::CUIObject::UIOBJECT_DESC Desc{};
 					Desc.sObjectTag = "HealthIcon";
 					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIHealthBarIcon",
-						"80_UI", &Desc))
+						"80_UIHealthIcon", &Desc))
 					{
 						if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
 						{
@@ -481,6 +481,8 @@ HRESULT CLevelTestWorld::Initialize()
 			}
 		}
 	}
+
+
 
 	{
 		//Prototype_GameObject_UIBreathBar
