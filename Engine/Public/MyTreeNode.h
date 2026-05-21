@@ -77,9 +77,12 @@ protected:
         SetParentNode(nullptr);
 
         // 이거 카피안하면 루프도는도중에 제거해버림
-        std::vector<T*> copy = m_pChildrenNode;
-        std::for_each(copy.begin(), copy.end(),
-            [](auto& pChild) { pChild->SetParentNode(nullptr); });
+        if (!m_pChildrenNode.empty())
+        {
+            std::vector<T*> copy = m_pChildrenNode;
+            std::for_each(copy.begin(), copy.end(),
+                [](auto& pChild) { pChild->SetParentNode(nullptr); });
+        }
     }
 
 public:

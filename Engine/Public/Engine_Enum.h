@@ -32,4 +32,11 @@ namespace Engine
 		POS_Z, NEG_Z,
 		END
 	};
+
+	enum class NOISE_TYPE
+	{
+		HEIGHT,
+		BEDROCK,
+		END
+	};
 }

@@ -447,7 +447,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
 
                     CBlock3 block{};
-                    block.SetType(CBlock3::TYPE::GRASS);
+                    block.SetType(CBlock3::TYPE::DIRT);
 
                     SetBlock(worldBX, worldBY, worldBZ, block);
                 }
@@ -1166,14 +1166,28 @@ HRESULT CVoxelManager3::QueueingQuadMessing(std::vector<uint64_t> targetCoords, 
 
 HRESULT CVoxelManager3::Initialize()
 {
-    m_NoiseHeight.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    m_NoiseHeight.SetFrequency(0.03f); // 전체적인 지형의 크기 (낮을수록 거대함)
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetSeed(m_iNoiseSeed);
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFrequency(0.03f);
 
-    // Fractal 설정 (핵심!)
-    m_NoiseHeight.SetFractalType(FastNoiseLite::FractalType_FBm);
-    m_NoiseHeight.SetFractalOctaves(5);     // 층을 얼마나 쌓을지 (4~6 추천)
-    m_NoiseHeight.SetFractalLacunarity(2.0f); // 층 사이의 주파수 배율
-    m_NoiseHeight.SetFractalGain(0.3f);       // 층 사이의 영향력 배율
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalType(FastNoiseLite::FractalType_FBm);
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalOctaves(5);     // 층을 얼마나 쌓을지 (4~6 추천
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalLacunarity(2.0f); // 층 사이의 주파수 배율
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalGain(0.3f);       // 층 사이의 영향력 배율
+
+
+    m_Noises[ETOUI(NOISE_TYPE::BEDROCK)].SetSeed(m_iNoiseSeed + 1); // HEIGHT와 다른 시드
+    m_Noises[ETOUI(NOISE_TYPE::BEDROCK)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    m_Noises[ETOUI(NOISE_TYPE::BEDROCK)].SetFrequency(0.8f);
+
+    //m_NoiseHeight.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    //m_NoiseHeight.SetFrequency(0.03f); // 전체적인 지형의 크기 (낮을수록 거대함)
+
+    //// Fractal 설정 (핵심!)
+    //m_NoiseHeight.SetFractalType(FastNoiseLite::FractalType_FBm);
+    //m_NoiseHeight.SetFractalOctaves(5);     // 층을 얼마나 쌓을지 (4~6 추천)
+    //m_NoiseHeight.SetFractalLacunarity(2.0f); // 층 사이의 주파수 배율
+    //m_NoiseHeight.SetFractalGain(0.3f);       // 층 사이의 영향력 배율
 
 
     //
