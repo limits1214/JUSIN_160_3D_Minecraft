@@ -15,6 +15,9 @@ public:
 	void UpdateGUI() override;
 
 public:
+	_bool GetRender() const { return m_bRender; }
+
+public:
 	HRESULT Initialize(void* pArg) override;
 	void PriorityUpdate(E::_float fTimeDelta) override;
 	void Update(E::_float fTimeDelta) override;
@@ -26,6 +29,7 @@ public:
 
 private:
 	_bool m_bRender{ true };
+	int32_t m_iCurrentHalfBreathCnt{ 5 };
 
 public:
 	static E::UPtr<CUIBreathBar> Create();

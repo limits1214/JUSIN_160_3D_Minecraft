@@ -1,9 +1,20 @@
 #pragma once
 #include "UIObject.h"
 NS_BEGIN(Engine)
-
+class CComConstantBuffer;
 class ENGINE_DLL CUIHungerBarIcon final : public E::CUIObject
 {
+public:
+	enum class HUNGER_ICON_BG_TYPE
+	{
+		NORMAL,
+	};
+	enum class HUNGER_ICON_TYPE
+	{
+		EMPTY,
+		FULL,
+		HALF,
+	};
 public:
 	DECLARE_DERIVED_TYPE(CUIHungerBarIcon, CUIObject)
 
@@ -26,6 +37,19 @@ public:
 
 private:
 	_bool m_bRender{ true };
+
+private:
+	CComTransform* m_pComOverlayTransform{};
+	CComConstantBuffer* m_pComCBufferPerObject{};
+	CComConstantBuffer* m_pComCBufferPerUI{};
+
+public:
+	void SetIconType(HUNGER_ICON_TYPE eIconType) { m_eIconType = eIconType; };
+	void SetIconBgType(HUNGER_ICON_BG_TYPE eIconBgType) { m_eIconBgType = eIconBgType; };
+
+private:
+	HUNGER_ICON_TYPE m_eIconType{ HUNGER_ICON_TYPE::EMPTY };
+	HUNGER_ICON_BG_TYPE m_eIconBgType{ HUNGER_ICON_BG_TYPE::NORMAL };
 
 public:
 	static E::UPtr<CUIHungerBarIcon> Create();

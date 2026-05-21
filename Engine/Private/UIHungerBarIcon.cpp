@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
+#include "ComConstantBuffer.h"
 NS_USING(Engine)
 
 CUIHungerBarIcon::CUIHungerBarIcon()
@@ -35,7 +36,32 @@ HRESULT CUIHungerBarIcon::Initialize(void* pArg)
 	if (FAILED(CUIObject::Initialize(pArg)))
 		return E_FAIL;
 
+	CComConstantBuffer::DESC Desc{};
+	Desc.cBufferId = { TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_OBJECT };
+	if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_ConstantBuffer", "ComCBufferPerObject", &Desc, &m_pComCBufferPerObject)))
+	{
+		return E_FAIL;
+	};
+
+	Desc.cBufferId = { TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerUI" };
+	if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_ConstantBuffer", "ComCBufferPerUI", &Desc, &m_pComCBufferPerUI)))
+	{
+		return E_FAIL;
+	};
+
 	GetTransform().AddPosition(XMVectorSet(0.f, 0.f, -0.01f, 0.f));
+
+	{
+		if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_Transform", "Com_OverlayTransform", nullptr, &m_pComOverlayTransform)))
+		{
+			return E_FAIL;
+		}
+		//m_pComOverlayTransform
+		auto tmp = GetTransform().GetPosition();
+		tmp.z -= 0.01f;
+		m_pComOverlayTransform->SetPosition(tmp);
+		m_pComOverlayTransform->SetScale(GetTransform().GetScale());
+	}
 
 	return S_OK;
 }
@@ -56,6 +82,7 @@ void CUIHungerBarIcon::LateUpdate(E::_float fTimeDelta)
 	}
 
 	GetTransform().Update();
+	m_pComOverlayTransform->Update();
 }
 
 HRESULT CUIHungerBarIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
@@ -85,48 +112,104 @@ HRESULT CUIHungerBarIcon::Render(ID3D11DeviceContext* pContext, const E::RENDER_
 	pContext->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
 	pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
 	pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
-
 	{
-		auto pCb = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerUI");
-		D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-		if (SUCCEEDED(pContext->Map(pCb->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-		{
-
-			E::CB_PER_UI perUI{};
-
-			perUI.texIndex = PackTexId(12, 0);
-			perUI.texCoord = { 16.f / 256.f, 27.f / 256.f };
-			perUI.uvSize = { 9.f / 256.f, 9.f / 256.f };
-
-			memcpy(mappedSubResource.pData, &perUI, sizeof(perUI));
-			pContext->Unmap(pCb->GetCBuffer().Get(), 0);
-		}
-		pContext->VSSetConstantBuffers(7, 1, pCb->GetCBuffer().GetAddressOf());
-		pContext->PSSetConstantBuffers(7, 1, pCb->GetCBuffer().GetAddressOf());
-	}
-	{
-		auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
-		D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-		if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-		{
-
-			E::CB_PER_OBJECT cbPerObject{};
-			cbPerObject.matWorld = *GetTransform().GetCombinedWorldMatrix();
-			XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
-
-			memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
-			pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
-		}
-		pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-		pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-	}
-	{
-
 		const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
 		pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
 	}
 
+
+
+	{
+		E::CB_PER_UI perUI{};
+		perUI.texIndex = PackTexId(12, 0);
+		perUI.texCoord = { 16.f / 256.f, 27.f / 256.f };
+		perUI.uvSize = { 9.f / 256.f, 9.f / 256.f };
+		if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
+		{
+			return E_FAIL;
+		}
+		pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+		pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+	}
+	{
+		E::CB_PER_OBJECT cbPerObject{};
+		cbPerObject.matWorld = *GetTransform().GetCombinedWorldMatrix();
+		XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+		if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+		{
+			return E_FAIL;
+		}
+		pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+		pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+	}
+
 	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+
+
+
+
+	if (m_eIconType == HUNGER_ICON_TYPE::EMPTY)
+	{
+
+	}
+	else if (m_eIconType == HUNGER_ICON_TYPE::FULL)
+	{
+		{
+			{
+				E::CB_PER_UI perUI{};
+				perUI.texIndex = PackTexId(12, 0);
+				perUI.texCoord = { 52.f / 256.f,  27.f / 256.f };
+				perUI.uvSize = { 9.f / 256.f, 9.f / 256.f };
+				if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
+				{
+					return E_FAIL;
+				}
+				pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+				pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+			}
+			{
+				E::CB_PER_OBJECT cbPerObject{};
+				cbPerObject.matWorld = *m_pComOverlayTransform->GetCombinedWorldMatrix();
+				XMStoreFloat4x4(&cbPerObject.matWVP, m_pComOverlayTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+				if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+				{
+					return E_FAIL;
+				}
+				pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+				pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+			}
+		}
+		pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+	}
+	else if (m_eIconType == HUNGER_ICON_TYPE::HALF)
+	{
+		{
+			{
+				E::CB_PER_UI perUI{};
+				perUI.texIndex = PackTexId(12, 0);
+				perUI.texCoord = { 61.f / 256.f,  27.f / 256.f };
+				perUI.uvSize = { 9.f / 256.f, 9.f / 256.f };
+				if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
+				{
+					return E_FAIL;
+				}
+				pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+				pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+			}
+			{
+				E::CB_PER_OBJECT cbPerObject{};
+				cbPerObject.matWorld = *m_pComOverlayTransform->GetCombinedWorldMatrix();
+				XMStoreFloat4x4(&cbPerObject.matWVP, m_pComOverlayTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+				if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+				{
+					return E_FAIL;
+				}
+				pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+				pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+			}
+		}
+		pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+	}
 	return S_OK;
 }
 

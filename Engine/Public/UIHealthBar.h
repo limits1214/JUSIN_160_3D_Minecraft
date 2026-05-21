@@ -26,7 +26,7 @@ public:
 
 private:
 	_bool m_bRender{ true };
-	int32_t m_iCurrentHalfHealthCnt{ 20 };
+	int32_t m_iCurrentHalfHealthCnt{ 5 };
 
 public:
 	static E::UPtr<CUIHealthBar> Create();
