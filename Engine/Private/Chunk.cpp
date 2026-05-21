@@ -32,7 +32,7 @@ void CChunk::BlockGenerate()
 		{
 			auto tmpx = m_iX * VOXEL_CHUNK_X_SIZE + i;
 			auto tmpz = m_iZ * VOXEL_CHUNK_Z_SIZE + j;
-			float n = CGameInstance::Get().GetVoxelHeightNoise((float)tmpx, (float)tmpz);
+			float n = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HEIGHT).GetNoise((float)tmpx, (float)tmpz);
 			float t = (n + 1.0f) * 0.5f;   // 0~1
 			uint32_t height = (uint32_t)(32.0f + t * 64.0f); // 64~128
 			for (uint32_t k = 0; k < VOXEL_CHUNK_Y_SIZE; ++k)
@@ -154,7 +154,7 @@ void CChunk::GreedyCulling(std::vector<VOX_QUAD>& quads)
 		for (uint32_t j = 0; j < VOXEL_CHUNK_Z_SIZE; ++j) {
 			auto tmpx = m_iX * VOXEL_CHUNK_X_SIZE + i;
 			auto tmpz = m_iZ * VOXEL_CHUNK_Z_SIZE + j;
-			float n = CGameInstance::Get().GetVoxelHeightNoise((float)tmpx, (float)tmpz);
+			float n = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HEIGHT).GetNoise((float)tmpx, (float)tmpz);
 			uint32_t height = (uint32_t)((n + 1.0f) * 0.5f * 64.0f);
 			for (uint32_t k = 0; k < VOXEL_CHUNK_Y_SIZE; ++k) {
 				uint32_t idx = BlockIndexing(i, k, j);
@@ -274,7 +274,9 @@ void CChunk::NoCulling(std::vector<VOX_QUAD>& quads)
 			auto tmpx = m_iX * VOXEL_CHUNK_X_SIZE + i;
 			auto tmpz = m_iZ * VOXEL_CHUNK_Z_SIZE + j;
 
-			float n = CGameInstance::Get().GetVoxelHeightNoise((float)tmpx, (float)tmpz); // [-1, 1]
+			
+
+			float n = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HEIGHT).GetNoise((float)tmpx, (float)tmpz); // [-1, 1]
 			uint32_t height = (uint32_t)((n + 1.0f) * 0.5f * 64.0f);
 
 			for (uint32_t k = 0; k < height; ++k)

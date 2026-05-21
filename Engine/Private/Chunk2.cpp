@@ -21,7 +21,7 @@ HRESULT CChunk2::BlockFilling()
 		{
 			auto tmpx = m_iX * VOXEL_CHUNK_X_SIZE2 + i;
 			auto tmpz = m_iZ * VOXEL_CHUNK_Z_SIZE2 + j;
-			float n = CGameInstance::Get().GetVoxelHeightNoise((float)tmpx, (float)tmpz);
+			float n = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HEIGHT).GetNoise((float)tmpx, (float)tmpz);
 			float t = (n + 1.0f) * 0.5f;   // 0~1
 			uint32_t height = (uint32_t)(32.0f + t * 64.0f); // 64~128
 			for (uint32_t k = 0; k < VOXEL_CHUNK_Y_SIZE2; ++k)

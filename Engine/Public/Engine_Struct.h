@@ -216,6 +216,7 @@ namespace Engine
 		_float3 v3;
 		_float3 v4;
 		FACE_DIR eDir;
+		uint8_t blockTexType{};
 	} VOX_QUAD;
 
 

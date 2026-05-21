@@ -183,13 +183,21 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 1 };
+	int32_t m_iRenderDistance{ 0 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
+//public:
+//	_float GetHeightNoise(_float x, _float z) const { return  m_NoiseHeight.GetNoise(x, z); }
+//private:
+//	FastNoiseLite m_NoiseHeight{};
+
+
 public:
-	_float GetHeightNoise(_float x, _float z) const { return  m_NoiseHeight.GetNoise(x, z); }
+	FastNoiseLite& GetNoiseByType(NOISE_TYPE eNoiseType) { return m_Noises[ETOUI(eNoiseType)]; }
 private:
-	FastNoiseLite m_NoiseHeight{};
+	FastNoiseLite m_Noises[ETOUI(NOISE_TYPE::END)];
+	int m_iNoiseSeed{ 160 };
+
 
 private:
 	SPtr<CResTexture2DArray> m_pResBlocksTexutreArray{};

@@ -688,34 +688,134 @@ HRESULT CGameInstance::InitializeMCResource()
 	// initialize voxel texture
 	{
 		{
-			{
-				//0
-				auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/dirt.png");
-				if (FAILED(pTexture->Load()))
+			auto VoxelManagerTexAdd = [&](const _string& path)
 				{
-					return E_FAIL;
-				}
-				CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+					auto pTexture = CResTexture2D::Create(path);
+					if (FAILED(pTexture->Load()))
+					{
+						return E_FAIL;
+					}
+					CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+				};
+
+			{
+				//0: dirt
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/dirt.png");
 			}
 
 			{
-				//1
-				auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/stone.png");
-				if (FAILED(pTexture->Load()))
-				{
-					return E_FAIL;
-				}
-				CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+				//1: stone
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/stone.png");
 			}
 
 			{
-				//2
-				auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/sand.png");
-				if (FAILED(pTexture->Load()))
-				{
-					return E_FAIL;
-				}
-				CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+				//2: sand
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/sand.png");
+			}
+
+			{
+				//3: bedrock
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/bedrock.png");
+			}
+
+			{
+				//4: redstone_ore
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/redstone_ore.png");
+			}
+
+			{
+				//5: lapis_ore
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/lapis_ore.png");
+			}
+
+			{
+				//6: iron_ore
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/iron_ore.png");
+			}
+
+			{
+				//7: gold_ore
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/gold_ore.png");
+			}
+
+			{
+				//8: emerald_ore
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/emerald_ore.png");
+			}
+
+			{
+				//9: diamond_ore
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/diamond_ore.png");
+			}
+
+			{
+				//10: copper_ore
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/copper_ore.png");
+			}
+
+			{
+				//11: coal_ore
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/coal_ore.png");
+			}
+
+			{
+				//12: deepslate.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate.png");
+			}
+
+			{
+				// 13: deepslate_coal_ore.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate_coal_ore.png");
+			}
+
+			{
+				// 14: deepslate_copper_ore.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate_copper_ore.png");
+			}
+
+			{
+				// 15: deepslate_diamond_ore.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate_diamond_ore.png");
+			}
+
+			{
+				// 16: deepslate_emerald_ore.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate_emerald_ore.png");
+			}
+
+			{
+				// 17: deepslate_gold_ore.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate_gold_ore.png");
+			}
+
+			{
+				// 18: deepslate_iron_ore.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate_iron_ore.png");
+			}
+
+			{
+				// 19: deepslate_lapis_ore.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate_lapis_ore.png");
+			}
+
+			{
+				// 20: deepslate_redstone_ore.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/deepslate_redstone_ore.png");
+			}
+
+			{
+				// 21 : grass_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/grass_carried.png");
+			}
+
+			{
+				// 22 : grass_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/grass_side_carried.png");
+			}
+
+			{
+				// 23: grass_block_snow.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/grass_block_snow.png");
 			}
 		}
 
@@ -1410,9 +1510,13 @@ void CGameInstance::VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DES
 {
 	//m_pVoxelManager->StateUpdate(desc);
 }
-_float CGameInstance::GetVoxelHeightNoise(_float x, _float z) const
+//_float CGameInstance::GetVoxelHeightNoise(_float x, _float z) const
+//{
+//	return m_pVoxelManager3->GetHeightNoise(x,z);
+//}
+FastNoiseLite& CGameInstance::GetVoxelNoiseByType(NOISE_TYPE eNoiseType)
 {
-	return m_pVoxelManager3->GetHeightNoise(x,z);
+	return m_pVoxelManager3->GetNoiseByType(eNoiseType);
 }
 CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 {

@@ -240,7 +240,9 @@ public:
 #pragma region VOXEL_MANAGER
 public:
 	void VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
-	_float GetVoxelHeightNoise(_float x, _float z) const;
+	//_float GetVoxelHeightNoise(_float x, _float z) const;
+	FastNoiseLite& GetVoxelNoiseByType(NOISE_TYPE eNoiseType);
+
 	CChunk3* GetVoxelChunk(int32_t x, int32_t y, int32_t z) const;
 	std::optional<CBlock3> GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
 	_bool VoxelBlockRaycast(const _float3& rayOrigin,
