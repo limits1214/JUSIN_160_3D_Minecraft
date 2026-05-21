@@ -32,15 +32,18 @@ HRESULT CGameObject::Initialize(void* pArg)
     m_ObjectHandle = pDesc->__handle;
 
     {
-        CComponent::DESC componentDesc{};
-        componentDesc.pGameObject = this;
-        auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_Transform", &componentDesc);
-        if (pProto == nullptr)
+        if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_Transform", "Com_Transform", nullptr, &m_pComTransform)))
         {
             return E_FAIL;
         }
-        m_pComTransform = AddComponent("Com_Transform", static_uptr_cast<CTransform>(std::move(pProto)));
-        //m_pComTransform = GetComponent<CTransform>("Com_Transform");
+        //CComponent::DESC componentDesc{};
+        //componentDesc.pGameObject = this;
+        //auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_Transform", &componentDesc);
+        //if (pProto == nullptr)
+        //{
+        //    return E_FAIL;
+        //}
+        //m_pComTransform = AddComponent("Com_Transform", static_uptr_cast<CTransform>(std::move(pProto)));
     }
 
     return S_OK;
@@ -61,6 +64,30 @@ void CGameObject::LateUpdate(_float fTimeDelta)
 HRESULT CGameObject::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 {
     return S_OK;
+}
+
+UPtr<CPrototype> CGameObject::CloneComponentProtoType(const StringID& svGroupTag, const StringID& svPrototypetag, void* pArg) const
+{
+    CComponent::DESC componentDesc{};
+    if (!pArg)
+    {
+        componentDesc.pGameObject = const_cast<CGameObject*>(this);
+        pArg = &componentDesc;
+    }
+    else
+    {
+        auto pDesc = static_cast<CComponent::DESC*>(pArg);
+        auto myPtr = const_cast<CGameObject*>(this);;
+        static_cast<CComponent::DESC*>(pArg)->pGameObject = const_cast<CGameObject*>(this);
+        int x = 0;
+    }
+
+    auto pProto = CGameInstance::Get().ClonePrototype(svGroupTag, svPrototypetag,  pArg);
+    if (pProto == nullptr)
+    {
+        return nullptr;
+    }
+    return pProto;
 }
 
 

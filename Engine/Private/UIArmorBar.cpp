@@ -67,73 +67,7 @@ void CUIArmorBar::LateUpdate(E::_float fTimeDelta)
 
 HRESULT CUIArmorBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
-	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_UI");
-	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI");
-
-	pContext->IASetInputLayout(nullptr);
-	pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
-	pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
-
-	const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResQuadTexBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "VIBuffer_QuadTex");
-
-	pContext->IASetInputLayout(vs->GetInputLayout().Get());
-	pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
-	pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
-
-	ID3D11Buffer* vertexBuffers[] = {
-			viBuffer->GetVertexBuffer().Get()
-	};
-	uint32_t strides[] = {
-		viBuffer->GetVertexStride()
-	};
-	uint32_t offsets[] = {
-		0
-	};
-	pContext->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
-	pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
-	pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
-
-	{
-		auto pCb = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerUI");
-		D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-		if (SUCCEEDED(pContext->Map(pCb->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-		{
-
-			E::CB_PER_UI perUI{};
-
-			perUI.texIndex = PackTexId(12, 0);
-			perUI.texCoord = { 16.f / 256.f, 9.f / 256.f };
-			perUI.uvSize = { 9.f / 256.f, 9.f / 256.f };
-
-			memcpy(mappedSubResource.pData, &perUI, sizeof(perUI));
-			pContext->Unmap(pCb->GetCBuffer().Get(), 0);
-		}
-		pContext->VSSetConstantBuffers(7, 1, pCb->GetCBuffer().GetAddressOf());
-		pContext->PSSetConstantBuffers(7, 1, pCb->GetCBuffer().GetAddressOf());
-	}
-	{
-		auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
-		D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-		if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-		{
-
-			E::CB_PER_OBJECT cbPerObject{};
-			cbPerObject.matWorld = *GetTransform().GetCombinedWorldMatrix();
-			XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
-
-			memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
-			pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
-		}
-		pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-		pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-	}
-	{
-
-		const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
-		pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
-	}
-
-	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+	
 	return S_OK;
 }
 

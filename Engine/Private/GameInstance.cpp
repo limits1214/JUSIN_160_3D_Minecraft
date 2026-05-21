@@ -29,6 +29,7 @@
 #include "Resources.h"
 
 #include "ComEntityModel.h"
+#include "ComConstantBuffer.h"
 
 
 
@@ -45,6 +46,9 @@ CGameInstance::~CGameInstance()
 HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID3D11Device>& ppDevice, ComPtr<ID3D11DeviceContext>& ppContext)
 {
 	m_hWnd = EngineDesc.hWnd;
+	m_vClientScreenSize.x = EngineDesc.iWinSizeX;
+	m_vClientScreenSize.y = EngineDesc.iWinSizeY;
+	
 
 	m_pGraphicDevice = CGraphicDevice::Create(ppDevice, ppContext);
 	if (m_pGraphicDevice == nullptr)
@@ -1048,6 +1052,10 @@ HRESULT CGameInstance::InitializePrototype()
 	}
 
 	if (AddPrototype("PERMANENT", "Prototype_Component_EntityModel", CComEntityModel::Create()))
+	{
+		return E_FAIL;
+	}
+	if (AddPrototype("PERMANENT", "Prototype_Component_ConstantBuffer", CComConstantBuffer::Create()))
 	{
 		return E_FAIL;
 	}

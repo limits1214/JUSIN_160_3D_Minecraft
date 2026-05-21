@@ -25,6 +25,7 @@ private:
 
 public:
 	ComPtr<ID3D11Buffer> GetCBuffer() const { return m_pCBuffer; }
+	ComPtr<ID3D11Buffer>& GetCBufferRef() { return m_pCBuffer; }
 
 public:
 	HRESULT Load(const std::any& arg = {}) override;
