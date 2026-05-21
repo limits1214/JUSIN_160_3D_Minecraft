@@ -88,31 +88,31 @@ void CGameObjectManager::UpdateGUI()
 }
 
 
-void CGameObjectManager::UpdateGUIDrawTreeNode( CGameObject* pObj)
+void CGameObjectManager::UpdateGUIDrawTreeNode(CGameObject* pObj)
 {
-		std::string label =
-			std::to_string(pObj->GetHandle().GetIndex()) + "_" + std::string{ pObj->GetObjectTag() };
+	std::string label =
+		std::to_string(pObj->GetHandle().GetIndex()) + "_" + std::string{ pObj->GetObjectTag() };
 
-		if (ImGui::TreeNode(label.c_str()))
+	if (ImGui::TreeNode(label.c_str()))
+	{
+		pObj->UpdateGUI();
+
+		if (!pObj->GetChildrenNode().empty())
 		{
-			pObj->UpdateGUI();
-
-			if (!pObj->GetChildrenNode().empty())
+			if (ImGui::TreeNode("Childrens"))
 			{
-				if (ImGui::TreeNode("Childrens"))
+				for (const auto& pObj : pObj->GetChildrenNode())
 				{
-					for (const auto& pObj : pObj->GetChildrenNode())
-					{
-						UpdateGUIDrawTreeNode(pObj);
-					}
-
-					ImGui::TreePop();
+					UpdateGUIDrawTreeNode(pObj);
 				}
-			}
 
-			ImGui::TreePop();
+				ImGui::TreePop();
+			}
 		}
-	
+
+		ImGui::TreePop();
+	}
+
 }
 
 void CGameObjectManager::FrameStart()
@@ -147,53 +147,24 @@ void CGameObjectManager::FrameStart()
 	//m_bTreeReBuild = false;
 }
 
-// 지울대상의 루트만 추리고
-// 그대상에대해서 정렬하고
-// 뒤에서부터 지워야함;;;
-// 왜냐면 앞에서부터 지우면 루프도중에 지워져서 크래시남;;
 void CGameObjectManager::FrameEnd()
 {
-	_bool bDeleted{ false };
-
-	for (size_t i = 0; i < m_Objects.size(); ++i)
+	for (auto iter = m_Tree.rbegin(); iter != m_Tree.rend(); ++iter)
 	{
-		if (m_Objects[i].IsOccupied())
-		{
-			if (m_Objects[i].Get()->GetPendingDestroy())
+		CGameObject* pObj = *iter;
+		CHandle hObj = pObj->GetHandle();
+
+		// double check 필요 없을듯
+		//if (GetGameObjectByHandle(hObj) == pObj)
+		//{
+			if (pObj->GetPendingDestroy())
 			{
-				bDeleted = true;
-				if (!m_Objects[i].Get()->GetParentNode())
-				{
-					m_vecRootObjsForFrameEnd.push_back(m_Objects[i].Get());
-				}
-				m_mapMapIdxForFrameEnd.emplace(m_Objects[i].Get(), i);
+				m_bTreeReBuild = true;
+				m_Objects[hObj.GetIndex()].Reset();
+				m_FreeSlots.push_back(hObj.GetIndex());
 			}
-		}
+		//}
 	}
-
-	for (const auto& pRootObj : m_vecRootObjsForFrameEnd)
-	{
-		MyTreeDFS(pRootObj, [&](auto* pObj)
-			{
-				m_vecDelTargetsForFrameEnd.push_back(pObj);
-			}, &m_DFSReserved);
-	}
-
-	for (auto iter = m_vecDelTargetsForFrameEnd.rbegin(); iter != m_vecDelTargetsForFrameEnd.rend(); ++iter )
-	{
-		m_Objects[m_mapMapIdxForFrameEnd[*iter]].Reset();
-		m_FreeSlots.push_back(m_mapMapIdxForFrameEnd[*iter]);
-	}
-
-	if (bDeleted)
-	{
-		m_bTreeReBuild = true;
-		m_mapMapIdxForFrameEnd.clear();
-		m_vecRootObjsForFrameEnd.clear();
-		m_vecDelTargetsForFrameEnd.clear();
-		m_DFSReserved.clear();
-	}
-
 }
 
 std::optional<CHandle> CGameObjectManager::GetFreeHandle() 
@@ -264,6 +235,26 @@ std::optional<CHandle> CGameObjectManager::AddGameObjectToLayer(const StringID& 
 	m_bTreeReBuild = true;
 
 	return objHandle;
+}
+
+
+std::optional<CHandle> CGameObjectManager::GetHandleByGameObject(CGameObject* pObj) const
+{
+	uint32_t i{};
+	for (i = 0; i < m_Objects.size(); ++i)
+	{
+		if (m_Objects[i].Get() == pObj)
+		{
+			break;
+		}
+	}
+
+	if (i == m_Objects.size() - 1)
+	{
+		return std::nullopt;
+	}
+
+	return CHandle{ i, m_Objects[i].GetGeneration() };
 }
 
 void CGameObjectManager::SortLayer()
@@ -379,6 +370,8 @@ void CGameObjectManager::AllReset()
 			pObj.Get()->SetPendingDestroy();
 		}
 	}
+	m_bTreeReBuild = true;
+	FrameStart();
 	FrameEnd();
 
 	m_Layers.clear();

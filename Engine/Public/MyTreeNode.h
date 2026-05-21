@@ -75,7 +75,10 @@ protected:
     virtual ~CMyTreeNode()
     {
         SetParentNode(nullptr);
-        std::for_each(m_pChildrenNode.begin(), m_pChildrenNode.end(),
+
+        // 이거 카피안하면 루프도는도중에 제거해버림
+        std::vector<T*> copy = m_pChildrenNode;
+        std::for_each(copy.begin(), copy.end(),
             [](auto& pChild) { pChild->SetParentNode(nullptr); });
     }
 
