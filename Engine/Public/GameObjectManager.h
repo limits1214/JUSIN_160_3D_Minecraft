@@ -22,7 +22,11 @@ private:
 public:
 	void UpdateGUI();
 	void UpdateGUIDrawTreeNode( CGameObject* handle);
+private:
+	char m_GUISearchFilter[256] = {};
+	bool MatchesFilter(CGameObject* pObj) const;
 
+public:
 	void FrameStart();
 	void FrameEnd();
 
