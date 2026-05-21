@@ -1,9 +1,16 @@
 #pragma once
 #include "UIObject.h"
 NS_BEGIN(Engine)
-
+class CComConstantBuffer;
 class ENGINE_DLL CUIBreathBarIcon final : public E::CUIObject
 {
+public:
+	enum class BREATH_ICON_TYPE
+	{
+		EMPTY,
+		FULL,
+		HALF,
+	};
 public:
 	DECLARE_DERIVED_TYPE(CUIBreathBarIcon, CUIObject)
 
@@ -26,6 +33,17 @@ public:
 
 private:
 	_bool m_bRender{ true };
+
+private:
+	CComTransform* m_pComOverlayTransform{};
+	CComConstantBuffer* m_pComCBufferPerObject{};
+	CComConstantBuffer* m_pComCBufferPerUI{};
+
+public:
+	void SetIconType(BREATH_ICON_TYPE eIconType) { m_eIconType = eIconType; };
+
+private:
+	BREATH_ICON_TYPE m_eIconType{ BREATH_ICON_TYPE::EMPTY };
 
 public:
 	static E::UPtr<CUIBreathBarIcon> Create();

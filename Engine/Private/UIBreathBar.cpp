@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
+#include "UIBreathbarIcon.h"
 NS_USING(Engine)
 
 CUIBreathBar::CUIBreathBar()
@@ -22,6 +23,7 @@ void CUIBreathBar::UpdateGUI()
 	{
 		m_bRender = !m_bRender;
 	}
+	ImGui::DragInt("HalfHealthCnt", &m_iCurrentHalfBreathCnt, 1, 0, 10);
 }
 
 HRESULT CUIBreathBar::Initialize(void* pArg)
@@ -46,6 +48,22 @@ void CUIBreathBar::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIBreathBar::Update(E::_float fTimeDelta)
 {
+	auto imaxHealthCnt = GetChildrenNode().size();
+
+	for (uint32_t i = 0; i < imaxHealthCnt; ++i)
+	{
+		if (auto* icon = Cast<CUIBreathBarIcon>(GetChildrenNode()[i]))
+		{
+			if (i < imaxHealthCnt - m_iCurrentHalfBreathCnt)
+			{
+				icon->SetIconType(CUIBreathBarIcon::BREATH_ICON_TYPE::EMPTY);
+			}
+			else
+			{
+				icon->SetIconType(CUIBreathBarIcon::BREATH_ICON_TYPE::FULL);
+			}
+		}
+	}
 }
 
 void CUIBreathBar::LateUpdate(E::_float fTimeDelta)
@@ -57,11 +75,15 @@ void CUIBreathBar::LateUpdate(E::_float fTimeDelta)
 
 	GetTransform().Update();
 
-
 	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
 	{
 		GetChildrenNode()[i]->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i), 0.f, 0.f, 0.f));
+		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i * MC_UI_SCALE), 0.f, 0.f, 0.f));
+
+
+		auto tmp = GetChildrenNode()[i]->GetTransform().GetPosition();
+		tmp.z -= 0.01f;
+		GetChildrenNode()[i]->GetComponent<CComTransform>("Com_OverlayTransform")->SetPosition(tmp);
 	}
 }
 

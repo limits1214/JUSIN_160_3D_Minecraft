@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
+#include "UIArmorBarIcon.h"
 NS_USING(Engine)
 
 CUIArmorBar::CUIArmorBar()
@@ -22,6 +23,8 @@ void CUIArmorBar::UpdateGUI()
 	{
 		m_bRender = !m_bRender;
 	}
+
+	ImGui::DragInt("HalfHealthCnt", &m_iCurrentHalfArmorCnt, 1, 0, 20);
 }
 
 HRESULT CUIArmorBar::Initialize(void* pArg)
@@ -46,6 +49,32 @@ void CUIArmorBar::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIArmorBar::Update(E::_float fTimeDelta)
 {
+	auto iMaxCnt = GetChildrenNode().size();
+	auto iFullCnt = m_iCurrentHalfArmorCnt / 2;
+	auto iHalfCnt = m_iCurrentHalfArmorCnt % 2;
+
+	for (uint32_t i = 0; i < iMaxCnt; ++i)
+	{
+		if (auto* icon = Cast<CUIArmorBarIcon>(GetChildrenNode()[i]))
+		{
+			if (i < iFullCnt)
+			{
+				icon->SetIconType(CUIArmorBarIcon::ARMOR_ICON_TYPE::FULL);
+			}
+			else
+			{
+				if (i == iFullCnt && iHalfCnt > 0)
+				{
+					icon->SetIconType(CUIArmorBarIcon::ARMOR_ICON_TYPE::HALF);
+				}
+				else
+				{
+					icon->SetIconType(CUIArmorBarIcon::ARMOR_ICON_TYPE::EMPTY);
+				}
+			}
+
+		}
+	}
 }
 
 void CUIArmorBar::LateUpdate(E::_float fTimeDelta)
@@ -61,7 +90,12 @@ void CUIArmorBar::LateUpdate(E::_float fTimeDelta)
 	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
 	{
 		GetChildrenNode()[i]->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i), 0.f, 0.f, 0.f));
+		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i * MC_UI_SCALE), 0.f, 0.f, 0.f));
+
+
+		auto tmp = GetChildrenNode()[i]->GetTransform().GetPosition();
+		tmp.z -= 0.01f;
+		GetChildrenNode()[i]->GetComponent<CComTransform>("Com_OverlayTransform")->SetPosition(tmp);
 	}
 }
 

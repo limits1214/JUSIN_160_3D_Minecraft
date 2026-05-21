@@ -111,7 +111,7 @@ void CUIHealthBar::LateUpdate(E::_float fTimeDelta)
 	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
 	{
 		GetChildrenNode()[i]->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i), 0.f, 0.f, 0.f));
+		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i * MC_UI_SCALE), 0.f, 0.f, 0.f));
 
 
 		auto tmp = GetChildrenNode()[i]->GetTransform().GetPosition();
@@ -119,11 +119,6 @@ void CUIHealthBar::LateUpdate(E::_float fTimeDelta)
 		GetChildrenNode()[i]->GetComponent<CComTransform>("Com_OverlayTransform")->SetPosition(tmp);
 	}
 
-	//for (auto& pChild : GetChildrenNode())
-	//{
-	//	
-	//	//pChild->GetTransform().SetParentWorldMatrix(*GetTransform().GetCombinedWorldMatrix());
-	//}
 }
 
 HRESULT CUIHealthBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)

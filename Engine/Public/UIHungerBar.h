@@ -26,6 +26,7 @@ public:
 
 private:
 	_bool m_bRender{ true };
+	int32_t m_iCurrentHalfHungerCnt{ 5 };
 
 public:
 	static E::UPtr<CUIHungerBar> Create();

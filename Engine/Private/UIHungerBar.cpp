@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
+#include "UIHungerBarIcon.h"
 NS_USING(Engine)
 
 CUIHungerBar::CUIHungerBar()
@@ -22,6 +23,8 @@ void CUIHungerBar::UpdateGUI()
 	{
 		m_bRender = !m_bRender;
 	}
+
+	ImGui::DragInt("HalfHungerCnt", &m_iCurrentHalfHungerCnt, 1, 0, 20);
 }
 
 HRESULT CUIHungerBar::Initialize(void* pArg)
@@ -46,6 +49,32 @@ void CUIHungerBar::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIHungerBar::Update(E::_float fTimeDelta)
 {
+	auto imaxHealthCnt = GetChildrenNode().size();
+	auto iFullHealthCnt = (imaxHealthCnt * 2 - m_iCurrentHalfHungerCnt) / 2;
+	auto iHalfHealthCnt = (imaxHealthCnt * 2 - m_iCurrentHalfHungerCnt) % 2;
+
+	for (uint32_t i = 0; i < imaxHealthCnt; ++i)
+	{
+		if (auto* icon = Cast<CUIHungerBarIcon>(GetChildrenNode()[i]))
+		{
+			if (i < iFullHealthCnt)
+			{
+				icon->SetIconType(CUIHungerBarIcon::HUNGER_ICON_TYPE::EMPTY);
+			}
+			else
+			{
+				if (i == iFullHealthCnt && iHalfHealthCnt > 0)
+				{
+					icon->SetIconType(CUIHungerBarIcon::HUNGER_ICON_TYPE::HALF);
+				}
+				else
+				{
+					icon->SetIconType(CUIHungerBarIcon::HUNGER_ICON_TYPE::FULL);
+				}
+			}
+
+		}
+	}
 }
 
 void CUIHungerBar::LateUpdate(E::_float fTimeDelta)
@@ -61,7 +90,12 @@ void CUIHungerBar::LateUpdate(E::_float fTimeDelta)
 	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
 	{
 		GetChildrenNode()[i]->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i), 0.f, 0.f, 0.f));
+		GetChildrenNode()[i]->GetTransform().AddPosition(XMVectorSet((9.f * i * MC_UI_SCALE), 0.f, 0.f, 0.f));
+
+
+		auto tmp = GetChildrenNode()[i]->GetTransform().GetPosition();
+		tmp.z -= 0.01f;
+		GetChildrenNode()[i]->GetComponent<CComTransform>("Com_OverlayTransform")->SetPosition(tmp);
 	}
 }
 
