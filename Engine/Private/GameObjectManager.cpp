@@ -77,21 +77,49 @@ void CGameObjectManager::UpdateGUI()
 
 	if (ImGui::TreeNode("Tree"))
 	{
+		ImGui::SetNextItemWidth(-1);
+		ImGui::InputTextWithHint("##search", "Search...", m_GUISearchFilter, sizeof(m_GUISearchFilter));
+		ImGui::Separator();
+
 		for (const auto& rootHandle : m_TreePreparation)
 		{
 			UpdateGUIDrawTreeNode(rootHandle);
 		}
+
 		ImGui::TreePop();
 	}
 
 	ImGui::End();
 }
+bool CGameObjectManager::MatchesFilter(CGameObject* pObj) const
+{
+	std::string label =
+		std::to_string(pObj->GetHandle().GetIndex()) + "_" + std::string{ pObj->GetObjectTag() };
 
+	std::string labelLower = label;
+	std::string filterLower = m_GUISearchFilter;
+	std::transform(labelLower.begin(), labelLower.end(), labelLower.begin(), ::tolower);
+	std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), ::tolower);
+
+	if (labelLower.find(filterLower) != std::string::npos)
+		return true;
+
+	for (const auto& pChild : pObj->GetChildrenNode())
+	{
+		if (MatchesFilter(pChild))
+			return true;
+	}
+
+	return false;
+}
 
 void CGameObjectManager::UpdateGUIDrawTreeNode(CGameObject* pObj)
 {
 	std::string label =
 		std::to_string(pObj->GetHandle().GetIndex()) + "_" + std::string{ pObj->GetObjectTag() };
+
+	if (m_GUISearchFilter[0] != '\0' && !MatchesFilter(pObj))
+		return;
 
 	if (ImGui::TreeNode(label.c_str()))
 	{
@@ -101,9 +129,9 @@ void CGameObjectManager::UpdateGUIDrawTreeNode(CGameObject* pObj)
 		{
 			if (ImGui::TreeNode("Childrens"))
 			{
-				for (const auto& pObj : pObj->GetChildrenNode())
+				for (const auto& pChild : pObj->GetChildrenNode())
 				{
-					UpdateGUIDrawTreeNode(pObj);
+					UpdateGUIDrawTreeNode(pChild);
 				}
 
 				ImGui::TreePop();
@@ -112,7 +140,6 @@ void CGameObjectManager::UpdateGUIDrawTreeNode(CGameObject* pObj)
 
 		ImGui::TreePop();
 	}
-
 }
 
 void CGameObjectManager::FrameStart()

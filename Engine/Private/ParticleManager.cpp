@@ -74,10 +74,13 @@ void CParticleManager::Update(_float fTimeDelta)
         v.clear();
     }
 
-    for (auto iter = m_arrParticles[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].begin();
-        iter != m_arrParticles[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].end();)
+    auto& particles = m_arrParticles[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)];
+    auto& vertices = m_arrVertices[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)];
+
+    size_t i = 0;
+    while (i < particles.size())
     {
-        ATTRIBUTE& att = *iter;
+        ATTRIBUTE& att = particles[i];
 
         att.fAge += fTimeDelta;
         XMStoreFloat3(&att.vVelocity, XMLoadFloat3(&att.vVelocity) + XMLoadFloat3(&att.vAcceleration) * fTimeDelta);
@@ -85,13 +88,14 @@ void CParticleManager::Update(_float fTimeDelta)
 
         if (att.fAge > att.fLifeTime || !att.bAlive)
         {
-            // TODO swap back
-            iter = m_arrParticles[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].erase(iter);
+            if (i != particles.size() - 1)
+            {
+                std::swap(particles[i], particles.back());
+            }
+            particles.pop_back();
         }
         else
         {
-            ++iter;
-
             VTX_POINT_PARTICLE vtx{};
             vtx.texIndex = att.iTexId;
             vtx.color = att.vColor;
@@ -99,7 +103,9 @@ void CParticleManager::Update(_float fTimeDelta)
             vtx.size = att.vSize;
             vtx.uvSize = att.vUvSize;
             vtx.texCoord = att.vUv;
-            m_arrVertices[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].push_back(vtx);
+            vertices.push_back(vtx);
+
+            ++i;
         }
     }
 }
