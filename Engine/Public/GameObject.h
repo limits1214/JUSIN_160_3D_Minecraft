@@ -51,8 +51,32 @@ protected:
 	std::unordered_map<StringID, size_t> m_ComponentsLookup{};
 	CTransform* m_pComTransform{};
 
+private:
+	UPtr<CPrototype> CloneComponentProtoType(const StringID& svGroupTag, const StringID& svPrototypetag, void* pArg) const;
+
 
 public:
+	template<typename T>
+	HRESULT AddComponentFromProto(const StringID& svGroupTag, const StringID& svPrototypetag, const StringID& svComponentTag,  void* pArg = nullptr, T** outPtr = nullptr)
+	{
+		auto pCom = CloneComponentProtoType(svGroupTag, svPrototypetag, pArg);
+		if (!pCom)
+		{
+			return E_FAIL;
+		}
+
+		T* pCache = AddComponent(svComponentTag, static_uptr_cast<T>(std::move(pCom)));
+
+		if (outPtr)
+		{
+			*outPtr = pCache;
+		}
+
+		return S_OK;
+	}
+
+
+
 	template<typename T>
 	T* AddComponent(const StringID& tagComponent, UPtr<T> pComponent)
 	{

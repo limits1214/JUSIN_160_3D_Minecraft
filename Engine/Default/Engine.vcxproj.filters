@@ -451,6 +451,9 @@
     <Filter Include="GameObject\UI\BreathBar">
       <UniqueIdentifier>{510e5af3-fb54-488d-98d4-316cc2d9b531}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\ConstantBuffer">
+      <UniqueIdentifier>{dafbe165-3d84-4b3d-9814-867cb9127276}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -885,6 +888,9 @@
     <ClInclude Include="..\public\UIHungerBarIcon.h">
       <Filter>GameObject\UI\HungerBar</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ComConstantBuffer.h">
+      <Filter>Component\ConstantBuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1306,6 +1312,9 @@
     </ClCompile>
     <ClCompile Include="..\private\UIHungerBarIcon.cpp">
       <Filter>GameObject\UI\HungerBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ComConstantBuffer.cpp">
+      <Filter>Component\ConstantBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
