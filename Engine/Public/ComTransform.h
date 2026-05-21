@@ -2,18 +2,18 @@
 #include "Component.h"
 NS_BEGIN(Engine)
 
-class ENGINE_DLL CTransform final : public CComponent
+class ENGINE_DLL CComTransform final : public CComponent
 {
 public:
-	DECLARE_DERIVED_TYPE(CTransform, CComponent)
+	DECLARE_DERIVED_TYPE(CComTransform, CComponent)
 
 public:
 	virtual void UpdateGUI();
 
 private:
-	explicit CTransform();
-	//explicit CTransform(const CTransform& rhs);
-	~CTransform() override;
+	explicit CComTransform();
+	//explicit CComTransform(const CComTransform& rhs);
+	~CComTransform() override;
 
 public:
 	void Update();
@@ -265,7 +265,7 @@ private:
 	_float4x4 m_CombinedWorldMatrix{};
 
 public:
-	static UPtr<CTransform> Create();
+	static UPtr<CComTransform> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
 };
 

@@ -354,7 +354,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\SoundManager.h" />
     <ClInclude Include="..\Public\TimeProvider.h" />
     <ClInclude Include="..\Public\Timer.h" />
-    <ClInclude Include="..\public\Transform.h" />
+    <ClInclude Include="..\public\ComTransform.h" />
     <ClInclude Include="..\public\UICamera.h" />
     <ClInclude Include="..\public\UICrosshair.h" />
     <ClInclude Include="..\public\UIExperienceBar.h" />
@@ -588,7 +588,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\SoundManager.cpp" />
     <ClCompile Include="..\Private\TimeProvider.cpp" />
     <ClCompile Include="..\Private\Timer.cpp" />
-    <ClCompile Include="..\private\Transform.cpp" />
+    <ClCompile Include="..\private\ComTransform.cpp" />
     <ClCompile Include="..\private\UICamera.cpp" />
     <ClCompile Include="..\private\UICrosshair.cpp" />
     <ClCompile Include="..\private\UIHotbarSelect.cpp" />

@@ -4,7 +4,7 @@
 #include "CameraObject.h"
 #include "Resources.h"
 #include "ComConstantBuffer.h"
-#include "Transform.h"
+#include "ComTransform.h"
 NS_USING(Engine)
 
 CUIHealthBarIcon::CUIHealthBarIcon()

@@ -2,7 +2,7 @@
 #include "UIObject.h"
 NS_BEGIN(Engine)
 class CComConstantBuffer;
-class CTransform;
+class CComTransform;
 class ENGINE_DLL CUIHealthBarIcon final : public E::CUIObject
 {
 public:
@@ -37,7 +37,7 @@ public:
 	void SetRender(_bool b) { m_bRender = b; }
 
 private:
-	CTransform* m_pComOverlayTransform{};
+	CComTransform* m_pComOverlayTransform{};
 	CComConstantBuffer* m_pComCBufferPerObject{};
 	CComConstantBuffer* m_pComCBufferPerUI{};
 

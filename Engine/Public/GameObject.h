@@ -2,7 +2,7 @@
 #include "Prototype.h"
 #include "MyTreeNode.h"
 #include "Component.h"
-#include "Transform.h"
+#include "ComTransform.h"
 #include "Handle.h"
 #include "IRenderable.h"
 
@@ -44,12 +44,12 @@ protected:
 	uint32_t m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT);
 
 public:
-	CTransform& GetTransform() { return *m_pComTransform; }
-	const CTransform& GetTransform() const { return *m_pComTransform; }
+	CComTransform& GetTransform() { return *m_pComTransform; }
+	const CComTransform& GetTransform() const { return *m_pComTransform; }
 protected:
 	std::vector<std::pair<StringID, UPtr<CComponent>>> m_Components{};
 	std::unordered_map<StringID, size_t> m_ComponentsLookup{};
-	CTransform* m_pComTransform{};
+	CComTransform* m_pComTransform{};
 
 private:
 	UPtr<CPrototype> CloneComponentProtoType(const StringID& svGroupTag, const StringID& svPrototypetag, void* pArg) const;

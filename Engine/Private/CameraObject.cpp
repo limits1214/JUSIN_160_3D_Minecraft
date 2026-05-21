@@ -31,7 +31,7 @@ HRESULT CCameraObject::Initialize(void* pArg)
 	CAMERA_DESC* cameraDesc = static_cast<CAMERA_DESC*>(pArg);
 	m_cameraDesc = *cameraDesc;
 
-	auto pTransform = GetComponent<CTransform>("Com_Transform");
+	auto pTransform = GetComponent<CComTransform>("Com_Transform");
 	_fvector vPos = XMVectorSet(m_cameraDesc.vEye.x, m_cameraDesc.vEye.y, m_cameraDesc.vEye.z, 1.f);
 	//pTransform->SetState(STATE::POSITION, vPos);
 	pTransform->SetPosition(vPos);

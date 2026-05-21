@@ -116,7 +116,7 @@ void CUIHealthBar::LateUpdate(E::_float fTimeDelta)
 
 		auto tmp = GetChildrenNode()[i]->GetTransform().GetPosition();
 		tmp.z -= 0.01f;
-		GetChildrenNode()[i]->GetComponent<CTransform>("Com_OverlayTransform")->SetPosition(tmp);
+		GetChildrenNode()[i]->GetComponent<CComTransform>("Com_OverlayTransform")->SetPosition(tmp);
 	}
 
 	//for (auto& pChild : GetChildrenNode())
