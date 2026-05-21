@@ -1,11 +1,11 @@
 #include "pch.h"
 
-#include "Transform.h"
+#include "ComTransform.h"
 #include "GameInstance.h"
 
 NS_USING(Engine)
 
-void CTransform::UpdateGUI()
+void CComTransform::UpdateGUI()
 {
     if (!ImGui::IsAnyItemActive())
     {
@@ -34,20 +34,20 @@ void CTransform::UpdateGUI()
     ImGui::InputFloat4("Quat", (float*)&m_vQuat, "%.3f", ImGuiInputTextFlags_ReadOnly);
 }
 
-CTransform::CTransform()
+CComTransform::CComTransform()
 {
 }
 
-//CTransform::CTransform(const CTransform& rhs)
+//CComTransform::CComTransform(const CComTransform& rhs)
 //    : CComponent{ rhs }
 //{
 //}
 
-CTransform::~CTransform()
+CComTransform::~CComTransform()
 {
 }
 
-void CTransform::Update()
+void CComTransform::Update()
 {
     if (m_bDirty)
     {
@@ -99,27 +99,27 @@ void CTransform::Update()
     }
 }
 
-void CTransform::GoStraight(_float fDist)
+void CComTransform::GoStraight(_float fDist)
 {
     SetPosition(GetLoadedPostion() + GetState(STATE::LOOK) * fDist);
 }
 
-void CTransform::GoBackward(_float fDist)
+void CComTransform::GoBackward(_float fDist)
 {
     SetPosition(GetLoadedPostion() - GetState(STATE::LOOK) * fDist);
 }
 
-void CTransform::GoLeft(_float fDist)
+void CComTransform::GoLeft(_float fDist)
 {
     SetPosition(GetLoadedPostion() - GetState(STATE::RIGHT) * fDist);
 }
 
-void CTransform::GoRight(_float fDist)
+void CComTransform::GoRight(_float fDist)
 {
     SetPosition(GetLoadedPostion() + GetState(STATE::RIGHT) * fDist);
 }
 
-void CTransform::LookAt(_fvector vAt, _fvector vWorldUp)
+void CComTransform::LookAt(_fvector vAt, _fvector vWorldUp)
 {
     //_vector vLook = vAt - GetState(STATE::POSITION);
     //_vector vRight = XMVector3Cross(XMVectorSet(0.f, 1.f, 0.f, 0.f), vLook);
@@ -147,7 +147,7 @@ void CTransform::LookAt(_fvector vAt, _fvector vWorldUp)
     m_bDirty = true;
 }
 
-void CTransform::Chase(_fvector vGoal, _float fDist, _float fLimit)
+void CComTransform::Chase(_fvector vGoal, _float fDist, _float fLimit)
 {
     auto vDir = vGoal - GetLoadedPostion();
     //auto fLength = XMVectorGetX(XMVector3Length(vDir));
@@ -163,23 +163,23 @@ void CTransform::Chase(_fvector vGoal, _float fDist, _float fLimit)
     }
 }
 
-UPtr<CTransform> CTransform::Create()
+UPtr<CComTransform> CComTransform::Create()
 {
-    auto pInstance = ToUPtr(new CTransform{});
+    auto pInstance = ToUPtr(new CComTransform{});
     if (FAILED(pInstance->InitializePrototype()))
     {
-        MSG_BOX("Failed to Created : CTransform");
+        MSG_BOX("Failed to Created : CComTransform");
         return nullptr;
     }
     return pInstance;
 }
 
-UPtr<CPrototype> CTransform::Clone(void* pArg)
+UPtr<CPrototype> CComTransform::Clone(void* pArg)
 {
-    auto pInstance = ToUPtr(new CTransform{ *this });
+    auto pInstance = ToUPtr(new CComTransform{ *this });
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX("Failed to Cloned: CTransform");
+        MSG_BOX("Failed to Cloned: CComTransform");
         return nullptr;
     }
     return pInstance;

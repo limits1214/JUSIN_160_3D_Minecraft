@@ -1046,7 +1046,7 @@ HRESULT CGameInstance::InitializeMCResource()
 
 HRESULT CGameInstance::InitializePrototype()
 {
-	if (AddPrototype("PERMANENT", "Prototype_Component_Transform", CTransform::Create()))
+	if (AddPrototype("PERMANENT", "Prototype_Component_Transform", CComTransform::Create()))
 	{
 		return E_FAIL;
 	}
