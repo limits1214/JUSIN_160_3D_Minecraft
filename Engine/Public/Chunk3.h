@@ -53,6 +53,11 @@ public:
 	void SetBlock(uint32_t idx, CBlock3::TYPE eType) { m_arrBlocks[idx].SetType(eType); }
 	void SetBlock(uint32_t idx, CBlock3 block) { m_arrBlocks[idx] = block; }
 
+
+	HRESULT InitialChunkLighting();
+	void InitialChunkFloodFillSkyLighting(std::queue<XMINT3>& q);
+	void InitialChunkFloodFillBlockLighting(std::queue<XMINT3>& q);
+
 	HRESULT BlockFilling();
 	HRESULT QuadMessing();
 	HRESULT CreateBuffer();

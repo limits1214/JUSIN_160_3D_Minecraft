@@ -3,6 +3,188 @@
 
 NS_USING(Engine)
 
+HRESULT CChunk3::InitialChunkLighting()
+{
+	std::queue<XMINT3> floodFillSkyLightQ{};
+	std::queue<XMINT3> floodFillBlockLightQ{};
+
+	{
+		for (int32_t i = 0; i < VOXEL_CHUNK_X_SIZE3; ++i)
+		{
+			for (int32_t k = 0; k < VOXEL_CHUNK_Z_SIZE3; ++k)
+			{
+				_bool bBlocked{ false };
+				bool bSkySeeded = false;
+				for (int32_t j = VOXEL_CHUNK_Y_SIZE3 - 1; j >= 0; --j)
+				{
+					uint32_t idx =
+						CChunk3::BlockIndexing(i, j, k);
+
+					CBlock3 block = GetBlock(idx);
+
+					//
+					// SKY LIGHT
+					//
+
+					if (block.IsOpaque())
+					{
+						bBlocked = true;
+						block.SetSkyLight(0);
+					}
+					else
+					{
+						if (!bBlocked)
+						{
+							block.SetSkyLight(15);
+
+							if (!bSkySeeded)
+							{
+								floodFillSkyLightQ.push({ i,j,k });
+								bSkySeeded = true;
+							}
+						}
+						else
+						{
+							block.SetSkyLight(0);
+						}
+					}
+
+					//
+					// BLOCK LIGHT
+					//
+
+					uint8_t light =
+						CBlock3::GetBlockLightByType(block.GetType());
+
+					block.SetBlockLight(light);
+
+					if (light > 0)
+					{
+						floodFillBlockLightQ.push({
+							i,
+							j,
+							k
+							});
+					}
+
+					SetBlock(idx, block);
+
+				}
+
+			}
+		}
+	}
+
+	InitialChunkFloodFillSkyLighting(floodFillSkyLightQ);
+	InitialChunkFloodFillBlockLighting(floodFillBlockLightQ);
+
+	return S_OK;
+}
+
+void CChunk3::InitialChunkFloodFillSkyLighting(std::queue<XMINT3>& q)
+{
+	constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+	constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+	constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+	while (!q.empty())
+	{
+		auto [cbx, cby, cbz] = q.front(); q.pop();
+
+		CBlock3& block = GetBlock(cbx, cby, cbz);
+
+		uint8_t curLight = block.GetSkyLight();
+		if (curLight == 0) continue;
+
+
+		for (int d = 0; d < 6; ++d)
+		{
+			int nx = cbx + dx[d];
+			int ny = cby + dy[d];
+			int nz = cbz + dz[d];
+
+			if (nx < 0 || nx >= VOXEL_CHUNK_X_SIZE3)
+				continue;
+			if (ny < 0 || ny >= VOXEL_CHUNK_Y_SIZE3)
+				continue;
+			if (nz < 0 || nz >= VOXEL_CHUNK_Z_SIZE3)
+				continue;
+
+			CBlock3& nBlock = GetBlock(nx, ny, nz);
+			if (nBlock.IsOpaque()) continue;
+
+			uint8_t nSkyLight = nBlock.GetSkyLight();
+
+			uint8_t newLight{};
+
+			bool goingDown = (d == 3);
+			if (!goingDown && curLight <= 1) continue;
+
+			if (goingDown)
+			{
+				newLight = curLight;
+			}
+			else
+			{
+				newLight = curLight - 1;
+			}
+
+			if (newLight > nSkyLight)
+			{
+				nBlock.SetSkyLight(newLight);
+				q.push({ nx, ny, nz });
+			}
+		}
+	}
+}
+
+void CChunk3::InitialChunkFloodFillBlockLighting(std::queue<XMINT3>& q)
+{
+	constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+	constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+	constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+	while (!q.empty())
+	{
+		auto [cbx, cby, cbz] = q.front(); q.pop();
+
+		CBlock3& block = GetBlock(cbx, cby, cbz);
+
+		uint8_t curLight = block.GetBlockLight();
+
+		if (curLight <= 1)
+			continue;
+
+		for (int d = 0; d < 6; ++d)
+		{
+			int nx = cbx + dx[d];
+			int ny = cby + dy[d];
+			int nz = cbz + dz[d];
+
+			if (nx < 0 || nx >= VOXEL_CHUNK_X_SIZE3)
+				continue;
+			if (ny < 0 || ny >= VOXEL_CHUNK_Y_SIZE3)
+				continue;
+			if (nz < 0 || nz >= VOXEL_CHUNK_Z_SIZE3)
+				continue;
+
+			CBlock3& nBlock = GetBlock(nx, ny, nz);
+			if (nBlock.IsOpaque()) continue;
+
+			if (nBlock.IsOpaque())
+				continue;
+
+			uint8_t newLight = curLight - 1;
+
+			if (newLight > nBlock.GetBlockLight())
+			{
+				nBlock.SetBlockLight(newLight);
+				q.push({ nx, ny, nz });
+			}
+		}
+	}
+}
+
 HRESULT CChunk3::BlockFilling()
 {
 	m_eBlockFillingState = BLOCKFILLING_STATE::ING;
@@ -58,6 +240,8 @@ HRESULT CChunk3::BlockFilling()
 			}
 		}
 	}
+
+	InitialChunkLighting();
 
 	m_eBlockFillingState = BLOCKFILLING_STATE::DONE;
 	return S_OK;
