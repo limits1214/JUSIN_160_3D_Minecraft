@@ -157,6 +157,15 @@ public:
 	bool HasRenderPass(RENDERPASS ePass) const override { return ePass == RENDERPASS::DEFAULT; };
 
 public:
+	//void InitialFillingBlockLighting(CChunk3* pChunk);
+	void OnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight);
+	void RemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void FloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void FloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void RemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void OnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight);
+
+public:
 	void Update(_float fTimeDelta);
 	void UpdateGUI();
 
@@ -183,7 +192,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 0 };
+	int32_t m_iRenderDistance{ 3 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 //public:

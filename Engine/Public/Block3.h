@@ -170,6 +170,14 @@ public:
 		}
 		return TEX_TYPE::END;
 	}
+	static uint8_t GetBlockLightByType(TYPE e)
+	{
+		if (e == TYPE::SAND) // test
+		{
+			return 15;
+		}
+		return 0;
+	}
 	// 불투명한가?
 	_bool IsOpaque() const
 	{

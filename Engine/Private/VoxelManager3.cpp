@@ -202,6 +202,412 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     return S_OK;
 }
 
+//void CVoxelManager3::InitialFillingBlockLighting(CChunk3* pChunk)
+//{
+//    const auto&[cx, _, cz] = pChunk->GetCoord();
+//
+//    int32_t startI = (int32_t)VOXEL_CHUNK_X_SIZE3 * cx;
+//    int32_t startK = (int32_t)VOXEL_CHUNK_Z_SIZE3 * cz;
+//    int32_t endI = (int32_t)VOXEL_CHUNK_X_SIZE3 * (cx + 1);
+//    int32_t endK = (int32_t)VOXEL_CHUNK_Z_SIZE3 * (cz + 1);
+//
+//    std::queue<XMINT3> floodFillSkyLightQ{};
+//    std::queue<XMINT3> floodFillBlockLightQ{};
+//
+//    {
+//        uint32_t localI = 0;
+//        for (int32_t i = startI; i < endI; ++i)
+//        {
+//            uint32_t localK = 0;
+//
+//            for (int32_t k = startK; k < endK; ++k)
+//            {
+//                _bool bBlocked{ false };
+//                bool bSkySeeded = false;
+//                for (int32_t j = VOXEL_CHUNK_Y_SIZE3 - 1; j >= 0; --j)
+//                {
+//                    uint32_t idx =
+//                        CChunk3::BlockIndexing(localI, j, localK);
+//
+//                    CBlock3 block = pChunk->GetBlock(idx);
+//
+//                    //
+//                    // SKY LIGHT
+//                    //
+//
+//                    if (block.IsOpaque())
+//                    {
+//                        bBlocked = true;
+//                        block.SetSkyLight(0);
+//                    }
+//                    else
+//                    {
+//                        if (!bBlocked)
+//                        {
+//                            block.SetSkyLight(15);
+//
+//                            if (!bSkySeeded)
+//                            {
+//                                floodFillSkyLightQ.push({ i,j,k });
+//                                bSkySeeded = true;
+//                            }
+//                        }
+//                        else
+//                        {
+//                            block.SetSkyLight(0);
+//                        }
+//                    }
+//
+//                    //
+//                    // BLOCK LIGHT
+//                    //
+//
+//                    uint8_t light =
+//                        CBlock3::GetBlockLightByType(block.GetType());
+//
+//                    block.SetBlockLight(light);
+//
+//                    if (light > 0)
+//                    {
+//                        floodFillBlockLightQ.push({
+//                            i,
+//                            j,
+//                            k
+//                            });
+//                    }
+//
+//                    pChunk->SetBlock(idx, block);
+//
+//                }
+//
+//                ++localK;
+//            }
+//            ++localI;
+//        }
+//    }
+//
+//    FloodFillSkyLighting(floodFillSkyLightQ);
+//    FloodFillBlockLighting(floodFillBlockLightQ);
+//}
+
+void CVoxelManager3::OnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight)
+{
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+    // ----------------------------------------------------
+    // 1. SkyLight 처리
+    // ----------------------------------------------------
+    {
+        auto optBlock = GetBlock(wbx, wby, wbz);
+        if (optBlock.has_value())
+        {
+            CBlock3 block = optBlock.value();
+            auto optAbove = GetBlock(wbx, wby + 1, wbz);
+
+            std::queue<std::pair<XMINT3, uint8_t>> skyLightQ;
+
+            // 직통 하늘 케이스
+            if (!optAbove.has_value() || optAbove.value().GetSkyLight() == 15)
+            {
+                block.SetSkyLight(15);
+                SetBlock(wbx, wby, wbz, block);
+                skyLightQ.push({ XMINT3{wbx, wby, wbz}, 15 });
+            }
+            // 동굴 내부 혹은 그늘진 곳에서 블록 파괴 시 주변 스카이라이트 수집
+            else
+            {
+                uint8_t maxSkyLight = 0;
+                for (int d = 0; d < 6; ++d)
+                {
+                    auto nopt = GetBlock(wbx + dx[d], wby + dy[d], wbz + dz[d]);
+                    if (nopt.has_value())
+                    {
+                        maxSkyLight = std::max(maxSkyLight, nopt.value().GetSkyLight());
+                    }
+                }
+
+                if (maxSkyLight > 1)
+                {
+                    block.SetSkyLight(maxSkyLight - 1);
+                    SetBlock(wbx, wby, wbz, block);
+                    skyLightQ.push({ XMINT3{wbx, wby, wbz}, maxSkyLight - 1 });
+                }
+            }
+
+            if (!skyLightQ.empty())
+            {
+                FloodFillSkyLighting(skyLightQ);
+            }
+        }
+    }
+
+    // ----------------------------------------------------
+    // 2. BlockLight 처리
+    // ----------------------------------------------------
+    {
+        auto optBlock = GetBlock(wbx, wby, wbz);
+        if (optBlock.has_value())
+        {
+            CBlock3 block = optBlock.value();
+
+            if (bIsLightSource)
+            {
+                // 광원 제거 로직 수행
+                block.SetBlockLight(0);
+                SetBlock(wbx, wby, wbz, block);
+
+                std::queue<std::pair<XMINT3, uint8_t>> blockLightRemovalQ;
+                blockLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlockLight });
+                RemoveBlockLighting(blockLightRemovalQ);
+            }
+            else
+            {
+                // 일반 블록 제거 시 주변 빛 스며들기
+                uint8_t maxBlockLight = 0;
+                for (int d = 0; d < 6; ++d)
+                {
+                    auto nopt = GetBlock(wbx + dx[d], wby + dy[d], wbz + dz[d]);
+                    if (nopt.has_value())
+                    {
+                        maxBlockLight = std::max(maxBlockLight, nopt.value().GetBlockLight());
+                    }
+                }
+
+                if (maxBlockLight > 1)
+                {
+                    block.SetBlockLight(maxBlockLight - 1);
+                    SetBlock(wbx, wby, wbz, block);
+
+                    std::queue<std::pair<XMINT3, uint8_t>> blockLightQ;
+                    blockLightQ.push({ XMINT3{wbx, wby, wbz}, maxBlockLight - 1 });
+                    FloodFillBlockLighting(blockLightQ);
+                }
+            }
+        }
+    }
+}
+
+void CVoxelManager3::RemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+    std::queue<std::pair<XMINT3, uint8_t>> rePropagateQ;
+
+    while (!q.empty())
+    {
+        auto [wbcoord, light] = q.front(); q.pop();
+        auto [wbx, wby, wbz] = wbcoord;
+
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = wbx + dx[d];
+            int ny = wby + dy[d];
+            int nz = wbz + dz[d];
+            auto nopt = GetBlock(nx, ny, nz);
+            if (!nopt.has_value()) continue;
+            CBlock3 nBlock = nopt.value();
+
+            uint8_t nLight = nBlock.GetBlockLight();
+
+            // 내가 전파했던 어두운 자식 빛들을 순차적으로 0으로 끔
+            if (nLight != 0 && nLight == light - 1)
+            {
+                nBlock.SetBlockLight(0);
+                SetBlock(nx, ny, nz, nBlock);
+                q.push({ XMINT3{nx, ny, nz}, nLight });
+            }
+            // 나를 밝혀주던 다른 독립적인 광원 줄기를 만나면 재전파 큐에 백업
+            else if (nLight >= light)
+            {
+                rePropagateQ.push({ XMINT3{nx, ny, nz}, nLight });
+            }
+        }
+    }
+
+    // 빛 청소가 완전히 끝난 후, 살아남은 다른 광원들로부터 빛을 다시 복구
+    if (!rePropagateQ.empty())
+    {
+        FloodFillBlockLighting(rePropagateQ);
+    }
+}
+
+void CVoxelManager3::FloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+    while (!q.empty())
+    {
+        auto [wbcoord, curLight] = q.front(); q.pop();
+        auto [wbx, wby, wbz] = wbcoord;
+
+        if (curLight <= 1) continue;
+
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = wbx + dx[d];
+            int ny = wby + dy[d];
+            int nz = wbz + dz[d];
+
+            auto nopt = GetBlock(nx, ny, nz);
+            if (!nopt.has_value()) continue;
+
+            CBlock3 nBlock = nopt.value();
+            if (nBlock.IsOpaque()) continue;
+
+            uint8_t newLight = curLight - 1;
+
+            // 버그 수정: SkyLight 데이터 컬럼을 정확하게 비교하도록 변경
+            if (newLight > nBlock.GetSkyLight())
+            {
+                nBlock.SetSkyLight(newLight);
+                SetBlock(nx, ny, nz, nBlock);
+                q.push({ XMINT3{nx, ny, nz} , newLight });
+            }
+        }
+    }
+}
+
+void CVoxelManager3::FloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+    while (!q.empty())
+    {
+        // 버그 수정: 큐에서 세컨드 인자(curLight)를 온전히 추출하여 전파에 사용
+        auto [wbcoord, curLight] = q.front(); q.pop();
+        auto [wbx, wby, wbz] = wbcoord;
+
+        if (curLight <= 1) continue;
+
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = wbx + dx[d];
+            int ny = wby + dy[d];
+            int nz = wbz + dz[d];
+
+            auto nopt = GetBlock(nx, ny, nz);
+            if (!nopt.has_value()) continue;
+
+            CBlock3 nBlock = nopt.value();
+            if (nBlock.IsOpaque()) continue;
+
+            uint8_t newLight = curLight - 1;
+
+            if (newLight > nBlock.GetBlockLight())
+            {
+                nBlock.SetBlockLight(newLight);
+                SetBlock(nx, ny, nz, nBlock);
+                q.push({ XMINT3{nx, ny, nz} , newLight });
+            }
+        }
+    }
+}
+
+void CVoxelManager3::RemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+    std::queue<std::pair<XMINT3, uint8_t>> rePropagateQ;
+
+    while (!q.empty())
+    {
+        auto [wbcoord, light] = q.front(); q.pop();
+        auto [wbx, wby, wbz] = wbcoord;
+
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = wbx + dx[d];
+            int ny = wby + dy[d];
+            int nz = wbz + dz[d];
+            auto nopt = GetBlock(nx, ny, nz);
+            if (!nopt.has_value()) continue;
+            CBlock3 nBlock = nopt.value();
+
+            uint8_t nLight = nBlock.GetSkyLight();
+
+            // 중요 특수 케이스: 하늘 직사광선(15)이 감쇄 없이 수직 하강(dy == -1)하고 있었던 줄기라면,
+            // 빛 수치가 light - 1 이 아니라 여전히 15일 수 있습니다. 이 줄기도 같이 끊어줘야 합니다.
+            bool bIsSkyColumn = (dy[d] == -1 && light == 15 && nLight == 15);
+
+            // 내가 전파했던 하위 빛이 맞다면 0으로 끄고 큐에 추가하여 계속 추적 제거
+            if (nLight != 0 && (nLight == light - 1 || bIsSkyColumn))
+            {
+                nBlock.SetSkyLight(0);
+                SetBlock(nx, ny, nz, nBlock);
+                q.push({ XMINT3{nx, ny, nz}, nLight });
+            }
+            // 나를 비춰주던 다른 살아있는 스카이라이트 줄기를 만난 경우 (예: 옆 칸에서 새어 나오는 빛)
+            else if (nLight >= light)
+            {
+                rePropagateQ.push({ XMINT3{nx, ny, nz}, nLight });
+            }
+        }
+    }
+
+    // 막힌 곳 외에 옆에서 여전히 들어오고 있는 정상적인 스카이라이트가 있다면 다시 역전파해서 메워줌
+    if (!rePropagateQ.empty())
+    {
+        FloodFillSkyLighting(rePropagateQ);
+    }
+}
+
+void CVoxelManager3::OnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight)
+{
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+    auto optBlock = GetBlock(wbx, wby, wbz);
+    if (!optBlock.has_value()) return;
+    CBlock3 block = optBlock.value();
+
+    // ----------------------------------------------------
+    // 1. 새 블록 자체의 기본 조명 설정 (블록 내부는 빛을 가두거나 발산함)
+    // ----------------------------------------------------
+    block.SetSkyLight(0);
+    block.SetBlockLight(placedBlockEmitLight); // 광원이면 자신의 밝기, 일반 블록이면 0
+    SetBlock(wbx, wby, wbz, block);
+
+    // ----------------------------------------------------
+    // 2. SkyLight 처리 (빛 차단 및 사방 전파)
+    // ----------------------------------------------------
+    if (oldSkyLight > 0)
+    {
+        std::queue<std::pair<XMINT3, uint8_t>> skyLightRemovalQ;
+        // 이 자리에 있었던 기존 SkyLight 값을 기준으로 주변 빛 청소 시작
+        skyLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldSkyLight });
+
+        // SkyLight용 Removal 함수가 필요합니다. (아래 3번 참고)
+        RemoveSkyLighting(skyLightRemovalQ);
+    }
+
+    // ----------------------------------------------------
+    // 3. BlockLight 처리 (기존 빛 차단 OR 새 광원 전파)
+    // ----------------------------------------------------
+    // Case A: 새로 설치된 블록이 광원인 경우 -> 사방으로 빛 확산
+    if (placedBlockEmitLight > 0)
+    {
+        std::queue<std::pair<XMINT3, uint8_t>> blockLightQ;
+        blockLightQ.push({ XMINT3{wbx, wby, wbz}, placedBlockEmitLight });
+        FloodFillBlockLighting(blockLightQ);
+    }
+    // Case B: 일반 블록이 설치되어 기존의 빛 줄기를 막은 경우 -> 주변 빛 청소
+    else if (oldBlockLight > 0)
+    {
+        std::queue<std::pair<XMINT3, uint8_t>> blockLightRemovalQ;
+        blockLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlockLight });
+        RemoveBlockLighting(blockLightRemovalQ);
+    }
+}
+
 void CVoxelManager3::Update(_float fTimeDelta)
 {
     if (m_bDbgPicking)
@@ -377,10 +783,16 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     auto worldBY = res.iWorldBlockY;
                     auto worldBZ = res.iWorldBlockZ;
 
+                    
+
+                    uint8_t oldBlockLight = res.block->GetBlockLight(); // 파괴 전 빛 값 백업
+                    bool bIsLightSource = CBlock3::GetBlockLightByType(res.block->GetType()) > 0;
+
                     CBlock3 block{};
                     block.SetType(CBlock3::TYPE::AIR);
-
                     SetBlock(worldBX, worldBY, worldBZ, block);
+
+                    OnBlockRemovedLighting(worldBX, worldBY, worldBZ, bIsLightSource, oldBlockLight);
                 }
             }
         }
@@ -446,18 +858,47 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
 
 
-                    CBlock3 block{};
+                    //CBlock3 block{};
+                    //if (CGameInstance::Get().KeyPressing(DIK_L))
+                    //{
+                    //    block.SetType(CBlock3::TYPE::SAND);
+                    //}
+                    //else
+                    //{
+                    //    block.SetType(CBlock3::TYPE::DIRT);
+                    //}
+                   
+
+                    //SetBlock(worldBX, worldBY, worldBZ, block);
+
+
+
+
+
+                    uint8_t oldSkyLight = 0;
+                    uint8_t oldBlockLight = 0;
+                    auto optPrev = GetBlock(worldBX, worldBY, worldBZ);
+                    if (optPrev.has_value())
+                    {
+                        oldSkyLight = optPrev.value().GetSkyLight();
+                        oldBlockLight = optPrev.value().GetBlockLight();
+                    }
+
+                    // 2. 실제 블록 배치 (예: 돌 블록이나 횃불 등)
+                    CBlock3 newBlock{};
                     if (CGameInstance::Get().KeyPressing(DIK_L))
                     {
-                        block.SetType(CBlock3::TYPE::SAND);
+                        newBlock.SetType(CBlock3::TYPE::SAND);
                     }
                     else
                     {
-                        block.SetType(CBlock3::TYPE::DIRT);
+                        newBlock.SetType(CBlock3::TYPE::DIRT);
                     }
-                   
+                    SetBlock(worldBX, worldBY, worldBZ, newBlock);
 
-                    SetBlock(worldBX, worldBY, worldBZ, block);
+                    // 3. 조명 함수 호출 (배치된 블록의 광원 수치도 함께 넘겨줍니다)
+                    uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(newBlock.GetType());
+                    OnBlockPlacedLighting(worldBX, worldBY, worldBZ, placedBlockEmitLight, oldSkyLight, oldBlockLight);
                 }
             }
         }
@@ -706,6 +1147,7 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
                     {
                         MSG_BOX("FUT_BLOCK_FILLING FAIL");
                     }
+
                 }
                 else
                 {
