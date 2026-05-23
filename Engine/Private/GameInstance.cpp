@@ -297,12 +297,12 @@ void CGameInstance::Release_Engine()
 	m_pWorkerManager.reset();
 	m_pChunkLoadWorkerManager.reset();
 	m_pPrototypeManager.reset();
-	m_pFontManager.reset();
 	m_pLightManager.reset();
 	m_pVoxelManager.reset();
 	m_pVoxelManager3.reset();
-	m_pResourceManager.reset();
 	m_pRenderer.reset();
+	m_pFontManager.reset();
+	m_pResourceManager.reset();
 
 	m_pGraphicDevice.reset();
 }

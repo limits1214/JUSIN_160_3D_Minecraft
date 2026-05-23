@@ -51,6 +51,7 @@ public:
 	void SetBlock(uint32_t x, uint32_t y, uint32_t z, CBlock3::TYPE eType) { m_arrBlocks[BlockIndexing(x, y, z)].SetType(eType); }
 	CBlock3& GetBlock(uint32_t idx) { return m_arrBlocks[idx]; }
 	void SetBlock(uint32_t idx, CBlock3::TYPE eType) { m_arrBlocks[idx].SetType(eType); }
+	void SetBlock(uint32_t idx, CBlock3 block) { m_arrBlocks[idx] = block; }
 
 	HRESULT BlockFilling();
 	HRESULT QuadMessing();

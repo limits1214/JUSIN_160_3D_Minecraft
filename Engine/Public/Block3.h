@@ -28,6 +28,7 @@ public:
 		DEEPSLATE_LAPIS_ORE,
 		DEEPSLATE_REDSTONE_ORE,
 		DIRT,
+		SAND,
 		END
 	};
 
@@ -61,17 +62,7 @@ public:
 		END
 	};
 
-	// 불투명한가?
-	_bool IsOpaque() const
-	{
-		if (m_eType == TYPE::AIR)
-		{
-			return false;
-		}
-		return true;
-	}
-	TYPE GetType() const { return m_eType; }
-	void SetType(TYPE e) { m_eType = e; }
+	
 	static TEX_TYPE GetTexType(TYPE blockType, FACE_DIR faceDir)
 	{
 		if (blockType == TYPE::STONE)
@@ -173,12 +164,48 @@ public:
 		{
 			return TEX_TYPE::DIRT;
 		}
+		else if (blockType == TYPE::SAND)
+		{
+			return TEX_TYPE::SAND;
+		}
 		return TEX_TYPE::END;
 	}
+	// 불투명한가?
+	_bool IsOpaque() const
+	{
+		if (m_eType == TYPE::AIR)
+		{
+			return false;
+		}
+		return true;
+	}
+	TYPE GetType() const { return m_eType; }
+	void SetType(TYPE e) { m_eType = e; }
+	uint8_t GetSkyLight() const
+	{
+		return (m_iLight >> 4) & 0xF;
+	}
 
+	uint8_t GetBlockLight() const
+	{
+		return m_iLight & 0xF;
+	}
+
+	void SetSkyLight(uint8_t v)
+	{
+		m_iLight = (m_iLight & 0x0F) | (v << 4);
+	}
+
+	void SetBlockLight(uint8_t v)
+	{
+		m_iLight = (m_iLight & 0xF0) | v;
+	}
+	uint8_t GetLight() const { return m_iLight; }
 private:
 	TYPE m_eType{ TYPE::GRASS };
-	uint8_t  m_iFlag{}; // 1바이트: 상위 4비트(밝기), 하위 4비트(상태/회전)
+	//햇빛 15 → 14 → 13 → 12 → ... → 0 (완전 어둠)
+	uint8_t m_iLight{}; // 상위 4bit: skylight, 하위4bit: blocklight
+	uint8_t  m_iFlag{}; // etc
 };
 
 NS_END

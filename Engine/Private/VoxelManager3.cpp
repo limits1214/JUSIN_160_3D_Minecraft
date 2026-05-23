@@ -447,7 +447,15 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
 
                     CBlock3 block{};
-                    block.SetType(CBlock3::TYPE::DIRT);
+                    if (CGameInstance::Get().KeyPressing(DIK_L))
+                    {
+                        block.SetType(CBlock3::TYPE::SAND);
+                    }
+                    else
+                    {
+                        block.SetType(CBlock3::TYPE::DIRT);
+                    }
+                   
 
                     SetBlock(worldBX, worldBY, worldBZ, block);
                 }
@@ -1116,7 +1124,8 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                 for (const auto [blockIdx, block] : blockChanges)
                 {
                     auto tmp = chunkFindIter->second->GetBlock(blockIdx);
-                    chunkFindIter->second->SetBlock(blockIdx, block.GetType());
+                    //chunkFindIter->second->SetBlock(blockIdx, block.GetType());
+                    chunkFindIter->second->SetBlock(blockIdx, block);
                 }
 
                 messingReqVec.push_back(chunkIdx);

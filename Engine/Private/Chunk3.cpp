@@ -97,7 +97,9 @@ HRESULT CChunk3::QuadMessing()
 		// textureid(8)
 		// 0000 0001  1111 1110  0000 0000  0000 0000
 
-		;
+		// Light(8)
+		// 0000 0000  0000 0001  1111 1110  0000 0000
+
 
 		E::VTX_VOXEL v{};
 		v.pos = quads[i].v1;
@@ -107,6 +109,8 @@ HRESULT CChunk3::QuadMessing()
 			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 27;//vertexao
 			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 25;//vertexid
 			v.packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17;//vertexid
+			
+			v.packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;// Light
 		}
 		m_vertices.push_back(v);
 
@@ -117,6 +121,8 @@ HRESULT CChunk3::QuadMessing()
 			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 27;//vertexao
 			v.packedData |= (static_cast<uint32_t>(1) & 0x03) << 25;//vertexid
 			v.packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17;//vertexid
+
+			v.packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;// Light
 		}
 		m_vertices.push_back(v);
 
@@ -127,6 +133,8 @@ HRESULT CChunk3::QuadMessing()
 			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 27;//vertexao
 			v.packedData |= (static_cast<uint32_t>(2) & 0x03) << 25;//vertexid
 			v.packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17;//vertexid
+
+			v.packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;// Light
 		}
 		m_vertices.push_back(v);
 
@@ -137,6 +145,8 @@ HRESULT CChunk3::QuadMessing()
 			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 27;//vertexao
 			v.packedData |= (static_cast<uint32_t>(3) & 0x03) << 25;//vertexid
 			v.packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17;//vertexid
+
+			v.packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;// Light
 		}
 		m_vertices.push_back(v);
 
@@ -280,6 +290,13 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx,     fy + 1, fz };
 						quad.eDir = FACE_DIR::POS_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						
+						{
+							quad.lighting = (y + 1 < (int)VOXEL_CHUNK_Y_SIZE3)
+								? m_arrBlocks[BlockIndexing(x, y + 1, z)].GetLight()
+								: 0xFF;
+						}
+						
 						quads.push_back(quad);
 					}
 				}
@@ -298,6 +315,13 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx,     fy, fz + 1 };
 						quad.eDir = FACE_DIR::NEG_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						
+						{
+							quad.lighting = (y - 1 >= 0)
+								? m_arrBlocks[BlockIndexing(x, y - 1, z)].GetLight()
+								: 0;
+						}
+						
 						quads.push_back(quad);
 					}
 				}
@@ -323,6 +347,13 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx + 1, fy,		fz + 1 };
 						quad.eDir = FACE_DIR::POS_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+
+						{
+							if (z + 1 < (int)VOXEL_CHUNK_Z_SIZE3)
+								quad.lighting = m_arrBlocks[BlockIndexing(x, y, z + 1)].GetLight();
+							else
+								quad.lighting = pPlusZ ? pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].GetLight() : 0xFF;
+						}
 						quads.push_back(quad);
 					}
 				}
@@ -347,6 +378,12 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx,     fy,     fz };
 						quad.eDir = FACE_DIR::NEG_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						{
+							if (z - 1 >= 0)
+								quad.lighting = m_arrBlocks[BlockIndexing(x, y, z - 1)].GetLight();
+							else
+								quad.lighting = pMinusZ ? pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].GetLight() : 0xFF;
+						}
 						quads.push_back(quad);
 					}
 				}
@@ -371,6 +408,13 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx + 1, fy,     fz };
 						quad.eDir = FACE_DIR::POS_X;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						
+						{
+							if (x + 1 < (int)VOXEL_CHUNK_X_SIZE3)
+								quad.lighting = m_arrBlocks[BlockIndexing(x + 1, y, z)].GetLight();
+							else
+								quad.lighting = pPlusX ? pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].GetLight() : 0xFF;
+						}
 						quads.push_back(quad);
 					}
 				}
@@ -395,6 +439,12 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx, fy,     fz + 1 };
 						quad.eDir = FACE_DIR::NEG_X;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						{
+							if (x - 1 >= 0)
+								quad.lighting = m_arrBlocks[BlockIndexing(x - 1, y, z)].GetLight();
+							else
+								quad.lighting = pMinusX ? pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].GetLight() : 0xFF;
+						}
 						quads.push_back(quad);
 					}
 				}
