@@ -146,6 +146,8 @@ private:
 	//std::list<std::future<CHUNK_EDIT_DESC>> m_queueFutEdit{};
 	std::list<std::vector<std::future<uint64_t>>> m_queueFutBlockFilling{};
 	std::list<std::future<std::vector<uint64_t>>> m_queueFutQuadMessing{};
+	std::future<std::unordered_set<uint64_t>> m_futLighting{};
+	std::atomic<_bool> m_bLighing{ false };
 
 
 private:
@@ -159,11 +161,17 @@ public:
 public:
 	//void InitialFillingBlockLighting(CChunk3* pChunk);
 	void RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight);
+	void RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight);
+	void RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
 	void RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
 	void RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
-	void RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
 	void RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
-	void RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight);
+	
+public:
+	void WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void WorkerRemoveBlocklighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void WorkerRemoveSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
 
 public:
 	void Update(_float fTimeDelta);
@@ -184,6 +192,7 @@ private:
 	HRESULT UpdateCheckQuduedQuadMessingChunk();
 	HRESULT UpdateCheckQuadMessingEndFutures();
 	HRESULT UpdateCheckBlockEdit();
+	HRESULT UpdateCheckLightingFutures();
 
 	//HRESULT AdjChunkReMessing(uint64_t targetIdx);
 	HRESULT QueueingQuadMessing(std::vector<uint64_t> targetCoords, _bool bPushFront = false);

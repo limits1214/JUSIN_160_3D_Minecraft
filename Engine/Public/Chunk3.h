@@ -33,13 +33,22 @@ public:
 	{
 		NON, ING, DONE
 	};
+	
+	enum class LIGHTING_STATE
+	{
+		NON, ING, DONE
+	};
+
 	BUFFER_STATE GetBufferState() const { return m_eBufferState; }
 	MESSING_STATE GetMessingState() const { return m_eMessingState; }
 	BLOCKFILLING_STATE GetBlockFillingSate() const { return m_eBlockFillingState; }
+	LIGHTING_STATE GetLightingState() const { return m_eLightingState; }
+	void SetLightingState(LIGHTING_STATE eState) { m_eLightingState = eState; }
 
 	std::atomic <BLOCKFILLING_STATE> m_eBlockFillingState{ BLOCKFILLING_STATE::NON };
 	std::atomic <BUFFER_STATE> m_eBufferState{ BUFFER_STATE::NON };
 	std::atomic<MESSING_STATE>m_eMessingState{ MESSING_STATE::NON };
+	std::atomic<LIGHTING_STATE> m_eLightingState{ LIGHTING_STATE::NON };
 
 	uint64_t GetCoordIdx() const { return m_iChunkCoord; }
 	std::tuple<int32_t, int32_t, int32_t> GetCoord() const { return { m_iX, m_iY, m_iZ }; }
@@ -60,6 +69,12 @@ public:
 
 		return { x, y, z };
 	}
+
+public:
+	void CollectLightingSeeds(
+		std::queue<std::pair<XMINT3, uint8_t>>& skyLightSeedQ,
+		std::queue<std::pair<XMINT3, uint8_t>>& blockLightSeedQ
+	);
 public:
 	CBlock3& GetBlock(uint32_t x, uint32_t y, uint32_t z) { return m_arrBlocks[BlockIndexing(x, y, z)]; }
 	void SetBlock(uint32_t x, uint32_t y, uint32_t z, CBlock3::TYPE eType) { m_arrBlocks[BlockIndexing(x, y, z)].SetType(eType); }

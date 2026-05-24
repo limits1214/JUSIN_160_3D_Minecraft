@@ -3,6 +3,47 @@
 
 NS_USING(Engine)
 
+void CChunk3::CollectLightingSeeds(std::queue<std::pair<XMINT3, uint8_t>>& skyLightSeedQ, std::queue<std::pair<XMINT3, uint8_t>>& blockLightSeedQ)
+{
+	// 내 청크의 월드 기준 시작 오프셋 좌표 (m_iX, m_iZ가 청크의 그리드 좌표라 가정)
+	int32_t worldXOffset = m_iX * 32;
+	int32_t worldZOffset = m_iZ * 32;
+
+	for (int32_t x = 0; x < 32; ++x)
+	{
+		for (int32_t z = 0; z < 32; ++z)
+		{
+			// 1. 스카이라이트(하늘빛) 시드 수집: 위에서 아래로 내려오며 공기인 곳에 15를 채움
+			_bool bBlocked = false;
+			for (int32_t y = 31; y >= 0; --y)
+			{
+				CBlock3& block = m_arrBlocks[BlockIndexing(x, y, z)]; // 혹은 GetBlock
+				XMINT3 worldPos = { worldXOffset + x, y, worldZOffset + z };
+
+				if (block.IsOpaque())
+				{
+					bBlocked = true; // 불투명 블록을 만나면 하늘빛이 막힘
+				}
+				else if (!bBlocked)
+				{
+					// 아직 햇빛이 막히지 않은 완전 개방된 공기층인 경우
+					block.SetSkyLight(15);
+					skyLightSeedQ.push({ worldPos, 15 }); // 조명 워커가 전파할 수 있도록 시드로 등록
+				}
+
+				// 2. 블록라이트(광원) 시드 수집
+				// 만약 이 블록이 스스로 빛을 내는 블록(예: 횃불, 용암 등)이라면
+				uint8_t emitLight = CBlock3::GetBlockLightByType(block.GetType()); // 타입별 광도 체크 (가정)
+				if (emitLight > 0)
+				{
+					block.SetBlockLight(emitLight);
+					blockLightSeedQ.push({ worldPos, emitLight }); // 광원 시드로 등록
+				}
+			}
+		}
+	}
+}
+
 HRESULT CChunk3::InitialChunkLighting()
 {
 	std::queue<XMINT3> floodFillSkyLightQ{};
@@ -241,7 +282,7 @@ HRESULT CChunk3::BlockFilling()
 		}
 	}
 
-	InitialChunkLighting();
+	//InitialChunkLighting();
 
 	m_eBlockFillingState = BLOCKFILLING_STATE::DONE;
 	return S_OK;

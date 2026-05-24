@@ -482,6 +482,166 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
     }
 }
 
+void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+    constexpr int dx[] = { 1, -1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1, -1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1, -1 };
+
+    while (!q.empty())
+    {
+        auto [curWorldPos, expectedLight] = q.front();
+        q.pop();
+
+        // 1. 현재 좌표의 청크 인덱스 계산
+        int32_t cx = FloorDiv(curWorldPos.x, 32);
+        int32_t cy = FloorDiv(curWorldPos.y, 256);
+        int32_t cz = FloorDiv(curWorldPos.z, 32);
+
+        uint64_t chunkIdx = encodeChunkCoord(cx, cy, cz);
+        if (chunkIdxLookupBundle.find(chunkIdx) == chunkIdxLookupBundle.end()) continue;
+
+        auto chunkIter = m_mapChunks.find(chunkIdx);
+        if (chunkIter == m_mapChunks.end()) continue;
+
+        CChunk3* pCurChunk = chunkIter->second.get(); // 현재 청크 포인터 캐싱
+
+        int32_t lx = curWorldPos.x - cx * 32;
+        int32_t lz = curWorldPos.z - cz * 32;
+        CBlock3& curBlock = pCurChunk->GetBlock(lx, curWorldPos.y, lz);
+
+        if (curBlock.GetBlockLight() > expectedLight) continue;
+
+        uint8_t curLight = curBlock.GetBlockLight();
+        if (curLight <= 1) continue; // 빛이 1 이하면 더 이상 전파할 수 없음 (감쇠하면 0이 되므로)
+
+        // 2. 6방향 주변 검사
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = curWorldPos.x + dx[d];
+            int ny = curWorldPos.y + dy[d];
+            int nz = curWorldPos.z + dz[d];
+
+            if (ny < 0 || ny >= 256) continue;
+
+            // 주변 칸의 청크 좌표 계산
+            int32_t ncx = FloorDiv(nx, 32);
+            int32_t ncy = FloorDiv(ny, 256);
+            int32_t ncz = FloorDiv(nz, 32);
+            uint64_t nChunkIdx = encodeChunkCoord(ncx, ncy, ncz);
+
+            CChunk3* pNextChunk = nullptr;
+
+            // [최적화 핵심]: 다음 전파할 칸이 현재 청크와 같다면 find를 생략하고 캐싱된 포인터 사용
+            if (nChunkIdx == chunkIdx)
+            {
+                pNextChunk = pCurChunk;
+            }
+            else
+            {
+                //if (chunkIdxLookupBundle.find(nChunkIdx) == chunkIdxLookupBundle.end()) continue;
+                auto nChunkIter = m_mapChunks.find(nChunkIdx);
+                if (nChunkIter == m_mapChunks.end()) continue;
+                pNextChunk = nChunkIter->second.get();
+            }
+
+            int32_t nlx = nx - ncx * 32;
+            int32_t nlz = nz - ncz * 32;
+            CBlock3& nBlock = pNextChunk->GetBlock(nlx, ny, nlz);
+
+            if (nBlock.IsOpaque()) continue;
+
+            // 블록 라이트는 방향 관계없이 무조건 1씩 감쇠
+            uint8_t newLight = curLight - 1;
+
+            if (newLight > nBlock.GetBlockLight())
+            {
+                nBlock.SetBlockLight(newLight);
+                q.push({ { nx, ny, nz }, newLight });
+            }
+        }
+    }
+}
+
+void CVoxelManager3::WorkerRemoveBlocklighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+}
+
+void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+    constexpr int dx[] = { 1, -1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1, -1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1, -1 };
+
+    while (!q.empty())
+    {
+        auto [curWorldPos, expectedLight] = q.front();
+        q.pop();
+
+        // 안전한 내림 나눗셈을 사용하여 현재 월드 좌표가 속한 청크 인덱스 계산
+        int32_t cx = FloorDiv(curWorldPos.x, 32);
+        int32_t cy = FloorDiv(curWorldPos.y, 256);
+        int32_t cz = FloorDiv(curWorldPos.z, 32);
+
+        uint64_t chunkIdx = encodeChunkCoord(cx, cy, cz);
+        if (chunkIdxLookupBundle.find(chunkIdx) == chunkIdxLookupBundle.end()) continue;
+
+        auto chunkIter = m_mapChunks.find(chunkIdx);
+        if (chunkIter == m_mapChunks.end()) continue;
+
+        int32_t lx = curWorldPos.x - cx * 32;
+        int32_t lz = curWorldPos.z - cz * 32;
+        CBlock3& curBlock = chunkIter->second->GetBlock(lx, curWorldPos.y, lz);
+
+        if (curBlock.GetSkyLight() > expectedLight) continue;
+
+        uint8_t curLight = curBlock.GetSkyLight();
+        if (curLight == 0) continue;
+
+        // 6방향 주변 검사
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = curWorldPos.x + dx[d];
+            int ny = curWorldPos.y + dy[d];
+            int nz = curWorldPos.z + dz[d];
+
+            if (ny < 0 || ny >= 256) continue;
+
+            // 주변 칸의 청크 좌표 계산
+            int32_t ncx = FloorDiv(nx, 32);
+            int32_t ncy = FloorDiv(ny, 256);
+            int32_t ncz = FloorDiv(nz, 32);
+
+            // [버그 수정]: 이미 ncx, ncy, ncz가 청크 좌표이므로 다시 나누지 않고 바로 인코딩합니다.
+            uint64_t nChunkIdx = encodeChunkCoord(ncx, ncy, ncz);
+
+            //if (chunkIdxLookupBundle.find(nChunkIdx) == chunkIdxLookupBundle.end()) continue;
+
+            auto nChunkIter = m_mapChunks.find(nChunkIdx);
+            if (nChunkIter == m_mapChunks.end()) continue;
+
+            int32_t nlx = nx - ncx * 32;
+            int32_t nlz = nz - ncz * 32;
+            CBlock3& nBlock = nChunkIter->second->GetBlock(nlx, ny, nlz);
+
+            if (nBlock.IsOpaque()) continue;
+
+            // 아래 방향(d == 3)으로 직하강하고 현재 빛이 15이면 감쇠 없음
+            uint8_t newLight = (d == 3 && curLight == 15) ? 15 : (curLight - 1);
+
+            if (newLight > nBlock.GetSkyLight())
+            {
+                nBlock.SetSkyLight(newLight);
+                q.push({ { nx, ny, nz }, newLight });
+            }
+        }
+    }
+}
+
+void CVoxelManager3::WorkerRemoveSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+}
+
 void CVoxelManager3::RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
@@ -811,6 +971,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
     }
 
     UpdateCheckBlockFillingFutures();
+    UpdateCheckLightingFutures();
     UpdateCheckBlockEdit();
     UpdateCheckQuduedQuadMessingChunk();
     UpdateCheckQuadMessingEndFutures();
@@ -1151,6 +1312,12 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
 {
     for (auto iter = m_queueFutBlockFilling.begin(); iter != m_queueFutBlockFilling.end();)
     {
+        // 라이팅은 오직 하나의 워커에서만
+        if (m_bLighing)
+        {
+            break;
+        }
+
         _bool bErase = false;
 
         size_t validCnt = iter->size();
@@ -1224,12 +1391,332 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                 }
             }
 
+            if constexpr (false)
+            {
+                for (const auto& targetCoord : setIdx)
+                {
+                    std::vector<uint64_t> targetCoords{};
+                    targetCoords.push_back(targetCoord);
+                    QueueingQuadMessing(targetCoords);
+                }
+            }
+
+            m_bLighing = true;
             for (const auto& targetCoord : setIdx)
             {
-                std::vector<uint64_t> targetCoords{};
-                targetCoords.push_back(targetCoord);
-                QueueingQuadMessing(targetCoords);
+                auto iter = m_mapChunks.find(targetCoord);
+                if (iter != m_mapChunks.end())
+                {
+                    iter->second->SetLightingState(CChunk3::LIGHTING_STATE::ING);
+                }
             }
+
+
+            std::unordered_set<uint64_t> chunkIdxLookupBundle = setIdx;
+            std::future<std::unordered_set<uint64_t>> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture(
+                "FUT_LIGHTING",
+                [this, chunkIdxLookupBundle]()->std::unordered_set<uint64_t>
+                {
+                    std::queue<std::pair<XMINT3, uint8_t>> skyLightSeedQ;
+                    std::queue<std::pair<XMINT3, uint8_t>> blockLightSeedQ;
+
+                    // 이번 번들에 묶인 청크들을 순회하며 조명 시작점 수집
+                    for (uint64_t chunkIdx : chunkIdxLookupBundle)
+                    {
+                        auto chunkIter = m_mapChunks.find(chunkIdx);
+                        if (chunkIter == m_mapChunks.end()) continue;
+
+                        CChunk3* pChunk = chunkIter->second.get();
+                        const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
+
+                        int32_t worldXOffset = cx * 32;
+                        int32_t worldZOffset = cz * 32;
+
+                        // 1. 스카이라이트 고속 수직 낙하 스캔 및 지표면 시드 수집
+                        for (int32_t x = 0; x < 32; ++x)
+                        {
+                            for (int32_t z = 0; z < 32; ++z)
+                            {
+                                for (int32_t y = 255; y >= 0; --y)
+                                {
+                                    CBlock3& block = pChunk->GetBlock(x, y, z);
+
+                                    if (block.IsOpaque())
+                                    {
+                                        if (y < 255)
+                                        {
+                                            skyLightSeedQ.push({ { worldXOffset + x, y + 1, worldZOffset + z }, 15 });
+                                        }
+                                        break; // 땅을 만나면 아래는 스캔 중단
+                                    }
+
+                                    block.SetSkyLight(15);
+
+                                    if (y == 0)
+                                    {
+                                        skyLightSeedQ.push({ { worldXOffset + x, 0, worldZOffset + z }, 15 });
+                                    }
+                                }
+                            }
+                        }
+
+                        // 2. 블록라이트 시드: 청크 전체(Y: 0~255)를 돌며 자체 광원 블록(횃불 등) 수집
+                        for (int32_t x = 0; x < 32; ++x)
+                        {
+                            for (int32_t z = 0; z < 32; ++z)
+                            {
+                                for (int32_t y = 255; y >= 0; --y)
+                                {
+                                    CBlock3& block = pChunk->GetBlock(x, y, z);
+
+                                    // [💡 프로젝트 규칙]: 블록 타입에 따른 자체 발광 수치 추출 기믹 적용
+                                    // 예: 만약 블록 타입이 횃불(Torch)이면 emitLight = 14;
+                                    uint8_t emitLight = CBlock3::GetBlockLightByType(block.GetType());
+
+                                    // 현재 프로젝트의 블록 정보 데이터(또는 상성 테이블)에 맞게 광도를 체크하세요.
+                                    // if (block.GetType() == EBlockType::TORCH) emitLight = 14;
+                                    
+
+                                    if (emitLight > 0)
+                                    {
+                                        block.SetBlockLight(emitLight);
+                                        blockLightSeedQ.push({ { worldXOffset + x, y, worldZOffset + z }, emitLight });
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 3. 포인터 캐싱 최적화가 완비된 워커 조명 전파 가동
+                    WorkerFloodFillSkyLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), skyLightSeedQ);
+                    WorkerFloodFillBlockLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), blockLightSeedQ);
+
+                    return chunkIdxLookupBundle;
+                }
+            );
+
+            //std::unordered_set<uint64_t> chunkIdxLookupBundle = setIdx;
+            //std::future<std::unordered_set<uint64_t>> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture(
+            //    "FUT_LIGHTING",
+            //    [this, chunkIdxLookupBundle]()->std::unordered_set<uint64_t>
+            //    {
+            //        std::queue<std::pair<XMINT3, uint8_t>> skyLightSeedQ;
+
+            //        for (uint64_t chunkIdx : chunkIdxLookupBundle)
+            //        {
+            //            auto chunkIter = m_mapChunks.find(chunkIdx);
+            //            if (chunkIter == m_mapChunks.end()) continue;
+
+            //            CChunk3* pChunk = chunkIter->second.get();
+            //            const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
+
+            //            int32_t worldXOffset = cx * 32;
+            //            int32_t worldZOffset = cz * 32;
+
+            //            // X, Z 평면을 돌며 수직으로 빛을 먼저 내리꽂습니다.
+            //            for (int32_t x = 0; x < 32; ++x)
+            //            {
+            //                for (int32_t z = 0; z < 32; ++z)
+            //                {
+            //                    // 맨 위(255)부터 아래로 내려가며 불투명 블록을 찾습니다.
+            //                    for (int32_t y = 255; y >= 0; --y)
+            //                    {
+            //                        CBlock3& block = pChunk->GetBlock(x, y, z);
+
+            //                        if (block.IsOpaque())
+            //                        {
+            //                            // 불투명 블록(땅)을 만났다면, 바로 그 윗칸(공기)이 사방으로 빛이 번지는 시작점입니다.
+            //                            if (y < 255)
+            //                            {
+            //                                skyLightSeedQ.push({ { worldXOffset + x, y + 1, worldZOffset + z }, 15 });
+            //                            }
+            //                            break; // 이 칼럼은 땅 내부이므로 수직 낙하 스캔 중단
+            //                        }
+
+            //                        // 땅을 만나기 전까지는 큐 연산 없이 다이렉트로 빛을 15로 채웁니다.
+            //                        block.SetSkyLight(15);
+
+            //                        // 만약 Y=0 바닥까지 공기라면 맨 바닥을 시드로 등록
+            //                        if (y == 0)
+            //                        {
+            //                            skyLightSeedQ.push({ { worldXOffset + x, 0, worldZOffset + z }, 15 });
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //        }
+
+            //        // 지표면 주변으로만 번지는 6방향 플러드 필 가동 (연산 횟수가 90% 이상 감소함)
+            //        WorkerFloodFillSkyLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), skyLightSeedQ);
+
+            //        return chunkIdxLookupBundle;
+            //    }
+            //);
+
+
+            //std::unordered_set<uint64_t> chunkIdxLookupBundle = setIdx;
+            //std::future<std::unordered_set<uint64_t>> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture(
+            //    "FUT_LIGHTING",
+            //    [this, chunkIdxLookupBundle]()->std::unordered_set<uint64_t>
+            //    {
+            //        std::queue<std::pair<XMINT3, uint8_t>> skyLightSeedQ;
+            //        std::queue<std::pair<XMINT3, uint8_t>> blockLightSeedQ;
+
+            //        // 이번 번들에 묶인 청크들을 순회하며 조명 시작점 수집
+            //        for (uint64_t chunkIdx : chunkIdxLookupBundle)
+            //        {
+            //            auto chunkIter = m_mapChunks.find(chunkIdx);
+            //            if (chunkIter == m_mapChunks.end()) continue;
+
+            //            CChunk3* pChunk = chunkIter->second.get();
+
+            //            // [버그 예방]: GetCoord 대신 기존 검증된 매니저의 디코더 사용
+            //            const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
+
+            //            // 청크의 월드 기준 X, Z 시작 오프셋 계산
+            //            int32_t worldXOffset = cx * 32;
+            //            int32_t worldZOffset = cz * 32;
+
+            //            // 1. 스카이라이트 시드: 청크의 맨 꼭대기 층(Y=255) 평면 전체를 시드로 등록
+            //            for (int32_t x = 0; x < 32; ++x)
+            //            {
+            //                for (int32_t z = 0; z < 32; ++z)
+            //                {
+            //                    CBlock3& topBlock = pChunk->GetBlock(x, 255, z);
+            //                    if (!topBlock.IsOpaque())
+            //                    {
+            //                        topBlock.SetSkyLight(15);
+            //                        skyLightSeedQ.push({ { worldXOffset + x, 255, worldZOffset + z }, 15 });
+            //                    }
+            //                }
+            //            }
+
+            //            // 2. 블록라이트 시드: 청크 전체(Y: 0~255)를 돌며 자체 광원 블록 수집
+            //            for (int32_t x = 0; x < 32; ++x)
+            //            {
+            //                for (int32_t z = 0; z < 32; ++z)
+            //                {
+            //                    for (int32_t y = 255; y >= 0; --y)
+            //                    {
+            //                        CBlock3& block = pChunk->GetBlock(x, y, z);
+            //                        uint8_t emitLight = 0; // 자체 광원 수치 기믹 생략 시 0 유지
+
+            //                        if (emitLight > 0)
+            //                        {
+            //                            block.SetBlockLight(emitLight);
+            //                            blockLightSeedQ.push({ { worldXOffset + x, y, worldZOffset + z }, emitLight });
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //        }
+
+            //        // 3. 2중 나눗셈 버그가 수정된 워커 조명 함수 가동
+            //        WorkerFloodFillSkyLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), skyLightSeedQ);
+
+            //        return chunkIdxLookupBundle;
+            //    }
+            //);
+            
+
+
+            //std::unordered_set<uint64_t> chunkIdxLookupBundle = setIdx;
+            //std::future<std::unordered_set<uint64_t>> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture(
+            //    "FUT_LIGHTING",
+            //    [this, chunkIdxLookupBundle]()->std::unordered_set<uint64_t>
+            //    {
+            //        std::queue<std::pair<XMINT3, uint8_t>> skyLightSeedQ;
+            //        std::queue<std::pair<XMINT3, uint8_t>> blockLightSeedQ;
+
+            //        // 이번 번들에 묶인 청크들을 순회하며 조명 시작점 수집
+            //        for (uint64_t chunkIdx : chunkIdxLookupBundle)
+            //        {
+            //            auto chunkIter = m_mapChunks.find(chunkIdx);
+            //            if (chunkIter == m_mapChunks.end()) continue;
+
+            //            CChunk3* pChunk = chunkIter->second.get();
+            //            const auto&[cx, _, cz] = pChunk->GetCoord();
+            //            // 청크의 월드 기준 X, Z 시작 오프셋 계산
+            //            //int32_t cx = static_cast<int32_t>(chunkIdx >> 32);
+            //            //int32_t cz = static_cast<int32_t>(chunkIdx & 0xFFFFFFFF);
+            //            int32_t worldXOffset = cx * 32;
+            //            int32_t worldZOffset = cz * 32;
+
+            //            // 1. 스카이라이트 시드: 청크의 맨 꼭대기 층(Y=255) 평면 전체를 시드로 등록
+            //            for (int32_t x = 0; x < 32; ++x)
+            //            {
+            //                for (int32_t z = 0; z < 32; ++z)
+            //                {
+            //                    CBlock3& topBlock = pChunk->GetBlock(x, 255, z);
+            //                    if (!topBlock.IsOpaque())
+            //                    {
+            //                        topBlock.SetSkyLight(15);
+            //                        skyLightSeedQ.push({ { worldXOffset + x, 255, worldZOffset + z }, 15 });
+            //                    }
+            //                }
+            //            }
+
+            //            // 2. 블록라이트 시드: 청크 전체(Y: 0~255)를 돌며 자체 광원 블록(횃불 등) 수집
+            //            for (int32_t x = 0; x < 32; ++x)
+            //            {
+            //                for (int32_t z = 0; z < 32; ++z)
+            //                {
+            //                    for (int32_t y = 255; y >= 0; --y)
+            //                    {
+            //                        CBlock3& block = pChunk->GetBlock(x, y, z);
+
+            //                        // [프로젝트 규칙에 맞게 광원 블록 정보 추출]
+            //                        // 만약 블록 자체 발광 수치를 가져오는 기믹이 있다면 세팅합니다.
+            //                        // 예: uint8_t emitLight = block.GetEmitLightValue();
+            //                        uint8_t emitLight = 0; // 임시 가이드용 (자체 광원이 없다면 생략 가능)
+
+            //                        if (emitLight > 0)
+            //                        {
+            //                            block.SetBlockLight(emitLight);
+            //                            blockLightSeedQ.push({ { worldXOffset + x, y, worldZOffset + z }, emitLight });
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //        }
+
+            //        // 3. Y=256 범위 가드가 탑재된 워커 조명 함수 가동
+            //        WorkerFloodFillSkyLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), skyLightSeedQ);
+            //        //WorkerFloodFillBlockLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), blockLightSeedQ);
+
+            //        return chunkIdxLookupBundle;
+            //    }
+            //);
+
+            //std::unordered_set<uint64_t> chunkIdxLookupBundle = setIdx;
+            //std::future<std::unordered_set<uint64_t>> fut = CGameInstance::Get().ChunkLoadWorkerEnqueueWithFuture("FUT_LIGHTING", [this, chunkIdxLookupBundle]()->std::unordered_set<uint64_t> {
+            //    
+
+            //    // 조명 연산을 시작할 시드 큐 준비
+            //    std::queue<std::pair<XMINT3, uint8_t>> skyLightSeedQ;
+            //    std::queue<std::pair<XMINT3, uint8_t>> blockLightSeedQ;
+
+            //    // 1. 이번 번들에 포함된 청크들로부터 초기 빛 원천(시드)들을 싹 다 긁어모읍니다.
+            //    for (uint64_t chunkIdx : chunkIdxLookupBundle)
+            //    {
+            //        auto chunkIter = m_mapChunks.find(chunkIdx);
+            //        if (chunkIter != m_mapChunks.end())
+            //        {
+            //            // [필수 작업]: CChunk3 내부에 우리가 구상했던 CollectLightingSeeds 구현체를 호출해 줍니다.
+            //            // 월드 좌표 기준으로 전파 큐를 채워주는 함수입니다.
+            //            chunkIter->second->CollectLightingSeeds(skyLightSeedQ, blockLightSeedQ);
+            //        }
+            //    }
+
+            //    // 2. 묶어온 청크 범위 내에서만 안전하게 사방 전파 실행
+            //    WorkerFloodFillSkyLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), skyLightSeedQ);
+            //    WorkerFloodFillBlockLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), blockLightSeedQ);
+
+            //    // 연산이 무사히 완료된 번들 인덱스셋 반환
+            //    return chunkIdxLookupBundle;
+            //    });
+
+            m_futLighting = std::move(fut);
         }
 
 
@@ -1256,7 +1743,8 @@ HRESULT CVoxelManager3::UpdateCheckQuduedQuadMessingChunk()
             auto chunkFindIter = m_mapChunks.find(*innerIter);
             if (chunkFindIter != m_mapChunks.end())
             {
-                if (chunkFindIter->second->GetMessingState() == CChunk3::MESSING_STATE::ING)
+                if (chunkFindIter->second->GetMessingState() == CChunk3::MESSING_STATE::ING
+                    || chunkFindIter->second->GetLightingState() == CChunk3::LIGHTING_STATE::ING)
                 {
                     bNeedContinue = true;
                     break;
@@ -1402,6 +1890,11 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                     auto targetIter = m_mapChunks.find(chunkIdx);
                     if (targetIter != m_mapChunks.end())
                     {
+                        if (targetIter->second->GetLightingState() == CChunk3::LIGHTING_STATE::ING)
+                        {
+                            return true;
+                        }
+
                         if (targetIter->second->GetMessingQueued())
                         {
                             return true;
@@ -1640,6 +2133,39 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
         }
     }
     
+    return S_OK;
+}
+
+HRESULT CVoxelManager3::UpdateCheckLightingFutures()
+{
+    if (m_bLighing)
+    {
+        if (m_futLighting.valid())
+        {
+            if (m_futLighting.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+            {
+                m_bLighing = false;
+                std::unordered_set<uint64_t> lightedChunkIds = m_futLighting.get();
+
+                for (const auto& targetCoord : lightedChunkIds)
+                {
+                    auto iter = m_mapChunks.find(targetCoord);
+                    if (iter != m_mapChunks.end())
+                    {
+                        iter->second->SetLightingState(CChunk3::LIGHTING_STATE::DONE);
+                        std::vector<uint64_t> toMessingVec{};
+                        toMessingVec.push_back(targetCoord);
+                        QueueingQuadMessing(toMessingVec);
+                    }
+                }
+            }
+        }
+        else
+        {
+            MSG_BOX("LIGHT FUT NOT VALID");
+        }
+    }
+
     return S_OK;
 }
 
