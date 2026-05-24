@@ -967,6 +967,10 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
 void CVoxelManager3::UpdateGUI()
 {
+    auto test = CChunk3::BlockIndexing(10, 10, 10);
+    auto testres = CChunk3::BlockIndexDecoding(test);
+
+
     if (ImGui::Button("dbg block picking"))
     {
         m_bDbgBlockPicking = !m_bDbgBlockPicking;
@@ -1488,107 +1492,382 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
         auto chunkFindIter = m_mapChunks.find(chunkIdx);
         if (chunkFindIter != m_mapChunks.end())
         {
-            if (!chunkFindIter->second->GetMessingQueued())
-            {
-                const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
-                std::vector<uint64_t> messingReqVec{};
-
-                //CChunk3::BlockIndexing(0, 0, 0);
-                //CChunk3::BlockIndexing(VOXEL_CHUNK_X_SIZE3-1, 0, 0);
-
-                //CChunk3::BlockIndexing(0, 0, VOXEL_CHUNK_Z_SIZE3 - 1);
-                //CChunk3::BlockIndexing(VOXEL_CHUNK_X_SIZE3 - 1, 0, VOXEL_CHUNK_Z_SIZE3 - 1);
-
-                // pos_x
-                {
-                    
-                    uint64_t targetIdx = encodeChunkCoord(cx + 1, cy, cz);
-                    auto targetIter = m_mapChunks.find(targetIdx);
-                    if (targetIter != m_mapChunks.end())
-                    {
-                        if (targetIter->second->GetMessingQueued())
-                        {
-                            ++iter;
-                            continue;
-                        }
-                        else
-                        {
-                            messingReqVec.push_back(targetIdx);
-                        }
-                    }
-                }
-
-                // neg_x
-                {
-                    uint64_t targetIdx = encodeChunkCoord(cx - 1, cy, cz);
-                    auto targetIter = m_mapChunks.find(targetIdx);
-                    if (targetIter != m_mapChunks.end())
-                    {
-                        if (targetIter->second->GetMessingQueued())
-                        {
-                            ++iter;
-                            continue;
-                        }
-                        else
-                        {
-                            messingReqVec.push_back(targetIdx);
-                        }
-                    }
-                }
-
-                // pos_z
-                {
-                    uint64_t targetIdx = encodeChunkCoord(cx, cy, cz + 1);
-                    auto targetIter = m_mapChunks.find(targetIdx);
-                    if (targetIter != m_mapChunks.end())
-                    {
-                        if (targetIter->second->GetMessingQueued())
-                        {
-                            ++iter;
-                            continue;
-                        }
-                        else
-                        {
-                            messingReqVec.push_back(targetIdx);
-                        }
-                    }
-                }
-
-                // neg_z
-                {
-                    uint64_t targetIdx = encodeChunkCoord(cx, cy, cz - 1);
-                    auto targetIter = m_mapChunks.find(targetIdx);
-                    if (targetIter != m_mapChunks.end())
-                    {
-                        if (targetIter->second->GetMessingQueued())
-                        {
-                            ++iter;
-                            continue;
-                        }
-                        else
-                        {
-                            messingReqVec.push_back(targetIdx);
-                        }
-                    }
-                }
-
-                std::unordered_map<uint32_t, CBlock3>& blockChanges = iter->second;
-
-                for (const auto [blockIdx, block] : blockChanges)
-                {
-                    auto tmp = chunkFindIter->second->GetBlock(blockIdx);
-                    //chunkFindIter->second->SetBlock(blockIdx, block.GetType());
-                    chunkFindIter->second->SetBlock(blockIdx, block);
-                }
-
-                messingReqVec.push_back(chunkIdx);
-
-                QueueingQuadMessing(messingReqVec, true);
-                iter = m_EditShadow.erase(iter);
-            }
-            else
+            if (chunkFindIter->second->GetMessingQueued())
             {
                 ++iter;
+                continue;
+            }
+
+            _bool bRePosX{ false };
+            _bool bReNegX{ false };
+            _bool bRePosZ{ false };
+            _bool bReNegZ{ false };
+
+            auto& BlockChanges = iter->second;
+            for (const auto& [blockIdx, block] : BlockChanges)
+            {
+                const auto& [cbx, cby, cbz] = CChunk3::BlockIndexDecoding(blockIdx);
+
+                if (cbx == 0)
+                {
+                    bReNegX = true;
+                }
+                else if (cbx == VOXEL_CHUNK_X_SIZE3 - 1)
+                {
+                    bRePosX = true;
+                }
+
+                if (cbz == 0)
+                {
+                    bReNegZ = true;
+                }
+                else if (cbz == VOXEL_CHUNK_Z_SIZE3 - 1)
+                {
+                    bRePosZ = true;
+                }
+            }
+
+            auto funcHelperChunkMessingQueued = [&](uint64_t chunkIdx)->std::optional<_bool>
+                {
+                    auto targetIter = m_mapChunks.find(chunkIdx);
+                    if (targetIter != m_mapChunks.end())
+                    {
+                        if (targetIter->second->GetMessingQueued())
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    return std::nullopt;
+                };
+
+            const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
+            std::vector<uint64_t> messingReqVec{};
+
+            // RF
+            if (bRePosX && bRePosZ)
+            {
+                uint64_t RIdx = encodeChunkCoord(cx + 1, cy, cz);
+                uint64_t FIdx = encodeChunkCoord(cx, cy, cz + 1);
+                uint64_t RFIdx = encodeChunkCoord(cx + 1, cy, cz + 1);
+                if (auto queued = funcHelperChunkMessingQueued(RIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(RIdx);
+                }
+                if (auto queued = funcHelperChunkMessingQueued(FIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(FIdx);
+                }
+                if (auto queued = funcHelperChunkMessingQueued(RFIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(RFIdx);
+                }
+
+            }
+            // RB
+            else if (bRePosX && bReNegZ)
+            {
+                uint64_t RIdx = encodeChunkCoord(cx + 1, cy, cz);
+                uint64_t BIdx = encodeChunkCoord(cx, cy, cz - 1);
+                uint64_t RBIdx = encodeChunkCoord(cx + 1, cy, cz - 1);
+                if (auto queued = funcHelperChunkMessingQueued(RIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(RIdx);
+                }
+                if (auto queued = funcHelperChunkMessingQueued(BIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(BIdx);
+                }
+                if (auto queued = funcHelperChunkMessingQueued(RBIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(RBIdx);
+                }
+            }
+            // LF
+            else if (bReNegX && bRePosZ)
+            {
+                uint64_t LIdx = encodeChunkCoord(cx - 1, cy, cz);
+                uint64_t FIdx = encodeChunkCoord(cx, cy, cz + 1);
+                uint64_t LFIdx = encodeChunkCoord(cx - 1, cy, cz + 1);
+                if (auto queued = funcHelperChunkMessingQueued(LIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(LIdx);
+                }
+                if (auto queued = funcHelperChunkMessingQueued(FIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(FIdx);
+                }
+                if (auto queued = funcHelperChunkMessingQueued(LFIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(LFIdx);
+                }
+            }
+            // LB
+            else if (bReNegX && bReNegZ)
+            {
+                uint64_t LIdx = encodeChunkCoord(cx - 1, cy, cz);
+                uint64_t BIdx = encodeChunkCoord(cx, cy, cz - 1);
+                uint64_t LBIdx = encodeChunkCoord(cx - 1, cy, cz - 1);
+                if (auto queued = funcHelperChunkMessingQueued(LIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(LIdx);
+                }
+                if (auto queued = funcHelperChunkMessingQueued(BIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(BIdx);
+                }
+                if (auto queued = funcHelperChunkMessingQueued(LBIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(LBIdx);
+                }
+            }
+            else if (bRePosX)
+            {
+                uint64_t RIdx = encodeChunkCoord(cx + 1, cy, cz);
+                if (auto queued = funcHelperChunkMessingQueued(RIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(RIdx);
+                }
+            }
+            else if (bReNegX)
+            {
+                uint64_t LIdx = encodeChunkCoord(cx - 1, cy, cz);;
+                if (auto queued = funcHelperChunkMessingQueued(LIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(LIdx);
+                }
+            }
+            else if (bRePosZ)
+            {
+                uint64_t FIdx = encodeChunkCoord(cx, cy, cz + 1);
+                if (auto queued = funcHelperChunkMessingQueued(FIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(FIdx);
+                }
+            }
+            else if (bReNegZ)
+            {
+                uint64_t BIdx = encodeChunkCoord(cx, cy, cz - 1);
+                if (auto queued = funcHelperChunkMessingQueued(BIdx))
+                {
+                    if (queued.value())
+                    {
+                        ++iter;
+                        continue;
+                    }
+                    else
+                        messingReqVec.push_back(BIdx);
+                }
+            }
+            for (const auto [blockIdx, block] : BlockChanges)
+            {
+                auto tmp = chunkFindIter->second->GetBlock(blockIdx);
+                //chunkFindIter->second->SetBlock(blockIdx, block.GetType());
+                chunkFindIter->second->SetBlock(blockIdx, block);
+            }
+
+            messingReqVec.push_back(chunkIdx);
+
+            QueueingQuadMessing(messingReqVec, true);
+            iter = m_EditShadow.erase(iter);
+
+            if constexpr (false)
+            {
+                if (!chunkFindIter->second->GetMessingQueued())
+                {
+                    const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
+                    std::vector<uint64_t> messingReqVec{};
+
+                    //CChunk3::BlockIndexing(0, 0, 0);
+                    //CChunk3::BlockIndexing(VOXEL_CHUNK_X_SIZE3-1, 0, 0);
+
+                    //CChunk3::BlockIndexing(0, 0, VOXEL_CHUNK_Z_SIZE3 - 1);
+                    //CChunk3::BlockIndexing(VOXEL_CHUNK_X_SIZE3 - 1, 0, VOXEL_CHUNK_Z_SIZE3 - 1);
+
+                    // pos_x
+                    {
+
+                        uint64_t targetIdx = encodeChunkCoord(cx + 1, cy, cz);
+                        auto targetIter = m_mapChunks.find(targetIdx);
+                        if (targetIter != m_mapChunks.end())
+                        {
+                            if (targetIter->second->GetMessingQueued())
+                            {
+                                ++iter;
+                                continue;
+                            }
+                            else
+                            {
+                                messingReqVec.push_back(targetIdx);
+                            }
+                        }
+                    }
+
+                    // neg_x
+                    {
+                        uint64_t targetIdx = encodeChunkCoord(cx - 1, cy, cz);
+                        auto targetIter = m_mapChunks.find(targetIdx);
+                        if (targetIter != m_mapChunks.end())
+                        {
+                            if (targetIter->second->GetMessingQueued())
+                            {
+                                ++iter;
+                                continue;
+                            }
+                            else
+                            {
+                                messingReqVec.push_back(targetIdx);
+                            }
+                        }
+                    }
+
+                    // pos_z
+                    {
+                        uint64_t targetIdx = encodeChunkCoord(cx, cy, cz + 1);
+                        auto targetIter = m_mapChunks.find(targetIdx);
+                        if (targetIter != m_mapChunks.end())
+                        {
+                            if (targetIter->second->GetMessingQueued())
+                            {
+                                ++iter;
+                                continue;
+                            }
+                            else
+                            {
+                                messingReqVec.push_back(targetIdx);
+                            }
+                        }
+                    }
+
+                    // neg_z
+                    {
+                        uint64_t targetIdx = encodeChunkCoord(cx, cy, cz - 1);
+                        auto targetIter = m_mapChunks.find(targetIdx);
+                        if (targetIter != m_mapChunks.end())
+                        {
+                            if (targetIter->second->GetMessingQueued())
+                            {
+                                ++iter;
+                                continue;
+                            }
+                            else
+                            {
+                                messingReqVec.push_back(targetIdx);
+                            }
+                        }
+                    }
+
+                    std::unordered_map<uint32_t, CBlock3>& blockChanges = iter->second;
+
+                    for (const auto [blockIdx, block] : blockChanges)
+                    {
+                        auto tmp = chunkFindIter->second->GetBlock(blockIdx);
+                        //chunkFindIter->second->SetBlock(blockIdx, block.GetType());
+                        chunkFindIter->second->SetBlock(blockIdx, block);
+                    }
+
+                    messingReqVec.push_back(chunkIdx);
+
+                    QueueingQuadMessing(messingReqVec, true);
+                    iter = m_EditShadow.erase(iter);
+                }
+                else
+                {
+                    ++iter;
+                }
             }
         }
         else
