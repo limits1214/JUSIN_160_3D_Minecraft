@@ -158,12 +158,12 @@ public:
 
 public:
 	//void InitialFillingBlockLighting(CChunk3* pChunk);
-	void OnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight);
-	void RemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
-	void FloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
-	void FloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
-	void RemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
-	void OnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight);
+	void RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight);
+	void RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight);
 
 public:
 	void Update(_float fTimeDelta);
