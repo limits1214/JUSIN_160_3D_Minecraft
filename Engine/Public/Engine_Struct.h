@@ -218,6 +218,7 @@ namespace Engine
 		FACE_DIR eDir;
 		uint8_t blockTexType{};
 		uint8_t lighting{};
+		uint8_t ao[4]{};
 	} VOX_QUAD;
 
 

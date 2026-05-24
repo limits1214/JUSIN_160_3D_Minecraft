@@ -436,6 +436,7 @@ void CVoxelManager3::RemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>&
 
 void CVoxelManager3::FloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
+    // index 규칙: 0:우, 1:좌, 2:상, 3:하, 4:전, 5:후 (하늘 아래 방향은 d == 3)
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
     constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
     constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
@@ -445,7 +446,9 @@ void CVoxelManager3::FloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>
         auto [wbcoord, curLight] = q.front(); q.pop();
         auto [wbx, wby, wbz] = wbcoord;
 
-        if (curLight <= 1) continue;
+        // 아래 방향으로 무감쇄 직사광선(15)을 쏠 수 있는 상황이라면 curLight가 1이라도 루프를 돌아야 하므로,
+        // 무조건 컷트하지 않고 일반 감쇄 전파(curLight <= 1)일 때만 예외 처리합니다.
+        if (curLight <= 1 ) continue;
 
         for (int d = 0; d < 6; ++d)
         {
@@ -459,9 +462,17 @@ void CVoxelManager3::FloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>
             CBlock3 nBlock = nopt.value();
             if (nBlock.IsOpaque()) continue;
 
-            uint8_t newLight = curLight - 1;
+            // 1. 기본은 사방으로 퍼지면서 1씩 감소
+            uint8_t newLight = (curLight > 0) ? (curLight - 1) : 0;
 
-            // 버그 수정: SkyLight 데이터 컬럼을 정확하게 비교하도록 변경
+            // 2. [핵심] 수직 아래 방향(d == 3) 전파 특수 규칙
+            // 내가 지금 직사광선(15) 상태라면, 아래 칸은 동굴 속이든 평지든 상관없이 무조건 감쇄 없는 '15'입니다.
+            if (d == 3 && curLight == 15)
+            {
+                newLight = 15;
+            }
+
+            // 목적지 블록의 기존 빛보다 새로 전파할 빛이 더 밝을 때만 갱신
             if (newLight > nBlock.GetSkyLight())
             {
                 nBlock.SetSkyLight(newLight);

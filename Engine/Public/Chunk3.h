@@ -70,7 +70,10 @@ public:
 
 private:
 	void NiveFaceCulling(std::vector<VOX_QUAD>& quads) const;
+	_bool IsInsideOpaque(int32_t x, int32_t y, int32_t z,
+		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
 
+	uint8_t CalculateVertexAO(_bool side1, _bool side2, _bool corner) const;
 private:
 	CChunk3();
 	~CChunk3() override;
