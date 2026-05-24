@@ -45,7 +45,21 @@ public:
 	std::tuple<int32_t, int32_t, int32_t> GetCoord() const { return { m_iX, m_iY, m_iZ }; }
 
 	static uint32_t BlockIndexing(uint32_t x, uint32_t y, uint32_t z)  { return y + z * VOXEL_CHUNK_Y_SIZE3 + x * VOXEL_CHUNK_Y_SIZE3 * VOXEL_CHUNK_Z_SIZE3; }
-	
+	static std::tuple<uint32_t, uint32_t, uint32_t> BlockIndexDecoding(uint32_t idx)
+	{
+		constexpr uint32_t yzStride =
+			VOXEL_CHUNK_Y_SIZE3 * VOXEL_CHUNK_Z_SIZE3;
+
+		uint32_t x = static_cast<uint32_t>(idx / yzStride);
+
+		idx %= yzStride;
+
+		uint32_t z = static_cast<uint32_t>(idx / VOXEL_CHUNK_Y_SIZE3);
+
+		uint32_t y = static_cast<uint32_t>(idx % VOXEL_CHUNK_Y_SIZE3);
+
+		return { x, y, z };
+	}
 public:
 	CBlock3& GetBlock(uint32_t x, uint32_t y, uint32_t z) { return m_arrBlocks[BlockIndexing(x, y, z)]; }
 	void SetBlock(uint32_t x, uint32_t y, uint32_t z, CBlock3::TYPE eType) { m_arrBlocks[BlockIndexing(x, y, z)].SetType(eType); }
