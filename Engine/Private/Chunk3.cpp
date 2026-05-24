@@ -260,86 +260,57 @@ HRESULT CChunk3::QuadMessing()
 	m_vertices.reserve(quads.size() * 4);
 	m_indices.reserve(quads.size() * 6);
 
-	//01
-	//32
 	for (uint32_t i = 0; i < quads.size(); ++i)
 	{
 		uint32_t iFaceDir = ETOUI(quads[i].eDir);
 
-		// 0000 0000  0000 0000  0000 0000  0000 0000
-		// 
+		// 4개 정점 데이터 준비
+		E::VTX_VOXEL v[4]{};
+		v[0].pos = quads[i].v1;
+		v[1].pos = quads[i].v2;
+		v[2].pos = quads[i].v3;
+		v[3].pos = quads[i].v4;
 
-		// normal(3)
-		// 1110 0000  0000 0000  0000 0000  0000 0000
-
-		// vertexao(2)
-		// 0001 1000  0000 0000  0000 0000  0000 0000
-
-		// vertexid(2)
-		// 0000 0110  0000 0000  0000 0000  0000 0000
-
-		// textureid(8)
-		// 0000 0001  1111 1110  0000 0000  0000 0000
-
-		// Light(8)
-		// 0000 0000  0000 0001  1111 1110  0000 0000
-
-
-		E::VTX_VOXEL v{};
-		v.pos = quads[i].v1;
+		// 공통 데이터 인코딩 및 패킹 (AO값만 고유 적용)
+		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
 		{
-			v.packedData = {};
-			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29; // normal
-			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 27;//vertexao
-			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 25;//vertexid
-			v.packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17;//vertexid
-			
-			v.packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;// Light
+			v[vIdx].packedData = {};
+			v[vIdx].packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;              // normal (3bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(vIdx) & 0x03) << 25;                  // vertexid (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;      // Light (8bit)
 		}
-		m_vertices.push_back(v);
 
-		v.pos = quads[i].v2;
+		m_vertices.push_back(v[0]);
+		m_vertices.push_back(v[1]);
+		m_vertices.push_back(v[2]);
+		m_vertices.push_back(v[3]);
+
+		uint32_t startIndex = i * 4;
+
+		// 비대칭 이방성(Anisotropy) 보정 처리
+		// 0번-2번 대각선의 AO 합산이 1번-3번보다 작다면(즉, 더 어둡다면) 삼각형 쪼개기 방향을 회전시킵니다.
+		if (quads[i].ao[0] + quads[i].ao[2] < quads[i].ao[1] + quads[i].ao[3])
 		{
-			v.packedData = {};
-			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;// normal
-			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 27;//vertexao
-			v.packedData |= (static_cast<uint32_t>(1) & 0x03) << 25;//vertexid
-			v.packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17;//vertexid
-
-			v.packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;// Light
+			// 1-2-3, 1-3-0 형태로 인덱스 배치
+			m_indices.push_back(startIndex + 1);
+			m_indices.push_back(startIndex + 2);
+			m_indices.push_back(startIndex + 3);
+			m_indices.push_back(startIndex + 1);
+			m_indices.push_back(startIndex + 3);
+			m_indices.push_back(startIndex + 0);
 		}
-		m_vertices.push_back(v);
-
-		v.pos = quads[i].v3;
+		else
 		{
-			v.packedData = {};
-			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;// normal
-			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 27;//vertexao
-			v.packedData |= (static_cast<uint32_t>(2) & 0x03) << 25;//vertexid
-			v.packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17;//vertexid
-
-			v.packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;// Light
+			// 기존 순서: 0-1-2, 0-2-3
+			m_indices.push_back(startIndex + 0);
+			m_indices.push_back(startIndex + 1);
+			m_indices.push_back(startIndex + 2);
+			m_indices.push_back(startIndex + 0);
+			m_indices.push_back(startIndex + 2);
+			m_indices.push_back(startIndex + 3);
 		}
-		m_vertices.push_back(v);
-
-		v.pos = quads[i].v4;
-		{
-			v.packedData = {};
-			v.packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;// normal
-			v.packedData |= (static_cast<uint32_t>(0) & 0x03) << 27;//vertexao
-			v.packedData |= (static_cast<uint32_t>(3) & 0x03) << 25;//vertexid
-			v.packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17;//vertexid
-
-			v.packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;// Light
-		}
-		m_vertices.push_back(v);
-
-		m_indices.push_back(i * 4 + 0);
-		m_indices.push_back(i * 4 + 1);
-		m_indices.push_back(i * 4 + 2);
-		m_indices.push_back(i * 4 + 0);
-		m_indices.push_back(i * 4 + 2);
-		m_indices.push_back(i * 4 + 3);
 	}
 	m_eMessingState = MESSING_STATE::DONE;
 	return S_OK;
@@ -463,9 +434,7 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 				// 1. Top (+Y)
 				{
 					int ny = y + 1;
-					bool bExpose = (ny >= (int)VOXEL_CHUNK_Y_SIZE3)
-						? true  // 청크 Y 상단 경계 - 인접 청크 없음(혹은 항상 노출)
-						: !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque();
+					bool bExpose = (ny >= (int)VOXEL_CHUNK_Y_SIZE3) ? true : !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque();
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx,     fy + 1, fz + 1 };
@@ -474,13 +443,23 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx,     fy + 1, fz };
 						quad.eDir = FACE_DIR::POS_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
-						
-						{
-							quad.lighting = (y + 1 < (int)VOXEL_CHUNK_Y_SIZE3)
-								? m_arrBlocks[BlockIndexing(x, y + 1, z)].GetLight()
-								: 0xFF;
-						}
-						
+						quad.lighting = (y + 1 < (int)VOXEL_CHUNK_Y_SIZE3) ? m_arrBlocks[BlockIndexing(x, y + 1, z)].GetLight() : 0xFF;
+
+						// AO 대상 기준 평면: Y + 1 레이어의 주변 8개 블록 조회
+						_bool bL = IsInsideOpaque(x - 1, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bR = IsInsideOpaque(x + 1, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bF = IsInsideOpaque(x, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bB = IsInsideOpaque(x, ny, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bBL = IsInsideOpaque(x - 1, ny, fz - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bBR = IsInsideOpaque(x + 1, ny, fz - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bFL = IsInsideOpaque(x - 1, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bFR = IsInsideOpaque(x + 1, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+						quad.ao[0] = CalculateVertexAO(bL, bF, bFL); // v1 (Left, Front)
+						quad.ao[1] = CalculateVertexAO(bR, bF, bFR); // v2 (Right, Front)
+						quad.ao[2] = CalculateVertexAO(bR, bB, bBR); // v3 (Right, Back)
+						quad.ao[3] = CalculateVertexAO(bL, bB, bBL); // v4 (Left, Back)
+
 						quads.push_back(quad);
 					}
 				}
@@ -488,9 +467,7 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 				// 2. Bottom (-Y)
 				{
 					int ny = y - 1;
-					bool bExpose = (ny < 0)
-						? true
-						: !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque();
+					bool bExpose = (ny < 0) ? true : !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque();
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx,     fy, fz };
@@ -499,13 +476,22 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx,     fy, fz + 1 };
 						quad.eDir = FACE_DIR::NEG_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
-						
-						{
-							quad.lighting = (y - 1 >= 0)
-								? m_arrBlocks[BlockIndexing(x, y - 1, z)].GetLight()
-								: 0;
-						}
-						
+						quad.lighting = (y - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y - 1, z)].GetLight() : 0;
+
+						_bool bL = IsInsideOpaque(x - 1, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bR = IsInsideOpaque(x + 1, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bF = IsInsideOpaque(x, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bB = IsInsideOpaque(x, ny, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bBL = IsInsideOpaque(x - 1, ny, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bBR = IsInsideOpaque(x + 1, ny, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bFL = IsInsideOpaque(x - 1, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bFR = IsInsideOpaque(x + 1, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+						quad.ao[0] = CalculateVertexAO(bL, bB, bBL); // v1
+						quad.ao[1] = CalculateVertexAO(bR, bB, bBR); // v2
+						quad.ao[2] = CalculateVertexAO(bR, bF, bFR); // v3
+						quad.ao[3] = CalculateVertexAO(bL, bF, bFL); // v4
+
 						quads.push_back(quad);
 					}
 				}
@@ -513,31 +499,31 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 				// 3. Front (+Z)
 				{
 					int nz = z + 1;
-					bool bExpose;
-					if (nz >= (int)VOXEL_CHUNK_Z_SIZE3) {
-						// 인접 청크의 z=0 줄 확인
-						bExpose = (pPlusZ == nullptr)
-							? true
-							: !pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].IsOpaque();
-					}
-					else {
-						bExpose = !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque();
-					}
+					bool bExpose = (nz >= (int)VOXEL_CHUNK_Z_SIZE3) ? (pPlusZ ? !pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].IsOpaque() : true) : !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque();
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx + 1, fy + 1, fz + 1 };
 						quad.v2 = { fx,     fy + 1, fz + 1 };
-						quad.v3 = { fx ,	fy,     fz + 1 };
-						quad.v4 = { fx + 1, fy,		fz + 1 };
+						quad.v3 = { fx,     fy,     fz + 1 };
+						quad.v4 = { fx + 1, fy,     fz + 1 };
 						quad.eDir = FACE_DIR::POS_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						quad.lighting = (z + 1 < (int)VOXEL_CHUNK_Z_SIZE3) ? m_arrBlocks[BlockIndexing(x, y, z + 1)].GetLight() : (pPlusZ ? pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].GetLight() : 0xFF);
 
-						{
-							if (z + 1 < (int)VOXEL_CHUNK_Z_SIZE3)
-								quad.lighting = m_arrBlocks[BlockIndexing(x, y, z + 1)].GetLight();
-							else
-								quad.lighting = pPlusZ ? pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].GetLight() : 0xFF;
-						}
+						_bool bL = IsInsideOpaque(x - 1, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bR = IsInsideOpaque(x + 1, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bU = IsInsideOpaque(x, y + 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bD = IsInsideOpaque(x, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bUL = IsInsideOpaque(x - 1, y + 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bUR = IsInsideOpaque(x + 1, y + 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bDL = IsInsideOpaque(x - 1, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bDR = IsInsideOpaque(x + 1, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+						quad.ao[0] = CalculateVertexAO(bR, bU, bUR); // v1
+						quad.ao[1] = CalculateVertexAO(bL, bU, bUL); // v2
+						quad.ao[2] = CalculateVertexAO(bL, bD, bDL); // v3
+						quad.ao[3] = CalculateVertexAO(bR, bD, bDR); // v4
+
 						quads.push_back(quad);
 					}
 				}
@@ -545,15 +531,7 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 				// 4. Back (-Z)
 				{
 					int nz = z - 1;
-					bool bExpose;
-					if (nz < 0) {
-						bExpose = (pMinusZ == nullptr)
-							? true
-							: !pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].IsOpaque();
-					}
-					else {
-						bExpose = !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque();
-					}
+					bool bExpose = (nz < 0) ? (pMinusZ ? !pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].IsOpaque() : true) : !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque();
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx,     fy + 1, fz };
@@ -562,12 +540,22 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx,     fy,     fz };
 						quad.eDir = FACE_DIR::NEG_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
-						{
-							if (z - 1 >= 0)
-								quad.lighting = m_arrBlocks[BlockIndexing(x, y, z - 1)].GetLight();
-							else
-								quad.lighting = pMinusZ ? pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].GetLight() : 0xFF;
-						}
+						quad.lighting = (z - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y, z - 1)].GetLight() : (pMinusZ ? pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].GetLight() : 0xFF);
+
+						_bool bL = IsInsideOpaque(x - 1, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bR = IsInsideOpaque(x + 1, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bU = IsInsideOpaque(x, y + 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bD = IsInsideOpaque(x, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bUL = IsInsideOpaque(x - 1, y + 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bUR = IsInsideOpaque(x + 1, y + 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bDL = IsInsideOpaque(x - 1, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bDR = IsInsideOpaque(x + 1, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+						quad.ao[0] = CalculateVertexAO(bL, bU, bUL); // v1
+						quad.ao[1] = CalculateVertexAO(bR, bU, bUR); // v2
+						quad.ao[2] = CalculateVertexAO(bR, bD, bDR); // v3
+						quad.ao[3] = CalculateVertexAO(bL, bD, bDL); // v4
+
 						quads.push_back(quad);
 					}
 				}
@@ -575,15 +563,7 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 				// 5. Right (+X)
 				{
 					int nx = x + 1;
-					bool bExpose;
-					if (nx >= (int)VOXEL_CHUNK_X_SIZE3) {
-						bExpose = (pPlusX == nullptr)
-							? true
-							: !pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].IsOpaque();
-					}
-					else {
-						bExpose = !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque();
-					}
+					bool bExpose = (nx >= (int)VOXEL_CHUNK_X_SIZE3) ? (pPlusX ? !pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].IsOpaque() : true) : !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque();
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx + 1, fy + 1, fz };
@@ -592,13 +572,22 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx + 1, fy,     fz };
 						quad.eDir = FACE_DIR::POS_X;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
-						
-						{
-							if (x + 1 < (int)VOXEL_CHUNK_X_SIZE3)
-								quad.lighting = m_arrBlocks[BlockIndexing(x + 1, y, z)].GetLight();
-							else
-								quad.lighting = pPlusX ? pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].GetLight() : 0xFF;
-						}
+						quad.lighting = (x + 1 < (int)VOXEL_CHUNK_X_SIZE3) ? m_arrBlocks[BlockIndexing(x + 1, y, z)].GetLight() : (pPlusX ? pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].GetLight() : 0xFF);
+
+						_bool bF = IsInsideOpaque(nx, y, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bB = IsInsideOpaque(nx, y, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bU = IsInsideOpaque(nx, y + 1, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bD = IsInsideOpaque(nx, y - 1, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bUF = IsInsideOpaque(nx, y + 1, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bUB = IsInsideOpaque(nx, y + 1, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bDF = IsInsideOpaque(nx, y - 1, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bDB = IsInsideOpaque(nx, y - 1, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+						quad.ao[0] = CalculateVertexAO(bB, bU, bUB); // v1
+						quad.ao[1] = CalculateVertexAO(bF, bU, bUF); // v2
+						quad.ao[2] = CalculateVertexAO(bF, bD, bDF); // v3
+						quad.ao[3] = CalculateVertexAO(bB, bD, bDB); // v4
+
 						quads.push_back(quad);
 					}
 				}
@@ -606,15 +595,7 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 				// 6. Left (-X)
 				{
 					int nx = x - 1;
-					bool bExpose;
-					if (nx < 0) {
-						bExpose = (pMinusX == nullptr)
-							? true
-							: !pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].IsOpaque();
-					}
-					else {
-						bExpose = !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque();
-					}
+					bool bExpose = (nx < 0) ? (pMinusX ? !pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].IsOpaque() : true) : !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque();
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx, fy + 1, fz + 1 };
@@ -623,18 +604,93 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v4 = { fx, fy,     fz + 1 };
 						quad.eDir = FACE_DIR::NEG_X;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
-						{
-							if (x - 1 >= 0)
-								quad.lighting = m_arrBlocks[BlockIndexing(x - 1, y, z)].GetLight();
-							else
-								quad.lighting = pMinusX ? pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].GetLight() : 0xFF;
-						}
+						quad.lighting = (x - 1 >= 0) ? m_arrBlocks[BlockIndexing(x - 1, y, z)].GetLight() : (pMinusX ? pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].GetLight() : 0xFF);
+
+						_bool bF = IsInsideOpaque(nx, y, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bB = IsInsideOpaque(nx, y, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bU = IsInsideOpaque(nx, y + 1, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bD = IsInsideOpaque(nx, y - 1, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bUF = IsInsideOpaque(nx, y + 1, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bUB = IsInsideOpaque(nx, y + 1, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bDF = IsInsideOpaque(nx, y - 1, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+						_bool bDB = IsInsideOpaque(nx, y - 1, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+						quad.ao[0] = CalculateVertexAO(bF, bU, bUF); // v1
+						quad.ao[1] = CalculateVertexAO(bB, bU, bUB); // v2
+						quad.ao[2] = CalculateVertexAO(bB, bD, bDB); // v3
+						quad.ao[3] = CalculateVertexAO(bF, bD, bDF); // v4
+
 						quads.push_back(quad);
 					}
 				}
 			}
 		}
 	}
+}
+
+_bool CChunk3::IsInsideOpaque(int32_t x, int32_t y, int32_t z, CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const
+{
+	// Y축 경계 처리
+	if (y < 0 || y >= (int32_t)VOXEL_CHUNK_Y_SIZE3) return false;
+
+	// X, Z 축 범위에 따른 청크 포인터 분기
+	if (x >= 0 && x < (int32_t)VOXEL_CHUNK_X_SIZE3 && z >= 0 && z < (int32_t)VOXEL_CHUNK_Z_SIZE3)
+	{
+		return m_arrBlocks[BlockIndexing(x, y, z)].IsOpaque();
+	}
+
+	// 타겟 청크 탐색 및 로컬 좌표 변환
+	const CChunk3* pTargetChunk = this; // 기본값은 현재 청크
+	int32_t localX = x;
+	int32_t localZ = z;
+
+	// X축 청크 경계 및 로컬 좌표 처리
+	if (x >= (int32_t)VOXEL_CHUNK_X_SIZE3)
+	{
+		pTargetChunk = pPX;
+		localX = x - (int32_t)VOXEL_CHUNK_X_SIZE3;
+	}
+	else if (x < 0)
+	{
+		pTargetChunk = pMX;
+		localX = x + (int32_t)VOXEL_CHUNK_X_SIZE3;
+	}
+
+	// Z축 청크 경계 및 로컬 좌표 처리 (독립적인 if문으로 분리!)
+	if (z >= (int32_t)VOXEL_CHUNK_Z_SIZE3)
+	{
+		// 만약 이미 X축에서 청크가 바뀌었는데 Z축도 벗어났다면 대각선 청크가 필요함.
+		// 현재 구조(4방향 인접 청크만 받음)에서는 대각선 참조 시 빈 공간(false) 처리
+		if (pTargetChunk != this) return false;
+
+		pTargetChunk = pPZ;
+		localZ = z - (int32_t)VOXEL_CHUNK_Z_SIZE3;
+	}
+	else if (z < 0)
+	{
+		if (pTargetChunk != this) return false;
+
+		pTargetChunk = pMZ;
+		localZ = z + (int32_t)VOXEL_CHUNK_Z_SIZE3;
+	}
+
+	// 인접 청크가 로드되지 않았거나, 대각선 경계로 인해 null인 경우 예외 처리
+	if (pTargetChunk == nullptr) return false;
+
+	uint32_t cIdx = BlockIndexing(localX, y, localZ);
+	return pTargetChunk->m_arrBlocks[cIdx].IsOpaque();
+}
+
+uint8_t CChunk3::CalculateVertexAO(_bool side1, _bool side2, _bool corner) const
+{
+	if (side1 && side2) return 0; // 양옆이 다 막히면 완전 어두움
+
+	int32_t count = 0;
+	if (side1) count++;
+	if (side2) count++;
+	if (corner) count++;
+
+	return static_cast<uint8_t>(3 - count); // 많이 막힐수록 작은 값(어두움)
 }
 
 CChunk3::CChunk3()
