@@ -202,7 +202,7 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     return S_OK;
 }
 
-void CVoxelManager3::OnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight)
+void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
     constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
@@ -250,7 +250,7 @@ void CVoxelManager3::OnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wb
 
             if (!skyLightQ.empty())
             {
-                FloodFillSkyLighting(skyLightQ);
+                RuntimeFloodFillSkyLighting(skyLightQ);
             }
         }
     }
@@ -272,7 +272,7 @@ void CVoxelManager3::OnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wb
 
                 std::queue<std::pair<XMINT3, uint8_t>> blockLightRemovalQ;
                 blockLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlockLight });
-                RemoveBlockLighting(blockLightRemovalQ);
+                RuntimeRemoveBlockLighting(blockLightRemovalQ);
             }
             else
             {
@@ -294,14 +294,14 @@ void CVoxelManager3::OnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wb
 
                     std::queue<std::pair<XMINT3, uint8_t>> blockLightQ;
                     blockLightQ.push({ XMINT3{wbx, wby, wbz}, maxBlockLight - 1 });
-                    FloodFillBlockLighting(blockLightQ);
+                    RuntimeFloodFillBlockLighting(blockLightQ);
                 }
             }
         }
     }
 }
 
-void CVoxelManager3::RemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+void CVoxelManager3::RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
     constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
@@ -342,11 +342,11 @@ void CVoxelManager3::RemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>&
     // 빛 청소가 완전히 끝난 후, 살아남은 다른 광원들로부터 빛을 다시 복구
     if (!rePropagateQ.empty())
     {
-        FloodFillBlockLighting(rePropagateQ);
+        RuntimeFloodFillBlockLighting(rePropagateQ);
     }
 }
 
-void CVoxelManager3::FloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     // index 규칙: 0:우, 1:좌, 2:상, 3:하, 4:전, 5:후 (하늘 아래 방향은 d == 3)
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
@@ -395,7 +395,7 @@ void CVoxelManager3::FloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>
     }
 }
 
-void CVoxelManager3::FloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
     constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
@@ -433,7 +433,7 @@ void CVoxelManager3::FloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t
     }
 }
 
-void CVoxelManager3::RemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
     constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
@@ -478,11 +478,11 @@ void CVoxelManager3::RemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q
     // 막힌 곳 외에 옆에서 여전히 들어오고 있는 정상적인 스카이라이트가 있다면 다시 역전파해서 메워줌
     if (!rePropagateQ.empty())
     {
-        FloodFillSkyLighting(rePropagateQ);
+        RuntimeFloodFillSkyLighting(rePropagateQ);
     }
 }
 
-void CVoxelManager3::OnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight)
+void CVoxelManager3::RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
     constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
@@ -509,7 +509,7 @@ void CVoxelManager3::OnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz
         skyLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldSkyLight });
 
         // SkyLight용 Removal 함수가 필요합니다. (아래 3번 참고)
-        RemoveSkyLighting(skyLightRemovalQ);
+        RuntimeRemoveSkyLighting(skyLightRemovalQ);
     }
 
     // ----------------------------------------------------
@@ -520,14 +520,14 @@ void CVoxelManager3::OnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz
     {
         std::queue<std::pair<XMINT3, uint8_t>> blockLightQ;
         blockLightQ.push({ XMINT3{wbx, wby, wbz}, placedBlockEmitLight });
-        FloodFillBlockLighting(blockLightQ);
+        RuntimeFloodFillBlockLighting(blockLightQ);
     }
     // Case B: 일반 블록이 설치되어 기존의 빛 줄기를 막은 경우 -> 주변 빛 청소
     else if (oldBlockLight > 0)
     {
         std::queue<std::pair<XMINT3, uint8_t>> blockLightRemovalQ;
         blockLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlockLight });
-        RemoveBlockLighting(blockLightRemovalQ);
+        RuntimeRemoveBlockLighting(blockLightRemovalQ);
     }
 }
 
@@ -694,7 +694,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     block.SetType(CBlock3::TYPE::AIR);
                     SetBlock(worldBX, worldBY, worldBZ, block);
 
-                    OnBlockRemovedLighting(worldBX, worldBY, worldBZ, bIsLightSource, oldBlockLight);
+                    RuntimeOnBlockRemovedLighting(worldBX, worldBY, worldBZ, bIsLightSource, oldBlockLight);
                 }
             }
         }
@@ -779,7 +779,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
                     // 3. 조명 함수 호출 (배치된 블록의 광원 수치도 함께 넘겨줍니다)
                     uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(newBlock.GetType());
-                    OnBlockPlacedLighting(worldBX, worldBY, worldBZ, placedBlockEmitLight, oldSkyLight, oldBlockLight);
+                    RuntimeOnBlockPlacedLighting(worldBX, worldBY, worldBZ, placedBlockEmitLight, oldSkyLight, oldBlockLight);
                 }
             }
         }
