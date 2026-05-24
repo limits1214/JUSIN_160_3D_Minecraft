@@ -202,94 +202,6 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     return S_OK;
 }
 
-//void CVoxelManager3::InitialFillingBlockLighting(CChunk3* pChunk)
-//{
-//    const auto&[cx, _, cz] = pChunk->GetCoord();
-//
-//    int32_t startI = (int32_t)VOXEL_CHUNK_X_SIZE3 * cx;
-//    int32_t startK = (int32_t)VOXEL_CHUNK_Z_SIZE3 * cz;
-//    int32_t endI = (int32_t)VOXEL_CHUNK_X_SIZE3 * (cx + 1);
-//    int32_t endK = (int32_t)VOXEL_CHUNK_Z_SIZE3 * (cz + 1);
-//
-//    std::queue<XMINT3> floodFillSkyLightQ{};
-//    std::queue<XMINT3> floodFillBlockLightQ{};
-//
-//    {
-//        uint32_t localI = 0;
-//        for (int32_t i = startI; i < endI; ++i)
-//        {
-//            uint32_t localK = 0;
-//
-//            for (int32_t k = startK; k < endK; ++k)
-//            {
-//                _bool bBlocked{ false };
-//                bool bSkySeeded = false;
-//                for (int32_t j = VOXEL_CHUNK_Y_SIZE3 - 1; j >= 0; --j)
-//                {
-//                    uint32_t idx =
-//                        CChunk3::BlockIndexing(localI, j, localK);
-//
-//                    CBlock3 block = pChunk->GetBlock(idx);
-//
-//                    //
-//                    // SKY LIGHT
-//                    //
-//
-//                    if (block.IsOpaque())
-//                    {
-//                        bBlocked = true;
-//                        block.SetSkyLight(0);
-//                    }
-//                    else
-//                    {
-//                        if (!bBlocked)
-//                        {
-//                            block.SetSkyLight(15);
-//
-//                            if (!bSkySeeded)
-//                            {
-//                                floodFillSkyLightQ.push({ i,j,k });
-//                                bSkySeeded = true;
-//                            }
-//                        }
-//                        else
-//                        {
-//                            block.SetSkyLight(0);
-//                        }
-//                    }
-//
-//                    //
-//                    // BLOCK LIGHT
-//                    //
-//
-//                    uint8_t light =
-//                        CBlock3::GetBlockLightByType(block.GetType());
-//
-//                    block.SetBlockLight(light);
-//
-//                    if (light > 0)
-//                    {
-//                        floodFillBlockLightQ.push({
-//                            i,
-//                            j,
-//                            k
-//                            });
-//                    }
-//
-//                    pChunk->SetBlock(idx, block);
-//
-//                }
-//
-//                ++localK;
-//            }
-//            ++localI;
-//        }
-//    }
-//
-//    FloodFillSkyLighting(floodFillSkyLightQ);
-//    FloodFillBlockLighting(floodFillBlockLightQ);
-//}
-
 void CVoxelManager3::OnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
@@ -762,27 +674,6 @@ void CVoxelManager3::Update(_float fTimeDelta)
         {
             if (auto cam = E::CGameInstance::Get().GetActiveGameCamera())
             {
-                //RECT rect;
-                //GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
-
-                //E::_float4x4 P;
-                //XMStoreFloat4x4(&P, cam->GetProj());
-
-                //E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
-                //E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
-
-                //E::_matrix V = cam->GetView();
-                //auto detV = XMMatrixDeterminant(V);
-                //E::_matrix invView = XMMatrixInverse(&detV, V);
-
-                //rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
-                //rayDir = XMVector3TransformNormal(rayDir, invView);
-                //_float3 vecrayOrigin;
-                //_float3 vecrayDir;
-
-                //XMStoreFloat3(&vecrayOrigin, rayOrigin);
-                //XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
-
                 const auto& [rayOrigin2, rayDir2] = cam->GetRay();
 
                 BLOCK_RAY_RESULT res;
@@ -812,30 +703,9 @@ void CVoxelManager3::Update(_float fTimeDelta)
         {
             if (auto cam = E::CGameInstance::Get().GetActiveGameCamera())
             {
-                RECT rect;
-                GetClientRect(CGameInstance::Get().GetHwnd(), &rect);
-
-                E::_float4x4 P;
-                XMStoreFloat4x4(&P, cam->GetProj());
-
-                E::_vector rayOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
-                E::_vector rayDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
-
-                E::_matrix V = cam->GetView();
-                auto detV = XMMatrixDeterminant(V);
-                E::_matrix invView = XMMatrixInverse(&detV, V);
-
-                rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
-                rayDir = XMVector3TransformNormal(rayDir, invView);
-                _float3 vecrayOrigin;
-                _float3 vecrayDir;
-
-                XMStoreFloat3(&vecrayOrigin, rayOrigin);
-                XMStoreFloat3(&vecrayDir, XMVector3Normalize(rayDir));
-
-
+                const auto& [rayOrigin2, rayDir2] = cam->GetRay();
                 BLOCK_RAY_RESULT res;
-                if (BlockRaycast(vecrayOrigin, vecrayDir, 5.f, res))
+                if (BlockRaycast(rayOrigin2, rayDir2, 5.f, res))
                 {
                     //const auto& [cx, cy, cz] = res.pChunk->GetCoord();
 
