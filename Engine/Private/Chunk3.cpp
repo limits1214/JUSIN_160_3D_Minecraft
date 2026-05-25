@@ -232,6 +232,7 @@ HRESULT CChunk3::BlockFilling()
 
 	constexpr float NOISE_OFFSET = 100000.f;
 	constexpr int   BEDROCK_MAX_HEIGHT = 4;
+	constexpr int32_t SEA_LEVEL = 63;
 
 	for (int32_t i = 0; i < VOXEL_CHUNK_X_SIZE3; ++i)
 	{
@@ -240,49 +241,148 @@ HRESULT CChunk3::BlockFilling()
 			float tmpx = m_iX * (int32_t)VOXEL_CHUNK_X_SIZE3 + i + NOISE_OFFSET;
 			float tmpz = m_iZ * (int32_t)VOXEL_CHUNK_Z_SIZE3 + j + NOISE_OFFSET;
 
-			float n = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HEIGHT).GetNoise(tmpx, tmpz);
-			float t = (n + 1.0f) * 0.5f;
-			uint32_t height = (uint32_t)(32.0f + t * 64.0f);
+			// -------------------------------------------------------------
+			// [STEP 1] 기후 정보 수집 및 바이옴 결정 (-1.0f ~ 1.0f)
+			// -------------------------------------------------------------
+			float tempNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::TEMPERATURE).GetNoise(tmpx, tmpz);
+			float humidNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HUMIDITY).GetNoise(tmpx, tmpz);
+			float heightNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HEIGHT).GetNoise(tmpx, tmpz);
 
+			BIOME_TYPE biome = BIOME_TYPE::PLAINS; // 기본값은 평지
+			int32_t calculatedHeight = 64;
+
+			// 💡 기후 조건 분기문 (Whittaker 다이어그램 단순화)
+			if (tempNoise < -0.2f)
+			{
+				// ❄️ [눈/툰드라 바이옴] - 온도가 낮음
+				biome = BIOME_TYPE::SNOW;
+				// 눈 덮인 산악 지대 연출을 위해 굴곡을 조금 줍니다.
+				calculatedHeight = (int32_t)(70.0f + heightNoise * 45.0f);
+			}
+			else if (tempNoise > 0.2f && humidNoise < -0.1f)
+			{
+				// 🏜️ [사막 바이옴] - 온도가 높고 습도가 낮음
+				biome = BIOME_TYPE::DESERT;
+				// 사막은 상대적으로 평평하면서 부드러운 모래 언덕 느낌으로 배율을 낮춥니다.
+				calculatedHeight = (int32_t)(68.0f + heightNoise * 15.0f);
+			}
+			else
+			{
+				// 🌳 [평지/초원 바이옴] - 적당한 기후
+				biome = BIOME_TYPE::PLAINS;
+				// 웅장함을 살짝 섞기 위해 제곱 보정 등을 주거나 적당한 배율(30)을 줍니다.
+				calculatedHeight = (int32_t)(66.0f + heightNoise * 25.0f);
+			}
+
+			// 높이 경계 안전 가드
+			if (calculatedHeight < 5)   calculatedHeight = 5;
+			if (calculatedHeight > 250) calculatedHeight = 250;
+
+			uint32_t height = (uint32_t)calculatedHeight;
+
+			// -------------------------------------------------------------
+			// [STEP 2] 결정된 바이옴 규칙에 맞춰 블록 배치
+			// -------------------------------------------------------------
 			for (uint32_t k = 0; k < VOXEL_CHUNK_Y_SIZE3; ++k)
 			{
 				uint32_t idx = BlockIndexing(i, k, j);
 
+				// 베드락 레이어는 바이옴 불문 공통
 				if (k == 0)
 				{
 					m_arrBlocks[idx].SetType(CBlock3::TYPE::BEDROCK);
+					continue;
 				}
 				else if (k <= BEDROCK_MAX_HEIGHT)
 				{
 					float threshold = 1.f - ((float)k / BEDROCK_MAX_HEIGHT);
-					float noise = (CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::BEDROCK).GetNoise(
-						tmpx, (float)k, tmpz) + 1.f) * 0.5f;
-
-					m_arrBlocks[idx].SetType(noise < threshold
-						? CBlock3::TYPE::BEDROCK
-						: CBlock3::TYPE::STONE);   // AIR 대신 STONE — 베드락 위는 돌
+					float noise = (CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::BEDROCK).GetNoise(tmpx, (float)k, tmpz) + 1.f) * 0.5f;
+					m_arrBlocks[idx].SetType(noise < threshold ? CBlock3::TYPE::BEDROCK : CBlock3::TYPE::STONE);
+					continue;
 				}
-				else if (k < height - 10)
+
+				// 하부 지형 생성 (지표면 아래는 기본적으로 STONE)
+				if (k < height - 5)
 				{
 					m_arrBlocks[idx].SetType(CBlock3::TYPE::STONE);
 				}
+				// 지표면 바로 아래 껍질 (Dirt 혹은 Sand)
 				else if (k < height)
 				{
-					m_arrBlocks[idx].SetType(CBlock3::TYPE::DIRT);
+					if (biome == BIOME_TYPE::DESERT)
+						m_arrBlocks[idx].SetType(CBlock3::TYPE::SAND); // 사막은 아래도 모래
+					else
+						m_arrBlocks[idx].SetType(CBlock3::TYPE::DIRT); // 평지, 눈은 아래가 흙
 				}
+				// 💡 [핵심] 가장 윗 표면 블록 처리 (k == height)
 				else if (k == height)
 				{
-					m_arrBlocks[idx].SetType(CBlock3::TYPE::GRASS);
+					if (k < SEA_LEVEL)
+					{
+						// 해수면 아래 잠긴 땅은 바이옴 불문 모래나 흙으로 통일
+						m_arrBlocks[idx].SetType(biome == BIOME_TYPE::DESERT ? CBlock3::TYPE::SAND : CBlock3::TYPE::DIRT);
+					}
+					else
+					{
+						// 바이옴별 전용 표면 블록 배치
+						switch (biome)
+						{
+						case BIOME_TYPE::SNOW:
+							m_arrBlocks[idx].SetType(CBlock3::TYPE::STONE); // 눈 블록
+							break;
+						case BIOME_TYPE::DESERT:
+							m_arrBlocks[idx].SetType(CBlock3::TYPE::SAND);       // 모래 블록
+							break;
+						case BIOME_TYPE::PLAINS:
+						default:
+							m_arrBlocks[idx].SetType(CBlock3::TYPE::GRASS);      // 잔디 블록
+							break;
+						}
+					}
 				}
 				else
 				{
 					m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
 				}
-			}
-		}
-	}
 
-	//InitialChunkLighting();
+				// -------------------------------------------------------------
+				// [STEP 3] 후처리 (동굴 및 광물 - 이전 코드 구조 그대로 유지)
+				// -------------------------------------------------------------
+				CBlock3::TYPE currentType = m_arrBlocks[idx].GetType();
+
+				if (k > BEDROCK_MAX_HEIGHT && k < height - 4)
+				{
+					// 동굴 파내기
+					float caveNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::CAVE).GetNoise(tmpx, (float)k, tmpz);
+					if (caveNoise > 0.45f)
+					{
+						m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
+						continue;
+					}
+
+					// 광물 배치
+					if (currentType == CBlock3::TYPE::STONE)
+					{
+						if (k <= 16)
+						{
+							float oreDiamond = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::ORE_DIAMOND).GetNoise(tmpx, (float)k, tmpz);
+							if (oreDiamond > 0.85f) { m_arrBlocks[idx].SetType(CBlock3::TYPE::STONE_DIAMOND_ORE); continue; }
+						}
+						if (k <= 60)
+						{
+							float oreIronNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::ORE_IRON).GetNoise(tmpx, (float)k, tmpz);
+							if (oreIronNoise > 0.80f) { m_arrBlocks[idx].SetType(CBlock3::TYPE::STONE_IRON_ORE); continue; }
+						}
+						if (k <= 150)
+						{
+							float oreCoalNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::ORE_COAL).GetNoise(tmpx, (float)k, tmpz);
+							if (oreCoalNoise > 0.75f) { m_arrBlocks[idx].SetType(CBlock3::TYPE::STONE_COAL_ORE); continue; }
+						}
+					}
+				}
+			} // k loop
+		} // j loop
+	} // i loop
 
 	m_eBlockFillingState = BLOCKFILLING_STATE::DONE;
 	return S_OK;
