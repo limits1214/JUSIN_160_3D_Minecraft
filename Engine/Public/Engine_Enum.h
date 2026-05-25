@@ -37,6 +37,20 @@ namespace Engine
 	{
 		HEIGHT,
 		BEDROCK,
+		CAVE,
+		ORE_IRON,
+		ORE_DIAMOND,
+		ORE_COAL,
+		TEMPERATURE,
+		HUMIDITY,
+		END
+	};
+
+	enum class BIOME_TYPE : uint8_t
+	{
+		SNOW,    // 눈 덮인 지대
+		DESERT,  // 사막
+		PLAINS,  // 평지
 		END
 	};
 }

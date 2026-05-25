@@ -563,10 +563,6 @@ void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& 
     }
 }
 
-void CVoxelManager3::WorkerRemoveBlocklighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
-{
-}
-
 void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1, -1, 0, 0, 0, 0 };
@@ -638,9 +634,6 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
     }
 }
 
-void CVoxelManager3::WorkerRemoveSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
-{
-}
 
 void CVoxelManager3::RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight)
 {
@@ -1350,6 +1343,46 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
 
                 setIdx.insert(chunkIdx);
 
+                //POS_X, POS_Z
+                {
+                    uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz + 1);
+                    auto iter = m_mapChunks.find(targetCoord);
+                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
+                    {
+                        setIdx.insert(targetCoord);
+                    }
+                }
+
+                //POS_X, NEG_Z
+                {
+                    uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz - 1);
+                    auto iter = m_mapChunks.find(targetCoord);
+                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
+                    {
+                        setIdx.insert(targetCoord);
+                    }
+                }
+
+                //NEG_X, POS_Z
+                {
+                    uint64_t targetCoord = encodeChunkCoord(cx - 1, cy, cz + 1);
+                    auto iter = m_mapChunks.find(targetCoord);
+                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
+                    {
+                        setIdx.insert(targetCoord);
+                    }
+                }
+
+                //NEG_X, NEG_Z
+                {
+                    uint64_t targetCoord = encodeChunkCoord(cx - 1, cy, cz - 1);
+                    auto iter = m_mapChunks.find(targetCoord);
+                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
+                    {
+                        setIdx.insert(targetCoord);
+                    }
+                }
+
                 //POS_X
                 {
                     uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz);
@@ -1460,7 +1493,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                             }
                         }
 
-                        // 2. 블록라이트 시드: 청크 전체(Y: 0~255)를 돌며 자체 광원 블록(횃불 등) 수집
+                        // 1. 내 청크 내부 자체 광원 수집 (기존 루프 - 심플하게 유지)
                         for (int32_t x = 0; x < 32; ++x)
                         {
                             for (int32_t z = 0; z < 32; ++z)
@@ -1468,19 +1501,62 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                                 for (int32_t y = 255; y >= 0; --y)
                                 {
                                     CBlock3& block = pChunk->GetBlock(x, y, z);
-
-                                    // [💡 프로젝트 규칙]: 블록 타입에 따른 자체 발광 수치 추출 기믹 적용
-                                    // 예: 만약 블록 타입이 횃불(Torch)이면 emitLight = 14;
                                     uint8_t emitLight = CBlock3::GetBlockLightByType(block.GetType());
-
-                                    // 현재 프로젝트의 블록 정보 데이터(또는 상성 테이블)에 맞게 광도를 체크하세요.
-                                    // if (block.GetType() == EBlockType::TORCH) emitLight = 14;
-                                    
-
                                     if (emitLight > 0)
                                     {
                                         block.SetBlockLight(emitLight);
                                         blockLightSeedQ.push({ { worldXOffset + x, y, worldZOffset + z }, emitLight });
+                                    }
+                                }
+                            }
+                        }
+
+                        //  주변 8방향 청크의 경계면 라이팅을 그대로 내 시드로 흡수
+                        for (int32_t offsetX = -1; offsetX <= 1; ++offsetX)
+                        {
+                            for (int32_t offsetZ = -1; offsetZ <= 1; ++offsetZ)
+                            {
+                                if (offsetX == 0 && offsetZ == 0) continue; // 나 자신은 제외
+
+                                int32_t ncx = cx + offsetX;
+                                int32_t ncz = cz + offsetZ;
+                                uint64_t nChunkIdx = encodeChunkCoord(ncx, cy, ncz); // Y축은 같은 층(cy) 기준
+
+                                // 주변 이웃 청크가 이미 세상에 로드되어 불이 켜져 있는 상태라면?
+                                auto nChunkIter = m_mapChunks.find(nChunkIdx);
+                                if (nChunkIter != m_mapChunks.end())
+                                {
+                                    CChunk3* pAdjChunk = nChunkIter->second.get();
+
+                                    // 💡 이웃 청크에서 "우리 청크와 딱 맞닿아 있는 경계 영역"의 로컬 범위를 지정합니다.
+                                    // 대각선 꼭짓점 청크라면 딱 1칸짜리 꼭짓점 기둥만, 직선 청크라면 32칸짜리 한 면만 정밀 타격합니다.
+                                    int32_t adjXStart = (offsetX == 1) ? 0 : ((offsetX == -1) ? 31 : 0);
+                                    int32_t adjXEnd = (offsetX == 1) ? 0 : ((offsetX == -1) ? 31 : 31);
+                                    int32_t adjZStart = (offsetZ == 1) ? 0 : ((offsetZ == -1) ? 31 : 0);
+                                    int32_t adjZEnd = (offsetZ == 1) ? 0 : ((offsetZ == -1) ? 31 : 31);
+
+                                    for (int32_t ax = adjXStart; ax <= adjXEnd; ++ax)
+                                    {
+                                        for (int32_t az = adjZStart; az <= adjZEnd; ++az)
+                                        {
+                                            // 💡 상하 전파 사각지대를 없애기 위해, 내 Y층 기준 위아래 삼중창(ay-1, ay, ay+1) 전파를 수용하도록 설계할 수 있습니다.
+                                            // (이웃 청크의 해당 좌표에 빛이 존재한다면, 6방향 플러드 필이 내 청크 안쪽으로 밀고 들어오는 시드가 됩니다.)
+                                            for (int32_t ay = 0; ay < 256; ++ay)
+                                            {
+                                                CBlock3& adjBlock = pAdjChunk->GetBlock(ax, ay, az);
+                                                uint8_t adjLight = adjBlock.GetBlockLight();
+
+                                                // 이웃 청크 경계면에 빛이 켜져 있고 투명하다면 내 큐에 시드로 복사!
+                                                if (adjLight > 1 && !adjBlock.IsOpaque())
+                                                {
+                                                    int32_t adjWorldX = ncx * 32 + ax;
+                                                    int32_t adjWorldZ = ncz * 32 + az;
+
+                                                    // 이웃 청크의 그 불 켜진 좌표 자체를 전파용 시드 큐에 그대로 집어넣습니다.
+                                                    blockLightSeedQ.push({ { adjWorldX, ay, adjWorldZ }, adjLight });
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -2197,19 +2273,69 @@ HRESULT CVoxelManager3::QueueingQuadMessing(std::vector<uint64_t> targetCoords, 
 
 HRESULT CVoxelManager3::Initialize()
 {
+    // =================================================================
+    // 1. 기본 지형 및 베드락 세팅
+    // =================================================================
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetSeed(m_iNoiseSeed);
-    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFrequency(0.03f);
+
+    // 💡 [핵심 수정 1]: 주파수를 0.03f -> 0.005f 정도로 대폭 낮춥니다.
+    // 값이 작아질수록 "어어어엄청 넓고 완만한 대륙"이 형성되어 뾰족함이 사라집니다.
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFrequency(0.005f);
 
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalType(FastNoiseLite::FractalType_FBm);
-    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalOctaves(5);     // 층을 얼마나 쌓을지 (4~6 추천
-    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalLacunarity(2.0f); // 층 사이의 주파수 배율
-    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalGain(0.3f);       // 층 사이의 영향력 배율
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalOctaves(4); // 5에서 4로 낮추면 지형이 더 매끄러워집니다.
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalLacunarity(2.0f);
+
+    // 💡 [핵심 수정 2]: Gain(영향력 배율)을 0.3f -> 0.2f 정도로 낮춥니다.
+    // 옥타브를 쌓을 때 생기는 자잘한 굴곡(뾰족한 노이즈)의 강도를 줄여서 표면을 부드럽게 만듭니다.
+    m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalGain(0.2f);
 
 
-    m_Noises[ETOUI(NOISE_TYPE::BEDROCK)].SetSeed(m_iNoiseSeed + 1); // HEIGHT와 다른 시드
+    m_Noises[ETOUI(NOISE_TYPE::BEDROCK)].SetSeed(m_iNoiseSeed + 1);
     m_Noises[ETOUI(NOISE_TYPE::BEDROCK)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     m_Noises[ETOUI(NOISE_TYPE::BEDROCK)].SetFrequency(0.8f);
+
+    // =================================================================
+    // 2. 동굴 세팅
+    // =================================================================
+    m_Noises[ETOUI(NOISE_TYPE::CAVE)].SetSeed(m_iNoiseSeed + 2);
+    m_Noises[ETOUI(NOISE_TYPE::CAVE)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    m_Noises[ETOUI(NOISE_TYPE::CAVE)].SetFrequency(0.04f);
+
+    // =================================================================
+    // 3. 💎 광물별 개별 3D 노이즈 세팅 (시드 분리 필수!)
+    // =================================================================
+
+    // 🪙 철광석 (기존 유지)
+    m_Noises[ETOUI(NOISE_TYPE::ORE_IRON)].SetSeed(m_iNoiseSeed + 3);
+    m_Noises[ETOUI(NOISE_TYPE::ORE_IRON)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    m_Noises[ETOUI(NOISE_TYPE::ORE_IRON)].SetFrequency(0.15f); // 적당한 크기의 덩어리
+
+    // 🪨 석탄 (추가)
+    m_Noises[ETOUI(NOISE_TYPE::ORE_COAL)].SetSeed(m_iNoiseSeed + 4); // 시드 +4
+    m_Noises[ETOUI(NOISE_TYPE::ORE_COAL)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    // 석탄은 마인크래프트에서도 덩어리가 매우 크게 나오므로, 주파수를 약간 낮춰서 넓은 구역에 분포시킵니다.
+    m_Noises[ETOUI(NOISE_TYPE::ORE_COAL)].SetFrequency(0.12f);
+
+    // 💎 다이아몬드 (추가)
+    m_Noises[ETOUI(NOISE_TYPE::ORE_DIAMOND)].SetSeed(m_iNoiseSeed + 5); // 시드 +5
+    m_Noises[ETOUI(NOISE_TYPE::ORE_DIAMOND)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    // 다이아몬드는 아주 좁은 영역에 1~4개 수준으로 뭉쳐나와야 하므로 주파수를 높여 촘촘하게 만듭니다.
+    m_Noises[ETOUI(NOISE_TYPE::ORE_DIAMOND)].SetFrequency(0.22f);
+
+
+
+
+    // 🌡️ [온도 노이즈 세팅]
+    m_Noises[ETOUI(NOISE_TYPE::TEMPERATURE)].SetSeed(m_iNoiseSeed + 10);
+    m_Noises[ETOUI(NOISE_TYPE::TEMPERATURE)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    m_Noises[ETOUI(NOISE_TYPE::TEMPERATURE)].SetFrequency(0.002f); // 아주 넓게 분포하도록 낮게 세팅
+
+    // 💧 [습도 노이즈 세팅]
+    m_Noises[ETOUI(NOISE_TYPE::HUMIDITY)].SetSeed(m_iNoiseSeed + 21);
+    m_Noises[ETOUI(NOISE_TYPE::HUMIDITY)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    m_Noises[ETOUI(NOISE_TYPE::HUMIDITY)].SetFrequency(0.002f);
 
     //m_NoiseHeight.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     //m_NoiseHeight.SetFrequency(0.03f); // 전체적인 지형의 크기 (낮을수록 거대함)
