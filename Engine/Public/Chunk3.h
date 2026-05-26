@@ -103,7 +103,9 @@ public:
 	void Update(_float fTimeDelta);
 
 private:
-	void NiveFaceCulling(std::vector<VOX_QUAD>& quads) const;
+	CBlock3::TYPE GetBlockTypeAt(int32_t x, int32_t y, int32_t z, CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
+private:
+	void NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& waterQuads) const;
 	_bool IsInsideOpaque(int32_t x, int32_t y, int32_t z,
 		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
 
@@ -127,6 +129,10 @@ private:
 	SPtr<CResDynamicVIBuffer> m_pResSolidDynamicViBuffer{};
 	std::vector<E::VTX_VOXEL> m_SolidVertices{};
 	std::vector<uint32_t>  m_SolidIndices{};
+	SPtr<CResDynamicVIBuffer> m_pResWaterDynamicViBuffer{};
+	std::vector<E::VTX_VOXEL> m_WaterVertices{};
+	std::vector<uint32_t>  m_WaterIndices{};
+
 	SPtr<CResCBuffer> m_pResCBufferPerObject{};
 
 public:
