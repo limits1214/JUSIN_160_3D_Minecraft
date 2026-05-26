@@ -262,6 +262,22 @@ void CGameInstance::UpdateGUI()
 	m_pLightManager->UpdateGUI();
 
 	m_pVoxelManager3->UpdateGUI();
+
+	if (ImGui::Button("ShaderRebuild"))
+	{
+		//TAG_RES_GRP_PERMANENT_SHADER
+		if (auto resources = GetResource(TAG_RES_GRP_PERMANENT_SHADER))
+		{
+			for (auto& [_, res] : *resources)
+			{
+				if (!res.empty())
+				{
+					res.front()->Unload();
+					res.front()->Load();
+				}
+			}
+		}
+	}
 }
 
 void CGameInstance::ClearResource(uint32_t iClearLevelIndex)
@@ -516,7 +532,7 @@ HRESULT CGameInstance::InitializeResources()
 
 HRESULT CGameInstance::InitializeMCResource()
 {
-	// initialize block shader(voxel)
+	// initialize block, watershader(voxel)
 	{
 		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block", "./Resources/Shader/Block/Block.hlsl"))
 		{
@@ -526,6 +542,21 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block", "./Resources/Shader/Block/Block.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Water", "./Resources/Shader/Block/Water.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Water", "./Resources/Shader/Block/Water.hlsl"))
 		{
 			if (FAILED(res->Load()))
 			{

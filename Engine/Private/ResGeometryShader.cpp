@@ -25,6 +25,7 @@ HRESULT CResGeometryShader::Load(const std::any& arg)
 
 HRESULT CResGeometryShader::Unload(const std::any& arg)
 {
+	m_eState = STATE::UNLOAD;
 	return S_OK;
 }
 

@@ -180,19 +180,19 @@ CVoxelManager3::~CVoxelManager3()
 
 HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 {
-    const auto& vs = m_pResVertexShader;
-    const auto& ps = m_pResPixelShader;
+    pContext->PSSetSamplers(9, 1, m_pResSamplerPointWrap->GetSamplerState().GetAddressOf());
 
-    pContext->IASetInputLayout(vs->GetInputLayout().Get());
-    pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
-    pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
+    const auto& solidBlockVS = m_pResSolidBlockVertexShader;
+    const auto& solidBlockPS = m_pResSolidBlockPixelShader;
+
+    pContext->IASetInputLayout(solidBlockVS->GetInputLayout().Get());
+    pContext->VSSetShader(solidBlockVS->GetVertexShader().Get(), nullptr, 0);
+    pContext->PSSetShader(solidBlockPS->GetPixelShader().Get(), nullptr, 0);
     if (1)
     {
         const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
         pContext->RSSetState(rasterizer->GetRasterizerState().Get());
     }
-
-    pContext->PSSetSamplers(9, 1, m_pResSamplerPointWrap->GetSamplerState().GetAddressOf());
 
     //auto pCameraObject = CGameInstance::Get().GetActiveGameCamera("Player");
     auto vecCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerCamera");
@@ -214,7 +214,12 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     }
 
 
+    const auto& solidWaterVS = m_pResWaterBlockVertexShader;
+    const auto& solidWaterPS = m_pResWaterBlockPixelShader;
 
+    pContext->IASetInputLayout(solidWaterVS->GetInputLayout().Get());
+    pContext->VSSetShader(solidWaterVS->GetVertexShader().Get(), nullptr, 0);
+    pContext->PSSetShader(solidBlockPS->GetPixelShader().Get(), nullptr, 0);
     //TAG_RES_GRP_PERMANENT_STATE, "BS_ALPHA_BLEND"
     //TAG_RES_GRP_PERMANENT_STATE, "DS_NO_DEPTHWRITE"
     //TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL
@@ -2400,8 +2405,11 @@ HRESULT CVoxelManager3::Initialize()
 
     //
     {
-        m_pResVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block");
-        m_pResPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block");
+        m_pResSolidBlockVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block");
+        m_pResSolidBlockPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block");
+
+        m_pResWaterBlockVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Water");
+        m_pResWaterBlockPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Water");
     }
     {
         m_pResBlocksTexutreArray = CGameInstance::Get().GetResourceFirst<E::CResTexture2DArray>("VOXEL_MANAGER_TEX", "TEXTURE_ARRAY");;

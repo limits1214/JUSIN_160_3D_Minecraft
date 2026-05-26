@@ -117,6 +117,7 @@ HRESULT CResVertexShader::Load(const std::any& arg)
 
 HRESULT CResVertexShader::Unload(const std::any& arg)
 {
+	m_eState = STATE::UNLOAD;
 	return S_OK;
 }
 

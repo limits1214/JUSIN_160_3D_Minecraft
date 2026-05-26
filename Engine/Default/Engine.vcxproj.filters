@@ -1348,5 +1348,8 @@
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\UI\UI.hlsl">
       <Filter>100.Shaders\UI</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Water.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
