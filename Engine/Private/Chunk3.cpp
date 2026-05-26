@@ -345,7 +345,18 @@ HRESULT CChunk3::BlockFilling()
 				}
 				else
 				{
-					m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
+					// 현재 높이(k)가 지표면(height)보다는 높은 상태입니다.
+					// 만약 해수면(SEA_LEVEL = 63)보다 낮거나 같다면 초기 바다물로 채웁니다.
+					if (k <= SEA_LEVEL)
+					{
+						m_arrBlocks[idx].SetType(CBlock3::TYPE::WATER_PLACE_HOLDER);
+					}
+					else
+					{
+						// 해수면보다도 완전히 높은 진짜 하늘 공간만 AIR 처리
+						m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
+					}
+					//m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
 				}
 
 				// -------------------------------------------------------------
@@ -357,6 +368,11 @@ HRESULT CChunk3::BlockFilling()
 				{
 					// 동굴 파내기
 					float caveNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::CAVE).GetNoise(tmpx, (float)k, tmpz);
+
+					// 만약 이미 위에서 물로 채워진 칸이라면 동굴 노이즈가 나오더라도 구멍 뚫지 않기 (해저 보호)
+					if (m_arrBlocks[idx].GetType() == CBlock3::TYPE::WATER_PLACE_HOLDER)
+						continue;
+
 					if (caveNoise > 0.45f)
 					{
 						m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
@@ -395,35 +411,36 @@ HRESULT CChunk3::QuadMessing()
 {
 	m_eMessingState = MESSING_STATE::ING;
 
-	std::vector<VOX_QUAD> quads{};
-	NiveFaceCulling(quads);
+	std::vector<VOX_QUAD> solidQuads{};
+	std::vector<VOX_QUAD> waterQuads{};
+	NiveFaceCulling(solidQuads, waterQuads);
 
 	m_SolidIndices.clear();
 	m_SolidVertices.clear();
 
-	m_SolidVertices.reserve(quads.size() * 4);
-	m_SolidIndices.reserve(quads.size() * 6);
+	m_SolidVertices.reserve(solidQuads.size() * 4);
+	m_SolidIndices.reserve(solidQuads.size() * 6);
 
-	for (uint32_t i = 0; i < quads.size(); ++i)
+	for (uint32_t i = 0; i < solidQuads.size(); ++i)
 	{
-		uint32_t iFaceDir = ETOUI(quads[i].eDir);
+		uint32_t iFaceDir = ETOUI(solidQuads[i].eDir);
 
 		// 4개 정점 데이터 준비
 		E::VTX_VOXEL v[4]{};
-		v[0].pos = quads[i].v1;
-		v[1].pos = quads[i].v2;
-		v[2].pos = quads[i].v3;
-		v[3].pos = quads[i].v4;
+		v[0].pos = solidQuads[i].v1;
+		v[1].pos = solidQuads[i].v2;
+		v[2].pos = solidQuads[i].v3;
+		v[3].pos = solidQuads[i].v4;
 
 		// 공통 데이터 인코딩 및 패킹 (AO값만 고유 적용)
 		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
 		{
 			v[vIdx].packedData = {};
 			v[vIdx].packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;              // normal (3bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(solidQuads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
 			v[vIdx].packedData |= (static_cast<uint32_t>(vIdx) & 0x03) << 25;                  // vertexid (2bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;      // Light (8bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(solidQuads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(solidQuads[i].lighting) & 0xff) << 9;      // Light (8bit)
 		}
 
 		m_SolidVertices.push_back(v[0]);
@@ -435,7 +452,7 @@ HRESULT CChunk3::QuadMessing()
 
 		// 비대칭 이방성(Anisotropy) 보정 처리
 		// 0번-2번 대각선의 AO 합산이 1번-3번보다 작다면(즉, 더 어둡다면) 삼각형 쪼개기 방향을 회전시킵니다.
-		if (quads[i].ao[0] + quads[i].ao[2] < quads[i].ao[1] + quads[i].ao[3])
+		if (solidQuads[i].ao[0] + solidQuads[i].ao[2] < solidQuads[i].ao[1] + solidQuads[i].ao[3])
 		{
 			// 1-2-3, 1-3-0 형태로 인덱스 배치
 			m_SolidIndices.push_back(startIndex + 1);
@@ -456,6 +473,64 @@ HRESULT CChunk3::QuadMessing()
 			m_SolidIndices.push_back(startIndex + 3);
 		}
 	}
+
+
+
+	m_WaterIndices.clear();
+	m_WaterVertices.clear();
+
+	m_WaterVertices.reserve(waterQuads.size() * 4);
+	m_WaterIndices.reserve(waterQuads.size() * 6);
+
+	for (uint32_t i = 0; i < waterQuads.size(); ++i)
+	{
+		uint32_t iFaceDir = ETOUI(waterQuads[i].eDir);
+
+		E::VTX_VOXEL v[4]{};
+		v[0].pos = waterQuads[i].v1;
+		v[1].pos = waterQuads[i].v2;
+		v[2].pos = waterQuads[i].v3;
+		v[3].pos = waterQuads[i].v4;
+
+		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
+		{
+			v[vIdx].packedData = {};
+			v[vIdx].packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;              // normal (3bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(waterQuads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(vIdx) & 0x03) << 25;                  // vertexid (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(waterQuads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(waterQuads[i].lighting) & 0xff) << 9;      // Light (8bit)
+		}
+
+		m_WaterVertices.push_back(v[0]);
+		m_WaterVertices.push_back(v[1]);
+		m_WaterVertices.push_back(v[2]);
+		m_WaterVertices.push_back(v[3]);
+
+		uint32_t startIndex = i * 4;
+
+		// 물 쿼드 대각선 보정 처리 (주변 흙/돌 지형과 AO 라인을 맞추기 위해 동일하게 세팅)
+		if (waterQuads[i].ao[0] + waterQuads[i].ao[2] < waterQuads[i].ao[1] + waterQuads[i].ao[3])
+		{
+			m_WaterIndices.push_back(startIndex + 1);
+			m_WaterIndices.push_back(startIndex + 2);
+			m_WaterIndices.push_back(startIndex + 3);
+			m_WaterIndices.push_back(startIndex + 1);
+			m_WaterIndices.push_back(startIndex + 3);
+			m_WaterIndices.push_back(startIndex + 0);
+		}
+		else
+		{
+			m_WaterIndices.push_back(startIndex + 0);
+			m_WaterIndices.push_back(startIndex + 1);
+			m_WaterIndices.push_back(startIndex + 2);
+			m_WaterIndices.push_back(startIndex + 0);
+			m_WaterIndices.push_back(startIndex + 2);
+			m_WaterIndices.push_back(startIndex + 3);
+		}
+	}
+
+
 	m_eMessingState = MESSING_STATE::DONE;
 	return S_OK;
 }
@@ -464,47 +539,99 @@ HRESULT CChunk3::CreateBuffer()
 {
 	m_eBufferState = BUFFER_STATE::ING;
 
-	E::CResDynamicVIBuffer::DESC desc{};
-	desc.iNumVertices = (uint32_t)m_SolidVertices.size();
-	desc.iVertexStride = sizeof(E::VTX_VOXEL);
-	desc.vertexDesc = {
-		.ByteWidth = desc.iNumVertices * desc.iVertexStride,
-		.Usage = D3D11_USAGE_IMMUTABLE,
-		.BindFlags = D3D11_BIND_VERTEX_BUFFER,
-		.CPUAccessFlags = 0,
-		.MiscFlags = 0
-	};
-	desc.vertexSubResource = {
-		.pSysMem = m_SolidVertices.data()
-	};
-
-	desc.iIndexStride = sizeof(uint32_t);
-	desc.iNumIndices = (uint32_t)m_SolidIndices.size();
-	desc.IndexDesc = {
-		.ByteWidth = desc.iNumIndices * desc.iIndexStride,
-		.Usage = D3D11_USAGE_IMMUTABLE,
-		.BindFlags = D3D11_BIND_INDEX_BUFFER,
-		.CPUAccessFlags = 0,
-		.MiscFlags = 0
-	};
-	desc.indexSubResource = {
-		.pSysMem = m_SolidIndices.data()
-	};
-	desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
-	desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-	m_pResSolidDynamicViBuffer = E::CResDynamicVIBuffer::Create();
-	if (FAILED(m_pResSolidDynamicViBuffer->Load(desc)))
+	// solid buffer
 	{
-		m_pResSolidDynamicViBuffer.reset();
-		m_eBufferState = BUFFER_STATE::NON;
-		return E_FAIL;
-	};
+		E::CResDynamicVIBuffer::DESC desc{};
+		desc.iNumVertices = (uint32_t)m_SolidVertices.size();
+		desc.iVertexStride = sizeof(E::VTX_VOXEL);
+		desc.vertexDesc = {
+			.ByteWidth = desc.iNumVertices * desc.iVertexStride,
+			.Usage = D3D11_USAGE_IMMUTABLE,
+			.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+			.CPUAccessFlags = 0,
+			.MiscFlags = 0
+		};
+		desc.vertexSubResource = {
+			.pSysMem = m_SolidVertices.data()
+		};
+
+		desc.iIndexStride = sizeof(uint32_t);
+		desc.iNumIndices = (uint32_t)m_SolidIndices.size();
+		desc.IndexDesc = {
+			.ByteWidth = desc.iNumIndices * desc.iIndexStride,
+			.Usage = D3D11_USAGE_IMMUTABLE,
+			.BindFlags = D3D11_BIND_INDEX_BUFFER,
+			.CPUAccessFlags = 0,
+			.MiscFlags = 0
+		};
+		desc.indexSubResource = {
+			.pSysMem = m_SolidIndices.data()
+		};
+		desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
+		desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+		m_pResSolidDynamicViBuffer = E::CResDynamicVIBuffer::Create();
+		if (FAILED(m_pResSolidDynamicViBuffer->Load(desc)))
+		{
+			m_pResSolidDynamicViBuffer.reset();
+			m_eBufferState = BUFFER_STATE::NON;
+			return E_FAIL;
+		};
+
+		m_SolidIndices.clear();
+		m_SolidVertices.clear();
+	}
+
+	// water buffer
+	{
+		if (!m_WaterVertices.empty())
+		{
+			E::CResDynamicVIBuffer::DESC desc{};
+			desc.iNumVertices = (uint32_t)m_WaterVertices.size();
+			desc.iVertexStride = sizeof(E::VTX_VOXEL);
+			desc.vertexDesc = {
+				.ByteWidth = desc.iNumVertices * desc.iVertexStride,
+				.Usage = D3D11_USAGE_IMMUTABLE,
+				.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0
+			};
+			desc.vertexSubResource = {
+				.pSysMem = m_WaterVertices.data()
+			};
+
+			desc.iIndexStride = sizeof(uint32_t);
+			desc.iNumIndices = (uint32_t)m_WaterIndices.size();
+			desc.IndexDesc = {
+				.ByteWidth = desc.iNumIndices * desc.iIndexStride,
+				.Usage = D3D11_USAGE_IMMUTABLE,
+				.BindFlags = D3D11_BIND_INDEX_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0
+			};
+			desc.indexSubResource = {
+				.pSysMem = m_WaterIndices.data()
+			};
+			desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
+			desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+			m_pResWaterDynamicViBuffer = E::CResDynamicVIBuffer::Create();
+			if (FAILED(m_pResWaterDynamicViBuffer->Load(desc)))
+			{
+				m_pResWaterDynamicViBuffer.reset();
+				m_eBufferState = BUFFER_STATE::NON;
+				return E_FAIL;
+			};
+
+
+			m_WaterIndices.clear();
+			m_WaterVertices.clear();
+		}
+		
+	}
 
 	m_eBufferState = BUFFER_STATE::DONE;
 
-	m_SolidIndices.clear();
-	m_SolidVertices.clear();
 	m_eMessingState = MESSING_STATE::NON;
 
 	return S_OK;
@@ -557,6 +684,49 @@ HRESULT CChunk3::DrawSolid(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 
 HRESULT CChunk3::DrawWater(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const
 {
+	if (m_eBufferState != BUFFER_STATE::DONE)
+	{
+		return S_OK;
+	}
+	if (!m_pResWaterDynamicViBuffer)
+	{
+		return S_OK;
+	}
+	{
+		E::CB_PER_OBJECT cbPerObject{};
+
+		int32_t dx = m_iX * VOXEL_CHUNK_X_SIZE3;
+		int32_t dz = m_iZ * VOXEL_CHUNK_Z_SIZE3;
+
+		auto worldMat = XMMatrixTranslation((float)dx, 0, (float)dz);
+
+		XMStoreFloat4x4(&cbPerObject.matWorld, worldMat);
+		XMStoreFloat4x4(&cbPerObject.matWVP, worldMat * ctx.matView * ctx.matProj);
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		if (SUCCEEDED(pContext->Map(m_pResCBufferPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource))) {
+			memcpy(mappedResource.pData, &cbPerObject, sizeof(E::CB_PER_OBJECT));
+			pContext->Unmap(m_pResCBufferPerObject->GetCBuffer().Get(), 0);
+		}
+		pContext->VSSetConstantBuffers(0, 1, m_pResCBufferPerObject->GetCBuffer().GetAddressOf());
+	}
+
+	const auto& viBuffer = m_pResWaterDynamicViBuffer;
+
+	ID3D11Buffer* vertexBuffers[] = {
+		viBuffer->GetVertexBuffer().Get()
+	};
+	uint32_t strides[] = {
+		viBuffer->GetVertexStride()
+	};
+	uint32_t offsets[] = {
+		0
+	};
+	pContext->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
+	pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
+	pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
+
+	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
 	return S_OK;
 }
 
@@ -565,7 +735,49 @@ void CChunk3::Update(_float fTimeDelta)
 	CGameInstance::Get().AddColliderGroup("Coll_Chunk", m_pCollBox.get());
 }
 
-void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
+CBlock3::TYPE CChunk3::GetBlockTypeAt(int32_t x, int32_t y, int32_t z, CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const
+{
+	if (y < 0 || y >= (int32_t)VOXEL_CHUNK_Y_SIZE3) return CBlock3::TYPE::AIR;
+
+	if (x >= 0 && x < (int32_t)VOXEL_CHUNK_X_SIZE3 && z >= 0 && z < (int32_t)VOXEL_CHUNK_Z_SIZE3)
+	{
+		return m_arrBlocks[BlockIndexing(x, y, z)].GetType();
+	}
+
+	const CChunk3* pTargetChunk = this;
+	int32_t localX = x;
+	int32_t localZ = z;
+
+	if (x >= (int32_t)VOXEL_CHUNK_X_SIZE3)
+	{
+		pTargetChunk = pPX;
+		localX = x - (int32_t)VOXEL_CHUNK_X_SIZE3;
+	}
+	else if (x < 0)
+	{
+		pTargetChunk = pMX;
+		localX = x + (int32_t)VOXEL_CHUNK_X_SIZE3;
+	}
+
+	if (z >= (int32_t)VOXEL_CHUNK_Z_SIZE3)
+	{
+		if (pTargetChunk != this) return CBlock3::TYPE::AIR; // 대각선 예외
+		pTargetChunk = pPZ;
+		localZ = z - (int32_t)VOXEL_CHUNK_Z_SIZE3;
+	}
+	else if (z < 0)
+	{
+		if (pTargetChunk != this) return CBlock3::TYPE::AIR; // 대각선 예외
+		pTargetChunk = pMZ;
+		localZ = z + (int32_t)VOXEL_CHUNK_Z_SIZE3;
+	}
+
+	if (pTargetChunk == nullptr) return CBlock3::TYPE::AIR;
+
+	return pTargetChunk->m_arrBlocks[pTargetChunk->BlockIndexing(localX, y, localZ)].GetType();
+}
+
+void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& waterQuads) const
 {
 	CChunk3* pPlusX = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ);
 	CChunk3* pMinusX = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ);
@@ -579,7 +791,10 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 			for (int y = 0; y < (int)VOXEL_CHUNK_Y_SIZE3; ++y)
 			{
 				uint32_t currentIdx = BlockIndexing(x, y, z);
-				if (m_arrBlocks[currentIdx].GetType() == CBlock3::TYPE::AIR) continue;
+				CBlock3::TYPE curType = m_arrBlocks[currentIdx].GetType();
+				if (curType == CBlock3::TYPE::AIR) continue;
+
+				bool isCurrentWater = (curType == CBlock3::TYPE::WATER_PLACE_HOLDER);
 
 				float fx = (float)x;
 				float fy = (float)y;
@@ -588,7 +803,14 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 				// 1. Top (+Y)
 				{
 					int ny = y + 1;
-					bool bExpose = (ny >= (int)VOXEL_CHUNK_Y_SIZE3) ? true : !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque();
+					CBlock3::TYPE nextType = GetBlockTypeAt(x, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+					bool bExpose = false;
+					if (isCurrentWater)
+						bExpose = (nextType == CBlock3::TYPE::AIR); // 물 위에는 공기여야 면이 보임
+					else
+						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER); // 고체 위에는 공기나 물일 때 보임
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx,     fy + 1, fz + 1 };
@@ -596,10 +818,9 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v3 = { fx + 1, fy + 1, fz };
 						quad.v4 = { fx,     fy + 1, fz };
 						quad.eDir = FACE_DIR::POS_Y;
-						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (y + 1 < (int)VOXEL_CHUNK_Y_SIZE3) ? m_arrBlocks[BlockIndexing(x, y + 1, z)].GetLight() : 0xFF;
 
-						// AO 대상 기준 평면: Y + 1 레이어의 주변 8개 블록 조회
 						_bool bL = IsInsideOpaque(x - 1, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 						_bool bR = IsInsideOpaque(x + 1, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 						_bool bF = IsInsideOpaque(x, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
@@ -609,19 +830,27 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						_bool bFL = IsInsideOpaque(x - 1, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
 						_bool bFR = IsInsideOpaque(x + 1, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-						quad.ao[0] = CalculateVertexAO(bL, bF, bFL); // v1 (Left, Front)
-						quad.ao[1] = CalculateVertexAO(bR, bF, bFR); // v2 (Right, Front)
-						quad.ao[2] = CalculateVertexAO(bR, bB, bBR); // v3 (Right, Back)
-						quad.ao[3] = CalculateVertexAO(bL, bB, bBL); // v4 (Left, Back)
+						quad.ao[0] = CalculateVertexAO(bL, bF, bFL);
+						quad.ao[1] = CalculateVertexAO(bR, bF, bFR);
+						quad.ao[2] = CalculateVertexAO(bR, bB, bBR);
+						quad.ao[3] = CalculateVertexAO(bL, bB, bBL);
 
-						quads.push_back(quad);
+						if (isCurrentWater) waterQuads.push_back(quad);
+						else                solidQuads.push_back(quad);
 					}
 				}
 
 				// 2. Bottom (-Y)
 				{
 					int ny = y - 1;
-					bool bExpose = (ny < 0) ? true : !m_arrBlocks[BlockIndexing(x, ny, z)].IsOpaque();
+					CBlock3::TYPE nextType = GetBlockTypeAt(x, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+					bool bExpose = false;
+					if (isCurrentWater)
+						bExpose = (nextType == CBlock3::TYPE::AIR); // 밑면이 뚫린 연출(하늘에 떠있는 유체 등)이 아니면 물끼리는 컬링
+					else
+						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx,     fy, fz };
@@ -629,7 +858,7 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v3 = { fx + 1, fy, fz + 1 };
 						quad.v4 = { fx,     fy, fz + 1 };
 						quad.eDir = FACE_DIR::NEG_Y;
-						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (y - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y - 1, z)].GetLight() : 0;
 
 						_bool bL = IsInsideOpaque(x - 1, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
@@ -641,19 +870,27 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						_bool bFL = IsInsideOpaque(x - 1, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
 						_bool bFR = IsInsideOpaque(x + 1, ny, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-						quad.ao[0] = CalculateVertexAO(bL, bB, bBL); // v1
-						quad.ao[1] = CalculateVertexAO(bR, bB, bBR); // v2
-						quad.ao[2] = CalculateVertexAO(bR, bF, bFR); // v3
-						quad.ao[3] = CalculateVertexAO(bL, bF, bFL); // v4
+						quad.ao[0] = CalculateVertexAO(bL, bB, bBL);
+						quad.ao[1] = CalculateVertexAO(bR, bB, bBR);
+						quad.ao[2] = CalculateVertexAO(bR, bF, bFR);
+						quad.ao[3] = CalculateVertexAO(bL, bF, bFL);
 
-						quads.push_back(quad);
+						if (isCurrentWater) waterQuads.push_back(quad);
+						else                solidQuads.push_back(quad);
 					}
 				}
 
 				// 3. Front (+Z)
 				{
 					int nz = z + 1;
-					bool bExpose = (nz >= (int)VOXEL_CHUNK_Z_SIZE3) ? (pPlusZ ? !pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].IsOpaque() : true) : !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque();
+					CBlock3::TYPE nextType = GetBlockTypeAt(x, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+					bool bExpose = false;
+					if (isCurrentWater)
+						bExpose = (nextType == CBlock3::TYPE::AIR);
+					else
+						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx + 1, fy + 1, fz + 1 };
@@ -661,7 +898,7 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v3 = { fx,     fy,     fz + 1 };
 						quad.v4 = { fx + 1, fy,     fz + 1 };
 						quad.eDir = FACE_DIR::POS_Z;
-						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (z + 1 < (int)VOXEL_CHUNK_Z_SIZE3) ? m_arrBlocks[BlockIndexing(x, y, z + 1)].GetLight() : (pPlusZ ? pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].GetLight() : 0xFF);
 
 						_bool bL = IsInsideOpaque(x - 1, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
@@ -673,19 +910,27 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						_bool bDL = IsInsideOpaque(x - 1, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
 						_bool bDR = IsInsideOpaque(x + 1, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-						quad.ao[0] = CalculateVertexAO(bR, bU, bUR); // v1
-						quad.ao[1] = CalculateVertexAO(bL, bU, bUL); // v2
-						quad.ao[2] = CalculateVertexAO(bL, bD, bDL); // v3
-						quad.ao[3] = CalculateVertexAO(bR, bD, bDR); // v4
+						quad.ao[0] = CalculateVertexAO(bR, bU, bUR);
+						quad.ao[1] = CalculateVertexAO(bL, bU, bUL);
+						quad.ao[2] = CalculateVertexAO(bL, bD, bDL);
+						quad.ao[3] = CalculateVertexAO(bR, bD, bDR);
 
-						quads.push_back(quad);
+						if (isCurrentWater) waterQuads.push_back(quad);
+						else                solidQuads.push_back(quad);
 					}
 				}
 
 				// 4. Back (-Z)
 				{
 					int nz = z - 1;
-					bool bExpose = (nz < 0) ? (pMinusZ ? !pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].IsOpaque() : true) : !m_arrBlocks[BlockIndexing(x, y, nz)].IsOpaque();
+					CBlock3::TYPE nextType = GetBlockTypeAt(x, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+					bool bExpose = false;
+					if (isCurrentWater)
+						bExpose = (nextType == CBlock3::TYPE::AIR);
+					else
+						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx,     fy + 1, fz };
@@ -693,7 +938,7 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						quad.v3 = { fx + 1, fy,     fz };
 						quad.v4 = { fx,     fy,     fz };
 						quad.eDir = FACE_DIR::NEG_Z;
-						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
+						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (z - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y, z - 1)].GetLight() : (pMinusZ ? pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].GetLight() : 0xFF);
 
 						_bool bL = IsInsideOpaque(x - 1, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
@@ -705,19 +950,27 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						_bool bDL = IsInsideOpaque(x - 1, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
 						_bool bDR = IsInsideOpaque(x + 1, y - 1, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-						quad.ao[0] = CalculateVertexAO(bL, bU, bUL); // v1
-						quad.ao[1] = CalculateVertexAO(bR, bU, bUR); // v2
-						quad.ao[2] = CalculateVertexAO(bR, bD, bDR); // v3
-						quad.ao[3] = CalculateVertexAO(bL, bD, bDL); // v4
+						quad.ao[0] = CalculateVertexAO(bL, bU, bUL);
+						quad.ao[1] = CalculateVertexAO(bR, bU, bUR);
+						quad.ao[2] = CalculateVertexAO(bR, bD, bDR);
+						quad.ao[3] = CalculateVertexAO(bL, bD, bDL);
 
-						quads.push_back(quad);
+						if (isCurrentWater) waterQuads.push_back(quad);
+						else                solidQuads.push_back(quad);
 					}
 				}
 
 				// 5. Right (+X)
 				{
 					int nx = x + 1;
-					bool bExpose = (nx >= (int)VOXEL_CHUNK_X_SIZE3) ? (pPlusX ? !pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].IsOpaque() : true) : !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque();
+					CBlock3::TYPE nextType = GetBlockTypeAt(nx, y, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+					bool bExpose = false;
+					if (isCurrentWater)
+						bExpose = (nextType == CBlock3::TYPE::AIR);
+					else
+						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx + 1, fy + 1, fz };
@@ -737,19 +990,27 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						_bool bDF = IsInsideOpaque(nx, y - 1, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
 						_bool bDB = IsInsideOpaque(nx, y - 1, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-						quad.ao[0] = CalculateVertexAO(bB, bU, bUB); // v1
-						quad.ao[1] = CalculateVertexAO(bF, bU, bUF); // v2
-						quad.ao[2] = CalculateVertexAO(bF, bD, bDF); // v3
-						quad.ao[3] = CalculateVertexAO(bB, bD, bDB); // v4
+						quad.ao[0] = CalculateVertexAO(bB, bU, bUB);
+						quad.ao[1] = CalculateVertexAO(bF, bU, bUF);
+						quad.ao[2] = CalculateVertexAO(bF, bD, bDF);
+						quad.ao[3] = CalculateVertexAO(bB, bD, bDB);
 
-						quads.push_back(quad);
+						if (isCurrentWater) waterQuads.push_back(quad);
+						else                solidQuads.push_back(quad);
 					}
 				}
 
 				// 6. Left (-X)
 				{
 					int nx = x - 1;
-					bool bExpose = (nx < 0) ? (pMinusX ? !pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].IsOpaque() : true) : !m_arrBlocks[BlockIndexing(nx, y, z)].IsOpaque();
+					CBlock3::TYPE nextType = GetBlockTypeAt(nx, y, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
+
+					bool bExpose = false;
+					if (isCurrentWater)
+						bExpose = (nextType == CBlock3::TYPE::AIR);
+					else
+						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v1 = { fx, fy + 1, fz + 1 };
@@ -769,12 +1030,13 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 						_bool bDF = IsInsideOpaque(nx, y - 1, z + 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
 						_bool bDB = IsInsideOpaque(nx, y - 1, z - 1, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-						quad.ao[0] = CalculateVertexAO(bF, bU, bUF); // v1
-						quad.ao[1] = CalculateVertexAO(bB, bU, bUB); // v2
-						quad.ao[2] = CalculateVertexAO(bB, bD, bDB); // v3
-						quad.ao[3] = CalculateVertexAO(bF, bD, bDF); // v4
+						quad.ao[0] = CalculateVertexAO(bF, bU, bUF);
+						quad.ao[1] = CalculateVertexAO(bB, bU, bUB);
+						quad.ao[2] = CalculateVertexAO(bB, bD, bDB);
+						quad.ao[3] = CalculateVertexAO(bF, bD, bDF);
 
-						quads.push_back(quad);
+						if (isCurrentWater) waterQuads.push_back(quad);
+						else                solidQuads.push_back(quad);
 					}
 				}
 			}

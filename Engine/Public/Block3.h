@@ -29,6 +29,7 @@ public:
 		DEEPSLATE_REDSTONE_ORE,
 		DIRT,
 		SAND,
+		WATER_PLACE_HOLDER,
 		END
 	};
 
@@ -59,6 +60,7 @@ public:
 		GRASS_TOP_CARRIED,
 		GRASS_SIDE_CARRIED,
 		GRASS_SIDE_SNOW,
+		WATER_PLACE_HOLDER,
 		END
 	};
 
@@ -168,6 +170,10 @@ public:
 		{
 			return TEX_TYPE::SAND;
 		}
+		else if (blockType == TYPE::WATER_PLACE_HOLDER)
+		{
+			return TEX_TYPE::WATER_PLACE_HOLDER;
+		}
 		return TEX_TYPE::END;
 	}
 	static uint8_t GetBlockLightByType(TYPE e)
@@ -182,6 +188,10 @@ public:
 	_bool IsOpaque() const
 	{
 		if (m_eType == TYPE::AIR)
+		{
+			return false;
+		}
+		if (m_eType == TYPE::WATER_PLACE_HOLDER)
 		{
 			return false;
 		}

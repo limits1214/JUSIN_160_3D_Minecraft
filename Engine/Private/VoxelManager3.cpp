@@ -213,6 +213,38 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
         }
     }
 
+
+
+    //TAG_RES_GRP_PERMANENT_STATE, "BS_ALPHA_BLEND"
+    //TAG_RES_GRP_PERMANENT_STATE, "DS_NO_DEPTHWRITE"
+    //TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL
+    const auto& alphaBlend = E::CGameInstance::GetConst().GetResourceFirst<E::CResBlendState>(TAG_RES_GRP_PERMANENT_STATE, "BS_ALPHA_BLEND");
+    const auto& alphaDepth = E::CGameInstance::GetConst().GetResourceFirst<E::CResDepthStencilState>(TAG_RES_GRP_PERMANENT_STATE, "DS_NO_DEPTHWRITE");
+    const auto& rs = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
+
+    _float fBlendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+    pContext->OMSetBlendState(alphaBlend->GetBlendState().Get(), fBlendFactor, 0xffffffff);
+    pContext->OMSetDepthStencilState(alphaDepth->GetDepthStencilState().Get(), 0);
+    pContext->RSSetState(rs->GetRasterizerState().Get());
+    
+    for (const auto& [idx, pChunk] : m_mapChunks)
+    {
+        if (bExists)
+        {
+            if (vecCollGroup->front()->Intersect(*pChunk->GetCollBox()))
+            {
+                pChunk->DrawWater(pContext, ctx);
+            }
+        }
+        else
+        {
+            pChunk->DrawWater(pContext, ctx);
+        }
+    }
+
+    pContext->OMSetBlendState(nullptr, fBlendFactor, 0xffffffff); // nullptr 기본값 = 블렌드 Off
+    pContext->OMSetDepthStencilState(nullptr, 0);                 // nullptr 기본값 = 깊이 On, 기록 On
+    pContext->RSSetState(nullptr);
     return S_OK;
 }
 
