@@ -1976,6 +1976,9 @@ HRESULT CVoxelManager3::UpdateCheckQuadMessingEndFutures()
 
 HRESULT CVoxelManager3::UpdateCheckBlockEdit()
 {
+    std::unordered_set<uint64_t> setReBuildChunks{};
+    std::vector<std::vector<uint64_t>> vecReqMessingChunks{};
+
     for (auto iter = m_EditShadow.begin(); iter != m_EditShadow.end(); )
     {
         uint64_t chunkIdx = iter->first;
@@ -2247,22 +2250,81 @@ HRESULT CVoxelManager3::UpdateCheckBlockEdit()
                         messingReqVec.push_back(BIdx);
                 }
             }
-            for (const auto [blockIdx, block] : BlockChanges)
-            {
-                auto tmp = chunkFindIter->second->GetBlock(blockIdx);
-                //chunkFindIter->second->SetBlock(blockIdx, block.GetType());
-                chunkFindIter->second->SetBlock(blockIdx, block);
-            }
-
             messingReqVec.push_back(chunkIdx);
 
-            QueueingQuadMessing(messingReqVec, true);
-            iter = m_EditShadow.erase(iter);
+
+            std::vector<uint64_t> vecTmp{};
+            for (const auto& changeChunkIdx : messingReqVec)
+            {
+                auto alreadyIter = setReBuildChunks.find(changeChunkIdx);
+                if (alreadyIter == setReBuildChunks.end())
+                {
+                    setReBuildChunks.insert(changeChunkIdx);
+                    vecTmp.push_back(changeChunkIdx);
+                }
+            }
+
+            if (!vecTmp.empty())
+            {
+                vecReqMessingChunks.push_back(vecTmp);
+            }
+            
+
+
+            //setReBuildChunks
+
+            //for (const auto [blockIdx, block] : BlockChanges)
+            //{
+            //    auto tmp = chunkFindIter->second->GetBlock(blockIdx);
+            //    //chunkFindIter->second->SetBlock(blockIdx, block.GetType());
+            //    chunkFindIter->second->SetBlock(blockIdx, block);
+            //}
+
+            //for (const auto& changeChunkIdx : messingReqVec)
+            //{
+            //    auto blockChangeTargetIter = m_EditShadow.find(changeChunkIdx);
+            //    if (blockChangeTargetIter == m_EditShadow.end())
+            //    {
+
+            //    }
+            //}
+            
+
+            //QueueingQuadMessing(messingReqVec, true);
+            //iter = m_EditShadow.erase(iter);
+
+            ++iter;
         }
         else
         {
             iter = m_EditShadow.erase(iter);
         }
+    }
+
+
+    for (const auto& vecChunkIdxs : vecReqMessingChunks)
+    {
+        for (const auto& chunkIdx : vecChunkIdxs)
+        {
+            auto iter = m_EditShadow.find(chunkIdx);
+            if (iter != m_EditShadow.end())
+            {
+                for (const auto [blockIdx, block] : iter->second)
+                {
+                    auto chunkFindIter = m_mapChunks.find(chunkIdx);
+                    if (chunkFindIter != m_mapChunks.end())
+                    {
+                        //auto tmp = chunkFindIter->second->GetBlock(blockIdx);
+                        //chunkFindIter->second->SetBlock(blockIdx, block.GetType());
+                        chunkFindIter->second->SetBlock(blockIdx, block);
+                    }
+                }
+
+                m_EditShadow.erase(iter);
+            }
+        }
+
+        QueueingQuadMessing(vecChunkIdxs, true);
     }
     
     return S_OK;
