@@ -25,6 +25,7 @@ HRESULT CResTessDomainShader::Load(const std::any& arg)
 
 HRESULT CResTessDomainShader::Unload(const std::any& arg)
 {
+	m_eState = STATE::UNLOAD;
 	return S_OK;
 }
 
