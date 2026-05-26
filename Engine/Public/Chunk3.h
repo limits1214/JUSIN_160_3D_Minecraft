@@ -5,6 +5,7 @@
 NS_BEGIN(Engine)
 class CResCBuffer;
 class CResDynamicVIBuffer;
+class CCollBox;
 
 constexpr static uint32_t VOXEL_CHUNK_X_SIZE3 = 32;
 constexpr static uint32_t VOXEL_CHUNK_Z_SIZE3 = 32;
@@ -97,6 +98,9 @@ public:
 	_bool GetMessingQueued() const { return m_bMessingQueued; }
 	void SetMessingQueued(_bool b) { m_bMessingQueued = b; }
 
+public:
+	void Update(_float fTimeDelta);
+
 private:
 	void NiveFaceCulling(std::vector<VOX_QUAD>& quads) const;
 	_bool IsInsideOpaque(int32_t x, int32_t y, int32_t z,
@@ -123,6 +127,11 @@ private:
 	std::vector<E::VTX_VOXEL> m_vertices{};
 	std::vector<uint32_t>  m_indices{};
 	SPtr<CResCBuffer> m_pResCBufferPerObject{};
+
+public:
+	CCollBox* GetCollBox() const { return m_pCollBox.get(); }
+private:
+	UPtr<CCollBox> m_pCollBox{};
 
 public:
 	static UPtr<CChunk3> Create(const DESC& desc);

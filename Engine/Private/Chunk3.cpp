@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Chunk3.h"
 
+#include "CollBox.h"
+#include "GameInstance.h"
+
 NS_USING(Engine)
 
 void CChunk3::CollectLightingSeeds(std::queue<std::pair<XMINT3, uint8_t>>& skyLightSeedQ, std::queue<std::pair<XMINT3, uint8_t>>& blockLightSeedQ)
@@ -552,6 +555,11 @@ HRESULT CChunk3::Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) cons
 	return S_OK;
 }
 
+void CChunk3::Update(_float fTimeDelta)
+{
+	CGameInstance::Get().AddColliderGroup("Coll_Chunk", m_pCollBox.get());
+}
+
 void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& quads) const
 {
 	CChunk3* pPlusX = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ);
@@ -850,6 +858,21 @@ HRESULT CChunk3::Initialize(const DESC& desc)
 	m_iChunkCoord = desc.iChunkCoord;
 
 	m_pResCBufferPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_OBJECT);
+
+	_float3 vBoxCenter = {
+		(m_iX * (int32_t)VOXEL_CHUNK_X_SIZE3) + ((int32_t)VOXEL_CHUNK_X_SIZE3) * 0.5f,
+		(m_iY * (int32_t)VOXEL_CHUNK_Y_SIZE3) + ((int32_t)VOXEL_CHUNK_Y_SIZE3) * 0.5f,
+		(m_iZ * (int32_t)VOXEL_CHUNK_Z_SIZE3) + ((int32_t)VOXEL_CHUNK_Z_SIZE3) * 0.5f,
+		
+	};
+
+	_float3 vBoxExtents = {
+		((int32_t)VOXEL_CHUNK_X_SIZE3) * 0.5f,
+		((int32_t)VOXEL_CHUNK_Y_SIZE3) * 0.5f,
+		((int32_t)VOXEL_CHUNK_Z_SIZE3) * 0.5f,
+	};
+
+	m_pCollBox = CCollBox::Create(vBoxCenter, vBoxExtents);
 
 	return S_OK;
 }
