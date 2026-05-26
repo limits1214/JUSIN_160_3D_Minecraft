@@ -398,11 +398,11 @@ HRESULT CChunk3::QuadMessing()
 	std::vector<VOX_QUAD> quads{};
 	NiveFaceCulling(quads);
 
-	m_indices.clear();
-	m_vertices.clear();
+	m_SolidIndices.clear();
+	m_SolidVertices.clear();
 
-	m_vertices.reserve(quads.size() * 4);
-	m_indices.reserve(quads.size() * 6);
+	m_SolidVertices.reserve(quads.size() * 4);
+	m_SolidIndices.reserve(quads.size() * 6);
 
 	for (uint32_t i = 0; i < quads.size(); ++i)
 	{
@@ -426,10 +426,10 @@ HRESULT CChunk3::QuadMessing()
 			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;      // Light (8bit)
 		}
 
-		m_vertices.push_back(v[0]);
-		m_vertices.push_back(v[1]);
-		m_vertices.push_back(v[2]);
-		m_vertices.push_back(v[3]);
+		m_SolidVertices.push_back(v[0]);
+		m_SolidVertices.push_back(v[1]);
+		m_SolidVertices.push_back(v[2]);
+		m_SolidVertices.push_back(v[3]);
 
 		uint32_t startIndex = i * 4;
 
@@ -438,22 +438,22 @@ HRESULT CChunk3::QuadMessing()
 		if (quads[i].ao[0] + quads[i].ao[2] < quads[i].ao[1] + quads[i].ao[3])
 		{
 			// 1-2-3, 1-3-0 형태로 인덱스 배치
-			m_indices.push_back(startIndex + 1);
-			m_indices.push_back(startIndex + 2);
-			m_indices.push_back(startIndex + 3);
-			m_indices.push_back(startIndex + 1);
-			m_indices.push_back(startIndex + 3);
-			m_indices.push_back(startIndex + 0);
+			m_SolidIndices.push_back(startIndex + 1);
+			m_SolidIndices.push_back(startIndex + 2);
+			m_SolidIndices.push_back(startIndex + 3);
+			m_SolidIndices.push_back(startIndex + 1);
+			m_SolidIndices.push_back(startIndex + 3);
+			m_SolidIndices.push_back(startIndex + 0);
 		}
 		else
 		{
 			// 기존 순서: 0-1-2, 0-2-3
-			m_indices.push_back(startIndex + 0);
-			m_indices.push_back(startIndex + 1);
-			m_indices.push_back(startIndex + 2);
-			m_indices.push_back(startIndex + 0);
-			m_indices.push_back(startIndex + 2);
-			m_indices.push_back(startIndex + 3);
+			m_SolidIndices.push_back(startIndex + 0);
+			m_SolidIndices.push_back(startIndex + 1);
+			m_SolidIndices.push_back(startIndex + 2);
+			m_SolidIndices.push_back(startIndex + 0);
+			m_SolidIndices.push_back(startIndex + 2);
+			m_SolidIndices.push_back(startIndex + 3);
 		}
 	}
 	m_eMessingState = MESSING_STATE::DONE;
@@ -465,7 +465,7 @@ HRESULT CChunk3::CreateBuffer()
 	m_eBufferState = BUFFER_STATE::ING;
 
 	E::CResDynamicVIBuffer::DESC desc{};
-	desc.iNumVertices = (uint32_t)m_vertices.size();
+	desc.iNumVertices = (uint32_t)m_SolidVertices.size();
 	desc.iVertexStride = sizeof(E::VTX_VOXEL);
 	desc.vertexDesc = {
 		.ByteWidth = desc.iNumVertices * desc.iVertexStride,
@@ -475,11 +475,11 @@ HRESULT CChunk3::CreateBuffer()
 		.MiscFlags = 0
 	};
 	desc.vertexSubResource = {
-		.pSysMem = m_vertices.data()
+		.pSysMem = m_SolidVertices.data()
 	};
 
 	desc.iIndexStride = sizeof(uint32_t);
-	desc.iNumIndices = (uint32_t)m_indices.size();
+	desc.iNumIndices = (uint32_t)m_SolidIndices.size();
 	desc.IndexDesc = {
 		.ByteWidth = desc.iNumIndices * desc.iIndexStride,
 		.Usage = D3D11_USAGE_IMMUTABLE,
@@ -488,29 +488,29 @@ HRESULT CChunk3::CreateBuffer()
 		.MiscFlags = 0
 	};
 	desc.indexSubResource = {
-		.pSysMem = m_indices.data()
+		.pSysMem = m_SolidIndices.data()
 	};
 	desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
 	desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	m_pResDynamicViBuffer = E::CResDynamicVIBuffer::Create();
-	if (FAILED(m_pResDynamicViBuffer->Load(desc)))
+	m_pResSolidDynamicViBuffer = E::CResDynamicVIBuffer::Create();
+	if (FAILED(m_pResSolidDynamicViBuffer->Load(desc)))
 	{
-		m_pResDynamicViBuffer.reset();
+		m_pResSolidDynamicViBuffer.reset();
 		m_eBufferState = BUFFER_STATE::NON;
 		return E_FAIL;
 	};
 
 	m_eBufferState = BUFFER_STATE::DONE;
 
-	m_indices.clear();
-	m_vertices.clear();
+	m_SolidIndices.clear();
+	m_SolidVertices.clear();
 	m_eMessingState = MESSING_STATE::NON;
 
 	return S_OK;
 }
 
-HRESULT CChunk3::Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const
+HRESULT CChunk3::DrawSolid(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const
 {
 	if (m_eBufferState != BUFFER_STATE::DONE)
 	{
@@ -536,7 +536,7 @@ HRESULT CChunk3::Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) cons
 		pContext->VSSetConstantBuffers(0, 1, m_pResCBufferPerObject->GetCBuffer().GetAddressOf());
 	}
 
-	const auto& viBuffer = m_pResDynamicViBuffer;
+	const auto& viBuffer = m_pResSolidDynamicViBuffer;
 
 	ID3D11Buffer* vertexBuffers[] = {
 		viBuffer->GetVertexBuffer().Get()
@@ -552,6 +552,11 @@ HRESULT CChunk3::Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) cons
 	pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
 
 	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+	return S_OK;
+}
+
+HRESULT CChunk3::DrawWater(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const
+{
 	return S_OK;
 }
 

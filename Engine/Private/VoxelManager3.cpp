@@ -204,12 +204,12 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
         {
             if (vecCollGroup->front()->Intersect(*pChunk->GetCollBox()))
             {
-                pChunk->Draw(pContext, ctx);
+                pChunk->DrawSolid(pContext, ctx);
             }
         }
         else
         {
-            pChunk->Draw(pContext, ctx);
+            pChunk->DrawSolid(pContext, ctx);
         }
     }
 

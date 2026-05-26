@@ -91,7 +91,8 @@ public:
 	HRESULT BlockFilling();
 	HRESULT QuadMessing();
 	HRESULT CreateBuffer();
-	HRESULT Draw(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const;
+	HRESULT DrawSolid(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const;
+	HRESULT DrawWater(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const;
 	_bool GetDead() const { return m_bDead; }
 	void SetDead() { m_bDead = true; }
 
@@ -123,9 +124,9 @@ private:
 	std::array<CBlock3, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3> m_arrBlocks{};
 
 private:
-	SPtr<CResDynamicVIBuffer> m_pResDynamicViBuffer{};
-	std::vector<E::VTX_VOXEL> m_vertices{};
-	std::vector<uint32_t>  m_indices{};
+	SPtr<CResDynamicVIBuffer> m_pResSolidDynamicViBuffer{};
+	std::vector<E::VTX_VOXEL> m_SolidVertices{};
+	std::vector<uint32_t>  m_SolidIndices{};
 	SPtr<CResCBuffer> m_pResCBufferPerObject{};
 
 public:
