@@ -69,7 +69,10 @@ public:
 				for (int z = zMin; z <= zMax; z++)
 				{
 					auto block = GetBlock(x, y, z);
-					if (block && block->GetType() != CBlock3::TYPE::AIR)
+					if (block
+						&& block->GetType() != CBlock3::TYPE::AIR
+						&& !block->IsWater()
+						)
 						return true;
 				}
 		return false;
@@ -169,9 +172,9 @@ public:
 	
 public:
 	void WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
-	void WorkerRemoveBlocklighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
+	//void WorkerRemoveBlocklighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
 	void WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
-	void WorkerRemoveSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
+	//void WorkerRemoveSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
 
 public:
 	void Update(_float fTimeDelta);
@@ -201,7 +204,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 0 };
+	int32_t m_iRenderDistance{ 15 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 //public:

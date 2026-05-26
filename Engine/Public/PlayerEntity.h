@@ -65,9 +65,9 @@ private:
 private:
 	void PlayerCameraTrace(_float fTimeDelta);
 	void PlayerMove(_float fTimeDelta);
-	void PlayerMoveX(_float fTimeDelta);
+	//void PlayerMoveX(_float fTimeDelta);
 private:
-	float m_fPlayerSpeed = 10.f;
+	float m_fPlayerSpeed = 5.f;
 
 private:
 	float m_fRootRotRadY = 0.f;   // 리셋에 영향 안 받는 영구 상태

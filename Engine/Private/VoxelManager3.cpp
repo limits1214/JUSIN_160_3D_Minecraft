@@ -108,7 +108,8 @@ _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayD
 
             
             auto block = GetBlockByChunkCoord(pChunk->GetCoordIdx(), lx, ly, lz).value();
-            if (block.GetType() != CBlock3::TYPE::AIR)
+            if (block.GetType() != CBlock3::TYPE::AIR
+                && !block.IsWater() )
             {
                 //outResult.pChunk = pChunk;
                 outResult.iWorldBlockX = bx;
@@ -397,55 +398,6 @@ void CVoxelManager3::RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uin
     }
 }
 
-void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
-{
-    // index 규칙: 0:우, 1:좌, 2:상, 3:하, 4:전, 5:후 (하늘 아래 방향은 d == 3)
-    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
-    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
-    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
-
-    while (!q.empty())
-    {
-        auto [wbcoord, curLight] = q.front(); q.pop();
-        auto [wbx, wby, wbz] = wbcoord;
-
-        // 아래 방향으로 무감쇄 직사광선(15)을 쏠 수 있는 상황이라면 curLight가 1이라도 루프를 돌아야 하므로,
-        // 무조건 컷트하지 않고 일반 감쇄 전파(curLight <= 1)일 때만 예외 처리합니다.
-        if (curLight <= 1 ) continue;
-
-        for (int d = 0; d < 6; ++d)
-        {
-            int nx = wbx + dx[d];
-            int ny = wby + dy[d];
-            int nz = wbz + dz[d];
-
-            auto nopt = GetBlock(nx, ny, nz);
-            if (!nopt.has_value()) continue;
-
-            CBlock3 nBlock = nopt.value();
-            if (nBlock.IsOpaque()) continue;
-
-            // 1. 기본은 사방으로 퍼지면서 1씩 감소
-            uint8_t newLight = (curLight > 0) ? (curLight - 1) : 0;
-
-            // 2. [핵심] 수직 아래 방향(d == 3) 전파 특수 규칙
-            // 내가 지금 직사광선(15) 상태라면, 아래 칸은 동굴 속이든 평지든 상관없이 무조건 감쇄 없는 '15'입니다.
-            if (d == 3 && curLight == 15)
-            {
-                newLight = 15;
-            }
-
-            // 목적지 블록의 기존 빛보다 새로 전파할 빛이 더 밝을 때만 갱신
-            if (newLight > nBlock.GetSkyLight())
-            {
-                nBlock.SetSkyLight(newLight);
-                SetBlock(nx, ny, nz, nBlock);
-                q.push({ XMINT3{nx, ny, nz} , newLight });
-            }
-        }
-    }
-}
-
 void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
@@ -484,6 +436,57 @@ void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, 
     }
 }
 
+void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+    // index 규칙: 0:우, 1:좌, 2:상, 3:하, 4:전, 5:후 (하늘 아래 방향은 d == 3)
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+    while (!q.empty())
+    {
+        auto [wbcoord, curLight] = q.front(); q.pop();
+        auto [wbx, wby, wbz] = wbcoord;
+
+        // 물의 감쇠량(3) 때문에 내 빛이 2나 3이어도 전파 연산이 필요할 수 있습니다.
+        // 따라서 0만 확실하게 걸러냅니다.
+        if (curLight == 0) continue;
+
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = wbx + dx[d];
+            int ny = wby + dy[d];
+            int nz = wbz + dz[d];
+
+            auto nopt = GetBlock(nx, ny, nz);
+            if (!nopt.has_value()) continue;
+
+            CBlock3 nBlock = nopt.value();
+            if (nBlock.IsOpaque()) continue;
+
+            // -----------------------------------------------------------------
+            // [수정] 물과 공기에 따른 기본 감쇠 차등 적용
+            // -----------------------------------------------------------------
+            uint8_t attenuation = nBlock.IsWater() ? 3 : 1;
+            uint8_t newLight = (curLight > attenuation) ? (curLight - attenuation) : 0;
+
+            // [수정] 수직 아래 방향 전파 특수 규칙 (다음 칸이 물이 아닐 때만 15 직하강)
+            if (d == 3 && curLight == 15 && !nBlock.IsWater())
+            {
+                newLight = 15;
+            }
+
+            // 목적지 블록의 기존 빛보다 새로 전파할 빛이 더 밝을 때만 갱신
+            if (newLight > nBlock.GetSkyLight())
+            {
+                nBlock.SetSkyLight(newLight);
+                SetBlock(nx, ny, nz, nBlock);
+                q.push({ XMINT3{nx, ny, nz} , newLight });
+            }
+        }
+    }
+}
+
 void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
@@ -507,18 +510,23 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
 
             uint8_t nLight = nBlock.GetSkyLight();
 
-            // 중요 특수 케이스: 하늘 직사광선(15)이 감쇄 없이 수직 하강(dy == -1)하고 있었던 줄기라면,
-            // 빛 수치가 light - 1 이 아니라 여전히 15일 수 있습니다. 이 줄기도 같이 끊어줘야 합니다.
-            bool bIsSkyColumn = (dy[d] == -1 && light == 15 && nLight == 15);
+            // -----------------------------------------------------------------
+            // [수정] 물과 공기에 따른 예상 전파 빛 수치 계산
+            // -----------------------------------------------------------------
+            uint8_t attenuation = nBlock.IsWater() ? 3 : 1;
+            uint8_t expectedLight = (light > attenuation) ? (light - attenuation) : 0;
 
-            // 내가 전파했던 하위 빛이 맞다면 0으로 끄고 큐에 추가하여 계속 추적 제거
-            if (nLight != 0 && (nLight == light - 1 || bIsSkyColumn))
+            // 하늘 직사광선(15) 줄기 판정 (다음 칸이 물이 아닐 때만 15가 유지됨)
+            bool bIsSkyColumn = (dy[d] == -1 && light == 15 && nLight == 15 && !nBlock.IsWater());
+
+            // 내가 전파했던 하위 빛이 맞다면 (예상한 수치와 일치하거나 직하강 줄기라면)
+            if (nLight != 0 && (nLight == expectedLight || bIsSkyColumn))
             {
                 nBlock.SetSkyLight(0);
                 SetBlock(nx, ny, nz, nBlock);
                 q.push({ XMINT3{nx, ny, nz}, nLight });
             }
-            // 나를 비춰주던 다른 살아있는 스카이라이트 줄기를 만난 경우 (예: 옆 칸에서 새어 나오는 빛)
+            // 나를 비춰주던 다른 살아있는 스카이라이트 줄기를 만난 경우
             else if (nLight >= light)
             {
                 rePropagateQ.push({ XMINT3{nx, ny, nz}, nLight });
@@ -526,11 +534,8 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
         }
     }
 
-    // 막힌 곳 외에 옆에서 여전히 들어오고 있는 정상적인 스카이라이트가 있다면 다시 역전파해서 메워줌
-    if (!rePropagateQ.empty())
-    {
-        RuntimeFloodFillSkyLighting(rePropagateQ);
-    }
+    // 제거 루프 완료 후 살아남은 빛들을 다시 사방으로 퍼트려 빈자리를 메웁니다.
+    RuntimeFloodFillSkyLighting(rePropagateQ);
 }
 
 void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
@@ -617,7 +622,7 @@ void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& 
 void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1, -1, 0, 0, 0, 0 };
-    constexpr int dy[] = { 0, 0, 1, -1, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1, -1, 0, 0 }; // d == 2는 위(+1), d == 3은 아래(-1)
     constexpr int dz[] = { 0, 0, 0, 0, 1, -1 };
 
     while (!q.empty())
@@ -625,7 +630,6 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
         auto [curWorldPos, expectedLight] = q.front();
         q.pop();
 
-        // 안전한 내림 나눗셈을 사용하여 현재 월드 좌표가 속한 청크 인덱스 계산
         int32_t cx = FloorDiv(curWorldPos.x, 32);
         int32_t cy = FloorDiv(curWorldPos.y, 256);
         int32_t cz = FloorDiv(curWorldPos.z, 32);
@@ -654,15 +658,11 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
 
             if (ny < 0 || ny >= 256) continue;
 
-            // 주변 칸의 청크 좌표 계산
             int32_t ncx = FloorDiv(nx, 32);
             int32_t ncy = FloorDiv(ny, 256);
             int32_t ncz = FloorDiv(nz, 32);
 
-            // [버그 수정]: 이미 ncx, ncy, ncz가 청크 좌표이므로 다시 나누지 않고 바로 인코딩합니다.
             uint64_t nChunkIdx = encodeChunkCoord(ncx, ncy, ncz);
-
-            //if (chunkIdxLookupBundle.find(nChunkIdx) == chunkIdxLookupBundle.end()) continue;
 
             auto nChunkIter = m_mapChunks.find(nChunkIdx);
             if (nChunkIter == m_mapChunks.end()) continue;
@@ -673,8 +673,27 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
 
             if (nBlock.IsOpaque()) continue;
 
-            // 아래 방향(d == 3)으로 직하강하고 현재 빛이 15이면 감쇠 없음
-            uint8_t newLight = (d == 3 && curLight == 15) ? 15 : (curLight - 1);
+            // -----------------------------------------------------------------
+            // [수정 핵심] 다음 칸이 물(WATER)인지 공기(AIR)인지에 따른 감쇠 계산
+            // -----------------------------------------------------------------
+            uint8_t newLight = 0;
+
+            // d == 3 (아래 방향)이고 현재 내 빛이 만땅(15)이면서, '다음 칸이 물이 아닐 때'만 직하강 노감쇠 적용
+            if (d == 3 && curLight == 15 && !nBlock.IsWater())
+            {
+                newLight = 15;
+            }
+            else
+            {
+                // 다음 번져갈 칸이 물이면 3 감쇠, 일반 공기면 1 감쇠
+                uint8_t attenuation = nBlock.IsWater() ? 3 : 1;
+
+                if (curLight > attenuation)
+                    newLight = curLight - attenuation;
+                else
+                    newLight = 0; // uint8 언더플로우 방지 (안전장치)
+            }
+            // -----------------------------------------------------------------
 
             if (newLight > nBlock.GetSkyLight())
             {
@@ -684,7 +703,6 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
         }
     }
 }
-
 
 void CVoxelManager3::RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight)
 {
@@ -891,14 +909,14 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
                     
 
-uint8_t oldBlockLight = res.block->GetBlockLight(); // 파괴 전 빛 값 백업
-bool bIsLightSource = CBlock3::GetBlockLightByType(res.block->GetType()) > 0;
+                    uint8_t oldBlockLight = res.block->GetBlockLight(); // 파괴 전 빛 값 백업
+                    bool bIsLightSource = CBlock3::GetBlockLightByType(res.block->GetType()) > 0;
 
-CBlock3 block{};
-block.SetType(CBlock3::TYPE::AIR);
-SetBlock(worldBX, worldBY, worldBZ, block);
+                    CBlock3 block{};
+                    block.SetType(CBlock3::TYPE::AIR);
+                    SetBlock(worldBX, worldBY, worldBZ, block);
 
-RuntimeOnBlockRemovedLighting(worldBX, worldBY, worldBZ, bIsLightSource, oldBlockLight);
+                    RuntimeOnBlockRemovedLighting(worldBX, worldBY, worldBZ, bIsLightSource, oldBlockLight);
                 }
             }
         }
@@ -1521,29 +1539,54 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                         int32_t worldXOffset = cx * 32;
                         int32_t worldZOffset = cz * 32;
 
-                        // 1. 스카이라이트 고속 수직 낙하 스캔 및 지표면 시드 수집
+                        // 1. 스카이라이트 고속 수직 낙하 스캔 및 지표면/수중 시드 수집
                         for (int32_t x = 0; x < 32; ++x)
                         {
                             for (int32_t z = 0; z < 32; ++z)
                             {
+                                uint8_t currentLight = 15; // 하늘 최상단은 무조건 15로 시작
+
                                 for (int32_t y = 255; y >= 0; --y)
                                 {
                                     CBlock3& block = pChunk->GetBlock(x, y, z);
 
                                     if (block.IsOpaque())
                                     {
-                                        if (y < 255)
+                                        // 고체 땅을 만나면 바로 직전 칸(공기나 물)을 시드로 집어넣고 아래는 스캔 중단
+                                        if (y < 255 && currentLight > 0)
                                         {
-                                            skyLightSeedQ.push({ { worldXOffset + x, y + 1, worldZOffset + z }, 15 });
+                                            skyLightSeedQ.push({ { worldXOffset + x, y + 1, worldZOffset + z }, currentLight });
                                         }
-                                        break; // 땅을 만나면 아래는 스캔 중단
+                                        break;
                                     }
 
-                                    block.SetSkyLight(15);
-
-                                    if (y == 0)
+                                    // [추가] 물을 만나면 한 칸당 3씩 빛을 깎아내림
+                                    if (block.IsWater())
                                     {
-                                        skyLightSeedQ.push({ { worldXOffset + x, 0, worldZOffset + z }, 15 });
+                                        if (currentLight > 3)
+                                            currentLight -= 3;
+                                        else
+                                            currentLight = 0;
+                                    }
+                                    // 공기(AIR)라면 기존의 currentLight 강도를 그대로 유지(감쇠 없음)
+
+                                    // 현재 계산된 빛 값을 블록에 저장
+                                    block.SetSkyLight(currentLight);
+
+                                    // [핵심] 물 속이거나, 공기 중에서 빛이 꺾이기 시작하는 지점(감쇠가 일어난 지점)들은 
+                                    // 전부 이웃 청크나 옆 칸으로 빛을 전파해야 하므로 FloodFill 큐에 시드로 추가합니다.
+                                    if (block.IsWater() || currentLight < 15)
+                                    {
+                                        if (currentLight > 0)
+                                        {
+                                            skyLightSeedQ.push({ { worldXOffset + x, y, worldZOffset + z }, currentLight });
+                                        }
+                                    }
+
+                                    // 최하단 바닥(y == 0)까지 빛이 내려왔다면 마지막으로 시드 추가
+                                    if (y == 0 && currentLight > 0)
+                                    {
+                                        skyLightSeedQ.push({ { worldXOffset + x, 0, worldZOffset + z }, currentLight });
                                     }
                                 }
                             }

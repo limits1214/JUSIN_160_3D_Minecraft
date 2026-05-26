@@ -197,6 +197,15 @@ public:
 		}
 		return true;
 	}
+	_bool IsWater() const
+	{
+		if (m_eType == TYPE::WATER_PLACE_HOLDER)
+		{
+			return true;
+		}
+
+		return false;
+	}
 	TYPE GetType() const { return m_eType; }
 	void SetType(TYPE e) { m_eType = e; }
 	uint8_t GetSkyLight() const

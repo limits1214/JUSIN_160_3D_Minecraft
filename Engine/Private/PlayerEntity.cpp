@@ -802,9 +802,18 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
         float fAddSpeed = m_fPlayerSpeed - fCurrSpeed;
         if (fAddSpeed > 0.f)
         {
-            float fAccel = m_bOnGround ? 40.f : 5.f;
+            float fAccel = m_bOnGround ? 18.f : 18.f;
             float fAccelSpeed = std::min(fAccel * m_fPlayerSpeed * fTimeDelta, fAddSpeed);
             vVel += vWishDir * fAccelSpeed;
+        }
+
+        // bunnyhop remove
+        XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
+        float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
+        if (fHorizSpeed > m_fPlayerSpeed)
+        {
+            vHoriz = XMVector3Normalize(vHoriz) * m_fPlayerSpeed;
+            vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
         }
 
         // 3. 마찰 (입력 없을 때만)
@@ -844,7 +853,7 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
         {
             if (velY < 0.f)  // 내려가다 충돌 → 땅
             {
-                c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y;
+                c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;// + 0.001f 딱붙어서 안움직이는현상
                 m_bOnGround = true;
             }
             else  // 올라가다 천장
@@ -875,7 +884,7 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
     }
     else  // GOD - 마찰/가속 없이 즉시 이동
     {
-        XMVECTOR vHorizVel = vWishDir * m_fPlayerSpeed;
+        XMVECTOR vHorizVel = vWishDir * m_fPlayerSpeed * 5.f;
 
         if (m_bKeyPressingSpace) vHorizVel = XMVectorSetY(vHorizVel, 20.f);
         else if (m_bKeyPressingShift) vHorizVel = XMVectorSetY(vHorizVel, -20.f);
@@ -888,273 +897,6 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
     XMStoreFloat3(&m_vVelocity, vVel);
 }
 
-void CPlayerEntity::PlayerMoveX(_float fTimeDelta)
-{
-    XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
-
-    // 1. 수평 입력 → wishDir
-    XMVECTOR vWishDir = XMVectorZero();
-    if (m_pActivePlayerCamera)
-    {
-        XMVECTOR camLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
-        XMVECTOR camRight = m_pActivePlayerCamera->GetTransform().GetState(STATE::RIGHT);
-
-        // 수평만
-        camLook = XMVector3Normalize(XMVectorSetY(camLook, 0.f));
-        camRight = XMVector3Normalize(XMVectorSetY(camRight, 0.f));
-
-        if (m_bKeyPressingW) vWishDir += camLook;
-        if (m_bKeyPressingS) vWishDir -= camLook;
-        if (m_bKeyPressingD) vWishDir += camRight;
-        if (m_bKeyPressingA) vWishDir -= camRight;
-
-        if (XMVectorGetX(XMVector3LengthSq(vWishDir)) > 0.f)
-            vWishDir = XMVector3Normalize(vWishDir);
-    }
-
-    // 2. 가속
-    float fMaxSpeed = m_fPlayerSpeed;
-    float fAccel = m_bOnGround ? 40.f : 5.f;
-
-    XMVECTOR vHorizVel = XMVectorSetY(vVel, 0.f);
-    float    fCurrSpeed = XMVectorGetX(XMVector3Dot(vHorizVel, vWishDir));
-    float    fAddSpeed = fMaxSpeed - fCurrSpeed;
-
-    if (fAddSpeed > 0.f)
-    {
-        float fAccelSpeed = std::min(fAccel * fMaxSpeed * fTimeDelta, fAddSpeed);
-        vVel += vWishDir * fAccelSpeed;
-    }
-
-    // 3. 마찰 (지면일 때만)
-    if (m_bOnGround)
-    {
-        float fFriction = 15.f;
-        float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
-        if (fSpeed > 0.f)
-        {
-            float fNewSpeed = std::max(fSpeed - fSpeed * fFriction * fTimeDelta, 0.f);
-            // Y 따로 보존
-            float vy = XMVectorGetY(vVel);
-            vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
-        }
-    }
-
-    // 4. 중력 / 지면 체크
-    if (m_eModeType == MODE_TYPE::GRAVITY)
-    {
-        //v3
-        {
-            XMFLOAT3 halfExtents = { 0.25f, 0.9f, 0.25f };
-            XMFLOAT3 pos = GetTransform().GetPosition();
-
-            // 콜라이더 센터 (발 위치 + 오프셋)
-            XMFLOAT3 collCenter = { pos.x, pos.y + 1.f, pos.z };
-
-            if (!m_bOnGround)
-                vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
-
-            // Y축
-            float nextY = collCenter.y + XMVectorGetY(vVel) * fTimeDelta;
-            collCenter.y = nextY;
-            if (CGameInstance::Get().VoxelAABBOverlap(collCenter, halfExtents))
-            {
-                if (XMVectorGetY(vVel) < 0)  // 내려가다 충돌 → 땅
-                {
-                    collCenter.y = floorf(collCenter.y - halfExtents.y) + 1.f + halfExtents.y;
-                    m_bOnGround = true;
-                }
-                else  // 올라가다 천장
-                {
-                    collCenter.y = ceilf(collCenter.y + halfExtents.y) - halfExtents.y;
-                }
-                vVel = XMVectorSetY(vVel, 0.f);
-            }
-            else
-            {
-                m_bOnGround = false;
-            }
-
-            // X축
-            float prevX = collCenter.x;
-            collCenter.x += XMVectorGetX(vVel) * fTimeDelta;
-            if (CGameInstance::Get().VoxelAABBOverlap(collCenter, halfExtents))
-            {
-                collCenter.x = prevX;
-                vVel = XMVectorSetX(vVel, 0.f);
-            }
-
-            // Z축
-            float prevZ = collCenter.z;
-            collCenter.z += XMVectorGetZ(vVel) * fTimeDelta;
-            if (CGameInstance::Get().VoxelAABBOverlap(collCenter, halfExtents))
-            {
-                collCenter.z = prevZ;
-                vVel = XMVectorSetZ(vVel, 0.f);
-            }
-
-            // 센터 → 발 위치로 변환해서 적용
-            pos = { collCenter.x, collCenter.y - 1.f, collCenter.z };
-            GetTransform().SetPosition(pos);
-        }
-
-        //v2
-        if(false)
-        {
-            _float3 pos = GetTransform().GetPosition();
-
-            // 점프
-            if (m_bKeyPressingSpace && m_bOnGround)
-            {
-                vVel = XMVectorSetY(vVel, 7.f);
-                m_bOnGround = false;  // 즉시 공중으로
-            }
-
-            float fVelY = XMVectorGetY(vVel);
-
-            if (fVelY <= 0.f)  // 떨어지는 중일 때만 지면 체크
-            {
-                float fRayLen = fabsf(fVelY * fTimeDelta) + 0.1f;
-
-                CVoxelManager3::BLOCK_RAY_RESULT result{};
-                if (CGameInstance::Get().VoxelBlockRaycast(pos, { 0.f, -1.f, 0.f }, fRayLen, result))
-                {
-                    m_bOnGround = true;
-                    vVel = XMVectorSetY(vVel, 0.f);
-                    pos.y = (float)result.iWorldBlockY + 1.f;
-                    GetTransform().SetPosition(pos);
-                }
-                else
-                {
-                    m_bOnGround = false;
-                    vVel = XMVectorSetY(vVel, fVelY - 20.f * fTimeDelta);
-                }
-            }
-            else  // 올라가는 중
-            {
-                m_bOnGround = false;
-                vVel = XMVectorSetY(vVel, fVelY - 20.f * fTimeDelta);
-            }
-        }
-        
-        //CGameInstance::Get().VoxelBlockRaycast()
-
-
-        if (false)
-        {
-
-            _float3 pos = GetTransform().GetPosition();
-            int32_t wbx = (int32_t)floorf(pos.x);
-            int32_t wby = (int32_t)floorf(pos.y);
-            int32_t wbz = (int32_t)floorf(pos.z);
-
-
-            auto currBlock = CGameInstance::Get().GetVoxelBlock(wbx, wby, wbz);
-            if (currBlock && currBlock.value().GetType() == CBlock3::TYPE::AIR)
-            {
-                auto downBlock = CGameInstance::Get().GetVoxelBlock(wbx, wby - 1, wbz);
-                if (downBlock && downBlock.value().GetType() != CBlock3::TYPE::AIR)
-                {
-                    if (pos.y < wby + 0.1f)
-                    {
-                        // 땅
-                        m_bOnGround = true;
-                        vVel = XMVectorSetY(vVel, 0.f);
-
-                        // 바닥에 스냅
-                        pos.y = (float)wby;
-                        GetTransform().SetPosition(pos);
-                    }
-                    else
-                    {
-                        // 떨어지는중
-                        m_bOnGround = false;
-                        vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
-                    }
-
-                }
-                else
-                {
-                    // 떨어지는중
-                    m_bOnGround = false;
-                    vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
-                }
-            }
-            else
-            {
-                // 묻힌상태
-                int x = 0;
-                int currY{};
-                for (currY = wby; currY < VOXEL_CHUNK_Y_SIZE3; ++currY)
-                {
-                    auto block = CGameInstance::Get().GetVoxelBlock(wbx, currY, wbz);
-                    if (block)
-                    {
-                        if (block.value().GetType() != CBlock3::TYPE::AIR)
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-
-                m_bOnGround = true;
-                vVel = XMVectorSetY(vVel, 0.f);
-
-                // 바닥에 스냅
-                pos.y = (float)currY + 1;
-                GetTransform().SetPosition(pos);
-
-            }
-        }
-
-        //auto block = CGameInstance::Get().GetVoxelBlock(wbx, wby - 1, wbz);
-        //bool bAir = block.has_value() && block.value().GetType() == CBlock3::TYPE::AIR;
-
-        //if (bAir)
-        //{
-        //    m_bOnGround = false;
-        //    vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
-        //}
-        //else
-        //{
-        //    m_bOnGround = true;
-        //    vVel = XMVectorSetY(vVel, 0.f);
-
-        //    // 바닥에 스냅
-        //    pos.y = (float)wby;
-        //    GetTransform().SetPosition(pos);
-        //}
-
-        // 5. 점프
-        if(false)
-        if (m_bKeyPressingSpace && m_bOnGround)
-            vVel = XMVectorSetY(vVel, 7.f);
-    }
-    else
-    {
-        m_bOnGround = true;
-        // GOD 모드 수직 이동
-        if (m_bKeyPressingSpace) vVel = XMVectorSetY(vVel, 20.f);
-        if (m_bKeyPressingShift) vVel = XMVectorSetY(vVel, -20.f);
-        if (!m_bKeyPressingSpace && !m_bKeyPressingShift)
-            vVel = XMVectorSetY(vVel, 0.f);
-
-
-        // 6. 최종 적용
-        XMStoreFloat3(&m_vVelocity, vVel);
-
-        _float3 final;
-        XMStoreFloat3(&final, XMLoadFloat3(&m_vVelocity)* fTimeDelta);
-        GetTransform().AddPosition(XMLoadFloat3(&m_vVelocity)* fTimeDelta);
-    }
-
-
-}
 
 UPtr<CPlayerEntity> CPlayerEntity::Create()
 {
