@@ -4,7 +4,7 @@
 #include "Resources.h"
 
 #include "SkeletonEntity.h"
-
+#include "CollBox.h"
 
 NS_USING(Engine)
 static inline int32_t FloorDiv(int32_t a, int32_t b)
@@ -194,9 +194,23 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
 
     pContext->PSSetSamplers(9, 1, m_pResSamplerPointWrap->GetSamplerState().GetAddressOf());
 
-    for (const auto& [key, val] : m_mapChunks)
+    //auto pCameraObject = CGameInstance::Get().GetActiveGameCamera("Player");
+    auto vecCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerCamera");
+    _bool bExists = vecCollGroup && !vecCollGroup->empty();
+
+    for (const auto& [idx, pChunk] : m_mapChunks)
     {
-        val->Draw(pContext, ctx);
+        if (bExists)
+        {
+            if (vecCollGroup->front()->Intersect(*pChunk->GetCollBox()))
+            {
+                pChunk->Draw(pContext, ctx);
+            }
+        }
+        else
+        {
+            pChunk->Draw(pContext, ctx);
+        }
     }
 
     return S_OK;
@@ -840,14 +854,14 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
                     
 
-                    uint8_t oldBlockLight = res.block->GetBlockLight(); // 파괴 전 빛 값 백업
-                    bool bIsLightSource = CBlock3::GetBlockLightByType(res.block->GetType()) > 0;
+uint8_t oldBlockLight = res.block->GetBlockLight(); // 파괴 전 빛 값 백업
+bool bIsLightSource = CBlock3::GetBlockLightByType(res.block->GetType()) > 0;
 
-                    CBlock3 block{};
-                    block.SetType(CBlock3::TYPE::AIR);
-                    SetBlock(worldBX, worldBY, worldBZ, block);
+CBlock3 block{};
+block.SetType(CBlock3::TYPE::AIR);
+SetBlock(worldBX, worldBY, worldBZ, block);
 
-                    RuntimeOnBlockRemovedLighting(worldBX, worldBY, worldBZ, bIsLightSource, oldBlockLight);
+RuntimeOnBlockRemovedLighting(worldBX, worldBY, worldBZ, bIsLightSource, oldBlockLight);
                 }
             }
         }
@@ -901,7 +915,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     //{
                     //    block.SetType(CBlock3::TYPE::DIRT);
                     //}
-                   
+
 
                     //SetBlock(worldBX, worldBY, worldBZ, block);
 
@@ -937,9 +951,14 @@ void CVoxelManager3::Update(_float fTimeDelta)
             }
         }
     }
-    
 
-
+    // Chunk Update
+    {
+        for (auto& [idx, pChunk] : m_mapChunks)
+        {
+            pChunk->Update(fTimeDelta);
+        }
+    }
 
 
 
