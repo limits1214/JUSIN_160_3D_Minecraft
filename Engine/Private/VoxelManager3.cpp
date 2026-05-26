@@ -2335,7 +2335,7 @@ HRESULT CVoxelManager3::Initialize()
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetSeed(m_iNoiseSeed);
 
-    // 💡 [핵심 수정 1]: 주파수를 0.03f -> 0.005f 정도로 대폭 낮춥니다.
+    //  [핵심 수정 1]: 주파수를 0.03f -> 0.005f 정도로 대폭 낮춥니다.
     // 값이 작아질수록 "어어어엄청 넓고 완만한 대륙"이 형성되어 뾰족함이 사라집니다.
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFrequency(0.005f);
 
@@ -2343,7 +2343,7 @@ HRESULT CVoxelManager3::Initialize()
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalOctaves(4); // 5에서 4로 낮추면 지형이 더 매끄러워집니다.
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalLacunarity(2.0f);
 
-    // 💡 [핵심 수정 2]: Gain(영향력 배율)을 0.3f -> 0.2f 정도로 낮춥니다.
+    //  [핵심 수정 2]: Gain(영향력 배율)을 0.3f -> 0.2f 정도로 낮춥니다.
     // 옥타브를 쌓을 때 생기는 자잘한 굴곡(뾰족한 노이즈)의 강도를 줄여서 표면을 부드럽게 만듭니다.
     m_Noises[ETOUI(NOISE_TYPE::HEIGHT)].SetFractalGain(0.2f);
 
@@ -2360,21 +2360,21 @@ HRESULT CVoxelManager3::Initialize()
     m_Noises[ETOUI(NOISE_TYPE::CAVE)].SetFrequency(0.04f);
 
     // =================================================================
-    // 3. 💎 광물별 개별 3D 노이즈 세팅 (시드 분리 필수!)
+    // 3.  광물별 개별 3D 노이즈 세팅 (시드 분리 필수!)
     // =================================================================
 
-    // 🪙 철광석 (기존 유지)
+    //  철광석 (기존 유지)
     m_Noises[ETOUI(NOISE_TYPE::ORE_IRON)].SetSeed(m_iNoiseSeed + 3);
     m_Noises[ETOUI(NOISE_TYPE::ORE_IRON)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     m_Noises[ETOUI(NOISE_TYPE::ORE_IRON)].SetFrequency(0.15f); // 적당한 크기의 덩어리
 
-    // 🪨 석탄 (추가)
+    //  석탄 (추가)
     m_Noises[ETOUI(NOISE_TYPE::ORE_COAL)].SetSeed(m_iNoiseSeed + 4); // 시드 +4
     m_Noises[ETOUI(NOISE_TYPE::ORE_COAL)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     // 석탄은 마인크래프트에서도 덩어리가 매우 크게 나오므로, 주파수를 약간 낮춰서 넓은 구역에 분포시킵니다.
     m_Noises[ETOUI(NOISE_TYPE::ORE_COAL)].SetFrequency(0.12f);
 
-    // 💎 다이아몬드 (추가)
+    //  다이아몬드 (추가)
     m_Noises[ETOUI(NOISE_TYPE::ORE_DIAMOND)].SetSeed(m_iNoiseSeed + 5); // 시드 +5
     m_Noises[ETOUI(NOISE_TYPE::ORE_DIAMOND)].SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     // 다이아몬드는 아주 좁은 영역에 1~4개 수준으로 뭉쳐나와야 하므로 주파수를 높여 촘촘하게 만듭니다.
@@ -2383,12 +2383,12 @@ HRESULT CVoxelManager3::Initialize()
 
 
 
-    // 🌡️ [온도 노이즈 세팅]
+    //  [온도 노이즈 세팅]
     m_Noises[ETOUI(NOISE_TYPE::TEMPERATURE)].SetSeed(m_iNoiseSeed + 10);
     m_Noises[ETOUI(NOISE_TYPE::TEMPERATURE)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     m_Noises[ETOUI(NOISE_TYPE::TEMPERATURE)].SetFrequency(0.002f); // 아주 넓게 분포하도록 낮게 세팅
 
-    // 💧 [습도 노이즈 세팅]
+    // [습도 노이즈 세팅]
     m_Noises[ETOUI(NOISE_TYPE::HUMIDITY)].SetSeed(m_iNoiseSeed + 21);
     m_Noises[ETOUI(NOISE_TYPE::HUMIDITY)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     m_Noises[ETOUI(NOISE_TYPE::HUMIDITY)].SetFrequency(0.002f);
