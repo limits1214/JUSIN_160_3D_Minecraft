@@ -189,15 +189,16 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     pContext->IASetInputLayout(solidBlockVS->GetInputLayout().Get());
     pContext->VSSetShader(solidBlockVS->GetVertexShader().Get(), nullptr, 0);
     pContext->PSSetShader(solidBlockPS->GetPixelShader().Get(), nullptr, 0);
-    if (1)
-    {
-        const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
-        pContext->RSSetState(rasterizer->GetRasterizerState().Get());
-    }
+   
+    const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
+    pContext->RSSetState(rasterizer->GetRasterizerState().Get());
 
     //auto pCameraObject = CGameInstance::Get().GetActiveGameCamera("Player");
     auto vecCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerCamera");
     _bool bExists = vecCollGroup && !vecCollGroup->empty();
+
+    std::vector<CChunk3*> vecIntersectedChunk{};
+    vecIntersectedChunk.reserve(m_mapChunks.size());
 
     for (const auto& [idx, pChunk] : m_mapChunks)
     {
@@ -205,13 +206,24 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
         {
             if (vecCollGroup->front()->Intersect(*pChunk->GetCollBox()))
             {
+                vecIntersectedChunk.push_back(pChunk.get());
                 pChunk->DrawSolid(pContext, ctx);
             }
         }
         else
         {
+            vecIntersectedChunk.push_back(pChunk.get());
             pChunk->DrawSolid(pContext, ctx);
         }
+    }
+
+
+    const auto& rs = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
+    pContext->RSSetState(rs->GetRasterizerState().Get());
+
+    for (auto& pChunk : vecIntersectedChunk)
+    {
+        pChunk->DrawAlphaTest(pContext, ctx);
     }
 
 
@@ -220,32 +232,22 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
 
     pContext->IASetInputLayout(solidWaterVS->GetInputLayout().Get());
     pContext->VSSetShader(solidWaterVS->GetVertexShader().Get(), nullptr, 0);
-    pContext->PSSetShader(solidBlockPS->GetPixelShader().Get(), nullptr, 0);
+    pContext->PSSetShader(solidWaterPS->GetPixelShader().Get(), nullptr, 0);
     //TAG_RES_GRP_PERMANENT_STATE, "BS_ALPHA_BLEND"
     //TAG_RES_GRP_PERMANENT_STATE, "DS_NO_DEPTHWRITE"
     //TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL
     const auto& alphaBlend = E::CGameInstance::GetConst().GetResourceFirst<E::CResBlendState>(TAG_RES_GRP_PERMANENT_STATE, "BS_ALPHA_BLEND");
     const auto& alphaDepth = E::CGameInstance::GetConst().GetResourceFirst<E::CResDepthStencilState>(TAG_RES_GRP_PERMANENT_STATE, "DS_NO_DEPTHWRITE");
-    const auto& rs = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
+    
 
     _float fBlendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
     pContext->OMSetBlendState(alphaBlend->GetBlendState().Get(), fBlendFactor, 0xffffffff);
     pContext->OMSetDepthStencilState(alphaDepth->GetDepthStencilState().Get(), 0);
-    pContext->RSSetState(rs->GetRasterizerState().Get());
-    
-    for (const auto& [idx, pChunk] : m_mapChunks)
+
+
+    for (auto& pChunk : vecIntersectedChunk)
     {
-        if (bExists)
-        {
-            if (vecCollGroup->front()->Intersect(*pChunk->GetCollBox()))
-            {
-                pChunk->DrawWater(pContext, ctx);
-            }
-        }
-        else
-        {
-            pChunk->DrawWater(pContext, ctx);
-        }
+        pChunk->DrawWater(pContext, ctx);
     }
 
     pContext->OMSetBlendState(nullptr, fBlendFactor, 0xffffffff); // nullptr 기본값 = 블렌드 Off
@@ -409,6 +411,13 @@ void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, 
         // 버그 수정: 큐에서 세컨드 인자(curLight)를 온전히 추출하여 전파에 사용
         auto [wbcoord, curLight] = q.front(); q.pop();
         auto [wbx, wby, wbz] = wbcoord;
+        auto curBlockOpt = GetBlock(wbx, wby, wbz);
+
+        _bool bIgnore{ false };
+        if (curBlockOpt.has_value() && (curBlockOpt.value().GetType() == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(curBlockOpt.value().GetType())))
+        {
+            bIgnore = true;
+        }
 
         if (curLight <= 1) continue;
 
@@ -422,7 +431,12 @@ void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, 
             if (!nopt.has_value()) continue;
 
             CBlock3 nBlock = nopt.value();
-            if (nBlock.IsOpaque()) continue;
+
+            if (!bIgnore)
+            {
+                if (nBlock.IsOpaque()) continue;
+
+            }
 
             uint8_t newLight = curLight - 1;
 
@@ -448,9 +462,11 @@ void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, ui
         auto [wbcoord, curLight] = q.front(); q.pop();
         auto [wbx, wby, wbz] = wbcoord;
 
+
         // 물의 감쇠량(3) 때문에 내 빛이 2나 3이어도 전파 연산이 필요할 수 있습니다.
         // 따라서 0만 확실하게 걸러냅니다.
         if (curLight == 0) continue;
+
 
         for (int d = 0; d < 6; ++d)
         {
@@ -462,7 +478,12 @@ void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, ui
             if (!nopt.has_value()) continue;
 
             CBlock3 nBlock = nopt.value();
-            if (nBlock.IsOpaque()) continue;
+            //if (nBlock.IsOpaque()) continue;
+
+            if (!CBlock3::IsNeedAlphaTest(nBlock.GetType()))
+            {
+                if (nBlock.IsOpaque()) continue;
+            }
 
             // -----------------------------------------------------------------
             // [수정] 물과 공기에 따른 기본 감쇠 차등 적용
@@ -991,15 +1012,15 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     CBlock3 newBlock{};
                     if (CGameInstance::Get().KeyPressing(DIK_L))
                     {
-                        newBlock.SetType(CBlock3::TYPE::SAND);
+                        newBlock.SetType(CBlock3::TYPE::LOG_BIRCH);
                     }
                     else
                     {
-                        newBlock.SetType(CBlock3::TYPE::DIRT);
+                        newBlock.SetType(CBlock3::TYPE::LEAVES_BIRCH);
                     }
                     SetBlock(worldBX, worldBY, worldBZ, newBlock);
 
-                    // 3. 조명 함수 호출 (배치된 블록의 광원 수치도 함께 넘겨줍니다)
+                    // 3. 조명 함수 호출 (배치된 블록의 광원 수치도 함께 )
                     uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(newBlock.GetType());
                     RuntimeOnBlockPlacedLighting(worldBX, worldBY, worldBZ, placedBlockEmitLight, oldSkyLight, oldBlockLight);
                 }

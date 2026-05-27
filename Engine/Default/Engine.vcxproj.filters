@@ -454,6 +454,9 @@
     <Filter Include="Component\ConstantBuffer">
       <UniqueIdentifier>{dafbe165-3d84-4b3d-9814-867cb9127276}</UniqueIdentifier>
     </Filter>
+    <Filter Include="100.Shaders\Collider">
+      <UniqueIdentifier>{04cbe188-607b-4ae5-b429-591dd5cca899}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1350,6 +1353,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Water.hlsl">
       <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Collider\Collider.hlsl">
+      <Filter>100.Shaders\Collider</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

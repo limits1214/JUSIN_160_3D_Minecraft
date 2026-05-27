@@ -191,8 +191,9 @@ HRESULT CChunk3::QuadMessing()
 	m_eMessingState = MESSING_STATE::ING;
 
 	std::vector<VOX_QUAD> solidQuads{};
+	std::vector<VOX_QUAD> alphaTestQuads{};
 	std::vector<VOX_QUAD> waterQuads{};
-	NiveFaceCulling(solidQuads, waterQuads);
+	NiveFaceCulling(solidQuads, alphaTestQuads, waterQuads);
 
 	m_SolidIndices.clear();
 	m_SolidVertices.clear();
@@ -210,6 +211,22 @@ HRESULT CChunk3::QuadMessing()
 		v[1].pos = solidQuads[i].v2;
 		v[2].pos = solidQuads[i].v3;
 		v[3].pos = solidQuads[i].v4;
+
+
+		{
+			v[0].texCoord = solidQuads[i].uv1;
+			v[1].texCoord = solidQuads[i].uv2;
+			v[2].texCoord = solidQuads[i].uv3;
+			v[3].texCoord = solidQuads[i].uv4;
+		}
+		{
+			v[0].vColor = solidQuads[i].color[0];
+			v[1].vColor = solidQuads[i].color[1];
+			v[2].vColor = solidQuads[i].color[2];
+			v[3].vColor = solidQuads[i].color[3];
+		}
+
+
 
 		// 공통 데이터 인코딩 및 패킹 (AO값만 고유 적용)
 		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
@@ -255,6 +272,75 @@ HRESULT CChunk3::QuadMessing()
 
 
 
+	m_AlphaTestIndices.clear();
+	m_AlphaTestVertices.clear();
+
+	m_AlphaTestVertices.reserve(alphaTestQuads.size() * 4);
+	m_AlphaTestIndices.reserve(alphaTestQuads.size() * 6);
+
+	for (uint32_t i = 0; i < alphaTestQuads.size(); ++i)
+	{
+		uint32_t iFaceDir = ETOUI(alphaTestQuads[i].eDir);
+
+		E::VTX_VOXEL v[4]{};
+		v[0].pos = alphaTestQuads[i].v1;
+		v[1].pos = alphaTestQuads[i].v2;
+		v[2].pos = alphaTestQuads[i].v3;
+		v[3].pos = alphaTestQuads[i].v4;
+
+		{
+			v[0].texCoord = alphaTestQuads[i].uv1;
+			v[1].texCoord = alphaTestQuads[i].uv2;
+			v[2].texCoord = alphaTestQuads[i].uv3;
+			v[3].texCoord = alphaTestQuads[i].uv4;
+		}
+		{
+			v[0].vColor = alphaTestQuads[i].color[0];
+			v[1].vColor = alphaTestQuads[i].color[1];
+			v[2].vColor = alphaTestQuads[i].color[2];
+			v[3].vColor = alphaTestQuads[i].color[3];
+		}
+
+		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
+		{
+			v[vIdx].packedData = {};
+			v[vIdx].packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;              // normal (3bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(alphaTestQuads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(vIdx) & 0x03) << 25;                  // vertexid (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(alphaTestQuads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(alphaTestQuads[i].lighting) & 0xff) << 9;      // Light (8bit)
+		}
+
+		m_AlphaTestVertices.push_back(v[0]);
+		m_AlphaTestVertices.push_back(v[1]);
+		m_AlphaTestVertices.push_back(v[2]);
+		m_AlphaTestVertices.push_back(v[3]);
+
+		uint32_t startIndex = i * 4;
+
+		// 물 쿼드 대각선 보정 처리 (주변 흙/돌 지형과 AO 라인을 맞추기 위해 동일하게 세팅)
+		if (alphaTestQuads[i].ao[0] + alphaTestQuads[i].ao[2] < alphaTestQuads[i].ao[1] + alphaTestQuads[i].ao[3])
+		{
+			m_AlphaTestIndices.push_back(startIndex + 1);
+			m_AlphaTestIndices.push_back(startIndex + 2);
+			m_AlphaTestIndices.push_back(startIndex + 3);
+			m_AlphaTestIndices.push_back(startIndex + 1);
+			m_AlphaTestIndices.push_back(startIndex + 3);
+			m_AlphaTestIndices.push_back(startIndex + 0);
+		}
+		else
+		{
+			m_AlphaTestIndices.push_back(startIndex + 0);
+			m_AlphaTestIndices.push_back(startIndex + 1);
+			m_AlphaTestIndices.push_back(startIndex + 2);
+			m_AlphaTestIndices.push_back(startIndex + 0);
+			m_AlphaTestIndices.push_back(startIndex + 2);
+			m_AlphaTestIndices.push_back(startIndex + 3);
+		}
+	}
+
+
+
 	m_WaterIndices.clear();
 	m_WaterVertices.clear();
 
@@ -270,6 +356,19 @@ HRESULT CChunk3::QuadMessing()
 		v[1].pos = waterQuads[i].v2;
 		v[2].pos = waterQuads[i].v3;
 		v[3].pos = waterQuads[i].v4;
+
+		{
+			v[0].texCoord = waterQuads[i].uv1;
+			v[1].texCoord = waterQuads[i].uv2;
+			v[2].texCoord = waterQuads[i].uv3;
+			v[3].texCoord = waterQuads[i].uv4;
+		}
+		{
+			v[0].vColor = waterQuads[i].color[0];
+			v[1].vColor = waterQuads[i].color[1];
+			v[2].vColor = waterQuads[i].color[2];
+			v[3].vColor = waterQuads[i].color[3];
+		}
 
 		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
 		{
@@ -320,45 +419,102 @@ HRESULT CChunk3::CreateBuffer()
 
 	// solid buffer
 	{
-		E::CResDynamicVIBuffer::DESC desc{};
-		desc.iNumVertices = (uint32_t)m_SolidVertices.size();
-		desc.iVertexStride = sizeof(E::VTX_VOXEL);
-		desc.vertexDesc = {
-			.ByteWidth = desc.iNumVertices * desc.iVertexStride,
-			.Usage = D3D11_USAGE_IMMUTABLE,
-			.BindFlags = D3D11_BIND_VERTEX_BUFFER,
-			.CPUAccessFlags = 0,
-			.MiscFlags = 0
-		};
-		desc.vertexSubResource = {
-			.pSysMem = m_SolidVertices.data()
-		};
+		if (!m_SolidVertices.empty())
+		{
+			E::CResDynamicVIBuffer::DESC desc{};
+			desc.iNumVertices = (uint32_t)m_SolidVertices.size();
+			desc.iVertexStride = sizeof(E::VTX_VOXEL);
+			desc.vertexDesc = {
+				.ByteWidth = desc.iNumVertices * desc.iVertexStride,
+				.Usage = D3D11_USAGE_IMMUTABLE,
+				.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0
+			};
+			desc.vertexSubResource = {
+				.pSysMem = m_SolidVertices.data()
+			};
 
-		desc.iIndexStride = sizeof(uint32_t);
-		desc.iNumIndices = (uint32_t)m_SolidIndices.size();
-		desc.IndexDesc = {
-			.ByteWidth = desc.iNumIndices * desc.iIndexStride,
-			.Usage = D3D11_USAGE_IMMUTABLE,
-			.BindFlags = D3D11_BIND_INDEX_BUFFER,
-			.CPUAccessFlags = 0,
-			.MiscFlags = 0
-		};
-		desc.indexSubResource = {
-			.pSysMem = m_SolidIndices.data()
-		};
-		desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
-		desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			desc.iIndexStride = sizeof(uint32_t);
+			desc.iNumIndices = (uint32_t)m_SolidIndices.size();
+			desc.IndexDesc = {
+				.ByteWidth = desc.iNumIndices * desc.iIndexStride,
+				.Usage = D3D11_USAGE_IMMUTABLE,
+				.BindFlags = D3D11_BIND_INDEX_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0
+			};
+			desc.indexSubResource = {
+				.pSysMem = m_SolidIndices.data()
+			};
+			desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
+			desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-		m_pResSolidDynamicViBuffer = E::CResDynamicVIBuffer::Create();
-		if (FAILED(m_pResSolidDynamicViBuffer->Load(desc)))
+			m_pResSolidDynamicViBuffer = E::CResDynamicVIBuffer::Create();
+			if (FAILED(m_pResSolidDynamicViBuffer->Load(desc)))
+			{
+				m_pResSolidDynamicViBuffer.reset();
+				m_eBufferState = BUFFER_STATE::NON;
+				return E_FAIL;
+			};
+
+			m_SolidIndices.clear();
+			m_SolidVertices.clear();
+		}
+		else
 		{
 			m_pResSolidDynamicViBuffer.reset();
-			m_eBufferState = BUFFER_STATE::NON;
-			return E_FAIL;
-		};
+		}
+	}
 
-		m_SolidIndices.clear();
-		m_SolidVertices.clear();
+	// alphatest buffer
+	{
+		if (!m_AlphaTestVertices.empty())
+		{
+			E::CResDynamicVIBuffer::DESC desc{};
+			desc.iNumVertices = (uint32_t)m_AlphaTestVertices.size();
+			desc.iVertexStride = sizeof(E::VTX_VOXEL);
+			desc.vertexDesc = {
+				.ByteWidth = desc.iNumVertices * desc.iVertexStride,
+				.Usage = D3D11_USAGE_IMMUTABLE,
+				.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0
+			};
+			desc.vertexSubResource = {
+				.pSysMem = m_AlphaTestVertices.data()
+			};
+
+			desc.iIndexStride = sizeof(uint32_t);
+			desc.iNumIndices = (uint32_t)m_AlphaTestIndices.size();
+			desc.IndexDesc = {
+				.ByteWidth = desc.iNumIndices * desc.iIndexStride,
+				.Usage = D3D11_USAGE_IMMUTABLE,
+				.BindFlags = D3D11_BIND_INDEX_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0
+			};
+			desc.indexSubResource = {
+				.pSysMem = m_AlphaTestIndices.data()
+			};
+			desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
+			desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+			m_pResAlphaTestDynamicViBuffer = E::CResDynamicVIBuffer::Create();
+			if (FAILED(m_pResAlphaTestDynamicViBuffer->Load(desc)))
+			{
+				m_pResAlphaTestDynamicViBuffer.reset();
+				m_eBufferState = BUFFER_STATE::NON;
+				return E_FAIL;
+			};
+
+			m_AlphaTestIndices.clear();
+			m_AlphaTestVertices.clear();
+		}
+		else
+		{
+			m_pResAlphaTestDynamicViBuffer.reset();
+		}
 	}
 
 	// water buffer
@@ -406,7 +562,10 @@ HRESULT CChunk3::CreateBuffer()
 			m_WaterIndices.clear();
 			m_WaterVertices.clear();
 		}
-		
+		else
+		{
+			m_pResWaterDynamicViBuffer.reset();
+		}
 	}
 
 	m_eBufferState = BUFFER_STATE::DONE;
@@ -422,7 +581,10 @@ HRESULT CChunk3::DrawSolid(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 	{
 		return S_OK;
 	}
-
+	if (!m_pResSolidDynamicViBuffer)
+	{
+		return S_OK;
+	}
 	{
 		E::CB_PER_OBJECT cbPerObject{};
 
@@ -443,6 +605,53 @@ HRESULT CChunk3::DrawSolid(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 	}
 
 	const auto& viBuffer = m_pResSolidDynamicViBuffer;
+
+	ID3D11Buffer* vertexBuffers[] = {
+		viBuffer->GetVertexBuffer().Get()
+	};
+	uint32_t strides[] = {
+		viBuffer->GetVertexStride()
+	};
+	uint32_t offsets[] = {
+		0
+	};
+	pContext->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
+	pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
+	pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
+
+	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+	return S_OK;
+}
+
+HRESULT CChunk3::DrawAlphaTest(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const
+{
+	if (m_eBufferState != BUFFER_STATE::DONE)
+	{
+		return S_OK;
+	}
+	if (!m_pResAlphaTestDynamicViBuffer)
+	{
+		return S_OK;
+	}
+	{
+		E::CB_PER_OBJECT cbPerObject{};
+
+		int32_t dx = m_iX * VOXEL_CHUNK_X_SIZE3;
+		int32_t dz = m_iZ * VOXEL_CHUNK_Z_SIZE3;
+
+		auto worldMat = XMMatrixTranslation((float)dx, 0, (float)dz);
+
+		XMStoreFloat4x4(&cbPerObject.matWorld, worldMat);
+		XMStoreFloat4x4(&cbPerObject.matWVP, worldMat * ctx.matView * ctx.matProj);
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		if (SUCCEEDED(pContext->Map(m_pResCBufferPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource))) {
+			memcpy(mappedResource.pData, &cbPerObject, sizeof(E::CB_PER_OBJECT));
+			pContext->Unmap(m_pResCBufferPerObject->GetCBuffer().Get(), 0);
+		}
+		pContext->VSSetConstantBuffers(0, 1, m_pResCBufferPerObject->GetCBuffer().GetAddressOf());
+	}
+	const auto& viBuffer = m_pResAlphaTestDynamicViBuffer;
 
 	ID3D11Buffer* vertexBuffers[] = {
 		viBuffer->GetVertexBuffer().Get()
@@ -556,7 +765,7 @@ CBlock3::TYPE CChunk3::GetBlockTypeAt(int32_t x, int32_t y, int32_t z, CChunk3* 
 	return pTargetChunk->m_arrBlocks[pTargetChunk->BlockIndexing(localX, y, localZ)].GetType();
 }
 
-void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& waterQuads) const
+void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& alphaTestQuads, std::vector<VOX_QUAD>& waterQuads) const
 {
 	CChunk3* pPlusX = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ);
 	CChunk3* pMinusX = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ);
@@ -573,11 +782,24 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 				CBlock3::TYPE curType = m_arrBlocks[currentIdx].GetType();
 				if (curType == CBlock3::TYPE::AIR) continue;
 
+
 				bool isCurrentWater = (curType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+				bool isCurrAlphaTest = CBlock3::IsNeedAlphaTest(curType);
 
 				float fx = (float)x;
 				float fy = (float)y;
 				float fz = (float)z;
+
+				CBlock3::GEO_TYPE geoType = CBlock3::GetGeoType(curType);
+
+				// 십자 교차형 블록 처리 (잔디, 꽃 등)
+				if (geoType == CBlock3::GEO_TYPE::CROSS)
+				{
+					BuildCrossMesh(fx, fy, fz, curType, alphaTestQuads);
+					continue; // 6면체 컬링 루틴 전체 패스
+				}
+
+
 
 				// 1. Top (+Y)
 				{
@@ -585,17 +807,46 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					CBlock3::TYPE nextType = GetBlockTypeAt(x, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
 					bool bExpose = false;
-					if (isCurrentWater)
+					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR); // 물 위에는 공기여야 면이 보임
 					else
 						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER); // 고체 위에는 공기나 물일 때 보임
 
+					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+					{
+						bExpose = true;
+					}
+
+					if (curType == CBlock3::TYPE::TORCH_ON)
+					{
+						bExpose = true;
+					}
+
 					if (bExpose) {
 						VOX_QUAD quad{};
-						quad.v1 = { fx,     fy + 1, fz + 1 };
-						quad.v2 = { fx + 1, fy + 1, fz + 1 };
-						quad.v3 = { fx + 1, fy + 1, fz };
-						quad.v4 = { fx,     fy + 1, fz };
+						if (curType == CBlock3::TYPE::TORCH_ON)
+						{
+							// [정점 위치] 순서: 좌상 -> 우상 -> 우하 -> 좌하
+							quad.v1 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 좌상
+							quad.v2 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 우상
+							quad.v3 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 우하
+							quad.v4 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 좌하
+
+							// [UV 좌표] 정점 위치와 정확히 1:1 매칭 (좌상 -> 우상 -> 우하 -> 좌하)
+							quad.uv1 = _float2(7.0f / 16.f, 6.0f / 16.f); // 좌상
+							quad.uv2 = _float2(9.0f / 16.f, 6.0f / 16.f); // 우상
+							quad.uv3 = _float2(9.0f / 16.f, 8.0f / 16.f); // 우하
+							quad.uv4 = _float2(7.0f / 16.f, 8.0f / 16.f); // 좌하
+						}
+						else
+						{
+							quad.v1 = { fx,     fy + 1, fz + 1 };
+							quad.v2 = { fx + 1, fy + 1, fz + 1 };
+							quad.v3 = { fx + 1, fy + 1, fz };
+							quad.v4 = { fx,     fy + 1, fz };
+						}
+
+						
 						quad.eDir = FACE_DIR::POS_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (y + 1 < (int)VOXEL_CHUNK_Y_SIZE3) ? m_arrBlocks[BlockIndexing(x, y + 1, z)].GetLight() : 0xFF;
@@ -614,7 +865,14 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 						quad.ao[2] = CalculateVertexAO(bR, bB, bBR);
 						quad.ao[3] = CalculateVertexAO(bL, bB, bBL);
 
+
+						quad.color[0] = CBlock3::GetBaseColor(curType);
+						quad.color[1] = CBlock3::GetBaseColor(curType);
+						quad.color[2] = CBlock3::GetBaseColor(curType);
+						quad.color[3] = CBlock3::GetBaseColor(curType);
+
 						if (isCurrentWater) waterQuads.push_back(quad);
+						else if (isCurrAlphaTest) alphaTestQuads.push_back(quad);
 						else                solidQuads.push_back(quad);
 					}
 				}
@@ -625,17 +883,43 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					CBlock3::TYPE nextType = GetBlockTypeAt(x, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
 					bool bExpose = false;
-					if (isCurrentWater)
+					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR); // 밑면이 뚫린 연출(하늘에 떠있는 유체 등)이 아니면 물끼리는 컬링
 					else
 						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
 
+					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+					{
+						bExpose = true;
+					}
+					if (curType == CBlock3::TYPE::TORCH_ON)
+					{
+						bExpose = true;
+					}
 					if (bExpose) {
 						VOX_QUAD quad{};
-						quad.v1 = { fx,     fy, fz };
-						quad.v2 = { fx + 1, fy, fz };
-						quad.v3 = { fx + 1, fy, fz + 1 };
-						quad.v4 = { fx,     fy, fz + 1 };
+						if (curType == CBlock3::TYPE::TORCH_ON)
+						{
+							// [정점 위치] 순서: 좌하 -> 우하 -> 우상 -> 좌상 (높이 fy 바닥 고정)
+							quad.v1 = { fx + (7 / 16.f),    fy,               fz + (6 / 16.f) }; // 좌하
+							quad.v2 = { fx + (9 / 16.f),    fy,               fz + (6 / 16.f) }; // 우하
+							quad.v3 = { fx + (9 / 16.f),    fy,               fz + (8 / 16.f) }; // 우상
+							quad.v4 = { fx + (7 / 16.f),    fy,               fz + (8 / 16.f) }; // 좌상
+
+							// [UV 좌표] 일반 블록 밑면 UV 패턴 매칭에 맞게 뒤집어 배분 (8~10px 단면 영역)
+							quad.uv1 = _float2(7.0f / 16.f, 10.0f / 16.f); // 좌하 (U:7, V:10)
+							quad.uv2 = _float2(9.0f / 16.f, 10.0f / 16.f); // 우하 (U:9, V:10)
+							quad.uv3 = _float2(9.0f / 16.f, 8.0f / 16.f); // 우상 (U:9, V:8)
+							quad.uv4 = _float2(7.0f / 16.f, 8.0f / 16.f); // 좌상 (U:7, V:8)
+						}
+						else
+						{
+							quad.v1 = { fx,     fy, fz };
+							quad.v2 = { fx + 1, fy, fz };
+							quad.v3 = { fx + 1, fy, fz + 1 };
+							quad.v4 = { fx,     fy, fz + 1 };
+						}
+						
 						quad.eDir = FACE_DIR::NEG_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (y - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y - 1, z)].GetLight() : 0;
@@ -654,7 +938,14 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 						quad.ao[2] = CalculateVertexAO(bR, bF, bFR);
 						quad.ao[3] = CalculateVertexAO(bL, bF, bFL);
 
+
+						quad.color[0] = CBlock3::GetBaseColor(curType);
+						quad.color[1] = CBlock3::GetBaseColor(curType);
+						quad.color[2] = CBlock3::GetBaseColor(curType);
+						quad.color[3] = CBlock3::GetBaseColor(curType);
+
 						if (isCurrentWater) waterQuads.push_back(quad);
+						else if (isCurrAlphaTest) alphaTestQuads.push_back(quad);
 						else                solidQuads.push_back(quad);
 					}
 				}
@@ -665,17 +956,44 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					CBlock3::TYPE nextType = GetBlockTypeAt(x, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
 					bool bExpose = false;
-					if (isCurrentWater)
+					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR);
 					else
 						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
 
+					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+					{
+						bExpose = true;
+					}
+					if (curType == CBlock3::TYPE::TORCH_ON)
+					{
+						bExpose = true;
+					}
 					if (bExpose) {
 						VOX_QUAD quad{};
-						quad.v1 = { fx + 1, fy + 1, fz + 1 };
-						quad.v2 = { fx,     fy + 1, fz + 1 };
-						quad.v3 = { fx,     fy,     fz + 1 };
-						quad.v4 = { fx + 1, fy,     fz + 1 };
+
+						if (curType == CBlock3::TYPE::TORCH_ON)
+						{
+							
+							quad.v1 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 우상
+							quad.v2 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 좌상
+							quad.v3 = { fx + (7 / 16.f),    fy,               fz + (8 / 16.f) }; // 좌하
+							quad.v4 = { fx + (9 / 16.f),    fy,               fz + (8 / 16.f) }; // 우하
+
+							quad.uv1 = _float2(9.0f / 16.f, 6.0f / 16.f); 
+							quad.uv2 = _float2(7.0f / 16.f, 6.0f / 16.f);
+							quad.uv3 = _float2(7.0f / 16.f, 16.0f / 16.f); 
+							quad.uv4 = _float2(9.0f / 16.f, 16.0f / 16.f);
+
+						}
+						else
+						{
+							quad.v1 = { fx + 1, fy + 1, fz + 1 };
+							quad.v2 = { fx,     fy + 1, fz + 1 };
+							quad.v3 = { fx,     fy,     fz + 1 };
+							quad.v4 = { fx + 1, fy,     fz + 1 };
+						}
+
 						quad.eDir = FACE_DIR::POS_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (z + 1 < (int)VOXEL_CHUNK_Z_SIZE3) ? m_arrBlocks[BlockIndexing(x, y, z + 1)].GetLight() : (pPlusZ ? pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].GetLight() : 0xFF);
@@ -694,7 +1012,14 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 						quad.ao[2] = CalculateVertexAO(bL, bD, bDL);
 						quad.ao[3] = CalculateVertexAO(bR, bD, bDR);
 
+
+						quad.color[0] = CBlock3::GetBaseColor(curType);
+						quad.color[1] = CBlock3::GetBaseColor(curType);
+						quad.color[2] = CBlock3::GetBaseColor(curType);
+						quad.color[3] = CBlock3::GetBaseColor(curType);
+
 						if (isCurrentWater) waterQuads.push_back(quad);
+						else if (isCurrAlphaTest) alphaTestQuads.push_back(quad);
 						else                solidQuads.push_back(quad);
 					}
 				}
@@ -705,17 +1030,44 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					CBlock3::TYPE nextType = GetBlockTypeAt(x, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
 					bool bExpose = false;
-					if (isCurrentWater)
+					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR);
 					else
 						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
 
+					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+					{
+						bExpose = true;
+					}
+					if (curType == CBlock3::TYPE::TORCH_ON)
+					{
+						bExpose = true;
+					}
+
 					if (bExpose) {
 						VOX_QUAD quad{};
-						quad.v1 = { fx,     fy + 1, fz };
-						quad.v2 = { fx + 1, fy + 1, fz };
-						quad.v3 = { fx + 1, fy,     fz };
-						quad.v4 = { fx,     fy,     fz };
+
+						if (curType == CBlock3::TYPE::TORCH_ON)
+						{							
+							// Z축 고정 두께: 6/16.f, 높이는 10/16.f까지만
+							quad.v1 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 우상
+							quad.v2 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 좌상
+							quad.v3 = { fx + (9 / 16.f),    fy,               fz + (6 / 16.f) }; // 좌하
+							quad.v4 = { fx + (7 / 16.f),    fy,               fz + (6 / 16.f) }; // 우하
+
+							quad.uv1 = _float2(7.0f / 16.f, 6.0f / 16.f);
+							quad.uv2 = _float2(9.0f / 16.f, 6.0f / 16.f);
+							quad.uv3 = _float2(9.0f / 16.f, 16.0f / 16.f);
+							quad.uv4 = _float2(7.0f / 16.f, 16.0f / 16.f);
+						}
+						else
+						{
+							quad.v1 = { fx,     fy + 1, fz };
+							quad.v2 = { fx + 1, fy + 1, fz };
+							quad.v3 = { fx + 1, fy,     fz };
+							quad.v4 = { fx,     fy,     fz };
+						}
+						
 						quad.eDir = FACE_DIR::NEG_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (z - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y, z - 1)].GetLight() : (pMinusZ ? pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].GetLight() : 0xFF);
@@ -734,7 +1086,14 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 						quad.ao[2] = CalculateVertexAO(bR, bD, bDR);
 						quad.ao[3] = CalculateVertexAO(bL, bD, bDL);
 
+
+						quad.color[0] = CBlock3::GetBaseColor(curType);
+						quad.color[1] = CBlock3::GetBaseColor(curType);
+						quad.color[2] = CBlock3::GetBaseColor(curType);
+						quad.color[3] = CBlock3::GetBaseColor(curType);
+
 						if (isCurrentWater) waterQuads.push_back(quad);
+						else if (isCurrAlphaTest) alphaTestQuads.push_back(quad);
 						else                solidQuads.push_back(quad);
 					}
 				}
@@ -745,17 +1104,42 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					CBlock3::TYPE nextType = GetBlockTypeAt(nx, y, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
 					bool bExpose = false;
-					if (isCurrentWater)
+					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR);
 					else
 						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
 
+					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+					{
+						bExpose = true;
+					}
+					if (curType == CBlock3::TYPE::TORCH_ON)
+					{
+						bExpose = true;
+					}
 					if (bExpose) {
 						VOX_QUAD quad{};
-						quad.v1 = { fx + 1, fy + 1, fz };
-						quad.v2 = { fx + 1, fy + 1, fz + 1 };
-						quad.v3 = { fx + 1, fy,     fz + 1 };
-						quad.v4 = { fx + 1, fy,     fz };
+
+						if (curType == CBlock3::TYPE::TORCH_ON)
+						{
+							quad.v1 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 우상
+							quad.v2 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 좌상
+							quad.v3 = { fx + (9 / 16.f),    fy,               fz + (8 / 16.f) }; // 좌하
+							quad.v4 = { fx + (9 / 16.f),    fy,               fz + (6 / 16.f) }; // 우하
+
+							quad.uv1 = _float2(7.0f / 16.f, 6.0f / 16.f); 
+							quad.uv2 = _float2(9.0f / 16.f, 6.0f / 16.f);
+							quad.uv3 = _float2(9.0f / 16.f, 16.0f / 16.f); 
+							quad.uv4 = _float2(7.0f / 16.f, 16.0f / 16.f);
+						}
+						else
+						{
+							quad.v1 = { fx + 1, fy + 1, fz };
+							quad.v2 = { fx + 1, fy + 1, fz + 1 };
+							quad.v3 = { fx + 1, fy,     fz + 1 };
+							quad.v4 = { fx + 1, fy,     fz };
+						}
+						
 						quad.eDir = FACE_DIR::POS_X;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
 						quad.lighting = (x + 1 < (int)VOXEL_CHUNK_X_SIZE3) ? m_arrBlocks[BlockIndexing(x + 1, y, z)].GetLight() : (pPlusX ? pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].GetLight() : 0xFF);
@@ -774,7 +1158,14 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 						quad.ao[2] = CalculateVertexAO(bF, bD, bDF);
 						quad.ao[3] = CalculateVertexAO(bB, bD, bDB);
 
+
+						quad.color[0] = CBlock3::GetBaseColor(curType);
+						quad.color[1] = CBlock3::GetBaseColor(curType);
+						quad.color[2] = CBlock3::GetBaseColor(curType);
+						quad.color[3] = CBlock3::GetBaseColor(curType);
+
 						if (isCurrentWater) waterQuads.push_back(quad);
+						else if (isCurrAlphaTest) alphaTestQuads.push_back(quad);
 						else                solidQuads.push_back(quad);
 					}
 				}
@@ -785,17 +1176,44 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					CBlock3::TYPE nextType = GetBlockTypeAt(nx, y, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
 					bool bExpose = false;
-					if (isCurrentWater)
+					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR);
 					else
 						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
 
+					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+					{
+						bExpose = true;
+					}
+					if (curType == CBlock3::TYPE::TORCH_ON)
+					{
+						bExpose = true;
+					}
 					if (bExpose) {
 						VOX_QUAD quad{};
-						quad.v1 = { fx, fy + 1, fz + 1 };
-						quad.v2 = { fx, fy + 1, fz };
-						quad.v3 = { fx, fy,     fz };
-						quad.v4 = { fx, fy,     fz + 1 };
+
+						if (curType == CBlock3::TYPE::TORCH_ON)
+						{
+							quad.v1 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; 
+							quad.v2 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) };
+							quad.v3 = { fx + (7 / 16.f),    fy,               fz + (6 / 16.f) };
+							quad.v4 = { fx + (7 / 16.f),    fy,               fz + (8 / 16.f) }; 
+
+							quad.uv1 = _float2(9.0f / 16.f, 6.0f / 16.f); 
+							quad.uv2 = _float2(7.0f / 16.f, 6.0f / 16.f);
+							quad.uv3 = _float2(7.0f / 16.f, 16.0f / 16.f);
+							quad.uv4 = _float2(9.0f / 16.f, 16.0f / 16.f); 
+
+
+						}
+						else
+						{
+							quad.v1 = { fx, fy + 1, fz + 1 };
+							quad.v2 = { fx, fy + 1, fz };
+							quad.v3 = { fx, fy,     fz };
+							quad.v4 = { fx, fy,     fz + 1 };
+						}
+						
 						quad.eDir = FACE_DIR::NEG_X;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
 						quad.lighting = (x - 1 >= 0) ? m_arrBlocks[BlockIndexing(x - 1, y, z)].GetLight() : (pMinusX ? pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].GetLight() : 0xFF);
@@ -814,7 +1232,14 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 						quad.ao[2] = CalculateVertexAO(bB, bD, bDB);
 						quad.ao[3] = CalculateVertexAO(bF, bD, bDF);
 
+
+						quad.color[0] = CBlock3::GetBaseColor(curType);
+						quad.color[1] = CBlock3::GetBaseColor(curType);
+						quad.color[2] = CBlock3::GetBaseColor(curType);
+						quad.color[3] = CBlock3::GetBaseColor(curType);
+
 						if (isCurrentWater) waterQuads.push_back(quad);
+						else if (isCurrAlphaTest) alphaTestQuads.push_back(quad);
 						else                solidQuads.push_back(quad);
 					}
 				}
@@ -886,6 +1311,186 @@ uint8_t CChunk3::CalculateVertexAO(_bool side1, _bool side2, _bool corner) const
 	if (corner) count++;
 
 	return static_cast<uint8_t>(3 - count); // 많이 막힐수록 작은 값(어두움)
+}
+
+void CChunk3::BuildCrossMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const
+{// 십자형은 자체 광원이나 차폐가 없으므로 정점 라이팅 값을 현재 블록 고유 값으로 세팅합니다.
+	uint8_t blockLight = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)].GetLight();
+
+	// 1번째 대각선 面 (\ 방향)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,     fy + 1.f, fz };
+		quad.v2 = { fx + 1.f, fy + 1.f, fz + 1.f };
+		quad.v3 = { fx + 1.f, fy,       fz + 1.f };
+		quad.v4 = { fx,     fy,       fz };
+
+		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f };
+		quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+
+		quad.eDir = FACE_DIR::POS_Y; // 풀떼기는 보통 단일 텍스처를 쓰므로 POS_Y 등으로 긁어옴
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3; // 식물은 구석 AO림 제거
+		
+
+		quad.color[0] = CBlock3::GetBaseColor(curType);
+		quad.color[1] = CBlock3::GetBaseColor(curType);
+		quad.color[2] = CBlock3::GetBaseColor(curType);
+		quad.color[3] = CBlock3::GetBaseColor(curType);
+
+		alphaTestQuads.push_back(quad);
+	}
+
+	// 2번째 대각선 面 (/ 방향)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,     fy + 1.f, fz + 1.f };
+		quad.v2 = { fx + 1.f, fy + 1.f, fz };
+		quad.v3 = { fx + 1.f, fy,       fz };
+		quad.v4 = { fx,     fy,       fz + 1.f };
+
+		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f };
+		quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+
+		quad.eDir = FACE_DIR::POS_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+
+
+		quad.color[0] = CBlock3::GetBaseColor(curType);
+		quad.color[1] = CBlock3::GetBaseColor(curType);
+		quad.color[2] = CBlock3::GetBaseColor(curType);
+		quad.color[3] = CBlock3::GetBaseColor(curType);
+
+		alphaTestQuads.push_back(quad);
+	}
+}
+
+void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const
+{// 횃불은 본래 밝은 블록이므로 최대 광원(0xFF) 처리하거나 고유 인덱스 라이팅 처리
+	uint8_t blockLight = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)].GetLight();
+
+	// [Top]
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
+		quad.v2 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
+		quad.v3 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
+		quad.v4 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
+
+		quad.uv1 = { 7.0f / 16.f, 6.0f / 16.f };
+		quad.uv2 = { 9.0f / 16.f, 6.0f / 16.f };
+		quad.uv3 = { 9.0f / 16.f, 8.0f / 16.f };
+		quad.uv4 = { 7.0f / 16.f, 8.0f / 16.f };
+
+		quad.eDir = FACE_DIR::POS_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		alphaTestQuads.push_back(quad);
+	}
+
+	// [Bottom]
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + (7 / 16.f), fy, fz + (6 / 16.f) };
+		quad.v2 = { fx + (9 / 16.f), fy, fz + (6 / 16.f) };
+		quad.v3 = { fx + (9 / 16.f), fy, fz + (8 / 16.f) };
+		quad.v4 = { fx + (7 / 16.f), fy, fz + (8 / 16.f) };
+
+		quad.uv1 = { 7.0f / 16.f, 10.0f / 16.f };
+		quad.uv2 = { 9.0f / 16.f, 10.0f / 16.f };
+		quad.uv3 = { 9.0f / 16.f, 8.0f / 16.f };
+		quad.uv4 = { 7.0f / 16.f, 8.0f / 16.f };
+
+		quad.eDir = FACE_DIR::NEG_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		alphaTestQuads.push_back(quad);
+	}
+
+	// [Front]
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
+		quad.v2 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
+		quad.v3 = { fx + (7 / 16.f), fy,               fz + (8 / 16.f) };
+		quad.v4 = { fx + (9 / 16.f), fy,               fz + (8 / 16.f) };
+
+		quad.uv1 = { 9.0f / 16.f, 6.0f / 16.f };
+		quad.uv2 = { 7.0f / 16.f, 6.0f / 16.f };
+		quad.uv3 = { 7.0f / 16.f, 16.0f / 16.f };
+		quad.uv4 = { 9.0f / 16.f, 16.0f / 16.f };
+
+		quad.eDir = FACE_DIR::POS_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		alphaTestQuads.push_back(quad);
+	}
+
+	// [Back]
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
+		quad.v2 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
+		quad.v3 = { fx + (9 / 16.f), fy,               fz + (6 / 16.f) };
+		quad.v4 = { fx + (7 / 16.f), fy,               fz + (6 / 16.f) };
+
+		quad.uv1 = { 7.0f / 16.f, 6.0f / 16.f };
+		quad.uv2 = { 9.0f / 16.f, 6.0f / 16.f };
+		quad.uv3 = { 9.0f / 16.f, 16.0f / 16.f };
+		quad.uv4 = { 7.0f / 16.f, 16.0f / 16.f };
+
+		quad.eDir = FACE_DIR::NEG_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		alphaTestQuads.push_back(quad);
+	}
+
+	// [Right]
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
+		quad.v2 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
+		quad.v3 = { fx + (9 / 16.f), fy,               fz + (8 / 16.f) };
+		quad.v4 = { fx + (9 / 16.f), fy,               fz + (6 / 16.f) };
+
+		quad.uv1 = { 7.0f / 16.f, 6.0f / 16.f };
+		quad.uv2 = { 9.0f / 16.f, 6.0f / 16.f };
+		quad.uv3 = { 9.0f / 16.f, 16.0f / 16.f };
+		quad.uv4 = { 7.0f / 16.f, 16.0f / 16.f };
+
+		quad.eDir = FACE_DIR::POS_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		alphaTestQuads.push_back(quad);
+	}
+
+	// [Left]
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
+		quad.v2 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
+		quad.v3 = { fx + (7 / 16.f), fy,               fz + (6 / 16.f) };
+		quad.v4 = { fx + (7 / 16.f), fy,               fz + (8 / 16.f) };
+
+		quad.uv1 = { 9.0f / 16.f, 6.0f / 16.f };
+		quad.uv2 = { 7.0f / 16.f, 6.0f / 16.f };
+		quad.uv3 = { 7.0f / 16.f, 16.0f / 16.f };
+		quad.uv4 = { 9.0f / 16.f, 16.0f / 16.f };
+
+		quad.eDir = FACE_DIR::NEG_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		alphaTestQuads.push_back(quad);
+	}
 }
 
 CChunk3::CChunk3()
