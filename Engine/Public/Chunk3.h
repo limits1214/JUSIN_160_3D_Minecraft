@@ -83,6 +83,7 @@ public:
 	HRESULT QuadMessing();
 	HRESULT CreateBuffer();
 	HRESULT DrawSolid(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const;
+	HRESULT DrawAlphaTest(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const;
 	HRESULT DrawWater(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) const;
 	_bool GetDead() const { return m_bDead; }
 	void SetDead() { m_bDead = true; }
@@ -96,11 +97,15 @@ public:
 private:
 	CBlock3::TYPE GetBlockTypeAt(int32_t x, int32_t y, int32_t z, CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
 private:
-	void NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& waterQuads) const;
+	void NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& alphaTestQuads, std::vector<VOX_QUAD>& waterQuads) const;
 	_bool IsInsideOpaque(int32_t x, int32_t y, int32_t z,
 		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
 
 	uint8_t CalculateVertexAO(_bool side1, _bool side2, _bool corner) const;
+
+private:
+	void BuildCrossMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
+	void BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 private:
 	CChunk3();
 	~CChunk3() override;
@@ -120,6 +125,9 @@ private:
 	SPtr<CResDynamicVIBuffer> m_pResSolidDynamicViBuffer{};
 	std::vector<E::VTX_VOXEL> m_SolidVertices{};
 	std::vector<uint32_t>  m_SolidIndices{};
+	SPtr<CResDynamicVIBuffer> m_pResAlphaTestDynamicViBuffer{};
+	std::vector<E::VTX_VOXEL> m_AlphaTestVertices{};
+	std::vector<uint32_t>  m_AlphaTestIndices{};
 	SPtr<CResDynamicVIBuffer> m_pResWaterDynamicViBuffer{};
 	std::vector<E::VTX_VOXEL> m_WaterVertices{};
 	std::vector<uint32_t>  m_WaterIndices{};

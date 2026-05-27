@@ -106,6 +106,8 @@ namespace Engine
 	typedef struct tagVertexVoxel
 	{
 		_float3 pos{};
+		_float2 texCoord{};
+		uint32_t vColor{ 0xFFFFFFFF };
 		uint32_t packedData{};
 	} VTX_VOXEL;
 
@@ -219,6 +221,11 @@ namespace Engine
 		uint8_t blockTexType{};
 		uint8_t lighting{};
 		uint8_t ao[4]{};
+
+		_float2 uv1{0.f, 0.f}; _float2 uv2{ 1.f, 0.f }; _float2 uv3{ 1.f, 1.f }; _float2 uv4{ 0.f, 1.f };
+
+		uint32_t color[4]{ 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
+
 	} VOX_QUAD;
 
 

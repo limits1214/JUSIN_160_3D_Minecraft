@@ -879,6 +879,195 @@ HRESULT CGameInstance::InitializeMCResource()
 				// 24: water_placeholder.png
 				VoxelManagerTexAdd("./Resources/Texture/Blocks/water/water_placeholder.png");
 			}
+
+			{
+				// 25:torch_on.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/torch_on.png");
+			}
+
+			{
+				// 26: redstone_torch_off.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/redstone_torch_off.png");
+			}
+
+			{
+				// 27: redstone_torch_on.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/redstone_torch_on.png");
+			}
+
+			{
+				// 28: cherry_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/cherry_log_top.png");
+			}
+
+			{
+				// 29: cherry_log_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/cherry_log_side.png");
+			}
+
+			{
+				// 30: log_oak_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_oak_top.png");
+			}
+
+			{
+				// 31: log_oak.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_oak.png");
+			}
+
+			{
+				// 32: log_birch_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_birch_top.png");
+			}
+
+			{
+				// 33: log_birch.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_birch.png");
+			}
+
+			{
+				// 34: log_acacia_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_acacia_top.png");
+			}
+
+			{
+				// 35: log_acacia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_acacia.png");
+			}
+
+			{
+				// 36: cherry_planks.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/plank/cherry_planks.png");
+			}
+
+			{
+				// 37: planks_oak.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/plank/planks_oak.png");
+			}
+
+			{
+				// 38: planks_birch.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/plank/planks_birch.png");
+			}
+
+			{
+				// 39: planks_acacia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/plank/planks_acacia.png");
+			}
+
+			{
+				// 40: cherry_leaves.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/leaves/cherry_leaves.png");
+			}
+
+			{
+				// 41: leaves_oak.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/leaves/leaves_oak.png");
+			}
+
+			{
+				// 42: leaves_birch.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/leaves/leaves_birch.png");
+			}
+
+			{
+				// 43: leaves_acacia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/leaves/leaves_acacia.png");
+			}
+
+			{
+				// 44: flower_allium.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_allium.png");
+			}
+
+			{
+				// 45: flower_blue_orchid.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_blue_orchid.png");
+			}
+
+			{
+				// 46: flower_cornflower.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_cornflower.png");
+			}
+
+			{
+				// 47: flower_dandelion.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_dandelion.png");
+			}
+
+			{
+				// 48: flower_houstonia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_houstonia.png");
+			}
+
+			{
+				// 49: flower_lily_of_the_valley.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_lily_of_the_valley.png");
+			}
+
+			{
+				// 50: flower_oxeye_daisy.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_oxeye_daisy.png");
+			}
+
+			{
+				// 51: flower_paeonia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_paeonia.png");
+			}
+
+			{
+				// 52: flower_rose.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_rose.png");
+			}
+			
+			{
+				// 53: flower_rose_blue.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_rose_blue.png");
+			}
+
+			{
+				// 54: flower_tulip_orange.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_tulip_orange.png");
+			}
+
+			{
+				// 55: flower_tulip_pink.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_tulip_pink.png");
+			}
+
+			{
+				// 56: flower_tulip_red.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_tulip_red.png");
+			}
+
+			{
+				// 57:flower_wither_rose.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_wither_rose.png");
+			}
+
+			{
+				// 58:short_dry_grass.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/short_dry_grass.png");
+			}
+
+			{
+				// 59:short_grass.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/short_grass.png");
+			}
+
+			{
+				// 60:tall_dry_grass.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/tall_dry_grass.png");
+			}
+			{
+				// 61:tall_grass_bottom.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/tall_grass_bottom.png");
+			}
+			{
+				// 62:tall_grass_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/tall_grass_top.png");
+			}
+			
 		}
 
 		{

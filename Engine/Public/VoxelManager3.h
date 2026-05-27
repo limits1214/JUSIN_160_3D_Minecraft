@@ -204,7 +204,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 15 };
+	int32_t m_iRenderDistance{ 0 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 //public:
