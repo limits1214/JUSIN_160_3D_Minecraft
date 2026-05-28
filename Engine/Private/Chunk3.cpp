@@ -6,8 +6,60 @@
 
 NS_USING(Engine)
 
+void CChunk3::SpawnTree(int32_t baseI, int32_t baseK, int32_t baseJ, CBlock3::TYPE eLogType, CBlock3::TYPE eLeafType)
+{
+	static thread_local std::mt19937 gen(std::random_device{}());
+	std::uniform_int_distribution<int32_t> heightDist(4, 5);
+	int32_t treeHeight = heightDist(gen);
 
+	// 나뭇잎 범위를 기둥 윗부분에 조화롭게 층별로 세팅
+	int32_t leafStartK = baseK + (treeHeight - 3);
+	int32_t leafEndK = baseK + treeHeight + 1;
 
+	// 1. 나뭇잎 먼저 전개
+	for (int32_t lK = leafStartK; lK <= leafEndK; ++lK)
+	{
+		if (lK >= VOXEL_CHUNK_Y_SIZE3) continue;
+
+		// 최고 꼭대기 층과 최하단 층은 반지름 1로 좁혀서 동글동글하게 생성
+		int32_t radius = 2;
+		if (lK == leafEndK || lK == leafStartK)
+			radius = 1;
+
+		for (int32_t lI = baseI - radius; lI <= baseI + radius; ++lI)
+		{
+			for (int32_t lJ = baseJ - radius; lJ <= baseJ + radius; ++lJ)
+			{
+				if (lI < 0 || lI >= VOXEL_CHUNK_X_SIZE3 || lJ < 0 || lJ >= VOXEL_CHUNK_Z_SIZE3)
+					continue;
+
+				// 마인크래프트 특유의 구형 잎사귀 구현을 위한 모서리 깎기
+				if (radius == 2 && std::abs(lI - baseI) == 2 && std::abs(lJ - baseJ) == 2)
+				{
+					std::uniform_int_distribution<int> randCut(0, 4);
+					if (randCut(gen) == 0) continue; // 자연스러운 불규칙성
+				}
+
+				uint32_t leafIdx = BlockIndexing(lI, lK, lJ);
+
+				// 이제 위에서 지형 초기화 시 AIR를 완벽히 밀어두었으므로 정상 작동합니다.
+				if (m_arrBlocks[leafIdx].GetType() == CBlock3::TYPE::AIR)
+				{
+					m_arrBlocks[leafIdx].SetType(eLeafType);
+				}
+			}
+		}
+	}
+
+	// 2. 나무 기둥 심기 (나뭇잎 중심부를 단단하게 관통)
+	for (int32_t r = 0; r < treeHeight; ++r)
+	{
+		int32_t currentK = baseK + r;
+		if (currentK >= VOXEL_CHUNK_Y_SIZE3) break;
+
+		m_arrBlocks[BlockIndexing(baseI, currentK, baseJ)].SetType(eLogType);
+	}
+}
 HRESULT CChunk3::BlockFilling()
 {
 	m_eBlockFillingState = BLOCKFILLING_STATE::ING;
@@ -15,6 +67,14 @@ HRESULT CChunk3::BlockFilling()
 	constexpr float NOISE_OFFSET = 100000.f;
 	constexpr int   BEDROCK_MAX_HEIGHT = 4;
 	constexpr int32_t SEA_LEVEL = 63;
+
+	// 나무 스폰 최적화를 위해 나무 위치 정보를 담아둘 구조체
+	struct TREE_SPAWN_INFO {
+		int32_t i, k, j;
+		CBlock3::TYPE logType;
+		CBlock3::TYPE leafType;
+	};
+	std::vector<TREE_SPAWN_INFO> vecTreesToSpawn;
 
 	for (int32_t i = 0; i < VOXEL_CHUNK_X_SIZE3; ++i)
 	{
@@ -30,46 +90,39 @@ HRESULT CChunk3::BlockFilling()
 			float humidNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HUMIDITY).GetNoise(tmpx, tmpz);
 			float heightNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::HEIGHT).GetNoise(tmpx, tmpz);
 
-			BIOME_TYPE biome = BIOME_TYPE::PLAINS; // 기본값은 평지
+			BIOME_TYPE biome = BIOME_TYPE::PLAINS;
 			int32_t calculatedHeight = 64;
 
-			// 💡 기후 조건 분기문 (Whittaker 다이어그램 단순화)
 			if (tempNoise < -0.2f)
 			{
-				// ❄️ [눈/툰드라 바이옴] - 온도가 낮음
 				biome = BIOME_TYPE::SNOW;
-				// 눈 덮인 산악 지대 연출을 위해 굴곡을 조금 줍니다.
 				calculatedHeight = (int32_t)(70.0f + heightNoise * 45.0f);
 			}
 			else if (tempNoise > 0.2f && humidNoise < -0.1f)
 			{
-				// 🏜️ [사막 바이옴] - 온도가 높고 습도가 낮음
 				biome = BIOME_TYPE::DESERT;
-				// 사막은 상대적으로 평평하면서 부드러운 모래 언덕 느낌으로 배율을 낮춥니다.
 				calculatedHeight = (int32_t)(68.0f + heightNoise * 15.0f);
 			}
 			else
 			{
-				// 🌳 [평지/초원 바이옴] - 적당한 기후
 				biome = BIOME_TYPE::PLAINS;
-				// 웅장함을 살짝 섞기 위해 제곱 보정 등을 주거나 적당한 배율(30)을 줍니다.
 				calculatedHeight = (int32_t)(66.0f + heightNoise * 25.0f);
 			}
 
-			// 높이 경계 안전 가드
 			if (calculatedHeight < 5)   calculatedHeight = 5;
 			if (calculatedHeight > 250) calculatedHeight = 250;
 
 			uint32_t height = (uint32_t)calculatedHeight;
+			bool bShouldSpawnTree = false;
 
 			// -------------------------------------------------------------
-			// [STEP 2] 결정된 바이옴 규칙에 맞춰 블록 배치
+			// [STEP 2] 순수 기본 지형 채우기 (나무/풀 예외처리 필요 없음)
 			// -------------------------------------------------------------
 			for (uint32_t k = 0; k < VOXEL_CHUNK_Y_SIZE3; ++k)
 			{
 				uint32_t idx = BlockIndexing(i, k, j);
 
-				// 베드락 레이어는 바이옴 불문 공통
+				// 베드락 레이어 공통
 				if (k == 0)
 				{
 					m_arrBlocks[idx].SetType(CBlock3::TYPE::BEDROCK);
@@ -83,82 +136,88 @@ HRESULT CChunk3::BlockFilling()
 					continue;
 				}
 
-				// 하부 지형 생성 (지표면 아래는 기본적으로 STONE)
+				// 지하 깊은 곳
 				if (k < height - 5)
 				{
 					m_arrBlocks[idx].SetType(CBlock3::TYPE::STONE);
 				}
-				// 지표면 바로 아래 껍질 (Dirt 혹은 Sand)
+				// 지표면 아래 껍질
 				else if (k < height)
 				{
-					if (biome == BIOME_TYPE::DESERT)
-						m_arrBlocks[idx].SetType(CBlock3::TYPE::SAND); // 사막은 아래도 모래
-					else
-						m_arrBlocks[idx].SetType(CBlock3::TYPE::DIRT); // 평지, 눈은 아래가 흙
+					m_arrBlocks[idx].SetType(biome == BIOME_TYPE::DESERT ? CBlock3::TYPE::SAND : CBlock3::TYPE::DIRT);
 				}
-				// 💡 [핵심] 가장 윗 표면 블록 처리 (k == height)
+				// 가장 윗 표면 블록 처리
 				else if (k == height)
 				{
 					if (k < SEA_LEVEL)
 					{
-						// 해수면 아래 잠긴 땅은 바이옴 불문 모래나 흙으로 통일
 						m_arrBlocks[idx].SetType(biome == BIOME_TYPE::DESERT ? CBlock3::TYPE::SAND : CBlock3::TYPE::DIRT);
 					}
 					else
 					{
-						// 바이옴별 전용 표면 블록 배치
 						switch (biome)
 						{
 						case BIOME_TYPE::SNOW:
-							m_arrBlocks[idx].SetType(CBlock3::TYPE::STONE); // 눈 블록
+							m_arrBlocks[idx].SetType(CBlock3::TYPE::STONE);
 							break;
 						case BIOME_TYPE::DESERT:
-							m_arrBlocks[idx].SetType(CBlock3::TYPE::SAND);       // 모래 블록
+							m_arrBlocks[idx].SetType(CBlock3::TYPE::SAND);
 							break;
 						case BIOME_TYPE::PLAINS:
 						default:
-							m_arrBlocks[idx].SetType(CBlock3::TYPE::GRASS);      // 잔디 블록
+							m_arrBlocks[idx].SetType(CBlock3::TYPE::GRASS);
+
+							// 🌲 나무 생성 조건 판단 (안전 지대 가드)
+							if (i >= 2 && i < VOXEL_CHUNK_X_SIZE3 - 2 && j >= 2 && j < VOXEL_CHUNK_Z_SIZE3 - 2)
+							{
+								float treeNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::TREE_DENSITY).GetNoise(tmpx, tmpz);
+								if (treeNoise > 0.25f)
+								{
+									bShouldSpawnTree = true;
+
+									// 💡 [수정] 임계값이 바뀌었으므로, 랜덤 분기 스케일 변환 수식도 매칭해줍니다.
+									// (treeNoise - 최소값) / (최대값 - 최소값) -> 여기서는 최대값을 1.0f로 가정
+									float treeTypeRand = (treeNoise - 0.25f) / (1.0f - 0.25f);
+
+									// 안전장치: 혹시나 1.0f을 아주 살짝 넘어가는 경우를 대비해 클램핑
+									if (treeTypeRand > 0.99f) treeTypeRand = 0.99f;
+
+									TREE_SPAWN_INFO treeInfo{ i, (int32_t)k + 1, j };
+
+									if (treeTypeRand < 0.25f) { treeInfo.logType = CBlock3::TYPE::LOG_OAK; treeInfo.leafType = CBlock3::TYPE::LEAVES_OAK; }
+									else if (treeTypeRand < 0.50f) { treeInfo.logType = CBlock3::TYPE::LOG_BIRCH; treeInfo.leafType = CBlock3::TYPE::LEAVES_BIRCH; }
+									else if (treeTypeRand < 0.75f) { treeInfo.logType = CBlock3::TYPE::LOG_ACACIA; treeInfo.leafType = CBlock3::TYPE::LEAVES_ACACIA; }
+									else { treeInfo.logType = CBlock3::TYPE::LOG_CHERRY; treeInfo.leafType = CBlock3::TYPE::LEAVES_CHERRY; }
+
+									vecTreesToSpawn.push_back(treeInfo);
+								}
+							}
 							break;
 						}
 					}
 				}
 				else
 				{
-					// 현재 높이(k)가 지표면(height)보다는 높은 상태입니다.
-					// 만약 해수면(SEA_LEVEL = 63)보다 낮거나 같다면 초기 바다물로 채웁니다.
-					if (k <= SEA_LEVEL)
-					{
-						m_arrBlocks[idx].SetType(CBlock3::TYPE::WATER_PLACE_HOLDER);
-					}
-					else
-					{
-						// 해수면보다도 완전히 높은 진짜 하늘 공간만 AIR 처리
-						m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
-					}
-					//m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
+					// 💡 위쪽 공기/물 공간을 완벽히 밀어두어야 SpawnTree에서 AIR 검사가 제대로 먹힙니다.
+					m_arrBlocks[idx].SetType(k <= SEA_LEVEL ? CBlock3::TYPE::WATER_PLACE_HOLDER : CBlock3::TYPE::AIR);
 				}
 
 				// -------------------------------------------------------------
-				// [STEP 3] 후처리 (동굴 및 광물 - 이전 코드 구조 그대로 유지)
+				// [STEP 3] 후처리 (동굴 및 광물)
 				// -------------------------------------------------------------
 				CBlock3::TYPE currentType = m_arrBlocks[idx].GetType();
-
 				if (k > BEDROCK_MAX_HEIGHT && k < height - 4)
 				{
-					// 동굴 파내기
-					float caveNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::CAVE).GetNoise(tmpx, (float)k, tmpz);
-
-					// 만약 이미 위에서 물로 채워진 칸이라면 동굴 노이즈가 나오더라도 구멍 뚫지 않기 (해저 보호)
 					if (m_arrBlocks[idx].GetType() == CBlock3::TYPE::WATER_PLACE_HOLDER)
 						continue;
 
+					float caveNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::CAVE).GetNoise(tmpx, (float)k, tmpz);
 					if (caveNoise > 0.45f)
 					{
 						m_arrBlocks[idx].SetType(CBlock3::TYPE::AIR);
 						continue;
 					}
 
-					// 광물 배치
 					if (currentType == CBlock3::TYPE::STONE)
 					{
 						if (k <= 16)
@@ -179,8 +238,32 @@ HRESULT CChunk3::BlockFilling()
 					}
 				}
 			} // k loop
+
+			// 🌿 나무가 스폰되지 않은 평지(잔디) 자리에만 식물 장식 배치
+			if (!bShouldSpawnTree && biome == BIOME_TYPE::PLAINS && height >= SEA_LEVEL)
+			{
+				if (height + 1 < VOXEL_CHUNK_Y_SIZE3)
+				{
+					uint32_t aboveIdx = BlockIndexing(i, height + 1, j);
+					float grassNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::PLANT_DECO_FIJI_SHORT_GRASS).GetNoise(tmpx, tmpz);
+
+					if (grassNoise > 0.52f)
+						m_arrBlocks[aboveIdx].SetType(CBlock3::GetRandomTypeFlower());
+					else if (grassNoise > 0.28f)
+						m_arrBlocks[aboveIdx].SetType(CBlock3::TYPE::FIJI_SHORT_GRASS);
+				}
+			}
+
 		} // j loop
 	} // i loop
+
+	// -------------------------------------------------------------
+	// [STEP 4] 💡 지형 배치가 완전히 끝난 뒤 최종적으로 나무 심기
+	// -------------------------------------------------------------
+	for (const auto& tree : vecTreesToSpawn)
+	{
+		SpawnTree(tree.i, tree.k, tree.j, tree.logType, tree.leafType);
+	}
 
 	m_eBlockFillingState = BLOCKFILLING_STATE::DONE;
 	return S_OK;

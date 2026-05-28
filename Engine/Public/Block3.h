@@ -299,6 +299,59 @@ public:
 		}
 	}
 
+	static _bool IsFlower(TYPE eType)
+	{
+		switch (eType)
+		{
+			case CBlock3::TYPE::FLOWER_ALLIUM :
+			case CBlock3::TYPE::FLOWER_BLUE_ORCHID :
+			case CBlock3::TYPE::FLOWER_CORNFLOWER :
+			case CBlock3::TYPE::FLOWER_DANDELION :
+			case CBlock3::TYPE::FLOWER_HOUSTONIA :
+			case CBlock3::TYPE::FLOWER_LILY_OF_THE_VALLEY :
+			case CBlock3::TYPE::FLOWER_OXEYE_DAISY :
+			case CBlock3::TYPE::FLOWER_PAEONIA :
+			case CBlock3::TYPE::FLOWER_ROSE :
+			case CBlock3::TYPE::FLOWER_ROSE_BLUE :
+			case CBlock3::TYPE::FLOWER_TULIP_ORANGE :
+			case CBlock3::TYPE::FLOWER_TULIP_PINK :
+			case CBlock3::TYPE::FLOWER_TULIP_RED :
+			case CBlock3::TYPE::FLOWER_WITHER_ROSE:
+				return true;
+		}
+		return false;
+	}
+
+	static TYPE GetRandomTypeFlower()
+	{
+		// 1. 사용할 꽃 종류들을 배열(또는 std::vector)로 묶어줍니다.
+		static const CBlock3::TYPE flowerTypes[] = {
+			CBlock3::TYPE::FLOWER_ALLIUM,
+			CBlock3::TYPE::FLOWER_BLUE_ORCHID,
+			CBlock3::TYPE::FLOWER_CORNFLOWER,
+			CBlock3::TYPE::FLOWER_DANDELION,
+			CBlock3::TYPE::FLOWER_HOUSTONIA,
+			CBlock3::TYPE::FLOWER_LILY_OF_THE_VALLEY,
+			CBlock3::TYPE::FLOWER_OXEYE_DAISY,
+			CBlock3::TYPE::FLOWER_PAEONIA,
+			CBlock3::TYPE::FLOWER_ROSE,
+			CBlock3::TYPE::FLOWER_ROSE_BLUE,
+			CBlock3::TYPE::FLOWER_TULIP_ORANGE,
+			CBlock3::TYPE::FLOWER_TULIP_PINK,
+			CBlock3::TYPE::FLOWER_TULIP_RED,
+			CBlock3::TYPE::FLOWER_WITHER_ROSE
+		};
+
+		constexpr size_t flowerCount = sizeof(flowerTypes) / sizeof(flowerTypes[0]);
+
+		// 2. 현대적인 C++ 난수 생성기 세팅 (스레드별로 독립적인 시드 가짐 -> 멀티스레드 안전)
+		static thread_local std::mt19937 generator(std::random_device{}());
+		static std::uniform_int_distribution<size_t> distribution(0, flowerCount - 1);
+
+		// 3. 무작위 인덱스를 뽑아 꽃 타입 반환
+		return flowerTypes[distribution(generator)];
+	}
+
 	static uint32_t GetBaseColor(CBlock3::TYPE eType)
 	{
 		switch (eType)
@@ -500,6 +553,11 @@ public:
 	// 불투명한가?
 	_bool IsOpaque() const
 	{
+		if (IsFlower(m_eType))
+		{
+			return false;
+		}
+
 		switch (m_eType)
 		{
 		case TYPE::AIR:
@@ -507,6 +565,12 @@ public:
 		case TYPE::TORCH_ON:
 		case TYPE::FIJI_SHORT_GRASS:
 		case TYPE::FLOWER_OXEYE_DAISY:
+			return false;
+
+		case TYPE::LEAVES_CHERRY:
+		case TYPE::LEAVES_OAK:
+		case TYPE::LEAVES_BIRCH:
+		case TYPE::LEAVES_ACACIA:
 			return false;
 		default:
 			return true;

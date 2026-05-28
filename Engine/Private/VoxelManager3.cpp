@@ -1012,11 +1012,11 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     CBlock3 newBlock{};
                     if (CGameInstance::Get().KeyPressing(DIK_L))
                     {
-                        newBlock.SetType(CBlock3::TYPE::FIJI_TALL_GRASS_TOP);
+                        newBlock.SetType(CBlock3::TYPE::TORCH_ON);
                     }
                     else
                     {
-                        newBlock.SetType(CBlock3::TYPE::FIJI_SHORT_GRASS);
+                        newBlock.SetType(CBlock3::TYPE::COBBLESTONE);
                     }
                     SetBlock(worldBX, worldBY, worldBZ, newBlock);
 
@@ -2519,15 +2519,22 @@ HRESULT CVoxelManager3::Initialize()
     m_Noises[ETOUI(NOISE_TYPE::HUMIDITY)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     m_Noises[ETOUI(NOISE_TYPE::HUMIDITY)].SetFrequency(0.002f);
 
-    //m_NoiseHeight.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    //m_NoiseHeight.SetFrequency(0.03f); // 전체적인 지형의 크기 (낮을수록 거대함)
 
-    //// Fractal 설정 (핵심!)
-    //m_NoiseHeight.SetFractalType(FastNoiseLite::FractalType_FBm);
-    //m_NoiseHeight.SetFractalOctaves(5);     // 층을 얼마나 쌓을지 (4~6 추천)
-    //m_NoiseHeight.SetFractalLacunarity(2.0f); // 층 사이의 주파수 배율
-    //m_NoiseHeight.SetFractalGain(0.3f);       // 층 사이의 영향력 배율
+    //PLANT_DECO_FIJI_SHORT_GRASS
+    m_Noises[ETOUI(NOISE_TYPE::PLANT_DECO_FIJI_SHORT_GRASS)].SetSeed(m_iNoiseSeed + 31);
+    m_Noises[ETOUI(NOISE_TYPE::PLANT_DECO_FIJI_SHORT_GRASS)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    m_Noises[ETOUI(NOISE_TYPE::PLANT_DECO_FIJI_SHORT_GRASS)].SetFrequency(0.22f);
 
+    // TREE_DENSITY 세팅 수정
+    m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetSeed(m_iNoiseSeed + 32);
+    m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+
+    // 💡 주파수를 대폭 낮추어 노이즈 변화를 완만하게 만듭니다. (값 크면 나무가 전멸함)
+    m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetFrequency(0.08f);
+
+    // 💡 숲 내부에서 나무가 더 조밀하게 뭉쳐나오도록 Fractal 설정을 추가해주면 훨씬 자연스럽습니다.
+    m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetFractalType(FastNoiseLite::FractalType_FBm);
+    m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetFractalOctaves(3);
 
     //
     {

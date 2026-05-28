@@ -104,6 +104,7 @@ private:
 	uint8_t CalculateVertexAO(_bool side1, _bool side2, _bool corner) const;
 
 private:
+	void SpawnTree(int32_t baseI, int32_t baseK, int32_t baseJ, CBlock3::TYPE eLogType, CBlock3::TYPE eLeafType);
 	void BuildCrossMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 	void BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 	void BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
