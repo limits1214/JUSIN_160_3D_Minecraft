@@ -43,6 +43,8 @@ namespace Engine
 		ORE_COAL,
 		TEMPERATURE,
 		HUMIDITY,
+		PLANT_DECO_FIJI_SHORT_GRASS,
+		TREE_DENSITY,
 		END
 	};
 
