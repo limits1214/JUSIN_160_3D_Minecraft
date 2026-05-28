@@ -1068,6 +1068,134 @@ HRESULT CGameInstance::InitializeMCResource()
 				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/tall_grass_top.png");
 			}
 			
+			{
+				// 63: stripped_cherry_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_cherry_log_top.png");
+			}
+			{
+				// 64: stripped_cherry_log_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_cherry_log_side.png");
+			}
+			{
+				// 65: stripped_oak_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_oak_log_top.png");
+			}
+			{
+				// 66: stripped_oak_log.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_oak_log.png");
+			}
+			{
+				// 67: stripped_birch_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_birch_log_top.png");
+			}
+			{
+				// 68: stripped_birch_log.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_birch_log.png");
+			}
+			{
+				// 69: stripped_acacia_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_acacia_log_top.png");
+			}
+			{
+				// 70: stripped_acacia_log.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_acacia_log.png");
+			}
+
+			{
+				// 71: obsidian.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/obsidian.png");
+			}
+
+			{
+				// 72: chest_front.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/chest/chest_front.png");
+			}
+
+			{
+				// 73: chest_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/chest/chest_side.png");
+			}
+
+			{
+				// 74: chest_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/chest/chest_top.png");
+			}
+
+			{
+				// 75: crafting_table_front.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/crafting_table/crafting_table_front.png");
+			}
+			{
+				// 76: crafting_table_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/crafting_table/crafting_table_side.png");
+			}
+			{
+				// 77: crafting_table_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/crafting_table/crafting_table_top.png");
+			}
+
+			{
+				// 78: furnace_front_off.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/furnace/furnace_front_off.png");
+			}
+
+			{
+				// 79: furnace_front_on.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/furnace/furnace_front_on.png");
+			}
+
+			{
+				// 80: furnace_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/furnace/furnace_side.png");
+			}
+
+			{
+				// 81: furnace_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/furnace/furnace_top.png");
+			}
+
+			{
+				// 82: tnt_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/tnt/tnt_top.png");
+			}
+			{
+				// 83: tnt_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/tnt/tnt_side.png");
+			}
+			{
+				// 84: tnt_bottom.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/tnt/tnt_bottom.png");
+			}
+
+			{
+				// 85: enchanting_table_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/enchant_table/enchanting_table_top.png");
+			}
+			{
+				// 86: enchanting_table_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/enchant_table/enchanting_table_side.png");
+			}
+			{
+				// 87: enchanting_table_bottom.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/enchant_table/enchanting_table_bottom.png");
+			}
+			{
+				// 88: bookshelf.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/bookshelf.png");
+			}
+			{
+				// 89: ladder.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/ladder.png");
+			}
+			{
+				// 90: cobblestone.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/cobblestone.png");
+			}
+			{
+				// 91: cobbled_deepslate.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/cobbled_deepslate.png");
+			}
+			
 		}
 
 		{

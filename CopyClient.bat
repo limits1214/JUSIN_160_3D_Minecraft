@@ -3,3 +3,10 @@
 xcopy				/y/I			.\Engine\public\*.*			.\EngineSDK\Inc\
 xcopy				/y/I			.\Engine\Bin\Engine.dll		.\Client\Bin\
 xcopy				/y/I			.\Engine\Bin\Engine.lib		.\EngineSDK\Lib\
+//xcopy				/y/I /d			.\vcpkg_installed\x64-windows\x64-windows\bin\*.dll .\Client\Bin\
+
+if "$(Configuration)" == "Release" (
+    xcopy /y/I /d .\vcpkg_installed\x64-windows\x64-windows\bin\*.dll .\Client\Bin\
+) else (
+    xcopy /y/I /d .\vcpkg_installed\x64-windows\x64-windows\debug\bin\*.dll .\Client\Bin\
+)

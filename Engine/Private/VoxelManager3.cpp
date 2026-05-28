@@ -1016,7 +1016,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     }
                     else
                     {
-                        newBlock.SetType(CBlock3::TYPE::LEAVES_BIRCH);
+                        newBlock.SetType(CBlock3::TYPE::COBBLED_DEEPSLATE);
                     }
                     SetBlock(worldBX, worldBY, worldBZ, newBlock);
 
