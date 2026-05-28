@@ -6,6 +6,8 @@
 #include "SkeletonEntity.h"
 #include "CollBox.h"
 
+#include "FallingVoxel.h"
+
 NS_USING(Engine)
 static inline int32_t FloorDiv(int32_t a, int32_t b)
 {
@@ -68,33 +70,174 @@ void CVoxelManager3::SetBlocks(std::vector<std::tuple<int32_t, int32_t, int32_t,
     }
 }
 
+//_bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayDir, float fMaxDist, BLOCK_RAY_RESULT& outResult) const
+//{    // --- 1. 시작 블록 ---
+//    int32_t bx = (int32_t)floorf(rayOrigin.x);
+//    int32_t by = (int32_t)floorf(rayOrigin.y);
+//    int32_t bz = (int32_t)floorf(rayOrigin.z);
+//
+//    // 각 축 이동 방향
+//    int stepX = (rayDir.x >= 0) ? 1 : -1;
+//    int stepY = (rayDir.y >= 0) ? 1 : -1;
+//    int stepZ = (rayDir.z >= 0) ? 1 : -1;
+//
+//    // 다음 블록 경계까지의 t값
+//    float tMaxX = (rayDir.x != 0) ? ((stepX > 0 ? (bx + 1.f) : bx) - rayOrigin.x) / rayDir.x : FLT_MAX;
+//    float tMaxY = (rayDir.y != 0) ? ((stepY > 0 ? (by + 1.f) : by) - rayOrigin.y) / rayDir.y : FLT_MAX;
+//    float tMaxZ = (rayDir.z != 0) ? ((stepZ > 0 ? (bz + 1.f) : bz) - rayOrigin.z) / rayDir.z : FLT_MAX;
+//
+//    // 블록 하나 이동할 때마다 증가하는 t값
+//    float tDeltaX = (rayDir.x != 0) ? fabsf(1.f / rayDir.x) : FLT_MAX;
+//    float tDeltaY = (rayDir.y != 0) ? fabsf(1.f / rayDir.y) : FLT_MAX;
+//    float tDeltaZ = (rayDir.z != 0) ? fabsf(1.f / rayDir.z) : FLT_MAX;
+//
+//    FACE_DIR lastFace = FACE_DIR::END;
+//    float    tCurrent = 0.f; // 현재 블록에 진입한 시점의 t값
+//
+//    while (true)
+//    {
+//        // 최대 거리 초과 시 조기 종료
+//        if (tCurrent > fMaxDist)
+//            break;
+//
+//        CChunk3* pChunk = GetChunkByWorldBlockCoord(bx, by, bz);
+//        if (pChunk)
+//        {
+//            const auto& [cx, cy, cz] = pChunk->GetCoord();
+//            uint32_t lx = (uint32_t)(bx - cx * (int32_t)VOXEL_CHUNK_X_SIZE3);
+//            uint32_t ly = (uint32_t)(by - cy * (int32_t)VOXEL_CHUNK_Y_SIZE3);
+//            uint32_t lz = (uint32_t)(bz - cz * (int32_t)VOXEL_CHUNK_Z_SIZE3);
+//
+//            
+//            auto block = GetBlockByChunkCoord(pChunk->GetCoordIdx(), lx, ly, lz).value();
+//            if (block.GetType() != CBlock3::TYPE::AIR
+//                && !block.IsWater() )
+//            {
+//                //outResult.pChunk = pChunk;
+//                outResult.iWorldBlockX = bx;
+//                outResult.iWorldBlockY = by;
+//                outResult.iWorldBlockZ = bz;
+//                outResult.iChunkX = cx;
+//                outResult.iChunkY = cy;
+//                outResult.iChunkZ = cz;
+//                outResult.iChunkBlockX = lx;
+//                outResult.iChunkBlockY = ly;
+//                outResult.iChunkBlockZ = lz;
+//                outResult.block = block;
+//                outResult.eHitFace = lastFace;
+//                outResult.fDist = tCurrent; // 이 블록에 진입한 t (= 이전 스텝의 tMax)
+//                return true;
+//            }
+//        }
+//
+//        // 가장 가까운 축 경계로 이동
+//        if (tMaxX < tMaxY && tMaxX < tMaxZ)
+//        {
+//            tCurrent = tMaxX;
+//            tMaxX += tDeltaX;
+//            bx += stepX;
+//            lastFace = (stepX > 0) ? FACE_DIR::NEG_X : FACE_DIR::POS_X;
+//        }
+//        else if (tMaxY < tMaxZ)
+//        {
+//            tCurrent = tMaxY;
+//            tMaxY += tDeltaY;
+//            by += stepY;
+//            lastFace = (stepY > 0) ? FACE_DIR::NEG_Y : FACE_DIR::POS_Y;
+//        }
+//        else
+//        {
+//            tCurrent = tMaxZ;
+//            tMaxZ += tDeltaZ;
+//            bz += stepZ;
+//            lastFace = (stepZ > 0) ? FACE_DIR::NEG_Z : FACE_DIR::POS_Z;
+//        }
+//    }
+//
+//    return false;
+//}
+
+
+static _bool RayAABBIntersection(
+    const _float3& rayOrigin, const _float3& rayDir,
+    const _float3& boxMin, const _float3& boxMax,
+    float& outT, FACE_DIR& outFace)
+{
+    float tMin = -FLT_MAX;
+    float tMax = FLT_MAX;
+    FACE_DIR nearFace = FACE_DIR::END;
+
+    // X, Y, Z 세 축에 대해 슬래브 검사 수행
+    // ------------------ X 축 ------------------
+    if (fabsf(rayDir.x) > 0.000001f) {
+        float t1 = (boxMin.x - rayOrigin.x) / rayDir.x;
+        float t2 = (boxMax.x - rayOrigin.x) / rayDir.x;
+        float tNear = std::min(t1, t2);
+        float tFar = std::max(t1, t2);
+
+        if (tNear > tMin) { tMin = tNear; nearFace = (rayDir.x > 0.f) ? FACE_DIR::NEG_X : FACE_DIR::POS_X; }
+        tMax = std::min(tMax, tFar);
+    }
+    else if (rayOrigin.x < boxMin.x || rayOrigin.x > boxMax.x) return false;
+
+    // ------------------ Y 축 ------------------
+    if (fabsf(rayDir.y) > 0.000001f) {
+        float t1 = (boxMin.y - rayOrigin.y) / rayDir.y;
+        float t2 = (boxMax.y - rayOrigin.y) / rayDir.y;
+        float tNear = std::min(t1, t2);
+        float tFar = std::max(t1, t2);
+
+        if (tNear > tMin) { tMin = tNear; nearFace = (rayDir.y > 0.f) ? FACE_DIR::NEG_Y : FACE_DIR::POS_Y; }
+        tMax = std::min(tMax, tFar);
+    }
+    else if (rayOrigin.y < boxMin.y || rayOrigin.y > boxMax.y) return false;
+
+    // ------------------ Z 축 ------------------
+    if (fabsf(rayDir.z) > 0.000001f) {
+        float t1 = (boxMin.z - rayOrigin.z) / rayDir.z;
+        float t2 = (boxMax.z - rayOrigin.z) / rayDir.z;
+        float tNear = std::min(t1, t2);
+        float tFar = std::max(t1, t2);
+
+        if (tNear > tMin) { tMin = tNear; nearFace = (rayDir.z > 0.f) ? FACE_DIR::NEG_Z : FACE_DIR::POS_Z; }
+        tMax = std::min(tMax, tFar);
+    }
+    else if (rayOrigin.z < boxMin.z || rayOrigin.z > boxMax.z) return false;
+
+    // 충돌 조건 확인
+    if (tMin <= tMax && tMax >= 0.f) {
+        outT = tMin;
+        outFace = nearFace;
+        return true;
+    }
+
+    return false;
+}
+
 _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayDir, float fMaxDist, BLOCK_RAY_RESULT& outResult) const
-{    // --- 1. 시작 블록 ---
+{
+    // --- 1. 시작 블록 ---
     int32_t bx = (int32_t)floorf(rayOrigin.x);
     int32_t by = (int32_t)floorf(rayOrigin.y);
     int32_t bz = (int32_t)floorf(rayOrigin.z);
 
-    // 각 축 이동 방향
     int stepX = (rayDir.x >= 0) ? 1 : -1;
     int stepY = (rayDir.y >= 0) ? 1 : -1;
     int stepZ = (rayDir.z >= 0) ? 1 : -1;
 
-    // 다음 블록 경계까지의 t값
     float tMaxX = (rayDir.x != 0) ? ((stepX > 0 ? (bx + 1.f) : bx) - rayOrigin.x) / rayDir.x : FLT_MAX;
     float tMaxY = (rayDir.y != 0) ? ((stepY > 0 ? (by + 1.f) : by) - rayOrigin.y) / rayDir.y : FLT_MAX;
     float tMaxZ = (rayDir.z != 0) ? ((stepZ > 0 ? (bz + 1.f) : bz) - rayOrigin.z) / rayDir.z : FLT_MAX;
 
-    // 블록 하나 이동할 때마다 증가하는 t값
     float tDeltaX = (rayDir.x != 0) ? fabsf(1.f / rayDir.x) : FLT_MAX;
     float tDeltaY = (rayDir.y != 0) ? fabsf(1.f / rayDir.y) : FLT_MAX;
     float tDeltaZ = (rayDir.z != 0) ? fabsf(1.f / rayDir.z) : FLT_MAX;
 
     FACE_DIR lastFace = FACE_DIR::END;
-    float    tCurrent = 0.f; // 현재 블록에 진입한 시점의 t값
+    float    tCurrent = 0.f;
 
     while (true)
     {
-        // 최대 거리 초과 시 조기 종료
         if (tCurrent > fMaxDist)
             break;
 
@@ -106,25 +249,51 @@ _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayD
             uint32_t ly = (uint32_t)(by - cy * (int32_t)VOXEL_CHUNK_Y_SIZE3);
             uint32_t lz = (uint32_t)(bz - cz * (int32_t)VOXEL_CHUNK_Z_SIZE3);
 
-            
             auto block = GetBlockByChunkCoord(pChunk->GetCoordIdx(), lx, ly, lz).value();
-            if (block.GetType() != CBlock3::TYPE::AIR
-                && !block.IsWater() )
+            if (block.GetType() != CBlock3::TYPE::AIR && !block.IsWater())
             {
-                //outResult.pChunk = pChunk;
-                outResult.iWorldBlockX = bx;
-                outResult.iWorldBlockY = by;
-                outResult.iWorldBlockZ = bz;
-                outResult.iChunkX = cx;
-                outResult.iChunkY = cy;
-                outResult.iChunkZ = cz;
-                outResult.iChunkBlockX = lx;
-                outResult.iChunkBlockY = ly;
-                outResult.iChunkBlockZ = lz;
-                outResult.block = block;
-                outResult.eHitFace = lastFace;
-                outResult.fDist = tCurrent; // 이 블록에 진입한 t (= 이전 스텝의 tMax)
-                return true;
+                // --- [변경 구간] 정밀 AABB 레이케스트 적용 ---
+                // 1. 블록의 로컬 오프셋 정보 가져오기
+                auto [vCenterOffset, vHalfExtents] = CBlock3::GetOutlineExtents(block.GetType());
+
+                // 2. 해당 블록의 월드 중심 좌표 계산 (기본 큐브 중심은 각 정수 좌표 + 0.5f)
+                _float3 blockWorldCenter = {
+                    (float)bx + 0.5f + vCenterOffset.x,
+                    (float)by + 0.5f + vCenterOffset.y,
+                    (float)bz + 0.5f + vCenterOffset.z
+                };
+
+                // 3. 월드 공간 상의 실제 AABB Min/Max 도출
+                _float3 boxMin = { blockWorldCenter.x - vHalfExtents.x, blockWorldCenter.y - vHalfExtents.y, blockWorldCenter.z - vHalfExtents.z };
+                _float3 boxMax = { blockWorldCenter.x + vHalfExtents.x, blockWorldCenter.y + vHalfExtents.y, blockWorldCenter.z + vHalfExtents.z };
+
+                float realHitT = 0.f;
+                FACE_DIR realHitFace = FACE_DIR::END;
+
+                // 4. 세부 AABB 교차 검사 수행
+                if (RayAABBIntersection(rayOrigin, rayDir, boxMin, boxMax, realHitT, realHitFace))
+                {
+                    // 최대 거리 제안 검사 한 번 더 수행
+                    if (realHitT <= fMaxDist)
+                    {
+                        outResult.iWorldBlockX = bx;
+                        outResult.iWorldBlockY = by;
+                        outResult.iWorldBlockZ = bz;
+                        outResult.iChunkX = cx;
+                        outResult.iChunkY = cy;
+                        outResult.iChunkZ = cz;
+                        outResult.iChunkBlockX = lx;
+                        outResult.iChunkBlockY = ly;
+                        outResult.iChunkBlockZ = lz;
+                        outResult.block = block;
+
+                        // 단순 격자 충돌 면이 아닌, 실제 소형 AABB에 부딪힌 정밀한 결과 대입
+                        outResult.eHitFace = realHitFace;
+                        outResult.fDist = realHitT;
+                        return true;
+                    }
+                }
+                // 만약 AABB를 빗겨 나갔다면 return 하지 않고 다음 격자로 루프를 계속 돕니다.
             }
         }
 
@@ -154,6 +323,7 @@ _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayD
 
     return false;
 }
+
 
 HRESULT CVoxelManager3::QueuingInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& desc)
 {
@@ -559,6 +729,48 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
     RuntimeFloodFillSkyLighting(rePropagateQ);
 }
 
+void CVoxelManager3::RuntimeOnBlockPlaced(int32_t wbx, int32_t wby, int32_t wbz, const  CBlock3& newBlock)
+{
+    if (newBlock.GetType() == CBlock3::TYPE::FIJI_TALL_GRASS_BOTTOM)
+    {
+        if (wby + 1 < VOXEL_CHUNK_Y_SIZE3)
+        {
+            CBlock3 top{};
+            top.SetType(CBlock3::TYPE::FIJI_TALL_GRASS_TOP);
+            SetBlock(wbx, wby + 1, wbz, top);
+        }
+    }
+}
+
+void CVoxelManager3::RuntimeOnBlockRemoved(int32_t wbx, int32_t wby, int32_t wbz)
+{
+    auto optBlock = GetBlock(wbx, wby, wbz);
+    if (!optBlock.has_value())
+    {
+        return;
+    }
+    CBlock3& block = optBlock.value();
+
+    if (block.GetType() == CBlock3::TYPE::FIJI_TALL_GRASS_BOTTOM)
+    {
+        if (wby + 1 < VOXEL_CHUNK_Y_SIZE3)
+        {
+            CBlock3 top{};
+            top.SetType(CBlock3::TYPE::AIR);
+            SetBlock(wbx, wby + 1, wbz, top);
+        }
+    }
+    else if (block.GetType() == CBlock3::TYPE::FIJI_TALL_GRASS_TOP)
+    {
+        if (wby - 1 >= 0)
+        {
+            CBlock3 top{};
+            top.SetType(CBlock3::TYPE::AIR);
+            SetBlock(wbx, wby - 1, wbz, top);
+        }
+    }
+}
+
 void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1, -1, 0, 0, 0, 0 };
@@ -933,6 +1145,8 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     uint8_t oldBlockLight = res.block->GetBlockLight(); // 파괴 전 빛 값 백업
                     bool bIsLightSource = CBlock3::GetBlockLightByType(res.block->GetType()) > 0;
 
+
+                    RuntimeOnBlockRemoved(worldBX, worldBY, worldBZ);
                     CBlock3 block{};
                     block.SetType(CBlock3::TYPE::AIR);
                     SetBlock(worldBX, worldBY, worldBZ, block);
@@ -996,33 +1210,51 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     //SetBlock(worldBX, worldBY, worldBZ, block);
 
 
+                    //E::CGameInstance::Get().GetGameObjectLayer("88_FALLING_VOXEL")
 
-
-
-                    uint8_t oldSkyLight = 0;
-                    uint8_t oldBlockLight = 0;
-                    auto optPrev = GetBlock(worldBX, worldBY, worldBZ);
-                    if (optPrev.has_value())
+                    if (CGameInstance::Get().KeyPressing(DIK_K))
                     {
-                        oldSkyLight = optPrev.value().GetSkyLight();
-                        oldBlockLight = optPrev.value().GetBlockLight();
-                    }
-
-                    // 2. 실제 블록 배치 (예: 돌 블록이나 횃불 등)
-                    CBlock3 newBlock{};
-                    if (CGameInstance::Get().KeyPressing(DIK_L))
-                    {
-                        newBlock.SetType(CBlock3::TYPE::TORCH_ON);
+                        if (auto layer = E::CGameInstance::Get().GetGameObjectLayer("88_FALLING_VOXEL"))
+                        {
+                            if (!layer->empty())
+                            {
+                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CFallingVoxel>(layer->front()))
+                                {
+                                    pObj->AddBlock(CFallingVoxel::TFallingBlockData{ .vPos = {(float)worldBX, (float)worldBY, (float)worldBZ}, .vVelocity = {0.f, -2.8f, 0.f} });
+                                }
+                            }
+                        }
                     }
                     else
                     {
-                        newBlock.SetType(CBlock3::TYPE::COBBLESTONE);
-                    }
-                    SetBlock(worldBX, worldBY, worldBZ, newBlock);
+                        uint8_t oldSkyLight = 0;
+                        uint8_t oldBlockLight = 0;
+                        auto optPrev = GetBlock(worldBX, worldBY, worldBZ);
+                        if (optPrev.has_value())
+                        {
+                            oldSkyLight = optPrev.value().GetSkyLight();
+                            oldBlockLight = optPrev.value().GetBlockLight();
+                        }
 
-                    // 3. 조명 함수 호출 (배치된 블록의 광원 수치도 함께 )
-                    uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(newBlock.GetType());
-                    RuntimeOnBlockPlacedLighting(worldBX, worldBY, worldBZ, placedBlockEmitLight, oldSkyLight, oldBlockLight);
+                        // 2. 실제 블록 배치 (예: 돌 블록이나 횃불 등)
+                        CBlock3 newBlock{};
+                        if (CGameInstance::Get().KeyPressing(DIK_L))
+                        {
+                            newBlock.SetType(CBlock3::TYPE::TORCH_ON);
+                        }
+                        else
+                        {
+                            newBlock.SetType(CBlock3::TYPE::PLANK_BIRCH);
+                        }
+                        RuntimeOnBlockPlaced(worldBX, worldBY, worldBZ, newBlock);
+
+                        SetBlock(worldBX, worldBY, worldBZ, newBlock);
+
+                        // 3. 조명 함수 호출 (배치된 블록의 광원 수치도 함께 )
+                        uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(newBlock.GetType());
+                        RuntimeOnBlockPlacedLighting(worldBX, worldBY, worldBZ, placedBlockEmitLight, oldSkyLight, oldBlockLight);
+                    }
+                    
                 }
             }
         }
@@ -1198,10 +1430,18 @@ CChunk3* CVoxelManager3::GetChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t
     auto tmp1 = FloorDiv(x, VOXEL_CHUNK_X_SIZE3);
     auto tmp2 = FloorDiv(y, VOXEL_CHUNK_Y_SIZE3);
     auto tmp3 = FloorDiv(z, VOXEL_CHUNK_Z_SIZE3);
-	int32_t cx = (int32_t)floor(x / VOXEL_CHUNK_X_SIZE3);
-	int32_t cy = (int32_t)floor(y / VOXEL_CHUNK_Y_SIZE3);
-	int32_t cz = (int32_t)floor(z / VOXEL_CHUNK_Z_SIZE3);
+	//int32_t cx = (int32_t)floor(x / VOXEL_CHUNK_X_SIZE3);
+	//int32_t cy = (int32_t)floor(y / VOXEL_CHUNK_Y_SIZE3);
+	//int32_t cz = (int32_t)floor(z / VOXEL_CHUNK_Z_SIZE3);
 	return GetChunkByChunkCoord(tmp1, tmp2, tmp3);
+}
+
+_int3 CVoxelManager3::GetChunkCoordByWorldBlockCoord(int32_t x, int32_t y, int32_t z)
+{
+    auto tmp1 = FloorDiv(x, VOXEL_CHUNK_X_SIZE3);
+    auto tmp2 = FloorDiv(y, VOXEL_CHUNK_Y_SIZE3);
+    auto tmp3 = FloorDiv(z, VOXEL_CHUNK_Z_SIZE3);
+    return { tmp1, tmp2, tmp3 };
 }
 
 HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& createDesc)

@@ -457,6 +457,18 @@
     <Filter Include="100.Shaders\Collider">
       <UniqueIdentifier>{04cbe188-607b-4ae5-b429-591dd5cca899}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Voxel">
+      <UniqueIdentifier>{27364ad3-ed15-408d-a7fb-48aad9eeaa3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Voxel\Falling">
+      <UniqueIdentifier>{98f67ba0-37ae-455b-8d47-5d1d1508884e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\FallingVoxel">
+      <UniqueIdentifier>{223b3a4c-69a7-4fbf-963f-95ecfa0ae350}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\FallingVoxelVIBuffer">
+      <UniqueIdentifier>{bd75ae31-e499-49ec-9eec-c03d54773d5c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -894,6 +906,15 @@
     <ClInclude Include="..\public\ComConstantBuffer.h">
       <Filter>Component\ConstantBuffer</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\VoxelObject.h">
+      <Filter>GameObject\Voxel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\FallingVoxel.h">
+      <Filter>GameObject\Voxel\Falling</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\FallingVoxelVIBuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1319,6 +1340,15 @@
     <ClCompile Include="..\private\ComConstantBuffer.cpp">
       <Filter>Component\ConstantBuffer</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\VoxelObject.cpp">
+      <Filter>GameObject\Voxel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\FallingVoxel.cpp">
+      <Filter>GameObject\Voxel\Falling</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\FallingVoxelVIBuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1356,6 +1386,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Collider\Collider.hlsl">
       <Filter>100.Shaders\Collider</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FallingVoxel\FallingVoxel.hlsl">
+      <Filter>100.Shaders\FallingVoxel</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

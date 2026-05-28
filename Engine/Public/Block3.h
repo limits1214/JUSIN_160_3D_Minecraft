@@ -357,6 +357,8 @@ public:
 		switch (eType)
 		{
 		case TYPE::FIJI_SHORT_GRASS:
+		case TYPE::FIJI_TALL_GRASS_TOP:
+		case TYPE::FIJI_TALL_GRASS_BOTTOM:
 			return PackRGBA(100, 200, 100, 255); // ABGR 표현 (리틀 엔디안: R=120, G=210, B=120, A=255)
 
 		case TYPE::LEAVES_OAK:
@@ -538,11 +540,20 @@ public:
 		}
 	}
 
+	static std::pair<_float3, _float3> GetOutlineExtents(TYPE e)
+	{
+		switch (e)
+		{
+		case TYPE::TORCH_ON:
+			return { {0.f, -0.1f, 0.f},{0.2f, 0.4f, 0.2f} };
+		}
+		return { {0.f, 0.f, 0.f},{0.5f, 0.5f, 0.5f} };
+	}
+
 	static uint8_t GetBlockLightByType(TYPE e)
 	{
 		switch (e)
 		{
-		case TYPE::SAND:      // test
 		case TYPE::TORCH_ON:
 			return 15;
 		default:
@@ -564,6 +575,8 @@ public:
 		case TYPE::WATER_PLACE_HOLDER:
 		case TYPE::TORCH_ON:
 		case TYPE::FIJI_SHORT_GRASS:
+		case TYPE::FIJI_TALL_GRASS_BOTTOM:
+		case TYPE::FIJI_TALL_GRASS_TOP:
 		case TYPE::FLOWER_OXEYE_DAISY:
 			return false;
 

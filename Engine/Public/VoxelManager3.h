@@ -33,6 +33,8 @@ public:
 	//	CBlock3 block{};
 	//}CHUNK_EDIT_DESC;
 
+	
+	const std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>>& GetEditShadow() const { return m_EditShadow; }
 	std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>> m_EditShadow{};
 
 	typedef struct tagRaycastResult {
@@ -165,10 +167,18 @@ public:
 	//void InitialFillingBlockLighting(CChunk3* pChunk);
 	void RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight);
 	void RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight);
+	
+private:
 	void RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
 	void RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
 	void RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
 	void RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+
+public:
+	void RuntimeOnBlockPlaced(int32_t wbx, int32_t wby, int32_t wbz, const CBlock3& newBlock);
+	void RuntimeOnBlockRemoved(int32_t wbx, int32_t wby, int32_t wbz);
+
+
 	
 public:
 	void WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
@@ -188,6 +198,8 @@ public:
 	CChunk3* GetChunkByChunkCoord(int32_t x, int32_t y, int32_t z) const;
 	CChunk3* GetChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const;
 
+	static _int3 GetChunkCoordByWorldBlockCoord(int32_t x, int32_t y, int32_t z) ;
+
 private:
 	HRESULT StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& createDesc);
 	HRESULT StartProcessOutRangeChunkRelease(const OUT_RANGE_CHUNK_RELEASE_DESC& releaseDesc);
@@ -204,7 +216,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 0 };
+	int32_t m_iRenderDistance{ 10 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 //public:

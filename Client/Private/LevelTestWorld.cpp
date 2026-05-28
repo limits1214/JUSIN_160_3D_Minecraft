@@ -31,6 +31,8 @@
 #include "UIBreathBar.h"
 #include "UIBreathBarIcon.h"
 
+#include "FallingVoxel.h"
+
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
 {
@@ -200,6 +202,12 @@ HRESULT CLevelTestWorld::Initialize()
 		{
 			int x = 0;
 		}
+
+		//CFallingVoxel
+		if (FAILED(E::CGameInstance::Get().AddPrototype("FALLING_VOXEL", "Prototype_GameObject_FallingVoxel", E::CFallingVoxel::Create())))
+		{
+			int x = 0;
+		}
 	}
 
 	{
@@ -325,10 +333,26 @@ HRESULT CLevelTestWorld::Initialize()
 
 
 
-		
+
 
 	}
 
+	// falling voxel
+	{
+		//CFallingVoxel
+		{
+			E::CFallingVoxel::DESC Desc{};
+			Desc.sObjectTag = "CFallingVoxelDirt";
+			
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("FALLING_VOXEL", "Prototype_GameObject_FallingVoxel",
+				"88_FALLING_VOXEL", &Desc))
+			{
+				int x = 0;
+			}
+		}
+		
+		//E::CGameInstance::Get().getga
+	}
 	//block outline
 	{
 		//CBlockOutline

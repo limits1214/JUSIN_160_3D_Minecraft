@@ -110,10 +110,14 @@ HRESULT CBlockOutline::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 						{
 							E::CB_PER_BLOCKOUTLINE cbPerBlockOutline{};
 
-							cbPerBlockOutline.vBlockPos = { wbx + 0.5f, wby + 0.5f, wbz + 0.5f };
-							cbPerBlockOutline.vExtents = { 0.5f, 0.5f, 0.5f };
+							auto val = CBlock3::GetOutlineExtents(res.block.value().GetType());
+							cbPerBlockOutline.vBlockPos = { wbx + 0.5f + val.first.x, wby + 0.5f + val.first.y, wbz + 0.5f + val.first.z };
+							cbPerBlockOutline.vExtents = { val.second.x, val.second.y, val.second.z };
 							cbPerBlockOutline.fThickness = 0.015f;
 							cbPerBlockOutline.vColor = { 0.f, 0.f, 0.f, 1.f };
+							
+							
+							
 
 
 							memcpy(mappedSubResource.pData, &cbPerBlockOutline, sizeof(cbPerBlockOutline));
