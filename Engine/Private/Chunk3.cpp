@@ -798,6 +798,16 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					BuildCrossMesh(fx, fy, fz, curType, alphaTestQuads);
 					continue; // 6면체 컬링 루틴 전체 패스
 				}
+				else if (geoType == CBlock3::GEO_TYPE::SLAP)
+				{
+					BuildSlapMesh(fx, fy, fz, curType, solidQuads);
+					continue; // 6면체 컬링 루틴 전체 패스
+				}
+				else if (geoType == CBlock3::GEO_TYPE::STAIR)
+				{
+					BuildStairMesh(fx, fy, fz, curType, solidQuads);
+					continue; // 6면체 컬링 루틴 전체 패스
+				}
 
 
 
@@ -1493,6 +1503,416 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	}
 }
 
+void CChunk3::BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& solidQuads) const
+{
+	// 1. 블록 자체의 광원 밝기 데이터
+	//uint8_t blockLight = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)].GetLight();
+	uint8_t blockLight = 240; // TODO Replace
+
+	// 2. 블록 클래스로부터 반블록의 고유 틴트 컬러 가져오기
+	uint32_t blockColor = CBlock3::GetBaseColor(curType);
+
+	// 3. 반블록의 Y축 상단 높이 정의 (절반 높이)
+	float halfY = fy + (8.f / 16.f); // fy + 0.5f
+
+	// [Top] - 일반 큐브와 동일하지만 높이만 0.5f 지점입니다.
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,        halfY, fz + 1.f };
+		quad.v2 = { fx + 1.f,  halfY, fz + 1.f };
+		quad.v3 = { fx + 1.f,  halfY, fz };
+		quad.v4 = { fx,        halfY, fz };
+
+		quad.uv1 = { 0.f, 0.f };
+		quad.uv2 = { 1.f, 0.f };
+		quad.uv3 = { 1.f, 1.f };
+		quad.uv4 = { 0.f, 1.f };
+
+		quad.eDir = FACE_DIR::POS_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		// AO는 일단 기본 밝기(3)로 채워두거나, 필요시 주변 검사 로직을 연동합니다.
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		solidQuads.push_back(quad);
+	}
+
+	// [Bottom] - 바닥면은 일반 큐브와 완전하게 동일합니다.
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,        fy, fz };
+		quad.v2 = { fx + 1.f,  fy, fz };
+		quad.v3 = { fx + 1.f,  fy, fz + 1.f };
+		quad.v4 = { fx,        fy, fz + 1.f };
+
+		quad.uv1 = { 0.f, 0.f };
+		quad.uv2 = { 1.f, 0.f };
+		quad.uv3 = { 1.f, 1.f };
+		quad.uv4 = { 0.f, 1.f };
+
+		quad.eDir = FACE_DIR::NEG_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		solidQuads.push_back(quad);
+	}
+
+	// 💡 [옆면들] 상단 정점들의 높이를 halfY로 낮추고, 
+	// 텍스처가 늘어나는 걸 막기 위해 uv의 Y축(V)을 0.0f ~ 0.5f(절반) 지점까지만 매핑합니다.
+
+	// [Front] (+Z면)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + 1.f,  halfY, fz + 1.f };
+		quad.v2 = { fx,        halfY, fz + 1.f };
+		quad.v3 = { fx,        fy,    fz + 1.f };
+		quad.v4 = { fx + 1.f,  fy,    fz + 1.f };
+
+		quad.uv1 = { 1.f, 0.5f }; // 💡 상단 V 좌표를 0.5f로 커팅
+		quad.uv2 = { 0.f, 0.5f };
+		quad.uv3 = { 0.f, 1.f };
+		quad.uv4 = { 1.f, 1.f };
+
+		quad.eDir = FACE_DIR::POS_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		solidQuads.push_back(quad);
+	}
+
+	// [Back] (-Z면)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,        halfY, fz };
+		quad.v2 = { fx + 1.f,  halfY, fz };
+		quad.v3 = { fx + 1.f,  fy,    fz };
+		quad.v4 = { fx,        fy,    fz };
+
+		quad.uv1 = { 1.f, 0.5f };
+		quad.uv2 = { 0.f, 0.5f };
+		quad.uv3 = { 0.f, 1.f };
+		quad.uv4 = { 1.f, 1.f };
+
+		quad.eDir = FACE_DIR::NEG_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		solidQuads.push_back(quad);
+	}
+
+	// [Right] (+X면)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + 1.f,  halfY, fz };
+		quad.v2 = { fx + 1.f,  halfY, fz + 1.f };
+		quad.v3 = { fx + 1.f,  fy,    fz + 1.f };
+		quad.v4 = { fx + 1.f,  fy,    fz };
+
+		quad.uv1 = { 1.f, 0.5f };
+		quad.uv2 = { 0.f, 0.5f };
+		quad.uv3 = { 0.f, 1.f };
+		quad.uv4 = { 1.f, 1.f };
+
+		quad.eDir = FACE_DIR::POS_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		solidQuads.push_back(quad);
+	}
+
+	// [Left] (-X면)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,        halfY, fz + 1.f };
+		quad.v2 = { fx,        halfY, fz };
+		quad.v3 = { fx,        fy,    fz };
+		quad.v4 = { fx,        fy,    fz + 1.f };
+
+		quad.uv1 = { 1.f, 0.5f };
+		quad.uv2 = { 0.f, 0.5f };
+		quad.uv3 = { 0.f, 1.f };
+		quad.uv4 = { 1.f, 1.f };
+
+		quad.eDir = FACE_DIR::NEG_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		solidQuads.push_back(quad);
+	}
+}
+void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& solidQuads) const
+{
+	// 1. 블록 자체의 라이팅 및 컬러 데이터
+	uint8_t blockLight = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)].GetLight();
+	uint32_t blockColor = CBlock3::GetBaseColor(curType);
+	uint8_t stairAO = 3; // 기본 AO 밝기
+
+	// 2. 💡 블록의 방향(State) 정보 가져오기 (예: 0: POS_Z, 1: NEG_Z, 2: POS_X, 3: NEG_X)
+	// 프레임워크 설계에 맞게 m_arrBlocks[...].GetState() 등으로 대체하세요.
+	//uint8_t stairDir = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)].GetState();
+	uint8_t stairDir = 0;
+	// Y축 높이 경계선 정의
+	float halfY = fy + 0.5f;
+	float maxY = fy + 1.0f;
+
+	// =========================================================================
+	// PART 1. 밑판 상자 (Bottom Slab) - 하단 전체를 채우는 반블록 (0.0f ~ 0.5f)
+	// =========================================================================
+
+	// 밑판 윗면 (Top Face of Bottom Slab)
+	// 💡 주의: 윗판 상자가 올라가는 부분은 가려지므로 원래 컬링해야 하지만, 
+	// 계단 모양을 쉽게 보기 위해 우선 윗면 전체를 다 그리도록 처리합니다.
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,        halfY, fz + 1.f }; quad.v2 = { fx + 1.f,  halfY, fz + 1.f };
+		quad.v3 = { fx + 1.f,  halfY, fz }; quad.v4 = { fx,        halfY, fz };
+		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f }; quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+		quad.eDir = FACE_DIR::POS_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight; 
+
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+
+	// 밑판 아랫면 (Bottom Face)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,        fy, fz }; quad.v2 = { fx + 1.f,  fy, fz };
+		quad.v3 = { fx + 1.f,  fy, fz + 1.f }; quad.v4 = { fx,        fy, fz + 1.f };
+		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f }; quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+		quad.eDir = FACE_DIR::NEG_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight; 
+
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+
+	// 밑판 옆면 4개 (높이: fy ~ halfY, UV V축: 0.5f ~ 1.0f)
+	// Front (+Z)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + 1.f,  halfY, fz + 1.f }; quad.v2 = { fx,        halfY, fz + 1.f };
+		quad.v3 = { fx,        fy,    fz + 1.f }; quad.v4 = { fx + 1.f,  fy,    fz + 1.f };
+		quad.uv1 = { 1.f, 0.5f }; quad.uv2 = { 0.f, 0.5f }; quad.uv3 = { 0.f, 1.f }; quad.uv4 = { 1.f, 1.f };
+		quad.eDir = FACE_DIR::POS_Z; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight; 
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor; 
+		
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+	// Back (-Z)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,        halfY, fz }; quad.v2 = { fx + 1.f,  halfY, fz };
+		quad.v3 = { fx + 1.f,  fy,    fz }; quad.v4 = { fx,        fy,    fz };
+		quad.uv1 = { 1.f, 0.5f }; quad.uv2 = { 0.f, 0.5f }; quad.uv3 = { 0.f, 1.f }; quad.uv4 = { 1.f, 1.f };
+		quad.eDir = FACE_DIR::NEG_Z; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight; 
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor; 
+		
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+	// Right (+X)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx + 1.f,  halfY, fz }; quad.v2 = { fx + 1.f,  halfY, fz + 1.f };
+		quad.v3 = { fx + 1.f,  fy,    fz + 1.f }; quad.v4 = { fx + 1.f,  fy,    fz };
+		quad.uv1 = { 1.f, 0.5f }; quad.uv2 = { 0.f, 0.5f }; quad.uv3 = { 0.f, 1.f }; quad.uv4 = { 1.f, 1.f };
+		quad.eDir = FACE_DIR::POS_X; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight; 
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor; 
+		
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+	// Left (-X)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { fx,        halfY, fz + 1.f }; quad.v2 = { fx,        halfY, fz };
+		quad.v3 = { fx,        fy,    fz }; quad.v4 = { fx,        fy,    fz + 1.f };
+		quad.uv1 = { 1.f, 0.5f }; quad.uv2 = { 0.f, 0.5f }; quad.uv3 = { 0.f, 1.f }; quad.uv4 = { 1.f, 1.f };
+		quad.eDir = FACE_DIR::NEG_X; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor; 
+		
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+
+
+	// =========================================================================
+	// PART 2. 윗판 상자 (Top Step) - 방향에 따라 절반 범위만 생성 (halfY ~ maxY)
+	// =========================================================================
+
+	// 방향(stairDir)에 따른 윗판 상자의 X, Z 좌표 바운더리 설정 수식
+	float startX = fx, endX = fx + 1.f;
+	float startZ = fz, endZ = fz + 1.f;
+
+	// 예시 기준 (마인크래프트 기본 사양 반영):
+	// stairDir == 0 (+Z를 바라봄): 계단의 벽이 -Z(뒤)에 생김 -> 윗판은 뒤쪽 절반(fz ~ fz+0.5f)
+	// stairDir == 1 (-Z를 바라봄): 계단의 벽이 +Z(앞)에 생김 -> 윗판은 앞쪽 절반(fz+0.5f ~ fz+1.0f)
+	// stairDir == 2 (+X를 바라봄): 계단의 벽이 -X(왼쪽)에 생김 -> 윗판은 왼쪽 절반(fx ~ fx+0.5f)
+	// stairDir == 3 (-X를 바라봄): 계단의 벽이 +X(오른쪽)에 생김 -> 윗판은 오른쪽 절반(fx+0.5f ~ fx+1.0f)
+
+	if (stairDir == 0)      endZ = fz + 0.5f;
+	else if (stairDir == 1) startZ = fz + 0.5f;
+	else if (stairDir == 2) endX = fx + 0.5f;
+	else if (stairDir == 3) startX = fx + 0.5f;
+
+	// 윗판 윗면 (Top Face)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { startX,     maxY,  endZ }; quad.v2 = { endX,       maxY,  endZ };
+		quad.v3 = { endX,       maxY,  startZ }; quad.v4 = { startX,     maxY,  startZ };
+		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f }; quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+		quad.eDir = FACE_DIR::POS_Y; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor; 
+		
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+
+	// 윗판 옆면 4개 (높이: halfY ~ maxY, UV V축: 0.0f ~ 0.5f)
+	// Front (+Z)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { endX,       maxY,  endZ };   quad.v2 = { startX,     maxY,  endZ };
+		quad.v3 = { startX,     halfY, endZ };   quad.v4 = { endX,       halfY, endZ };
+		quad.uv1 = { 1.f, 0.f }; quad.uv2 = { 0.f, 0.f }; quad.uv3 = { 0.f, 0.5f }; quad.uv4 = { 1.f, 0.5f };
+		quad.eDir = FACE_DIR::POS_Z; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight; 
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor; 
+		
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+	// Back (-Z)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { startX,     maxY,  startZ }; quad.v2 = { endX,       maxY,  startZ };
+		quad.v3 = { endX,       halfY, startZ }; quad.v4 = { startX,     halfY, startZ };
+		quad.uv1 = { 1.f, 0.f }; quad.uv2 = { 0.f, 0.f }; quad.uv3 = { 0.f, 0.5f }; quad.uv4 = { 1.f, 0.5f };
+		quad.eDir = FACE_DIR::NEG_Z; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight; 
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor; 
+		
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+	// Right (+X)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { endX,       maxY,  startZ }; quad.v2 = { endX,       maxY,  endZ };
+		quad.v3 = { endX,       halfY, endZ };   quad.v4 = { endX,       halfY, startZ };
+		quad.uv1 = { 1.f, 0.f }; quad.uv2 = { 0.f, 0.f }; quad.uv3 = { 0.f, 0.5f }; quad.uv4 = { 1.f, 0.5f };
+		quad.eDir = FACE_DIR::POS_X; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight;
+		
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+	// Left (-X)
+	{
+		VOX_QUAD quad{};
+		quad.v1 = { startX,     maxY,  endZ };   quad.v2 = { startX,     maxY,  startZ };
+		quad.v3 = { startX,     halfY, startZ }; quad.v4 = { startX,     halfY, endZ };
+		quad.uv1 = { 1.f, 0.f }; quad.uv2 = { 0.f, 0.f }; quad.uv3 = { 0.f, 0.5f }; quad.uv4 = { 1.f, 0.5f };
+		quad.eDir = FACE_DIR::NEG_X; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
+		quad.lighting = blockLight; 
+
+		quad.color[0] = blockColor;
+		quad.color[1] = blockColor;
+		quad.color[2] = blockColor;
+		quad.color[3] = blockColor;
+		
+		
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
+		solidQuads.push_back(quad);
+	}
+}
 CChunk3::CChunk3()
 {
 }

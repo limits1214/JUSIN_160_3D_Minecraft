@@ -42,7 +42,7 @@ public:
 		PLANK_CHERRY,
 		PLANK_OAK,
 		PLANK_BIRCH,
-		PLANK_ACAICA,
+		PLANK_ACACIA,
 		LEAVES_CHERRY,
 		LEAVES_OAK,
 		LEAVES_BIRCH,
@@ -66,6 +66,26 @@ public:
 		FIJI_TALL_DRY_GRASS,
 		FIJI_TALL_GRASS_BOTTOM,
 		FIJI_TALL_GRASS_TOP,
+
+		SLAP_PLANK_CHERRY,
+		SLAP_PLANK_OAK,
+		SLAP_PLANK_BIRCH,
+		SLAP_PLANK_ACACIA,
+
+		STAIR_PLANK_CHERRY,
+		STAIR_PLANK_OAK,
+		STAIR_PLANK_BIRCH,
+		STAIR_PLANK_ACACIA,
+		OBSIDIAN,
+		CHEST,
+		CRAFTING_TABLE,
+		FURNACE,
+		TNT,
+		ENCHANTING_TABLE,
+		BOOKSHELF,
+		LADDER,
+		COBBLESTONE,
+		COBBLED_DEEPSLATE,
 		END
 	};
 
@@ -113,7 +133,7 @@ public:
 		PLANK_CHERRY,
 		PLANK_OAK,
 		PLANK_BIRCH,
-		PLANK_ACAICA,
+		PLANK_ACACIA,
 		LEAVES_CHERRY,
 		LEAVES_OAK,
 		LEAVES_BIRCH,
@@ -137,6 +157,35 @@ public:
 		FIJI_TALL_DRY_GRASS,
 		FIJI_TALL_GRASS_BOTTOM,
 		FIJI_TALL_GRASS_TOP,
+		STRIPPED_LOG_CHERRY_TOP,
+		STRIPPED_LOG_CHERRY_SIDE,
+		STRIPPED_LOG_OAK_TOP,
+		STRIPPED_LOG_OAK_SIDE,
+		STRIPPED_LOG_BIRCH_TOP,
+		STRIPPED_LOG_BIRCH_SIDE,
+		STRIPPED_LOG_ACACIA_TOP,
+		STRIPPED_LOG_ACACIA_SIDE,
+		OBSIDIAN,
+		CHEST_FRONT,
+		CHEST_SIDE,
+		CHEST_TOP,
+		CRAFTING_TABLE_FRONT,
+		CRAFTING_TABLE_SIDE,
+		CRAFTING_TABLE_TOP,
+		FURNACE_FRONT_OFF,
+		FURNACE_FRONT_ON,
+		FURNACE_SIDE,
+		FURNACE_TOP,
+		TNT_TOP,
+		TNT_SIDE,
+		TNT_BOTTOM,
+		ENCHANTING_TABLE_TOP,
+		ENCHANTING_TABLE_SIDE,
+		ENCHANTING_TABLE_BOTTOM,
+		BOOKSHELF,
+		LADDER,
+		COBBLESTONE,
+		COBBLED_DEEPSLATE,
 		END
 	};
 
@@ -145,6 +194,10 @@ public:
 		CROSS,       // 잔디, 꽃, 묘목 등 사각형 2장을 십자로 교차하는 형태
 		TORCH,       // 횃불처럼 중심에 수축된 기둥 형태
 		CROSS_FLAT,  // 수평으로 바닥에 누운 풀이나 카펫 형태 (필요시)
+		SLAP,
+		STAIR,
+		ENCHANTING_TABLE,
+		LADDER,
 		END
 	};
 
@@ -181,12 +234,38 @@ public:
 		case TYPE::PLANK_CHERRY:
 		case TYPE::PLANK_OAK:
 		case TYPE::PLANK_BIRCH:
-		case TYPE::PLANK_ACAICA:
+		case TYPE::PLANK_ACACIA:
 		case TYPE::LEAVES_CHERRY:
 		case TYPE::LEAVES_OAK:
 		case TYPE::LEAVES_BIRCH:
 		case TYPE::LEAVES_ACACIA:
+		case TYPE::OBSIDIAN:
+		case TYPE::CHEST:
+		case TYPE::CRAFTING_TABLE:
+		case TYPE::FURNACE:
+		case TYPE::TNT:
+		case TYPE::BOOKSHELF:
+		case TYPE::COBBLED_DEEPSLATE:
+		case TYPE::COBBLESTONE:
 			return GEO_TYPE::CUBE;
+
+		case TYPE::SLAP_PLANK_CHERRY:
+		case TYPE::SLAP_PLANK_OAK:
+		case TYPE::SLAP_PLANK_BIRCH:
+		case TYPE::SLAP_PLANK_ACACIA:
+			return GEO_TYPE::SLAP;
+
+		case TYPE::ENCHANTING_TABLE:
+			return GEO_TYPE::ENCHANTING_TABLE;
+
+		case TYPE::LADDER:
+			return GEO_TYPE::LADDER;
+
+		case TYPE::STAIR_PLANK_CHERRY:
+		case TYPE::STAIR_PLANK_OAK:
+		case TYPE::STAIR_PLANK_BIRCH:
+		case TYPE::STAIR_PLANK_ACACIA:
+			return GEO_TYPE::STAIR;
 
 		case TYPE::TORCH_ON:
 		case TYPE::REDSTONE_TORCH_OFF:
@@ -239,384 +318,201 @@ public:
 	}
 
 	
-	static TEX_TYPE GetTexType(TYPE blockType, FACE_DIR faceDir)
+	static TEX_TYPE GetTexType(TYPE blockType, FACE_DIR faceDir, uint8_t iFlag = 0)
 	{
-		if (blockType == TYPE::STONE)
+		switch (blockType)
 		{
-			return TEX_TYPE::STONE;
-		}
-		else if (blockType == TYPE::BEDROCK)
-		{
-			return TEX_TYPE::BEDROCK;
-		}
-		else if (blockType == TYPE::STONE_REDSTONE_ORE)
-		{
-			return TEX_TYPE::STONE_REDSTONE_ORE;
-		}
-		else if (blockType == TYPE::STONE_LAPIS_ORE)
-		{
-			return TEX_TYPE::STONE_LAPIS_ORE;
-		}
-		else if (blockType == TYPE::STONE_IRON_ORE)
-		{
-			return TEX_TYPE::STONE_IRON_ORE;
-		}
-		else if (blockType == TYPE::STONE_GOLD_ORE)
-		{
-			return TEX_TYPE::STONE_GOLD_ORE;
-		}
-		else if (blockType == TYPE::STONE_EMERALD_ORE)
-		{
-			return TEX_TYPE::STONE_EMERALD_ORE;
-		}
-		else if (blockType == TYPE::STONE_DIAMOND_ORE)
-		{
-			return TEX_TYPE::STONE_DIAMOND_ORE;
-		}
-		else if (blockType == TYPE::STONE_COPPER_ORE)
-		{
-			return TEX_TYPE::STONE_COPPER_ORE;
-		}
-		else if (blockType == TYPE::STONE_COAL_ORE)
-		{
-			return TEX_TYPE::STONE_COAL_ORE;
-		}
-		else if (blockType == TYPE::DEEPSLATE)
-		{
-			return TEX_TYPE::DEEPSLATE;
-		}
-		
-		else if (blockType == TYPE::DEEPSLATE_COAL_ORE)
-		{
-			return TEX_TYPE::DEEPSLATE_COAL_ORE;
-		}
-		else if (blockType == TYPE::DEEPSLATE_COPPER_ORE)
-		{
-			return TEX_TYPE::DEEPSLATE_COPPER_ORE;
-		}
-		else if (blockType == TYPE::DEEPSLATE_DIAMOND_ORE)
-		{
-			return TEX_TYPE::DEEPSLATE_DIAMOND_ORE;
-		}
-		else if (blockType == TYPE::DEEPSLATE_EMERALD_ORE)
-		{
-			return TEX_TYPE::DEEPSLATE_EMERALD_ORE;
-		}
-		else if (blockType == TYPE::DEEPSLATE_GOLD_ORE)
-		{
-			return TEX_TYPE::DEEPSLATE_GOLD_ORE;
-		}
-		else if (blockType == TYPE::DEEPSLATE_IRON_ORE)
-		{
-			return TEX_TYPE::DEEPSLATE_IRON_ORE;
-		}
-		else if (blockType == TYPE::DEEPSLATE_LAPIS_ORE)
-		{
-			return TEX_TYPE::DEEPSLATE_LAPIS_ORE;
-		}
-		else if (blockType == TYPE::DEEPSLATE_REDSTONE_ORE)
-		{
-			return TEX_TYPE::DEEPSLATE_REDSTONE_ORE;
-		}
-		else if (blockType == TYPE::GRASS)
-		{
+		case TYPE::STONE:                   return TEX_TYPE::STONE;
+		case TYPE::BEDROCK:                 return TEX_TYPE::BEDROCK;
+		case TYPE::STONE_REDSTONE_ORE:      return TEX_TYPE::STONE_REDSTONE_ORE;
+		case TYPE::STONE_LAPIS_ORE:         return TEX_TYPE::STONE_LAPIS_ORE;
+		case TYPE::STONE_IRON_ORE:          return TEX_TYPE::STONE_IRON_ORE;
+		case TYPE::STONE_GOLD_ORE:          return TEX_TYPE::STONE_GOLD_ORE;
+		case TYPE::STONE_EMERALD_ORE:       return TEX_TYPE::STONE_EMERALD_ORE;
+		case TYPE::STONE_DIAMOND_ORE:       return TEX_TYPE::STONE_DIAMOND_ORE;
+		case TYPE::STONE_COPPER_ORE:        return TEX_TYPE::STONE_COPPER_ORE;
+		case TYPE::STONE_COAL_ORE:          return TEX_TYPE::STONE_COAL_ORE;
+		case TYPE::DEEPSLATE:               return TEX_TYPE::DEEPSLATE;
+		case TYPE::DEEPSLATE_COAL_ORE:      return TEX_TYPE::DEEPSLATE_COAL_ORE;
+		case TYPE::DEEPSLATE_COPPER_ORE:    return TEX_TYPE::DEEPSLATE_COPPER_ORE;
+		case TYPE::DEEPSLATE_DIAMOND_ORE:   return TEX_TYPE::DEEPSLATE_DIAMOND_ORE;
+		case TYPE::DEEPSLATE_EMERALD_ORE:   return TEX_TYPE::DEEPSLATE_EMERALD_ORE;
+		case TYPE::DEEPSLATE_GOLD_ORE:      return TEX_TYPE::DEEPSLATE_GOLD_ORE;
+		case TYPE::DEEPSLATE_IRON_ORE:      return TEX_TYPE::DEEPSLATE_IRON_ORE;
+		case TYPE::DEEPSLATE_LAPIS_ORE:     return TEX_TYPE::DEEPSLATE_LAPIS_ORE;
+		case TYPE::DEEPSLATE_REDSTONE_ORE:  return TEX_TYPE::DEEPSLATE_REDSTONE_ORE;
+		case TYPE::DIRT:                    return TEX_TYPE::DIRT;
+		case TYPE::SAND:                    return TEX_TYPE::SAND;
+		case TYPE::WATER_PLACE_HOLDER:      return TEX_TYPE::WATER_PLACE_HOLDER;
+		case TYPE::TORCH_ON:                return TEX_TYPE::TORCH_ON;
+		case TYPE::REDSTONE_TORCH_OFF:      return TEX_TYPE::REDSTONE_TORCH_OFF;
+		case TYPE::REDSTONE_TORCH_ON:       return TEX_TYPE::REDSTONE_TORCH_ON;
+		case TYPE::PLANK_CHERRY:            return TEX_TYPE::PLANK_CHERRY;
+		case TYPE::PLANK_OAK:               return TEX_TYPE::PLANK_OAK;
+		case TYPE::PLANK_BIRCH:             return TEX_TYPE::PLANK_BIRCH;
+		case TYPE::PLANK_ACACIA:            return TEX_TYPE::PLANK_ACACIA;
+		case TYPE::LEAVES_CHERRY:           return TEX_TYPE::LEAVES_CHERRY;
+		case TYPE::LEAVES_OAK:              return TEX_TYPE::LEAVES_OAK;
+		case TYPE::LEAVES_BIRCH:            return TEX_TYPE::LEAVES_BIRCH;
+		case TYPE::LEAVES_ACACIA:           return TEX_TYPE::LEAVES_ACACIA;
+		case TYPE::FLOWER_ALLIUM:           return TEX_TYPE::FLOWER_ALLIUM;
+		case TYPE::FLOWER_BLUE_ORCHID:      return TEX_TYPE::FLOWER_BLUE_ORCHID;
+		case TYPE::FLOWER_CORNFLOWER:       return TEX_TYPE::FLOWER_CORNFLOWER;
+		case TYPE::FLOWER_DANDELION:        return TEX_TYPE::FLOWER_DANDELION;
+		case TYPE::FLOWER_HOUSTONIA:        return TEX_TYPE::FLOWER_HOUSTONIA;
+		case TYPE::FLOWER_LILY_OF_THE_VALLEY: return TEX_TYPE::FLOWER_LILY_OF_THE_VALLEY;
+		case TYPE::FLOWER_OXEYE_DAISY:      return TEX_TYPE::FLOWER_OXEYE_DAISY;
+		case TYPE::FLOWER_PAEONIA:          return TEX_TYPE::FLOWER_PAEONIA;
+		case TYPE::FLOWER_ROSE:             return TEX_TYPE::FLOWER_ROSE;
+		case TYPE::FLOWER_ROSE_BLUE:        return TEX_TYPE::FLOWER_ROSE_BLUE;
+		case TYPE::FLOWER_TULIP_ORANGE:     return TEX_TYPE::FLOWER_TULIP_ORANGE;
+		case TYPE::FLOWER_TULIP_PINK:       return TEX_TYPE::FLOWER_TULIP_PINK;
+		case TYPE::FLOWER_TULIP_RED:        return TEX_TYPE::FLOWER_TULIP_RED;
+		case TYPE::FLOWER_WITHER_ROSE:      return TEX_TYPE::FLOWER_WITHER_ROSE;
+		case TYPE::FIJI_SHORT_DRY_GRASS:    return TEX_TYPE::FIJI_SHORT_DRY_GRASS;
+		case TYPE::FIJI_SHORT_GRASS:        return TEX_TYPE::FIJI_SHORT_GRASS;
+		case TYPE::FIJI_TALL_DRY_GRASS:     return TEX_TYPE::FIJI_TALL_DRY_GRASS;
+		case TYPE::FIJI_TALL_GRASS_BOTTOM:  return TEX_TYPE::FIJI_TALL_GRASS_BOTTOM;
+		case TYPE::FIJI_TALL_GRASS_TOP:     return TEX_TYPE::FIJI_TALL_GRASS_TOP;
+
+		case TYPE::SLAP_PLANK_CHERRY:		return TEX_TYPE::PLANK_CHERRY;
+		case TYPE::SLAP_PLANK_OAK:			return TEX_TYPE::PLANK_OAK;
+		case TYPE::SLAP_PLANK_BIRCH:		return TEX_TYPE::PLANK_BIRCH;
+		case TYPE::SLAP_PLANK_ACACIA:		return TEX_TYPE::PLANK_ACACIA;
+			
+		case TYPE::STAIR_PLANK_CHERRY:		return TEX_TYPE::PLANK_CHERRY;
+		case TYPE::STAIR_PLANK_OAK:			return TEX_TYPE::PLANK_OAK;
+		case TYPE::STAIR_PLANK_BIRCH:		return TEX_TYPE::PLANK_BIRCH;
+		case TYPE::STAIR_PLANK_ACACIA:		return TEX_TYPE::PLANK_ACACIA;
+
+		case TYPE::OBSIDIAN:				return TEX_TYPE::OBSIDIAN;
+		case TYPE::LADDER:					return TEX_TYPE::LADDER;
+
+		case TYPE::COBBLESTONE:				return TEX_TYPE::COBBLESTONE;
+		case TYPE::COBBLED_DEEPSLATE:		return TEX_TYPE::COBBLED_DEEPSLATE;
+
+		case TYPE::GRASS:
 			if (faceDir == FACE_DIR::POS_Y)
-			{
 				return TEX_TYPE::GRASS_TOP_CARRIED;
-			}
-			else if (faceDir == FACE_DIR::POS_X
-				|| faceDir == FACE_DIR::NEG_X
-				|| faceDir == FACE_DIR::POS_Z
-				|| faceDir == FACE_DIR::NEG_Z)
-			{
-				return TEX_TYPE::GRASS_SIDE_CARRIED;
-			}
-			else
-			{
+			else if (faceDir == FACE_DIR::NEG_Y)
 				return TEX_TYPE::DIRT;
-			}
-		}
-		else if (blockType == TYPE::DIRT)
-		{
-			return TEX_TYPE::DIRT;
-		}
-		else if (blockType == TYPE::SAND)
-		{
-			return TEX_TYPE::SAND;
-		}
-		else if (blockType == TYPE::WATER_PLACE_HOLDER)
-		{
-			return TEX_TYPE::WATER_PLACE_HOLDER;
-		}
-		else if (blockType == TYPE::TORCH_ON)
-		{
-			return TEX_TYPE::TORCH_ON;
-		}
-		else if (blockType == TYPE::REDSTONE_TORCH_OFF)
-		{
-			return TEX_TYPE::REDSTONE_TORCH_OFF;
-		}
-		else if (blockType == TYPE::REDSTONE_TORCH_ON)
-		{
-			return TEX_TYPE::REDSTONE_TORCH_ON;
-		}
-		else if (blockType == TYPE::LOG_CHERRY)
-		{
-			if (faceDir == FACE_DIR::POS_Y)
-			{
-				return TEX_TYPE::LOG_CHERRY_TOP;
-			}
-			else if (faceDir == FACE_DIR::POS_X
-				|| faceDir == FACE_DIR::NEG_X
-				|| faceDir == FACE_DIR::POS_Z
-				|| faceDir == FACE_DIR::NEG_Z)
-			{
-				return TEX_TYPE::LOG_CHERRY_SIDE;
-			}
-			else
-			{
-				return TEX_TYPE::LOG_CHERRY_TOP;
-			}
-		}
-		else if (blockType == TYPE::LOG_OAK)
-		{
-			if (faceDir == FACE_DIR::POS_Y)
-			{
-				return TEX_TYPE::LOG_OAK_TOP;
-			}
-			else if (faceDir == FACE_DIR::POS_X
-				|| faceDir == FACE_DIR::NEG_X
-				|| faceDir == FACE_DIR::POS_Z
-				|| faceDir == FACE_DIR::NEG_Z)
-			{
-				return TEX_TYPE::LOG_OAK_SIDE;
-			}
-			else
-			{
-				return TEX_TYPE::LOG_OAK_TOP;
-			}
-		}
-		else if (blockType == TYPE::LOG_BIRCH)
-		{
-			if (faceDir == FACE_DIR::POS_Y)
-			{
-				return TEX_TYPE::LOG_BIRCH_TOP;
-			}
-			else if (faceDir == FACE_DIR::POS_X
-				|| faceDir == FACE_DIR::NEG_X
-				|| faceDir == FACE_DIR::POS_Z
-				|| faceDir == FACE_DIR::NEG_Z)
-			{
-				return TEX_TYPE::LOG_BIRCH_SIDE;
-			}
-			else
-			{
-				return TEX_TYPE::LOG_BIRCH_TOP;
-			}
-		}
-		else if (blockType == TYPE::LOG_ACACIA)
-		{
-			if (faceDir == FACE_DIR::POS_Y)
-			{
-				return TEX_TYPE::LOG_ACACIA_TOP;
-			}
-			else if (faceDir == FACE_DIR::POS_X
-				|| faceDir == FACE_DIR::NEG_X
-				|| faceDir == FACE_DIR::POS_Z
-				|| faceDir == FACE_DIR::NEG_Z)
-			{
-				return TEX_TYPE::LOG_ACACIA_SIDE;
-			}
-			else
-			{
-				return TEX_TYPE::LOG_ACACIA_TOP;
-			}
-		}
-		else if (blockType == TYPE::PLANK_CHERRY)
-		{
-			return TEX_TYPE::PLANK_CHERRY;
-		}
-		else if (blockType == TYPE::PLANK_OAK)
-		{
-			return TEX_TYPE::PLANK_OAK;
-		}
-		else if (blockType == TYPE::PLANK_BIRCH)
-		{
-			return TEX_TYPE::PLANK_BIRCH;
-		}
-		else if (blockType == TYPE::PLANK_ACAICA)
-		{
-			return TEX_TYPE::PLANK_ACAICA;
-		}
-		else if (blockType == TYPE::LEAVES_CHERRY)
-		{
-			return TEX_TYPE::LEAVES_CHERRY;
-		}
-		else if (blockType == TYPE::LEAVES_OAK)
-		{
-			return TEX_TYPE::LEAVES_OAK;
-		}
-		else if (blockType == TYPE::LEAVES_BIRCH)
-		{
-			return TEX_TYPE::LEAVES_BIRCH;
-		}
-		else if (blockType == TYPE::LEAVES_ACACIA)
-		{
-			return TEX_TYPE::LEAVES_ACACIA;
-		}
-		else if (blockType == TYPE::FLOWER_ALLIUM)
-		{
-			return TEX_TYPE::FLOWER_ALLIUM;
-		}
-		else if (blockType == TYPE::FLOWER_BLUE_ORCHID)
-		{
-			return TEX_TYPE::FLOWER_BLUE_ORCHID;
-		}
-		else if (blockType == TYPE::FLOWER_CORNFLOWER)
-		{
-			return TEX_TYPE::FLOWER_CORNFLOWER;
-		}
-		else if (blockType == TYPE::FLOWER_DANDELION)
-		{
-			return TEX_TYPE::FLOWER_DANDELION;
-		}
-		else if (blockType == TYPE::FLOWER_HOUSTONIA)
-		{
-			return TEX_TYPE::FLOWER_HOUSTONIA;
-		}
-		else if (blockType == TYPE::FLOWER_LILY_OF_THE_VALLEY)
-		{
-			return TEX_TYPE::FLOWER_LILY_OF_THE_VALLEY;
-		}
-		else if (blockType == TYPE::FLOWER_OXEYE_DAISY)
-		{
-			return TEX_TYPE::FLOWER_OXEYE_DAISY;
-		}
-		else if (blockType == TYPE::FLOWER_PAEONIA)
-		{
-			return TEX_TYPE::FLOWER_PAEONIA;
-		}
-		else if (blockType == TYPE::FLOWER_ROSE)
-		{
-			return TEX_TYPE::FLOWER_ROSE;
-		}
-		else if (blockType == TYPE::FLOWER_ROSE_BLUE)
-		{
-			return TEX_TYPE::FLOWER_ROSE_BLUE;
-		}
-		else if (blockType == TYPE::FLOWER_TULIP_ORANGE)
-		{
-			return TEX_TYPE::FLOWER_TULIP_ORANGE;
-		}
-		else if (blockType == TYPE::FLOWER_TULIP_PINK)
-		{
-			return TEX_TYPE::FLOWER_TULIP_PINK;
-		}
-		else if (blockType == TYPE::FLOWER_TULIP_RED)
-		{
-			return TEX_TYPE::FLOWER_TULIP_RED;
-		}
-		else if (blockType == TYPE::FLOWER_WITHER_ROSE)
-		{
-			return TEX_TYPE::FLOWER_WITHER_ROSE;
-		}
+			return TEX_TYPE::GRASS_SIDE_CARRIED;
 
-		else if (blockType == TYPE::FIJI_SHORT_DRY_GRASS)
-		{
-			return TEX_TYPE::FIJI_SHORT_DRY_GRASS;
-		}
-		else if (blockType == TYPE::FIJI_SHORT_GRASS)
-		{
-			return TEX_TYPE::FIJI_SHORT_GRASS;
-		}
-		else if (blockType == TYPE::FIJI_TALL_DRY_GRASS)
-		{
-			return TEX_TYPE::FIJI_TALL_DRY_GRASS;
-		}
-		else if (blockType == TYPE::FIJI_TALL_GRASS_BOTTOM)
-		{
-			return TEX_TYPE::FIJI_TALL_GRASS_BOTTOM;
-		}
-		else if (blockType == TYPE::FIJI_TALL_GRASS_TOP)
-		{
-			return TEX_TYPE::FIJI_TALL_GRASS_TOP;
-		}
+		case TYPE::LOG_CHERRY:
+			if (faceDir == FACE_DIR::POS_Y || faceDir == FACE_DIR::NEG_Y)
+				return TEX_TYPE::LOG_CHERRY_TOP;
+			return TEX_TYPE::LOG_CHERRY_SIDE;
 
-		return TEX_TYPE::END;
+		case TYPE::LOG_OAK:
+			if (faceDir == FACE_DIR::POS_Y || faceDir == FACE_DIR::NEG_Y)
+				return TEX_TYPE::LOG_OAK_TOP;
+			return TEX_TYPE::LOG_OAK_SIDE;
+
+		case TYPE::LOG_BIRCH:
+			if (faceDir == FACE_DIR::POS_Y || faceDir == FACE_DIR::NEG_Y)
+				return TEX_TYPE::LOG_BIRCH_TOP;
+			return TEX_TYPE::LOG_BIRCH_SIDE;
+
+		case TYPE::LOG_ACACIA:
+			if (faceDir == FACE_DIR::POS_Y || faceDir == FACE_DIR::NEG_Y)
+				return TEX_TYPE::LOG_ACACIA_TOP;
+			return TEX_TYPE::LOG_ACACIA_SIDE;
+
+		case TYPE::CHEST:
+			if (faceDir == FACE_DIR::POS_Y || faceDir == FACE_DIR::NEG_Y)
+				return TEX_TYPE::CHEST_TOP;
+			else if (faceDir == FACE_DIR::POS_X || faceDir == FACE_DIR::NEG_X)
+				return TEX_TYPE::CHEST_SIDE;
+			return TEX_TYPE::CHEST_FRONT;
+
+		case TYPE::FURNACE:
+			if (faceDir == FACE_DIR::POS_Y || faceDir == FACE_DIR::NEG_Y)
+				return TEX_TYPE::FURNACE_TOP;
+			else if (faceDir == FACE_DIR::NEG_Z)
+				return TEX_TYPE::FURNACE_FRONT_OFF;
+			return TEX_TYPE::FURNACE_SIDE;
+
+		case TYPE::TNT:
+			if (faceDir == FACE_DIR::POS_Y )
+				return TEX_TYPE::TNT_TOP;
+			else if (faceDir == FACE_DIR::NEG_Y)
+				return TEX_TYPE::TNT_BOTTOM;
+			return TEX_TYPE::TNT_SIDE;
+
+		case TYPE::ENCHANTING_TABLE:
+			if (faceDir == FACE_DIR::POS_Y )
+				return TEX_TYPE::ENCHANTING_TABLE_TOP;
+			else if (faceDir == FACE_DIR::NEG_Y)
+				return TEX_TYPE::ENCHANTING_TABLE_BOTTOM;
+			return TEX_TYPE::ENCHANTING_TABLE_SIDE;
+
+		default: return TEX_TYPE::END;
+		}
 	}
 
 	
 
 	static _bool IsNeedAlphaTest(TYPE e)
 	{
-			
-		if (	e == TYPE::LEAVES_CHERRY
-			 || e == TYPE::LEAVES_OAK
-			 || e == TYPE::LEAVES_BIRCH
-			 || e == TYPE::LEAVES_ACACIA
-			 || e == TYPE::FLOWER_ALLIUM
-			 || e == TYPE::FLOWER_BLUE_ORCHID
-			 || e == TYPE::FLOWER_CORNFLOWER
-			 || e == TYPE::FLOWER_DANDELION
-			 || e == TYPE::FLOWER_HOUSTONIA
-			 || e == TYPE::FLOWER_LILY_OF_THE_VALLEY
-			 || e == TYPE::FLOWER_OXEYE_DAISY
-			 || e == TYPE::FLOWER_PAEONIA
-			 || e == TYPE::FLOWER_ROSE
-			 || e == TYPE::FLOWER_ROSE_BLUE
-			 || e == TYPE::FLOWER_TULIP_ORANGE
-			 || e == TYPE::FLOWER_TULIP_PINK
-			 || e == TYPE::FLOWER_TULIP_RED
-			 || e == TYPE::FLOWER_WITHER_ROSE
-			 || e == TYPE::FIJI_SHORT_DRY_GRASS
-			 || e == TYPE::FIJI_SHORT_GRASS
-			 || e == TYPE::FIJI_TALL_DRY_GRASS
-			 || e == TYPE::FIJI_TALL_GRASS_BOTTOM
-			 || e == TYPE::FIJI_TALL_GRASS_TOP
-			)
+		switch (e)
 		{
+		case TYPE::LEAVES_CHERRY:
+		case TYPE::LEAVES_OAK:
+		case TYPE::LEAVES_BIRCH:
+		case TYPE::LEAVES_ACACIA:
+		case TYPE::FLOWER_ALLIUM:
+		case TYPE::FLOWER_BLUE_ORCHID:
+		case TYPE::FLOWER_CORNFLOWER:
+		case TYPE::FLOWER_DANDELION:
+		case TYPE::FLOWER_HOUSTONIA:
+		case TYPE::FLOWER_LILY_OF_THE_VALLEY:
+		case TYPE::FLOWER_OXEYE_DAISY:
+		case TYPE::FLOWER_PAEONIA:
+		case TYPE::FLOWER_ROSE:
+		case TYPE::FLOWER_ROSE_BLUE:
+		case TYPE::FLOWER_TULIP_ORANGE:
+		case TYPE::FLOWER_TULIP_PINK:
+		case TYPE::FLOWER_TULIP_RED:
+		case TYPE::FLOWER_WITHER_ROSE:
+		case TYPE::FIJI_SHORT_DRY_GRASS:
+		case TYPE::FIJI_SHORT_GRASS:
+		case TYPE::FIJI_TALL_DRY_GRASS:
+		case TYPE::FIJI_TALL_GRASS_BOTTOM:
+		case TYPE::FIJI_TALL_GRASS_TOP:
 			return true;
+		default:
+			return false;
 		}
-		return false;
 	}
 
 	static uint8_t GetBlockLightByType(TYPE e)
 	{
-		if (e == TYPE::SAND) // test
+		switch (e)
 		{
+		case TYPE::SAND:      // test
+		case TYPE::TORCH_ON:
 			return 15;
+		default:
+			return 0;
 		}
-		else if (e == TYPE::TORCH_ON)
-		{
-			return 15;
-		}
-		return 0;
 	}
+
 	// 불투명한가?
 	_bool IsOpaque() const
 	{
-		if (m_eType == TYPE::AIR)
+		switch (m_eType)
 		{
+		case TYPE::AIR:
+		case TYPE::WATER_PLACE_HOLDER:
+		case TYPE::TORCH_ON:
+		case TYPE::FIJI_SHORT_GRASS:
+		case TYPE::FLOWER_OXEYE_DAISY:
 			return false;
+		default:
+			return true;
 		}
-		else if (m_eType == TYPE::WATER_PLACE_HOLDER)
-		{
-			return false;
-		}
-		else if (m_eType == TYPE::TORCH_ON)
-		{
-			return false;
-		}
-		else if (m_eType == TYPE::FIJI_SHORT_GRASS)
-		{
-			return false;
-		}
-		else if (m_eType == TYPE::FLOWER_OXEYE_DAISY)
-		{
-			return false;
-		}
-		return true;
 	}
+
 	_bool IsWater() const
 	{
 		if (m_eType == TYPE::WATER_PLACE_HOLDER)
