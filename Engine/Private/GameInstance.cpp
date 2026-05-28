@@ -640,6 +640,18 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// falling voxel Shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_FallingVoxel", "./Resources/Shader/FallingVoxel/FallingVoxel.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_FallingVoxel", "./Resources/Shader/FallingVoxel/FallingVoxel.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
 
 	// initialize destroy stage texture
 	{
@@ -1221,7 +1233,7 @@ HRESULT CGameInstance::InitializeMCResource()
 
 			CResCubeItemVIBuffer::DESC desc{};
 			desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
-			desc.resourceIdx = 0;
+			//desc.resourceIdx = 0;
 			memcpy(desc.texIndices, tmp, sizeof(tmp));
 
 			res->Load(desc);
@@ -1897,6 +1909,10 @@ FastNoiseLite& CGameInstance::GetVoxelNoiseByType(NOISE_TYPE eNoiseType)
 {
 	return m_pVoxelManager3->GetNoiseByType(eNoiseType);
 }
+const std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>>& CGameInstance::GetVoxelEditShadow() const
+{
+	return m_pVoxelManager3->GetEditShadow();
+}
 CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 {
 	return m_pVoxelManager3->GetChunkByChunkCoord(x, y, z);
@@ -1904,9 +1920,19 @@ CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 	//return nullptr;
 }
 
+CChunk3* CGameInstance::GetVoxelChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const
+{
+	return m_pVoxelManager3->GetChunkByWorldBlockCoord(x, y, z);
+}
+
 std::optional<CBlock3> CGameInstance::GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const
 {
 	return m_pVoxelManager3->GetBlock(wbx, wby, wbz);
+}
+
+void CGameInstance::SetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block)
+{
+	return m_pVoxelManager3->SetBlock(wbx, wby, wbz, block);
 }
 
 _bool CGameInstance::VoxelBlockRaycast(const _float3& rayOrigin, const _float3& rayDir, float fMaxDist, CVoxelManager3::BLOCK_RAY_RESULT& outResult) const

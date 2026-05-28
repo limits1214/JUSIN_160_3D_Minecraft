@@ -24,6 +24,8 @@ namespace Engine
 		typedef XMFLOAT4 _float4;
 		typedef XMFLOAT4X4 _float4x4;
 
+		typedef XMINT3 _int3;
+
 		/* 연산용 데이터 */
 		typedef XMVECTOR _vector;
 		typedef FXMVECTOR _fvector;

@@ -267,6 +267,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\EntityModelMesh.h" />
     <ClInclude Include="..\public\EntityObject.h" />
     <ClInclude Include="..\public\ExperienceOrbItem.h" />
+    <ClInclude Include="..\public\FallingVoxel.h" />
     <ClInclude Include="..\public\FlyCamera.h" />
     <ClInclude Include="..\public\FontManager.h" />
     <ClInclude Include="..\public\GameInstance.h" />
@@ -274,6 +275,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\GameObject.h" />
     <ClInclude Include="..\public\GameObjectManager.h" />
     <ClInclude Include="..\public\GraphicDevice.h" />
+    <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
     <ClInclude Include="..\public\UIArmorBar.h" />
     <ClInclude Include="..\public\UIArmorBarIcon.h" />
     <ClInclude Include="..\public\UIBreathBar.h" />
@@ -368,6 +370,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\VoxelManager.h" />
     <ClInclude Include="..\public\VoxelManager2.h" />
     <ClInclude Include="..\public\VoxelManager3.h" />
+    <ClInclude Include="..\public\VoxelObject.h" />
     <ClInclude Include="..\public\WorkerManager.h" />
     <ClInclude Include="..\Public\IRenderable.h" />
     <ClInclude Include="..\Public\Handle.h" />
@@ -494,6 +497,8 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ComEntityModel.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\CowEntity.cpp" />
+    <ClCompile Include="..\private\FallingVoxel.cpp" />
+    <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
     <ClCompile Include="..\private\UIArmorBar.cpp" />
     <ClCompile Include="..\private\UIArmorBarIcon.cpp" />
     <ClCompile Include="..\private\UIBreathBar.cpp" />
@@ -599,6 +604,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\VoxelManager.cpp" />
     <ClCompile Include="..\private\VoxelManager2.cpp" />
     <ClCompile Include="..\private\VoxelManager3.cpp" />
+    <ClCompile Include="..\private\VoxelObject.cpp" />
     <ClCompile Include="..\private\WorkerManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -635,6 +641,10 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Entity.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FallingVoxel\FallingVoxel.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

@@ -655,6 +655,7 @@ HRESULT CChunk3::CreateBuffer()
 
 	m_eMessingState = MESSING_STATE::NON;
 
+	++m_iBufferVersion;
 	return S_OK;
 }
 

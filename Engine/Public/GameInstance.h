@@ -243,8 +243,11 @@ public:
 	//_float GetVoxelHeightNoise(_float x, _float z) const;
 	FastNoiseLite& GetVoxelNoiseByType(NOISE_TYPE eNoiseType);
 
+	const std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>>& GetVoxelEditShadow() const;
 	CChunk3* GetVoxelChunk(int32_t x, int32_t y, int32_t z) const;
+	CChunk3* GetVoxelChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const;
 	std::optional<CBlock3> GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
+	void SetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
 	_bool VoxelBlockRaycast(const _float3& rayOrigin,
 		const _float3& rayDir,
 		float fMaxDist,

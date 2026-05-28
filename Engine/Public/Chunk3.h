@@ -138,6 +138,11 @@ private:
 	SPtr<CResCBuffer> m_pResCBufferPerObject{};
 
 public:
+	uint32_t GetBufferVersion() const { return m_iBufferVersion; }
+private:
+	std::atomic<uint32_t> m_iBufferVersion{ 0 };
+
+public:
 	CCollBox* GetCollBox() const { return m_pCollBox.get(); }
 private:
 	UPtr<CCollBox> m_pCollBox{};
