@@ -1012,11 +1012,11 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     CBlock3 newBlock{};
                     if (CGameInstance::Get().KeyPressing(DIK_L))
                     {
-                        newBlock.SetType(CBlock3::TYPE::LOG_BIRCH);
+                        newBlock.SetType(CBlock3::TYPE::FIJI_TALL_GRASS_TOP);
                     }
                     else
                     {
-                        newBlock.SetType(CBlock3::TYPE::COBBLED_DEEPSLATE);
+                        newBlock.SetType(CBlock3::TYPE::FIJI_SHORT_GRASS);
                     }
                     SetBlock(worldBX, worldBY, worldBZ, newBlock);
 

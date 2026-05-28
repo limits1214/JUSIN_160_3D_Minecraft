@@ -27,6 +27,9 @@ public:
 private:
 	_bool m_bRender{ true };
 
+private:
+	int32_t m_iSelectIdx{};
+
 public:
 	static E::UPtr<CUIHotBarSelect> Create();
 	E::UPtr<E::CPrototype> Clone(void* pArg) override;

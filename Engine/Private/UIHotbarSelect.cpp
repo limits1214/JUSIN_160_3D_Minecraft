@@ -22,6 +22,9 @@ void CUIHotBarSelect::UpdateGUI()
 	{
 		m_bRender = !m_bRender;
 	}
+
+	ImGui::DragInt("m_iSelectIdx", &m_iSelectIdx, 1, 0, 8);
+
 }
 
 HRESULT CUIHotBarSelect::Initialize(void* pArg)
@@ -30,7 +33,7 @@ HRESULT CUIHotBarSelect::Initialize(void* pArg)
 	pDesc->fSizeX = 24.f * MC_UI_SCALE;
 	pDesc->fSizeY = 24.f * MC_UI_SCALE;
 
-	pDesc->fX = (1280.f * 0.5f)  + ((20.f * MC_UI_SCALE) * 4.f);
+	pDesc->fX = (1280.f * 0.5f)  + ((20.f * MC_UI_SCALE) * 0.f);
 	pDesc->fY = 720.f - pDesc->fSizeY * 0.5f;
 	if (FAILED(CUIObject::Initialize(pArg)))
 		return E_FAIL;
@@ -46,6 +49,14 @@ void CUIHotBarSelect::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIHotBarSelect::Update(E::_float fTimeDelta)
 {
+	if (m_iSelectIdx > 8 || m_iSelectIdx < 0)
+	{
+		m_iSelectIdx = 0;
+	}
+	
+	m_fX = (1280.f * 0.5f) + ((20.f * MC_UI_SCALE) * (m_iSelectIdx - 4));
+	CalcUICoord();
+
 }
 
 void CUIHotBarSelect::LateUpdate(E::_float fTimeDelta)
