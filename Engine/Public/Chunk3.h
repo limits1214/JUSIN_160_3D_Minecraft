@@ -97,7 +97,13 @@ public:
 private:
 	CBlock3::TYPE GetBlockTypeAt(int32_t x, int32_t y, int32_t z, CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
 private:
-	void NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& alphaTestQuads, std::vector<VOX_QUAD>& waterQuads) const;
+	struct QuadBuckets {
+		std::vector<VOX_QUAD> solid{};
+		std::vector<VOX_QUAD> alphaTest{};
+		std::vector<VOX_QUAD> water{};
+	};
+	void NiveFaceCulling(QuadBuckets& quadBuckets) const;
+	//void NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& alphaTestQuads, std::vector<VOX_QUAD>& waterQuads) const;
 	_bool IsInsideOpaque(int32_t x, int32_t y, int32_t z,
 		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
 
@@ -109,6 +115,11 @@ private:
 	void BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 	void BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 	void BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
+	void BuildWaterMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads,
+		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ)const;
+
+	uint8_t GetCornerWaterLevel(int cx, int cy, int cz,
+		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
 private:
 	CChunk3();
 	~CChunk3() override;
@@ -124,7 +135,17 @@ private:
 private:
 	std::array<CBlock3, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3> m_arrBlocks{};
 
+	enum QUAD_TYPE
+	{
+		SOLID,
+		ALPHATEST,
+		WATER,
+		END
+	};
+
 private:
+	void QuadsToVerticies(std::vector<VOX_QUAD>& quads, std::vector<E::VTX_VOXEL>& vertices, std::vector<uint32_t>& indices);
+	HRESULT CreateBuffer(SPtr<CResDynamicVIBuffer>& pResBuffer, std::vector<E::VTX_VOXEL>& vertices, std::vector<uint32_t>& indices);
 	SPtr<CResDynamicVIBuffer> m_pResSolidDynamicViBuffer{};
 	std::vector<E::VTX_VOXEL> m_SolidVertices{};
 	std::vector<uint32_t>  m_SolidIndices{};

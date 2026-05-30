@@ -2,9 +2,7 @@
   "name": "dx11-mc",
   "version-string": "1.0.0",
   "dependencies": [
-    "boost-asio",
-    "boost-beast",
-    "spdlog",
+    
     "directxtex",
     "directxtk"
   ],

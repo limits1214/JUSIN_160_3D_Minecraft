@@ -409,15 +409,19 @@ HRESULT CGameInstance::InitializeResources()
 	}
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP, CResSamplerState::Create()))
 	{
-		res->Load(D3D11_SAMPLER_DESC{
-			.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT, // 핵심
-			.AddressU = D3D11_TEXTURE_ADDRESS_WRAP,
-			.AddressV = D3D11_TEXTURE_ADDRESS_WRAP,
-			.AddressW = D3D11_TEXTURE_ADDRESS_WRAP,
-			.ComparisonFunc = D3D11_COMPARISON_NEVER,
-			.MinLOD = 0,
-			.MaxLOD = D3D11_FLOAT32_MAX,
-			});
+		D3D11_SAMPLER_DESC samplerDesc{};
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+		samplerDesc.MinLOD = 0.f;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		res->Load(samplerDesc);
 	}
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP_NOMIP, CResSamplerState::Create()))
 	{
@@ -1219,10 +1223,16 @@ HRESULT CGameInstance::InitializeMCResource()
 				return E_FAIL;
 			}
 			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURE_ARRAY", pTextureArray);
-
-
 			GetGraphicDeviceContext()->PSSetShaderResources(9, 1, pTextureArray->GetSRV().GetAddressOf());
 		}
+
+
+		{
+			//"VOXEL_MANAGER_TEX", "TEXTURES"
+			CGameInstance::Get().DelResource("VOXEL_MANAGER_TEX", "TEXTURES");
+		}
+
+
 	}
 
 	// initialize cube item
