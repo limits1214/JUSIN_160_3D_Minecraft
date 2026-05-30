@@ -231,15 +231,11 @@ call CopyClient.bat</Command>
   <ItemGroup>
     <ClInclude Include="..\public\AnimalEntityObject.h" />
     <ClInclude Include="..\public\BaseApp.h" />
-    <ClInclude Include="..\public\Block.h" />
-    <ClInclude Include="..\public\Block2.h" />
     <ClInclude Include="..\public\Block3.h" />
     <ClInclude Include="..\public\BlockOutline.h" />
     <ClInclude Include="..\public\CameraManager.h" />
     <ClInclude Include="..\public\CameraObject.h" />
     <ClInclude Include="..\public\ChickenEntity.h" />
-    <ClInclude Include="..\public\Chunk.h" />
-    <ClInclude Include="..\public\Chunk2.h" />
     <ClInclude Include="..\public\Chunk3.h" />
     <ClInclude Include="..\Public\CollBox.h" />
     <ClInclude Include="..\Public\CollFrustum.h" />
@@ -367,8 +363,6 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UIHungerBarIcon.h" />
     <ClInclude Include="..\public\UIInventory.h" />
     <ClInclude Include="..\public\UIObject.h" />
-    <ClInclude Include="..\public\VoxelManager.h" />
-    <ClInclude Include="..\public\VoxelManager2.h" />
     <ClInclude Include="..\public\VoxelManager3.h" />
     <ClInclude Include="..\public\VoxelObject.h" />
     <ClInclude Include="..\public\WorkerManager.h" />
@@ -477,15 +471,11 @@ call CopyClient.bat</Command>
     </ClCompile>
     <ClCompile Include="..\private\AnimalEntityObject.cpp" />
     <ClCompile Include="..\private\BaseApp.cpp" />
-    <ClCompile Include="..\private\Block.cpp" />
-    <ClCompile Include="..\private\Block2.cpp" />
     <ClCompile Include="..\private\Block3.cpp" />
     <ClCompile Include="..\private\BlockOutline.cpp" />
     <ClCompile Include="..\private\CameraManager.cpp" />
     <ClCompile Include="..\private\CameraObject.cpp" />
     <ClCompile Include="..\private\ChickenEntity.cpp" />
-    <ClCompile Include="..\private\Chunk.cpp" />
-    <ClCompile Include="..\private\Chunk2.cpp" />
     <ClCompile Include="..\private\Chunk3.cpp" />
     <ClCompile Include="..\Private\CollBox.cpp" />
     <ClCompile Include="..\Private\CollFrustum.cpp" />
@@ -601,8 +591,6 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UIHungerBarIcon.cpp" />
     <ClCompile Include="..\private\UIInventory.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
-    <ClCompile Include="..\private\VoxelManager.cpp" />
-    <ClCompile Include="..\private\VoxelManager2.cpp" />
     <ClCompile Include="..\private\VoxelManager3.cpp" />
     <ClCompile Include="..\private\VoxelObject.cpp" />
     <ClCompile Include="..\private\WorkerManager.cpp" />

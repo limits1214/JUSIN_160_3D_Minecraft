@@ -273,224 +273,17 @@ HRESULT CChunk3::QuadMessing()
 {
 	m_eMessingState = MESSING_STATE::ING;
 
-	std::vector<VOX_QUAD> solidQuads{};
-	std::vector<VOX_QUAD> alphaTestQuads{};
-	std::vector<VOX_QUAD> waterQuads{};
-	NiveFaceCulling(solidQuads, alphaTestQuads, waterQuads);
+	QuadBuckets buckets{};
+	NiveFaceCulling(buckets);
 
-	m_SolidIndices.clear();
-	m_SolidVertices.clear();
+	//std::vector<VOX_QUAD> solidQuads{};
+	//std::vector<VOX_QUAD> alphaTestQuads{};
+	//std::vector<VOX_QUAD> waterQuads{};
+	//NiveFaceCulling(solidQuads, alphaTestQuads, waterQuads);
 
-	m_SolidVertices.reserve(solidQuads.size() * 4);
-	m_SolidIndices.reserve(solidQuads.size() * 6);
-
-	for (uint32_t i = 0; i < solidQuads.size(); ++i)
-	{
-		uint32_t iFaceDir = ETOUI(solidQuads[i].eDir);
-
-		// 4개 정점 데이터 준비
-		E::VTX_VOXEL v[4]{};
-		v[0].pos = solidQuads[i].v1;
-		v[1].pos = solidQuads[i].v2;
-		v[2].pos = solidQuads[i].v3;
-		v[3].pos = solidQuads[i].v4;
-
-
-		{
-			v[0].texCoord = solidQuads[i].uv1;
-			v[1].texCoord = solidQuads[i].uv2;
-			v[2].texCoord = solidQuads[i].uv3;
-			v[3].texCoord = solidQuads[i].uv4;
-		}
-		{
-			v[0].vColor = solidQuads[i].color[0];
-			v[1].vColor = solidQuads[i].color[1];
-			v[2].vColor = solidQuads[i].color[2];
-			v[3].vColor = solidQuads[i].color[3];
-		}
-
-
-
-		// 공통 데이터 인코딩 및 패킹 (AO값만 고유 적용)
-		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
-		{
-			v[vIdx].packedData = {};
-			v[vIdx].packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;              // normal (3bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(solidQuads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(vIdx) & 0x03) << 25;                  // vertexid (2bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(solidQuads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(solidQuads[i].lighting) & 0xff) << 9;      // Light (8bit)
-		}
-
-		m_SolidVertices.push_back(v[0]);
-		m_SolidVertices.push_back(v[1]);
-		m_SolidVertices.push_back(v[2]);
-		m_SolidVertices.push_back(v[3]);
-
-		uint32_t startIndex = i * 4;
-
-		// 비대칭 이방성(Anisotropy) 보정 처리
-		// 0번-2번 대각선의 AO 합산이 1번-3번보다 작다면(즉, 더 어둡다면) 삼각형 쪼개기 방향을 회전시킵니다.
-		if (solidQuads[i].ao[0] + solidQuads[i].ao[2] < solidQuads[i].ao[1] + solidQuads[i].ao[3])
-		{
-			// 1-2-3, 1-3-0 형태로 인덱스 배치
-			m_SolidIndices.push_back(startIndex + 1);
-			m_SolidIndices.push_back(startIndex + 2);
-			m_SolidIndices.push_back(startIndex + 3);
-			m_SolidIndices.push_back(startIndex + 1);
-			m_SolidIndices.push_back(startIndex + 3);
-			m_SolidIndices.push_back(startIndex + 0);
-		}
-		else
-		{
-			// 기존 순서: 0-1-2, 0-2-3
-			m_SolidIndices.push_back(startIndex + 0);
-			m_SolidIndices.push_back(startIndex + 1);
-			m_SolidIndices.push_back(startIndex + 2);
-			m_SolidIndices.push_back(startIndex + 0);
-			m_SolidIndices.push_back(startIndex + 2);
-			m_SolidIndices.push_back(startIndex + 3);
-		}
-	}
-
-
-
-	m_AlphaTestIndices.clear();
-	m_AlphaTestVertices.clear();
-
-	m_AlphaTestVertices.reserve(alphaTestQuads.size() * 4);
-	m_AlphaTestIndices.reserve(alphaTestQuads.size() * 6);
-
-	for (uint32_t i = 0; i < alphaTestQuads.size(); ++i)
-	{
-		uint32_t iFaceDir = ETOUI(alphaTestQuads[i].eDir);
-
-		E::VTX_VOXEL v[4]{};
-		v[0].pos = alphaTestQuads[i].v1;
-		v[1].pos = alphaTestQuads[i].v2;
-		v[2].pos = alphaTestQuads[i].v3;
-		v[3].pos = alphaTestQuads[i].v4;
-
-		{
-			v[0].texCoord = alphaTestQuads[i].uv1;
-			v[1].texCoord = alphaTestQuads[i].uv2;
-			v[2].texCoord = alphaTestQuads[i].uv3;
-			v[3].texCoord = alphaTestQuads[i].uv4;
-		}
-		{
-			v[0].vColor = alphaTestQuads[i].color[0];
-			v[1].vColor = alphaTestQuads[i].color[1];
-			v[2].vColor = alphaTestQuads[i].color[2];
-			v[3].vColor = alphaTestQuads[i].color[3];
-		}
-
-		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
-		{
-			v[vIdx].packedData = {};
-			v[vIdx].packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;              // normal (3bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(alphaTestQuads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(vIdx) & 0x03) << 25;                  // vertexid (2bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(alphaTestQuads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(alphaTestQuads[i].lighting) & 0xff) << 9;      // Light (8bit)
-		}
-
-		m_AlphaTestVertices.push_back(v[0]);
-		m_AlphaTestVertices.push_back(v[1]);
-		m_AlphaTestVertices.push_back(v[2]);
-		m_AlphaTestVertices.push_back(v[3]);
-
-		uint32_t startIndex = i * 4;
-
-		// 물 쿼드 대각선 보정 처리 (주변 흙/돌 지형과 AO 라인을 맞추기 위해 동일하게 세팅)
-		if (alphaTestQuads[i].ao[0] + alphaTestQuads[i].ao[2] < alphaTestQuads[i].ao[1] + alphaTestQuads[i].ao[3])
-		{
-			m_AlphaTestIndices.push_back(startIndex + 1);
-			m_AlphaTestIndices.push_back(startIndex + 2);
-			m_AlphaTestIndices.push_back(startIndex + 3);
-			m_AlphaTestIndices.push_back(startIndex + 1);
-			m_AlphaTestIndices.push_back(startIndex + 3);
-			m_AlphaTestIndices.push_back(startIndex + 0);
-		}
-		else
-		{
-			m_AlphaTestIndices.push_back(startIndex + 0);
-			m_AlphaTestIndices.push_back(startIndex + 1);
-			m_AlphaTestIndices.push_back(startIndex + 2);
-			m_AlphaTestIndices.push_back(startIndex + 0);
-			m_AlphaTestIndices.push_back(startIndex + 2);
-			m_AlphaTestIndices.push_back(startIndex + 3);
-		}
-	}
-
-
-
-	m_WaterIndices.clear();
-	m_WaterVertices.clear();
-
-	m_WaterVertices.reserve(waterQuads.size() * 4);
-	m_WaterIndices.reserve(waterQuads.size() * 6);
-
-	for (uint32_t i = 0; i < waterQuads.size(); ++i)
-	{
-		uint32_t iFaceDir = ETOUI(waterQuads[i].eDir);
-
-		E::VTX_VOXEL v[4]{};
-		v[0].pos = waterQuads[i].v1;
-		v[1].pos = waterQuads[i].v2;
-		v[2].pos = waterQuads[i].v3;
-		v[3].pos = waterQuads[i].v4;
-
-		{
-			v[0].texCoord = waterQuads[i].uv1;
-			v[1].texCoord = waterQuads[i].uv2;
-			v[2].texCoord = waterQuads[i].uv3;
-			v[3].texCoord = waterQuads[i].uv4;
-		}
-		{
-			v[0].vColor = waterQuads[i].color[0];
-			v[1].vColor = waterQuads[i].color[1];
-			v[2].vColor = waterQuads[i].color[2];
-			v[3].vColor = waterQuads[i].color[3];
-		}
-
-		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
-		{
-			v[vIdx].packedData = {};
-			v[vIdx].packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;              // normal (3bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(waterQuads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(vIdx) & 0x03) << 25;                  // vertexid (2bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(waterQuads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
-			v[vIdx].packedData |= (static_cast<uint32_t>(waterQuads[i].lighting) & 0xff) << 9;      // Light (8bit)
-		}
-
-		m_WaterVertices.push_back(v[0]);
-		m_WaterVertices.push_back(v[1]);
-		m_WaterVertices.push_back(v[2]);
-		m_WaterVertices.push_back(v[3]);
-
-		uint32_t startIndex = i * 4;
-
-		// 물 쿼드 대각선 보정 처리 (주변 흙/돌 지형과 AO 라인을 맞추기 위해 동일하게 세팅)
-		if (waterQuads[i].ao[0] + waterQuads[i].ao[2] < waterQuads[i].ao[1] + waterQuads[i].ao[3])
-		{
-			m_WaterIndices.push_back(startIndex + 1);
-			m_WaterIndices.push_back(startIndex + 2);
-			m_WaterIndices.push_back(startIndex + 3);
-			m_WaterIndices.push_back(startIndex + 1);
-			m_WaterIndices.push_back(startIndex + 3);
-			m_WaterIndices.push_back(startIndex + 0);
-		}
-		else
-		{
-			m_WaterIndices.push_back(startIndex + 0);
-			m_WaterIndices.push_back(startIndex + 1);
-			m_WaterIndices.push_back(startIndex + 2);
-			m_WaterIndices.push_back(startIndex + 0);
-			m_WaterIndices.push_back(startIndex + 2);
-			m_WaterIndices.push_back(startIndex + 3);
-		}
-	}
-
+	QuadsToVerticies(buckets.solid, m_SolidVertices, m_SolidIndices);
+	QuadsToVerticies(buckets.alphaTest, m_AlphaTestVertices, m_AlphaTestIndices);
+	QuadsToVerticies(buckets.water, m_WaterVertices, m_WaterIndices);
 
 	m_eMessingState = MESSING_STATE::DONE;
 	return S_OK;
@@ -504,42 +297,12 @@ HRESULT CChunk3::CreateBuffer()
 	{
 		if (!m_SolidVertices.empty())
 		{
-			E::CResDynamicVIBuffer::DESC desc{};
-			desc.iNumVertices = (uint32_t)m_SolidVertices.size();
-			desc.iVertexStride = sizeof(E::VTX_VOXEL);
-			desc.vertexDesc = {
-				.ByteWidth = desc.iNumVertices * desc.iVertexStride,
-				.Usage = D3D11_USAGE_IMMUTABLE,
-				.BindFlags = D3D11_BIND_VERTEX_BUFFER,
-				.CPUAccessFlags = 0,
-				.MiscFlags = 0
-			};
-			desc.vertexSubResource = {
-				.pSysMem = m_SolidVertices.data()
-			};
-
-			desc.iIndexStride = sizeof(uint32_t);
-			desc.iNumIndices = (uint32_t)m_SolidIndices.size();
-			desc.IndexDesc = {
-				.ByteWidth = desc.iNumIndices * desc.iIndexStride,
-				.Usage = D3D11_USAGE_IMMUTABLE,
-				.BindFlags = D3D11_BIND_INDEX_BUFFER,
-				.CPUAccessFlags = 0,
-				.MiscFlags = 0
-			};
-			desc.indexSubResource = {
-				.pSysMem = m_SolidIndices.data()
-			};
-			desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
-			desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-			m_pResSolidDynamicViBuffer = E::CResDynamicVIBuffer::Create();
-			if (FAILED(m_pResSolidDynamicViBuffer->Load(desc)))
+			if (FAILED(CreateBuffer(m_pResSolidDynamicViBuffer, m_SolidVertices, m_SolidIndices)))
 			{
 				m_pResSolidDynamicViBuffer.reset();
 				m_eBufferState = BUFFER_STATE::NON;
 				return E_FAIL;
-			};
+			}
 
 			m_SolidIndices.clear();
 			m_SolidVertices.clear();
@@ -554,42 +317,12 @@ HRESULT CChunk3::CreateBuffer()
 	{
 		if (!m_AlphaTestVertices.empty())
 		{
-			E::CResDynamicVIBuffer::DESC desc{};
-			desc.iNumVertices = (uint32_t)m_AlphaTestVertices.size();
-			desc.iVertexStride = sizeof(E::VTX_VOXEL);
-			desc.vertexDesc = {
-				.ByteWidth = desc.iNumVertices * desc.iVertexStride,
-				.Usage = D3D11_USAGE_IMMUTABLE,
-				.BindFlags = D3D11_BIND_VERTEX_BUFFER,
-				.CPUAccessFlags = 0,
-				.MiscFlags = 0
-			};
-			desc.vertexSubResource = {
-				.pSysMem = m_AlphaTestVertices.data()
-			};
-
-			desc.iIndexStride = sizeof(uint32_t);
-			desc.iNumIndices = (uint32_t)m_AlphaTestIndices.size();
-			desc.IndexDesc = {
-				.ByteWidth = desc.iNumIndices * desc.iIndexStride,
-				.Usage = D3D11_USAGE_IMMUTABLE,
-				.BindFlags = D3D11_BIND_INDEX_BUFFER,
-				.CPUAccessFlags = 0,
-				.MiscFlags = 0
-			};
-			desc.indexSubResource = {
-				.pSysMem = m_AlphaTestIndices.data()
-			};
-			desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
-			desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-			m_pResAlphaTestDynamicViBuffer = E::CResDynamicVIBuffer::Create();
-			if (FAILED(m_pResAlphaTestDynamicViBuffer->Load(desc)))
+			if (FAILED(CreateBuffer(m_pResAlphaTestDynamicViBuffer, m_AlphaTestVertices, m_AlphaTestIndices)))
 			{
 				m_pResAlphaTestDynamicViBuffer.reset();
 				m_eBufferState = BUFFER_STATE::NON;
 				return E_FAIL;
-			};
+			}
 
 			m_AlphaTestIndices.clear();
 			m_AlphaTestVertices.clear();
@@ -604,43 +337,12 @@ HRESULT CChunk3::CreateBuffer()
 	{
 		if (!m_WaterVertices.empty())
 		{
-			E::CResDynamicVIBuffer::DESC desc{};
-			desc.iNumVertices = (uint32_t)m_WaterVertices.size();
-			desc.iVertexStride = sizeof(E::VTX_VOXEL);
-			desc.vertexDesc = {
-				.ByteWidth = desc.iNumVertices * desc.iVertexStride,
-				.Usage = D3D11_USAGE_IMMUTABLE,
-				.BindFlags = D3D11_BIND_VERTEX_BUFFER,
-				.CPUAccessFlags = 0,
-				.MiscFlags = 0
-			};
-			desc.vertexSubResource = {
-				.pSysMem = m_WaterVertices.data()
-			};
-
-			desc.iIndexStride = sizeof(uint32_t);
-			desc.iNumIndices = (uint32_t)m_WaterIndices.size();
-			desc.IndexDesc = {
-				.ByteWidth = desc.iNumIndices * desc.iIndexStride,
-				.Usage = D3D11_USAGE_IMMUTABLE,
-				.BindFlags = D3D11_BIND_INDEX_BUFFER,
-				.CPUAccessFlags = 0,
-				.MiscFlags = 0
-			};
-			desc.indexSubResource = {
-				.pSysMem = m_WaterIndices.data()
-			};
-			desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
-			desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-			m_pResWaterDynamicViBuffer = E::CResDynamicVIBuffer::Create();
-			if (FAILED(m_pResWaterDynamicViBuffer->Load(desc)))
+			if (FAILED(CreateBuffer(m_pResWaterDynamicViBuffer, m_WaterVertices, m_WaterIndices)))
 			{
 				m_pResWaterDynamicViBuffer.reset();
 				m_eBufferState = BUFFER_STATE::NON;
 				return E_FAIL;
-			};
-
+			}
 
 			m_WaterIndices.clear();
 			m_WaterVertices.clear();
@@ -849,8 +551,11 @@ CBlock3::TYPE CChunk3::GetBlockTypeAt(int32_t x, int32_t y, int32_t z, CChunk3* 
 	return pTargetChunk->m_arrBlocks[pTargetChunk->BlockIndexing(localX, y, localZ)].GetType();
 }
 
-void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& alphaTestQuads, std::vector<VOX_QUAD>& waterQuads) const
+void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 {
+	auto& solidQuads = quadBuckets.solid;
+	auto& alphaTestQuads = quadBuckets.alphaTest;
+	auto& waterQuads = quadBuckets.water;
 	CChunk3* pPlusX = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ);
 	CChunk3* pMinusX = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ);
 	CChunk3* pPlusZ = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ + 1);
@@ -892,7 +597,19 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					BuildStairMesh(fx, fy, fz, curType, solidQuads);
 					continue; // 6면체 컬링 루틴 전체 패스
 				}
-
+				else if (geoType == CBlock3::GEO_TYPE::TORCH)
+				{
+					BuildTorchMesh(fx, fy, fz, curType, solidQuads);
+					continue;
+				}
+				// NiveFaceCulling 내부 루프 조건절 수정 파트
+				//else if (geoType == CBlock3::GEO_TYPE::WATER)
+				//{
+				//	// 💡 기존의 BuildWaterMesh(fx, fy, fz, 6, solidQuads); 구조에서
+				//	// 이웃 청크 정보와 올바른 반투명 쿼드 컨테이너(waterQuads)를 인자로 전달하도록 교체합니다.
+				//	BuildWaterMesh((int)fx, (int)fy, (int)fz, waterQuads, pPlusX, pMinusX, pPlusZ, pMinusZ);
+				//	continue; // 6면체 기본 불투명 컬링 루틴 패스
+				//}
 
 
 				// 1. Top (+Y)
@@ -918,29 +635,12 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 
 					if (bExpose) {
 						VOX_QUAD quad{};
-						if (curType == CBlock3::TYPE::TORCH_ON)
-						{
-							// [정점 위치] 순서: 좌상 -> 우상 -> 우하 -> 좌하
-							quad.v1 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 좌상
-							quad.v2 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 우상
-							quad.v3 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 우하
-							quad.v4 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 좌하
+						quad.v[0] = { fx,     fy + 1, fz + 1 };
+						quad.v[1] = { fx + 1, fy + 1, fz + 1 };
+						quad.v[2] = { fx + 1, fy + 1, fz };
+						quad.v[3] = { fx,     fy + 1, fz };
 
-							// [UV 좌표] 정점 위치와 정확히 1:1 매칭 (좌상 -> 우상 -> 우하 -> 좌하)
-							quad.uv1 = _float2(7.0f / 16.f, 6.0f / 16.f); // 좌상
-							quad.uv2 = _float2(9.0f / 16.f, 6.0f / 16.f); // 우상
-							quad.uv3 = _float2(9.0f / 16.f, 8.0f / 16.f); // 우하
-							quad.uv4 = _float2(7.0f / 16.f, 8.0f / 16.f); // 좌하
-						}
-						else
-						{
-							quad.v1 = { fx,     fy + 1, fz + 1 };
-							quad.v2 = { fx + 1, fy + 1, fz + 1 };
-							quad.v3 = { fx + 1, fy + 1, fz };
-							quad.v4 = { fx,     fy + 1, fz };
-						}
 
-						
 						quad.eDir = FACE_DIR::POS_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (y + 1 < (int)VOXEL_CHUNK_Y_SIZE3) ? m_arrBlocks[BlockIndexing(x, y + 1, z)].GetLight() : 0xFF;
@@ -992,28 +692,11 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					}
 					if (bExpose) {
 						VOX_QUAD quad{};
-						if (curType == CBlock3::TYPE::TORCH_ON)
-						{
-							// [정점 위치] 순서: 좌하 -> 우하 -> 우상 -> 좌상 (높이 fy 바닥 고정)
-							quad.v1 = { fx + (7 / 16.f),    fy,               fz + (6 / 16.f) }; // 좌하
-							quad.v2 = { fx + (9 / 16.f),    fy,               fz + (6 / 16.f) }; // 우하
-							quad.v3 = { fx + (9 / 16.f),    fy,               fz + (8 / 16.f) }; // 우상
-							quad.v4 = { fx + (7 / 16.f),    fy,               fz + (8 / 16.f) }; // 좌상
+						quad.v[0] = { fx,     fy, fz };
+						quad.v[1] = { fx + 1, fy, fz };
+						quad.v[2] = { fx + 1, fy, fz + 1 };
+						quad.v[3] = { fx,     fy, fz + 1 };
 
-							// [UV 좌표] 일반 블록 밑면 UV 패턴 매칭에 맞게 뒤집어 배분 (8~10px 단면 영역)
-							quad.uv1 = _float2(7.0f / 16.f, 10.0f / 16.f); // 좌하 (U:7, V:10)
-							quad.uv2 = _float2(9.0f / 16.f, 10.0f / 16.f); // 우하 (U:9, V:10)
-							quad.uv3 = _float2(9.0f / 16.f, 8.0f / 16.f); // 우상 (U:9, V:8)
-							quad.uv4 = _float2(7.0f / 16.f, 8.0f / 16.f); // 좌상 (U:7, V:8)
-						}
-						else
-						{
-							quad.v1 = { fx,     fy, fz };
-							quad.v2 = { fx + 1, fy, fz };
-							quad.v3 = { fx + 1, fy, fz + 1 };
-							quad.v4 = { fx,     fy, fz + 1 };
-						}
-						
 						quad.eDir = FACE_DIR::NEG_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (y - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y - 1, z)].GetLight() : 0;
@@ -1065,28 +748,10 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					}
 					if (bExpose) {
 						VOX_QUAD quad{};
-
-						if (curType == CBlock3::TYPE::TORCH_ON)
-						{
-							
-							quad.v1 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 우상
-							quad.v2 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 좌상
-							quad.v3 = { fx + (7 / 16.f),    fy,               fz + (8 / 16.f) }; // 좌하
-							quad.v4 = { fx + (9 / 16.f),    fy,               fz + (8 / 16.f) }; // 우하
-
-							quad.uv1 = _float2(9.0f / 16.f, 6.0f / 16.f); 
-							quad.uv2 = _float2(7.0f / 16.f, 6.0f / 16.f);
-							quad.uv3 = _float2(7.0f / 16.f, 16.0f / 16.f); 
-							quad.uv4 = _float2(9.0f / 16.f, 16.0f / 16.f);
-
-						}
-						else
-						{
-							quad.v1 = { fx + 1, fy + 1, fz + 1 };
-							quad.v2 = { fx,     fy + 1, fz + 1 };
-							quad.v3 = { fx,     fy,     fz + 1 };
-							quad.v4 = { fx + 1, fy,     fz + 1 };
-						}
+						quad.v[0] = { fx + 1, fy + 1, fz + 1 };
+						quad.v[1] = { fx,     fy + 1, fz + 1 };
+						quad.v[2] = { fx,     fy,     fz + 1 };
+						quad.v[3] = { fx + 1, fy,     fz + 1 };
 
 						quad.eDir = FACE_DIR::POS_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1140,28 +805,11 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 
 					if (bExpose) {
 						VOX_QUAD quad{};
+						quad.v[0] = { fx,     fy + 1, fz };
+						quad.v[1] = { fx + 1, fy + 1, fz };
+						quad.v[2] = { fx + 1, fy,     fz };
+						quad.v[3] = { fx,     fy,     fz };
 
-						if (curType == CBlock3::TYPE::TORCH_ON)
-						{							
-							// Z축 고정 두께: 6/16.f, 높이는 10/16.f까지만
-							quad.v1 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 우상
-							quad.v2 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 좌상
-							quad.v3 = { fx + (9 / 16.f),    fy,               fz + (6 / 16.f) }; // 좌하
-							quad.v4 = { fx + (7 / 16.f),    fy,               fz + (6 / 16.f) }; // 우하
-
-							quad.uv1 = _float2(7.0f / 16.f, 6.0f / 16.f);
-							quad.uv2 = _float2(9.0f / 16.f, 6.0f / 16.f);
-							quad.uv3 = _float2(9.0f / 16.f, 16.0f / 16.f);
-							quad.uv4 = _float2(7.0f / 16.f, 16.0f / 16.f);
-						}
-						else
-						{
-							quad.v1 = { fx,     fy + 1, fz };
-							quad.v2 = { fx + 1, fy + 1, fz };
-							quad.v3 = { fx + 1, fy,     fz };
-							quad.v4 = { fx,     fy,     fz };
-						}
-						
 						quad.eDir = FACE_DIR::NEG_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 						quad.lighting = (z - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y, z - 1)].GetLight() : (pMinusZ ? pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].GetLight() : 0xFF);
@@ -1213,27 +861,11 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					}
 					if (bExpose) {
 						VOX_QUAD quad{};
+						quad.v[0] = { fx + 1, fy + 1, fz };
+						quad.v[1] = { fx + 1, fy + 1, fz + 1 };
+						quad.v[2] = { fx + 1, fy,     fz + 1 };
+						quad.v[3] = { fx + 1, fy,     fz };
 
-						if (curType == CBlock3::TYPE::TORCH_ON)
-						{
-							quad.v1 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) }; // 우상
-							quad.v2 = { fx + (9 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; // 좌상
-							quad.v3 = { fx + (9 / 16.f),    fy,               fz + (8 / 16.f) }; // 좌하
-							quad.v4 = { fx + (9 / 16.f),    fy,               fz + (6 / 16.f) }; // 우하
-
-							quad.uv1 = _float2(7.0f / 16.f, 6.0f / 16.f); 
-							quad.uv2 = _float2(9.0f / 16.f, 6.0f / 16.f);
-							quad.uv3 = _float2(9.0f / 16.f, 16.0f / 16.f); 
-							quad.uv4 = _float2(7.0f / 16.f, 16.0f / 16.f);
-						}
-						else
-						{
-							quad.v1 = { fx + 1, fy + 1, fz };
-							quad.v2 = { fx + 1, fy + 1, fz + 1 };
-							quad.v3 = { fx + 1, fy,     fz + 1 };
-							quad.v4 = { fx + 1, fy,     fz };
-						}
-						
 						quad.eDir = FACE_DIR::POS_X;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
 						quad.lighting = (x + 1 < (int)VOXEL_CHUNK_X_SIZE3) ? m_arrBlocks[BlockIndexing(x + 1, y, z)].GetLight() : (pPlusX ? pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].GetLight() : 0xFF);
@@ -1285,29 +917,11 @@ void CChunk3::NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX
 					}
 					if (bExpose) {
 						VOX_QUAD quad{};
+						quad.v[0] = { fx, fy + 1, fz + 1 };
+						quad.v[1] = { fx, fy + 1, fz };
+						quad.v[2] = { fx, fy,     fz };
+						quad.v[3] = { fx, fy,     fz + 1 };
 
-						if (curType == CBlock3::TYPE::TORCH_ON)
-						{
-							quad.v1 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (8 / 16.f) }; 
-							quad.v2 = { fx + (7 / 16.f),    fy + (10 / 16.f), fz + (6 / 16.f) };
-							quad.v3 = { fx + (7 / 16.f),    fy,               fz + (6 / 16.f) };
-							quad.v4 = { fx + (7 / 16.f),    fy,               fz + (8 / 16.f) }; 
-
-							quad.uv1 = _float2(9.0f / 16.f, 6.0f / 16.f); 
-							quad.uv2 = _float2(7.0f / 16.f, 6.0f / 16.f);
-							quad.uv3 = _float2(7.0f / 16.f, 16.0f / 16.f);
-							quad.uv4 = _float2(9.0f / 16.f, 16.0f / 16.f); 
-
-
-						}
-						else
-						{
-							quad.v1 = { fx, fy + 1, fz + 1 };
-							quad.v2 = { fx, fy + 1, fz };
-							quad.v3 = { fx, fy,     fz };
-							quad.v4 = { fx, fy,     fz + 1 };
-						}
-						
 						quad.eDir = FACE_DIR::NEG_X;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
 						quad.lighting = (x - 1 >= 0) ? m_arrBlocks[BlockIndexing(x - 1, y, z)].GetLight() : (pMinusX ? pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].GetLight() : 0xFF);
@@ -1414,13 +1028,13 @@ void CChunk3::BuildCrossMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// 1번째 대각선 面 (\ 방향)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,     fy + 1.f, fz };
-		quad.v2 = { fx + 1.f, fy + 1.f, fz + 1.f };
-		quad.v3 = { fx + 1.f, fy,       fz + 1.f };
-		quad.v4 = { fx,     fy,       fz };
+		quad.v[0] = {fx,     fy + 1.f, fz};
+		quad.v[1] = {fx + 1.f, fy + 1.f, fz + 1.f};
+		quad.v[2] = {fx + 1.f, fy,       fz + 1.f};
+		quad.v[3] = {fx,     fy,       fz};
 
-		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f };
-		quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+		quad.uv[0] = {0.f, 0.f}; quad.uv[1] = {1.f, 0.f};
+		quad.uv[2] = {1.f, 1.f}; quad.uv[3] = {0.f, 1.f};
 
 		quad.eDir = FACE_DIR::POS_Y; // 풀떼기는 보통 단일 텍스처를 쓰므로 POS_Y 등으로 긁어옴
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1439,13 +1053,13 @@ void CChunk3::BuildCrossMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// 2번째 대각선 面 (/ 방향)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,     fy + 1.f, fz + 1.f };
-		quad.v2 = { fx + 1.f, fy + 1.f, fz };
-		quad.v3 = { fx + 1.f, fy,       fz };
-		quad.v4 = { fx,     fy,       fz + 1.f };
+		quad.v[0] = {fx,     fy + 1.f, fz + 1.f};
+		quad.v[1] = {fx + 1.f, fy + 1.f, fz};
+		quad.v[2] = {fx + 1.f, fy,       fz};
+		quad.v[3] = {fx,     fy,       fz + 1.f};
 
-		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f };
-		quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+		quad.uv[0] = {0.f, 0.f}; quad.uv[1] = {1.f, 0.f};
+		quad.uv[2] = {1.f, 1.f}; quad.uv[3] = {0.f, 1.f};
 
 		quad.eDir = FACE_DIR::POS_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1469,15 +1083,15 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// [Top]
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
-		quad.v2 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
-		quad.v3 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
-		quad.v4 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
+		quad.v[0] = {fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f)};
+		quad.v[1] = {fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f)};
+		quad.v[2] = {fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f)};
+		quad.v[3] = {fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f)};
 
-		quad.uv1 = { 7.0f / 16.f, 6.0f / 16.f };
-		quad.uv2 = { 9.0f / 16.f, 6.0f / 16.f };
-		quad.uv3 = { 9.0f / 16.f, 8.0f / 16.f };
-		quad.uv4 = { 7.0f / 16.f, 8.0f / 16.f };
+		quad.uv[0] = {7.0f / 16.f, 6.0f / 16.f};
+		quad.uv[1] = {9.0f / 16.f, 6.0f / 16.f};
+		quad.uv[2] = {9.0f / 16.f, 8.0f / 16.f};
+		quad.uv[3] = {7.0f / 16.f, 8.0f / 16.f};
 
 		quad.eDir = FACE_DIR::POS_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1489,15 +1103,15 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// [Bottom]
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + (7 / 16.f), fy, fz + (6 / 16.f) };
-		quad.v2 = { fx + (9 / 16.f), fy, fz + (6 / 16.f) };
-		quad.v3 = { fx + (9 / 16.f), fy, fz + (8 / 16.f) };
-		quad.v4 = { fx + (7 / 16.f), fy, fz + (8 / 16.f) };
+		quad.v[0] = {fx + (7 / 16.f), fy, fz + (6 / 16.f)};
+		quad.v[1] = {fx + (9 / 16.f), fy, fz + (6 / 16.f)};
+		quad.v[2] = {fx + (9 / 16.f), fy, fz + (8 / 16.f)};
+		quad.v[3] = {fx + (7 / 16.f), fy, fz + (8 / 16.f)};
 
-		quad.uv1 = { 7.0f / 16.f, 10.0f / 16.f };
-		quad.uv2 = { 9.0f / 16.f, 10.0f / 16.f };
-		quad.uv3 = { 9.0f / 16.f, 8.0f / 16.f };
-		quad.uv4 = { 7.0f / 16.f, 8.0f / 16.f };
+		quad.uv[0] = {7.0f / 16.f, 10.0f / 16.f};
+		quad.uv[1] = {9.0f / 16.f, 10.0f / 16.f};
+		quad.uv[2] = {9.0f / 16.f, 8.0f / 16.f};
+		quad.uv[3] = {7.0f / 16.f, 8.0f / 16.f};
 
 		quad.eDir = FACE_DIR::NEG_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1509,15 +1123,15 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// [Front]
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
-		quad.v2 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
-		quad.v3 = { fx + (7 / 16.f), fy,               fz + (8 / 16.f) };
-		quad.v4 = { fx + (9 / 16.f), fy,               fz + (8 / 16.f) };
+		quad.v[0] = {fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f)};
+		quad.v[1] = {fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f)};
+		quad.v[2] = {fx + (7 / 16.f), fy,               fz + (8 / 16.f)};
+		quad.v[3] = {fx + (9 / 16.f), fy,               fz + (8 / 16.f)};
 
-		quad.uv1 = { 9.0f / 16.f, 6.0f / 16.f };
-		quad.uv2 = { 7.0f / 16.f, 6.0f / 16.f };
-		quad.uv3 = { 7.0f / 16.f, 16.0f / 16.f };
-		quad.uv4 = { 9.0f / 16.f, 16.0f / 16.f };
+		quad.uv[0] = {9.0f / 16.f, 6.0f / 16.f};
+		quad.uv[1] = {7.0f / 16.f, 6.0f / 16.f};
+		quad.uv[2] = {7.0f / 16.f, 16.0f / 16.f};
+		quad.uv[3] = {9.0f / 16.f, 16.0f / 16.f};
 
 		quad.eDir = FACE_DIR::POS_Z;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1529,15 +1143,15 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// [Back]
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
-		quad.v2 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
-		quad.v3 = { fx + (9 / 16.f), fy,               fz + (6 / 16.f) };
-		quad.v4 = { fx + (7 / 16.f), fy,               fz + (6 / 16.f) };
+		quad.v[0] = {fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f)};
+		quad.v[1] = {fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f)};
+		quad.v[2] = {fx + (9 / 16.f), fy,               fz + (6 / 16.f)};
+		quad.v[3] = {fx + (7 / 16.f), fy,               fz + (6 / 16.f)};
 
-		quad.uv1 = { 7.0f / 16.f, 6.0f / 16.f };
-		quad.uv2 = { 9.0f / 16.f, 6.0f / 16.f };
-		quad.uv3 = { 9.0f / 16.f, 16.0f / 16.f };
-		quad.uv4 = { 7.0f / 16.f, 16.0f / 16.f };
+		quad.uv[0] = {7.0f / 16.f, 6.0f / 16.f};
+		quad.uv[1] = {9.0f / 16.f, 6.0f / 16.f};
+		quad.uv[2] = {9.0f / 16.f, 16.0f / 16.f};
+		quad.uv[3] = {7.0f / 16.f, 16.0f / 16.f};
 
 		quad.eDir = FACE_DIR::NEG_Z;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1549,15 +1163,15 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// [Right]
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
-		quad.v2 = { fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
-		quad.v3 = { fx + (9 / 16.f), fy,               fz + (8 / 16.f) };
-		quad.v4 = { fx + (9 / 16.f), fy,               fz + (6 / 16.f) };
+		quad.v[0] = {fx + (9 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f)};
+		quad.v[1] = {fx + (9 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f)};
+		quad.v[2] = {fx + (9 / 16.f), fy,               fz + (8 / 16.f)};
+		quad.v[3] = {fx + (9 / 16.f), fy,               fz + (6 / 16.f)};
 
-		quad.uv1 = { 7.0f / 16.f, 6.0f / 16.f };
-		quad.uv2 = { 9.0f / 16.f, 6.0f / 16.f };
-		quad.uv3 = { 9.0f / 16.f, 16.0f / 16.f };
-		quad.uv4 = { 7.0f / 16.f, 16.0f / 16.f };
+		quad.uv[0] = {7.0f / 16.f, 6.0f / 16.f};
+		quad.uv[1] = {9.0f / 16.f, 6.0f / 16.f};
+		quad.uv[2] = {9.0f / 16.f, 16.0f / 16.f};
+		quad.uv[3] = {7.0f / 16.f, 16.0f / 16.f};
 
 		quad.eDir = FACE_DIR::POS_X;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1569,15 +1183,15 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// [Left]
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f) };
-		quad.v2 = { fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f) };
-		quad.v3 = { fx + (7 / 16.f), fy,               fz + (6 / 16.f) };
-		quad.v4 = { fx + (7 / 16.f), fy,               fz + (8 / 16.f) };
+		quad.v[0] = {fx + (7 / 16.f), fy + (10 / 16.f), fz + (8 / 16.f)};
+		quad.v[1] = {fx + (7 / 16.f), fy + (10 / 16.f), fz + (6 / 16.f)};
+		quad.v[2] = {fx + (7 / 16.f), fy,               fz + (6 / 16.f)};
+		quad.v[3] = {fx + (7 / 16.f), fy,               fz + (8 / 16.f)};
 
-		quad.uv1 = { 9.0f / 16.f, 6.0f / 16.f };
-		quad.uv2 = { 7.0f / 16.f, 6.0f / 16.f };
-		quad.uv3 = { 7.0f / 16.f, 16.0f / 16.f };
-		quad.uv4 = { 9.0f / 16.f, 16.0f / 16.f };
+		quad.uv[0] = {9.0f / 16.f, 6.0f / 16.f};
+		quad.uv[1] = {7.0f / 16.f, 6.0f / 16.f};
+		quad.uv[2] = {7.0f / 16.f, 16.0f / 16.f};
+		quad.uv[3] = {9.0f / 16.f, 16.0f / 16.f};
 
 		quad.eDir = FACE_DIR::NEG_X;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1602,15 +1216,15 @@ void CChunk3::BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType,
 	// [Top] - 일반 큐브와 동일하지만 높이만 0.5f 지점입니다.
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,        halfY, fz + 1.f };
-		quad.v2 = { fx + 1.f,  halfY, fz + 1.f };
-		quad.v3 = { fx + 1.f,  halfY, fz };
-		quad.v4 = { fx,        halfY, fz };
+		quad.v[0] = {fx,        halfY, fz + 1.f};
+		quad.v[1] = {fx + 1.f,  halfY, fz + 1.f};
+		quad.v[2] = {fx + 1.f,  halfY, fz};
+		quad.v[3] = {fx,        halfY, fz};
 
-		quad.uv1 = { 0.f, 0.f };
-		quad.uv2 = { 1.f, 0.f };
-		quad.uv3 = { 1.f, 1.f };
-		quad.uv4 = { 0.f, 1.f };
+		quad.uv[0] = {0.f, 0.f};
+		quad.uv[1] = {1.f, 0.f};
+		quad.uv[2] = {1.f, 1.f};
+		quad.uv[3] = {0.f, 1.f};
 
 		quad.eDir = FACE_DIR::POS_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1629,15 +1243,15 @@ void CChunk3::BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType,
 	// [Bottom] - 바닥면은 일반 큐브와 완전하게 동일합니다.
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,        fy, fz };
-		quad.v2 = { fx + 1.f,  fy, fz };
-		quad.v3 = { fx + 1.f,  fy, fz + 1.f };
-		quad.v4 = { fx,        fy, fz + 1.f };
+		quad.v[0] = {fx,        fy, fz};
+		quad.v[1] = {fx + 1.f,  fy, fz};
+		quad.v[2] = {fx + 1.f,  fy, fz + 1.f};
+		quad.v[3] = {fx,        fy, fz + 1.f};
 
-		quad.uv1 = { 0.f, 0.f };
-		quad.uv2 = { 1.f, 0.f };
-		quad.uv3 = { 1.f, 1.f };
-		quad.uv4 = { 0.f, 1.f };
+		quad.uv[0] = {0.f, 0.f};
+		quad.uv[1] = {1.f, 0.f};
+		quad.uv[2] = {1.f, 1.f};
+		quad.uv[3] = {0.f, 1.f};
 
 		quad.eDir = FACE_DIR::NEG_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1658,15 +1272,15 @@ void CChunk3::BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType,
 	// [Front] (+Z면)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + 1.f,  halfY, fz + 1.f };
-		quad.v2 = { fx,        halfY, fz + 1.f };
-		quad.v3 = { fx,        fy,    fz + 1.f };
-		quad.v4 = { fx + 1.f,  fy,    fz + 1.f };
+		quad.v[0] = {fx + 1.f,  halfY, fz + 1.f};
+		quad.v[1] = {fx,        halfY, fz + 1.f};
+		quad.v[2] = {fx,        fy,    fz + 1.f};
+		quad.v[3] = {fx + 1.f,  fy,    fz + 1.f};
 
-		quad.uv1 = { 1.f, 0.5f }; // 💡 상단 V 좌표를 0.5f로 커팅
-		quad.uv2 = { 0.f, 0.5f };
-		quad.uv3 = { 0.f, 1.f };
-		quad.uv4 = { 1.f, 1.f };
+		quad.uv[0] = {1.f, 0.5f}; // 💡 상단 V 좌표를 0.5f로 커팅
+		quad.uv[1] = {0.f, 0.5f};
+		quad.uv[2] = {0.f, 1.f};
+		quad.uv[3] = {1.f, 1.f};
 
 		quad.eDir = FACE_DIR::POS_Z;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1684,15 +1298,15 @@ void CChunk3::BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType,
 	// [Back] (-Z면)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,        halfY, fz };
-		quad.v2 = { fx + 1.f,  halfY, fz };
-		quad.v3 = { fx + 1.f,  fy,    fz };
-		quad.v4 = { fx,        fy,    fz };
+		quad.v[0] = {fx,        halfY, fz};
+		quad.v[1] = {fx + 1.f,  halfY, fz};
+		quad.v[2] = {fx + 1.f,  fy,    fz};
+		quad.v[3] = {fx,        fy,    fz};
 
-		quad.uv1 = { 1.f, 0.5f };
-		quad.uv2 = { 0.f, 0.5f };
-		quad.uv3 = { 0.f, 1.f };
-		quad.uv4 = { 1.f, 1.f };
+		quad.uv[0] = {1.f, 0.5f};
+		quad.uv[1] = {0.f, 0.5f};
+		quad.uv[2] = {0.f, 1.f};
+		quad.uv[3] = {1.f, 1.f};
 
 		quad.eDir = FACE_DIR::NEG_Z;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1710,15 +1324,15 @@ void CChunk3::BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType,
 	// [Right] (+X면)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + 1.f,  halfY, fz };
-		quad.v2 = { fx + 1.f,  halfY, fz + 1.f };
-		quad.v3 = { fx + 1.f,  fy,    fz + 1.f };
-		quad.v4 = { fx + 1.f,  fy,    fz };
+		quad.v[0] = {fx + 1.f,  halfY, fz};
+		quad.v[1] = {fx + 1.f,  halfY, fz + 1.f};
+		quad.v[2] = {fx + 1.f,  fy,    fz + 1.f};
+		quad.v[3] = {fx + 1.f,  fy,    fz};
 
-		quad.uv1 = { 1.f, 0.5f };
-		quad.uv2 = { 0.f, 0.5f };
-		quad.uv3 = { 0.f, 1.f };
-		quad.uv4 = { 1.f, 1.f };
+		quad.uv[0] = {1.f, 0.5f};
+		quad.uv[1] = {0.f, 0.5f};
+		quad.uv[2] = {0.f, 1.f};
+		quad.uv[3] = {1.f, 1.f};
 
 		quad.eDir = FACE_DIR::POS_X;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1736,15 +1350,15 @@ void CChunk3::BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType,
 	// [Left] (-X면)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,        halfY, fz + 1.f };
-		quad.v2 = { fx,        halfY, fz };
-		quad.v3 = { fx,        fy,    fz };
-		quad.v4 = { fx,        fy,    fz + 1.f };
+		quad.v[0] = {fx,        halfY, fz + 1.f};
+		quad.v[1] = {fx,        halfY, fz};
+		quad.v[2] = {fx,        fy,    fz};
+		quad.v[3] = {fx,        fy,    fz + 1.f};
 
-		quad.uv1 = { 1.f, 0.5f };
-		quad.uv2 = { 0.f, 0.5f };
-		quad.uv3 = { 0.f, 1.f };
-		quad.uv4 = { 1.f, 1.f };
+		quad.uv[0] = {1.f, 0.5f};
+		quad.uv[1] = {0.f, 0.5f};
+		quad.uv[2] = {0.f, 1.f};
+		quad.uv[3] = {1.f, 1.f};
 
 		quad.eDir = FACE_DIR::NEG_X;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
@@ -1783,9 +1397,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// 계단 모양을 쉽게 보기 위해 우선 윗면 전체를 다 그리도록 처리합니다.
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,        halfY, fz + 1.f }; quad.v2 = { fx + 1.f,  halfY, fz + 1.f };
-		quad.v3 = { fx + 1.f,  halfY, fz }; quad.v4 = { fx,        halfY, fz };
-		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f }; quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+		quad.v[0] = {fx,        halfY, fz + 1.f}; quad.v[1] = {fx + 1.f,  halfY, fz + 1.f};
+		quad.v[2] = {fx + 1.f,  halfY, fz}; quad.v[3] = {fx,        halfY, fz};
+		quad.uv[0] = {0.f, 0.f}; quad.uv[1] = {1.f, 0.f}; quad.uv[2] = {1.f, 1.f}; quad.uv[3] = {0.f, 1.f};
 		quad.eDir = FACE_DIR::POS_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight; 
@@ -1802,9 +1416,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// 밑판 아랫면 (Bottom Face)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,        fy, fz }; quad.v2 = { fx + 1.f,  fy, fz };
-		quad.v3 = { fx + 1.f,  fy, fz + 1.f }; quad.v4 = { fx,        fy, fz + 1.f };
-		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f }; quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+		quad.v[0] = {fx,        fy, fz}; quad.v[1] = {fx + 1.f,  fy, fz};
+		quad.v[2] = {fx + 1.f,  fy, fz + 1.f}; quad.v[3] = {fx,        fy, fz + 1.f};
+		quad.uv[0] = {0.f, 0.f}; quad.uv[1] = {1.f, 0.f}; quad.uv[2] = {1.f, 1.f}; quad.uv[3] = {0.f, 1.f};
 		quad.eDir = FACE_DIR::NEG_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight; 
@@ -1822,9 +1436,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// Front (+Z)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + 1.f,  halfY, fz + 1.f }; quad.v2 = { fx,        halfY, fz + 1.f };
-		quad.v3 = { fx,        fy,    fz + 1.f }; quad.v4 = { fx + 1.f,  fy,    fz + 1.f };
-		quad.uv1 = { 1.f, 0.5f }; quad.uv2 = { 0.f, 0.5f }; quad.uv3 = { 0.f, 1.f }; quad.uv4 = { 1.f, 1.f };
+		quad.v[0] = {fx + 1.f,  halfY, fz + 1.f}; quad.v[1] = {fx,        halfY, fz + 1.f};
+		quad.v[2] = {fx,        fy,    fz + 1.f}; quad.v[3] = {fx + 1.f,  fy,    fz + 1.f};
+		quad.uv[0] = {1.f, 0.5f}; quad.uv[1] = {0.f, 0.5f}; quad.uv[2] = {0.f, 1.f}; quad.uv[3] = {1.f, 1.f};
 		quad.eDir = FACE_DIR::POS_Z; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight; 
 		
@@ -1839,9 +1453,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// Back (-Z)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,        halfY, fz }; quad.v2 = { fx + 1.f,  halfY, fz };
-		quad.v3 = { fx + 1.f,  fy,    fz }; quad.v4 = { fx,        fy,    fz };
-		quad.uv1 = { 1.f, 0.5f }; quad.uv2 = { 0.f, 0.5f }; quad.uv3 = { 0.f, 1.f }; quad.uv4 = { 1.f, 1.f };
+		quad.v[0] = {fx,        halfY, fz}; quad.v[1] = {fx + 1.f,  halfY, fz};
+		quad.v[2] = {fx + 1.f,  fy,    fz}; quad.v[3] = {fx,        fy,    fz};
+		quad.uv[0] = {1.f, 0.5f}; quad.uv[1] = {0.f, 0.5f}; quad.uv[2] = {0.f, 1.f}; quad.uv[3] = {1.f, 1.f};
 		quad.eDir = FACE_DIR::NEG_Z; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight; 
 		
@@ -1856,9 +1470,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// Right (+X)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx + 1.f,  halfY, fz }; quad.v2 = { fx + 1.f,  halfY, fz + 1.f };
-		quad.v3 = { fx + 1.f,  fy,    fz + 1.f }; quad.v4 = { fx + 1.f,  fy,    fz };
-		quad.uv1 = { 1.f, 0.5f }; quad.uv2 = { 0.f, 0.5f }; quad.uv3 = { 0.f, 1.f }; quad.uv4 = { 1.f, 1.f };
+		quad.v[0] = {fx + 1.f,  halfY, fz}; quad.v[1] = {fx + 1.f,  halfY, fz + 1.f};
+		quad.v[2] = {fx + 1.f,  fy,    fz + 1.f}; quad.v[3] = {fx + 1.f,  fy,    fz};
+		quad.uv[0] = {1.f, 0.5f}; quad.uv[1] = {0.f, 0.5f}; quad.uv[2] = {0.f, 1.f}; quad.uv[3] = {1.f, 1.f};
 		quad.eDir = FACE_DIR::POS_X; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight; 
 		
@@ -1873,9 +1487,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// Left (-X)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { fx,        halfY, fz + 1.f }; quad.v2 = { fx,        halfY, fz };
-		quad.v3 = { fx,        fy,    fz }; quad.v4 = { fx,        fy,    fz + 1.f };
-		quad.uv1 = { 1.f, 0.5f }; quad.uv2 = { 0.f, 0.5f }; quad.uv3 = { 0.f, 1.f }; quad.uv4 = { 1.f, 1.f };
+		quad.v[0] = {fx,        halfY, fz + 1.f}; quad.v[1] = {fx,        halfY, fz};
+		quad.v[2] = {fx,        fy,    fz}; quad.v[3] = {fx,        fy,    fz + 1.f};
+		quad.uv[0] = {1.f, 0.5f}; quad.uv[1] = {0.f, 0.5f}; quad.uv[2] = {0.f, 1.f}; quad.uv[3] = {1.f, 1.f};
 		quad.eDir = FACE_DIR::NEG_X; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
 		
@@ -1911,9 +1525,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// 윗판 윗면 (Top Face)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { startX,     maxY,  endZ }; quad.v2 = { endX,       maxY,  endZ };
-		quad.v3 = { endX,       maxY,  startZ }; quad.v4 = { startX,     maxY,  startZ };
-		quad.uv1 = { 0.f, 0.f }; quad.uv2 = { 1.f, 0.f }; quad.uv3 = { 1.f, 1.f }; quad.uv4 = { 0.f, 1.f };
+		quad.v[0] = {startX,     maxY,  endZ}; quad.v[1] = {endX,       maxY,  endZ};
+		quad.v[2] = {endX,       maxY,  startZ}; quad.v[3] = {startX,     maxY,  startZ};
+		quad.uv[0] = {0.f, 0.f}; quad.uv[1] = {1.f, 0.f}; quad.uv[2] = {1.f, 1.f}; quad.uv[3] = {0.f, 1.f};
 		quad.eDir = FACE_DIR::POS_Y; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
 		
@@ -1930,9 +1544,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// Front (+Z)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { endX,       maxY,  endZ };   quad.v2 = { startX,     maxY,  endZ };
-		quad.v3 = { startX,     halfY, endZ };   quad.v4 = { endX,       halfY, endZ };
-		quad.uv1 = { 1.f, 0.f }; quad.uv2 = { 0.f, 0.f }; quad.uv3 = { 0.f, 0.5f }; quad.uv4 = { 1.f, 0.5f };
+		quad.v[0] = {endX,       maxY,  endZ};   quad.v[1] = {startX,     maxY,  endZ};
+		quad.v[2] = {startX,     halfY, endZ};   quad.v[3] = {endX,       halfY, endZ};
+		quad.uv[0] = {1.f, 0.f}; quad.uv[1] = {0.f, 0.f}; quad.uv[2] = {0.f, 0.5f}; quad.uv[3] = {1.f, 0.5f};
 		quad.eDir = FACE_DIR::POS_Z; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight; 
 		
@@ -1947,9 +1561,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// Back (-Z)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { startX,     maxY,  startZ }; quad.v2 = { endX,       maxY,  startZ };
-		quad.v3 = { endX,       halfY, startZ }; quad.v4 = { startX,     halfY, startZ };
-		quad.uv1 = { 1.f, 0.f }; quad.uv2 = { 0.f, 0.f }; quad.uv3 = { 0.f, 0.5f }; quad.uv4 = { 1.f, 0.5f };
+		quad.v[0] = {startX,     maxY,  startZ}; quad.v[1] = {endX,       maxY,  startZ};
+		quad.v[2] = {endX,       halfY, startZ}; quad.v[3] = {startX,     halfY, startZ};
+		quad.uv[0] = {1.f, 0.f}; quad.uv[1] = {0.f, 0.f}; quad.uv[2] = {0.f, 0.5f}; quad.uv[3] = {1.f, 0.5f};
 		quad.eDir = FACE_DIR::NEG_Z; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight; 
 		
@@ -1964,9 +1578,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// Right (+X)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { endX,       maxY,  startZ }; quad.v2 = { endX,       maxY,  endZ };
-		quad.v3 = { endX,       halfY, endZ };   quad.v4 = { endX,       halfY, startZ };
-		quad.uv1 = { 1.f, 0.f }; quad.uv2 = { 0.f, 0.f }; quad.uv3 = { 0.f, 0.5f }; quad.uv4 = { 1.f, 0.5f };
+		quad.v[0] = {endX,       maxY,  startZ}; quad.v[1] = {endX,       maxY,  endZ};
+		quad.v[2] = {endX,       halfY, endZ};   quad.v[3] = {endX,       halfY, startZ};
+		quad.uv[0] = {1.f, 0.f}; quad.uv[1] = {0.f, 0.f}; quad.uv[2] = {0.f, 0.5f}; quad.uv[3] = {1.f, 0.5f};
 		quad.eDir = FACE_DIR::POS_X; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
 		
@@ -1981,9 +1595,9 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 	// Left (-X)
 	{
 		VOX_QUAD quad{};
-		quad.v1 = { startX,     maxY,  endZ };   quad.v2 = { startX,     maxY,  startZ };
-		quad.v3 = { startX,     halfY, startZ }; quad.v4 = { startX,     halfY, endZ };
-		quad.uv1 = { 1.f, 0.f }; quad.uv2 = { 0.f, 0.f }; quad.uv3 = { 0.f, 0.5f }; quad.uv4 = { 1.f, 0.5f };
+		quad.v[0] = {startX,     maxY,  endZ};   quad.v[1] = {startX,     maxY,  startZ};
+		quad.v[2] = {startX,     halfY, startZ}; quad.v[3] = {startX,     halfY, endZ};
+		quad.uv[0] = {1.f, 0.f}; quad.uv[1] = {0.f, 0.f}; quad.uv[2] = {0.f, 0.5f}; quad.uv[3] = {1.f, 0.5f};
 		quad.eDir = FACE_DIR::NEG_X; quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight; 
 
@@ -1996,6 +1610,217 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = stairAO;
 		solidQuads.push_back(quad);
 	}
+}
+void CChunk3::BuildWaterMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads,
+	CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const
+{
+	float fx = (float)x;
+	float fy = (float)y;
+	float fz = (float)z;
+
+	// 1. 블록 자체의 광원 및 색상 데이터 유지
+	uint8_t blockLight = 240;
+	uint32_t blockColor = CBlock3::GetBaseColor(CBlock3::TYPE::WATER_PLACE_HOLDER);
+
+	// 2. 💡 4개 꼭짓점(Corner)의 수위를 주변 상태를 보고 각각 동적 계산
+	uint8_t levelTL = GetCornerWaterLevel(x, y, z + 1, pPX, pMX, pPZ, pMZ); // Back-Left
+	uint8_t levelTR = GetCornerWaterLevel(x + 1, y, z + 1, pPX, pMX, pPZ, pMZ); // Back-Right
+	uint8_t levelBL = GetCornerWaterLevel(x, y, z, pPX, pMX, pPZ, pMZ); // Front-Left
+	uint8_t levelBR = GetCornerWaterLevel(x + 1, y, z, pPX, pMX, pPZ, pMZ); // Front-Right
+
+	// 3. 💡 수위 레벨(0~8)을 실제 렌더링에 사용할 Y축 높이 좌표로 맵핑하는 람다 함수
+	auto LevelToHeight = [&](uint8_t level) -> float {
+		if (level == 0) return fy + 0.05f; // 물이 없어도 최소 두께 유지
+		return fy + ((float)level / 8.f); // 레벨 8일 때 가득 찬 큐브(1.0f)
+		};
+
+	float hTL = LevelToHeight(levelTL);
+	float hTR = LevelToHeight(levelTR);
+	float hBL = LevelToHeight(levelBL);
+	float hBR = LevelToHeight(levelBR);
+
+	// 각 꼭짓점별 텍스처 밀림 방지용 상단 V 좌표 계산
+	float vTL = 1.0f - ((hTL - fy));
+	float vTR = 1.0f - ((hTR - fy));
+	float vBL = 1.0f - ((hBL - fy));
+	float vBR = 1.0f - ((hBR - fy));
+
+	// [Top] - 💡 4개 정점의 Y축 높이가 달라서 부드러운 경사면이 형성됩니다.
+	{
+		VOX_QUAD quad{};
+		quad.v[0] = {fx,        hTL, fz + 1.f}; // Back-Left
+		quad.v[1] = {fx + 1.f,  hTR, fz + 1.f}; // Back-Right
+		quad.v[2] = {fx + 1.f,  hBR, fz};       // Front-Right
+		quad.v[3] = {fx,        hBL, fz};       // Front-Left
+
+		quad.uv[0] = {0.f, 0.f};
+		quad.uv[1] = {1.f, 0.f};
+		quad.uv[2] = {1.f, 1.f};
+		quad.uv[3] = {0.f, 1.f};
+
+		quad.eDir = FACE_DIR::POS_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(CBlock3::TYPE::WATER_PLACE_HOLDER, quad.eDir));
+		quad.lighting = blockLight;
+
+		quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+
+		waterQuads.push_back(quad);
+	}
+
+	// [Bottom] - 바닥면 (평평한 큐브 바닥 그대로 유지)
+	{
+		VOX_QUAD quad{};
+		quad.v[0] = {fx,        fy, fz};
+		quad.v[1] = {fx + 1.f,  fy, fz};
+		quad.v[2] = {fx + 1.f,  fy, fz + 1.f};
+		quad.v[3] = {fx,        fy, fz + 1.f};
+
+		quad.uv[0] = {0.f, 0.f};
+		quad.uv[1] = {1.f, 0.f};
+		quad.uv[2] = {1.f, 1.f};
+		quad.uv[3] = {0.f, 1.f};
+
+		quad.eDir = FACE_DIR::NEG_Y;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(CBlock3::TYPE::WATER_PLACE_HOLDER, quad.eDir));
+		quad.lighting = blockLight;
+
+		quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+
+		waterQuads.push_back(quad);
+	}
+
+	// [Front] (+Z면) - hTR(우상)과 hTL(좌상)의 경사 적용
+	{
+		VOX_QUAD quad{};
+		quad.v[0] = {fx + 1.f,  hTR, fz + 1.f};
+		quad.v[1] = {fx,        hTL, fz + 1.f};
+		quad.v[2] = {fx,        fy,  fz + 1.f};
+		quad.v[3] = {fx + 1.f,  fy,  fz + 1.f};
+
+		quad.uv[0] = {1.f, vTR};
+		quad.uv[1] = {0.f, vTL};
+		quad.uv[2] = {0.f, 1.f};
+		quad.uv[3] = {1.f, 1.f};
+
+		quad.eDir = FACE_DIR::POS_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(CBlock3::TYPE::WATER_PLACE_HOLDER, quad.eDir));
+		quad.lighting = blockLight;
+
+		quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+
+		waterQuads.push_back(quad);
+	}
+
+	// [Back] (-Z면) - hTL(우상)과 hTR(좌상)의 경사 적용
+	{
+		VOX_QUAD quad{};
+		quad.v[0] = {fx,        hTL, fz};
+		quad.v[1] = {fx + 1.f,  hTR, fz};
+		quad.v[2] = {fx + 1.f,  fy,  fz};
+		quad.v[3] = {fx,        fy,  fz};
+
+		quad.uv[0] = {1.f, vTL};
+		quad.uv[1] = {0.f, vTR};
+		quad.uv[2] = {0.f, 1.f};
+		quad.uv[3] = {1.f, 1.f};
+
+		quad.eDir = FACE_DIR::NEG_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(CBlock3::TYPE::WATER_PLACE_HOLDER, quad.eDir));
+		quad.lighting = blockLight;
+
+		quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+
+		waterQuads.push_back(quad);
+	}
+
+	// [Right] (+X면) - hBR(우상)과 hTR(좌상)의 경사 적용
+	{
+		VOX_QUAD quad{};
+		quad.v[0] = {fx + 1.f,  hBR, fz};
+		quad.v[1] = {fx + 1.f,  hTR, fz + 1.f};
+		quad.v[2] = {fx + 1.f,  fy,  fz + 1.f};
+		quad.v[3] = {fx + 1.f,  fy,  fz};
+
+		quad.uv[0] = {1.f, vBR};
+		quad.uv[1] = {0.f, vTR};
+		quad.uv[2] = {0.f, 1.f};
+		quad.uv[3] = {1.f, 1.f};
+
+		quad.eDir = FACE_DIR::POS_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(CBlock3::TYPE::WATER_PLACE_HOLDER, quad.eDir));
+		quad.lighting = blockLight;
+
+		quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+
+		waterQuads.push_back(quad);
+	}
+
+	// [Left] (-X면) - hTL(우상)과 hBL(좌상)의 경사 적용
+	{
+		VOX_QUAD quad{};
+		quad.v[0] = {fx,        hTL, fz + 1.f};
+		quad.v[1] = {fx,        hBL, fz};
+		quad.v[2] = {fx,        fy,  fz};
+		quad.v[3] = {fx,        fy,  fz + 1.f};
+
+		quad.uv[0] = {1.f, vTL};
+		quad.uv[1] = {0.f, vBL};
+		quad.uv[2] = {0.f, 1.f};
+		quad.uv[3] = {1.f, 1.f};
+
+		quad.eDir = FACE_DIR::NEG_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(CBlock3::TYPE::WATER_PLACE_HOLDER, quad.eDir));
+		quad.lighting = blockLight;
+
+		quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+
+		waterQuads.push_back(quad);
+	}
+}
+uint8_t CChunk3::GetCornerWaterLevel(int cx, int cy, int cz,
+	CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const
+{
+	// 하나의 꼭짓점을 공유하는 상하좌우 4개의 셀 오프셋
+	int dx[4] = { -1,  0, -1, 0 };
+	int dz[4] = { -1, -1,  0, 0 };
+
+	uint8_t maxLevel = 0;
+	int waterCount = 0;
+	uint8_t centerLevel = 4; // 폴백용 기본값
+
+	for (int i = 0; i < 4; ++i)
+	{
+		int nx = cx + dx[i];
+		int nz = cz + dz[i];
+
+		// 기존에 사용하시던 안전한 블록 타입 추출 함수 활용
+		CBlock3::TYPE neighborType = GetBlockTypeAt(nx, cy, nz, pPX, pMX, pPZ, pMZ);
+
+		if (neighborType == CBlock3::TYPE::WATER_PLACE_HOLDER)
+		{
+			// TODO: 실제 CBlock3에 구현된 수위 getter 연동 (예: GetWaterLevel())
+			// 지금은 알고리즘 테스트를 위해 x축 방향으로 갈수록 수위가 낮아지는 경사면 레이아웃을 임시 적용합니다.
+			uint8_t nLevel = 7 - (abs(nx) % 6);
+			if (nLevel < 1) nLevel = 1;
+
+			if (nLevel > maxLevel) maxLevel = nLevel;
+			waterCount++;
+		}
+		else if (neighborType != CBlock3::TYPE::AIR)
+		{
+			// 벽면(SOLID)에 붙은 코너 처리를 위해 카운트만 유지하거나 패스합니다.
+		}
+	}
+
+	// 주변에 물이 아예 없다면 바닥에 붙도록 처리
+	if (waterCount == 0) return 0;
+	return maxLevel;
 }
 CChunk3::CChunk3()
 {
@@ -2028,6 +1853,124 @@ HRESULT CChunk3::Initialize(const DESC& desc)
 	};
 
 	m_pCollBox = CCollBox::Create(vBoxCenter, vBoxExtents);
+
+	return S_OK;
+}
+
+void CChunk3::QuadsToVerticies(std::vector<VOX_QUAD>& quads, std::vector<E::VTX_VOXEL>& vertices, std::vector<uint32_t>& indices)
+{
+	vertices.clear();
+	indices.clear();
+
+	vertices.reserve(quads.size() * 4);
+	indices.reserve(quads.size() * 6);
+
+	for (uint32_t i = 0; i < quads.size(); ++i)
+	{
+		uint32_t iFaceDir = ETOUI(quads[i].eDir);
+
+		// 4개 정점 데이터 준비
+		E::VTX_VOXEL v[4]{};
+		v[0].pos = quads[i].v[0];
+		v[1].pos = quads[i].v[1];
+		v[2].pos = quads[i].v[2];
+		v[3].pos = quads[i].v[3];
+
+
+		{
+			v[0].texCoord = quads[i].uv[0];
+			v[1].texCoord = quads[i].uv[1];
+			v[2].texCoord = quads[i].uv[2];
+			v[3].texCoord = quads[i].uv[3];
+		}
+		{
+			v[0].vColor = quads[i].color[0];
+			v[1].vColor = quads[i].color[1];
+			v[2].vColor = quads[i].color[2];
+			v[3].vColor = quads[i].color[3];
+		}
+
+
+
+		// 공통 데이터 인코딩 및 패킹 (AO값만 고유 적용)
+		for (uint32_t vIdx = 0; vIdx < 4; ++vIdx)
+		{
+			v[vIdx].packedData = {};
+			v[vIdx].packedData |= (static_cast<uint32_t>(iFaceDir) & 0x07) << 29;              // normal (3bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].ao[vIdx]) & 0x03) << 27;     // vertexao (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(vIdx) & 0x03) << 25;                  // vertexid (2bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].blockTexType) & 0xff) << 17; // textureid (8bit)
+			v[vIdx].packedData |= (static_cast<uint32_t>(quads[i].lighting) & 0xff) << 9;      // Light (8bit)
+		}
+
+		vertices.push_back(v[0]);
+		vertices.push_back(v[1]);
+		vertices.push_back(v[2]);
+		vertices.push_back(v[3]);
+
+		uint32_t startIndex = i * 4;
+
+		// 비대칭 이방성(Anisotropy) 보정 처리
+		// 0번-2번 대각선의 AO 합산이 1번-3번보다 작다면(즉, 더 어둡다면) 삼각형 쪼개기 방향을 회전시킵니다.
+		if (quads[i].ao[0] + quads[i].ao[2] < quads[i].ao[1] + quads[i].ao[3])
+		{
+			// 1-2-3, 1-3-0 형태로 인덱스 배치
+			indices.push_back(startIndex + 1);
+			indices.push_back(startIndex + 2);
+			indices.push_back(startIndex + 3);
+			indices.push_back(startIndex + 1);
+			indices.push_back(startIndex + 3);
+			indices.push_back(startIndex + 0);
+		}
+		else
+		{
+			// 기존 순서: 0-1-2, 0-2-3
+			indices.push_back(startIndex + 0);
+			indices.push_back(startIndex + 1);
+			indices.push_back(startIndex + 2);
+			indices.push_back(startIndex + 0);
+			indices.push_back(startIndex + 2);
+			indices.push_back(startIndex + 3);
+		}
+	}
+}
+
+HRESULT CChunk3::CreateBuffer(SPtr<CResDynamicVIBuffer>& pResBuffer, std::vector<E::VTX_VOXEL>& vertices, std::vector<uint32_t>& indices)
+{
+	E::CResDynamicVIBuffer::DESC desc{};
+	desc.iNumVertices = (uint32_t)vertices.size();
+	desc.iVertexStride = sizeof(E::VTX_VOXEL);
+	desc.vertexDesc = {
+		.ByteWidth = desc.iNumVertices * desc.iVertexStride,
+		.Usage = D3D11_USAGE_IMMUTABLE,
+		.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+		.CPUAccessFlags = 0,
+		.MiscFlags = 0
+	};
+	desc.vertexSubResource = {
+		.pSysMem = vertices.data()
+	};
+
+	desc.iIndexStride = sizeof(uint32_t);
+	desc.iNumIndices = (uint32_t)indices.size();
+	desc.IndexDesc = {
+		.ByteWidth = desc.iNumIndices * desc.iIndexStride,
+		.Usage = D3D11_USAGE_IMMUTABLE,
+		.BindFlags = D3D11_BIND_INDEX_BUFFER,
+		.CPUAccessFlags = 0,
+		.MiscFlags = 0
+	};
+	desc.indexSubResource = {
+		.pSysMem = indices.data()
+	};
+	desc.eIndexFormat = DXGI_FORMAT_R32_UINT;
+	desc.ePrimitiveType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	pResBuffer = E::CResDynamicVIBuffer::Create();
+	if (FAILED(pResBuffer->Load(desc)))
+	{
+		return E_FAIL;
+	};
 
 	return S_OK;
 }

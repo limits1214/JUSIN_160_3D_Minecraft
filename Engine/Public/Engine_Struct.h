@@ -221,16 +221,17 @@ namespace Engine
 
 	typedef struct tagVoxQuad
 	{
-		_float3 v1;
-		_float3 v2;
-		_float3 v3;
-		_float3 v4;
+		_float3 v[4];
+		//_float3 v1;
+		//_float3 v2;
+		//_float3 v3;
+		//_float3 v4;
 		FACE_DIR eDir;
 		uint8_t blockTexType{};
 		uint8_t lighting{};
-		uint8_t ao[4]{};
-
-		_float2 uv1{0.f, 0.f}; _float2 uv2{ 1.f, 0.f }; _float2 uv3{ 1.f, 1.f }; _float2 uv4{ 0.f, 1.f };
+		uint8_t ao[4]{3,3,3,3};
+		_float2 uv[4]{ {0.f, 0.f}, { 1.f, 0.f }, { 1.f, 1.f }, { 0.f, 1.f } };
+		//_float2 uv1{0.f, 0.f}; _float2 uv2{ 1.f, 0.f }; _float2 uv3{ 1.f, 1.f }; _float2 uv4{ 0.f, 1.f };
 
 		uint32_t color[4]{ 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
 

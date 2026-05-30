@@ -1244,7 +1244,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
                         }
                         else
                         {
-                            newBlock.SetType(CBlock3::TYPE::PLANK_BIRCH);
+                            newBlock.SetType(CBlock3::TYPE::PLANK_ACACIA);
                         }
                         RuntimeOnBlockPlaced(worldBX, worldBY, worldBZ, newBlock);
 
