@@ -7,9 +7,9 @@ class CResCBuffer;
 class CResDynamicVIBuffer;
 class CCollBox;
 
-constexpr static uint32_t VOXEL_CHUNK_X_SIZE3 = 32;
-constexpr static uint32_t VOXEL_CHUNK_Z_SIZE3 = 32;
-constexpr static uint32_t VOXEL_CHUNK_Y_SIZE3 = 256;
+constexpr static int32_t VOXEL_CHUNK_X_SIZE3 = 32;
+constexpr static int32_t VOXEL_CHUNK_Z_SIZE3 = 32;
+constexpr static int32_t VOXEL_CHUNK_Y_SIZE3 = 256;
 
 class ENGINE_DLL CChunk3 final : public CEngineBase
 {
@@ -20,25 +20,13 @@ public:
 		uint64_t iChunkCoord{};
 	} DESC;
 
-	enum class BLOCKFILLING_STATE
-	{
-		NON, ING, DONE
-	};
+	enum class BLOCKFILLING_STATE { NON, ING, DONE };
 
-	enum class BUFFER_STATE
-	{
-		NON, ING, DONE
-	};
+	enum class BUFFER_STATE { NON, ING, DONE };
 
-	enum class MESSING_STATE
-	{
-		NON, ING, DONE
-	};
+	enum class MESSING_STATE { NON, ING, DONE };
 	
-	enum class LIGHTING_STATE
-	{
-		NON, ING, DONE
-	};
+	enum class LIGHTING_STATE { NON, ING, DONE };
 
 	BUFFER_STATE GetBufferState() const { return m_eBufferState; }
 	MESSING_STATE GetMessingState() const { return m_eMessingState; }
@@ -55,21 +43,7 @@ public:
 	std::tuple<int32_t, int32_t, int32_t> GetCoord() const { return { m_iX, m_iY, m_iZ }; }
 
 	static uint32_t BlockIndexing(uint32_t x, uint32_t y, uint32_t z)  { return y + z * VOXEL_CHUNK_Y_SIZE3 + x * VOXEL_CHUNK_Y_SIZE3 * VOXEL_CHUNK_Z_SIZE3; }
-	static std::tuple<uint32_t, uint32_t, uint32_t> BlockIndexDecoding(uint32_t idx)
-	{
-		constexpr uint32_t yzStride =
-			VOXEL_CHUNK_Y_SIZE3 * VOXEL_CHUNK_Z_SIZE3;
-
-		uint32_t x = static_cast<uint32_t>(idx / yzStride);
-
-		idx %= yzStride;
-
-		uint32_t z = static_cast<uint32_t>(idx / VOXEL_CHUNK_Y_SIZE3);
-
-		uint32_t y = static_cast<uint32_t>(idx % VOXEL_CHUNK_Y_SIZE3);
-
-		return { x, y, z };
-	}
+	static inline std::tuple<uint32_t, uint32_t, uint32_t> BlockIndexDecoding(uint32_t idx);
 
 public:
 	CBlock3& GetBlock(uint32_t x, uint32_t y, uint32_t z) { return m_arrBlocks[BlockIndexing(x, y, z)]; }
@@ -95,7 +69,11 @@ public:
 	void Update(_float fTimeDelta);
 
 private:
-	CBlock3::TYPE GetBlockTypeAt(int32_t x, int32_t y, int32_t z, CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
+	std::optional<CBlock3> GetBlockAt(int32_t x, int32_t y, int32_t z, std::vector<CChunk3*>& vecAdjChunks) const;
+
+	std::vector<CChunk3*> MakeAdjChunks() const ;
+
+
 private:
 	struct QuadBuckets {
 		std::vector<VOX_QUAD> solid{};
@@ -104,8 +82,9 @@ private:
 	};
 	void NiveFaceCulling(QuadBuckets& quadBuckets) const;
 	//void NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& alphaTestQuads, std::vector<VOX_QUAD>& waterQuads) const;
-	_bool IsInsideOpaque(int32_t x, int32_t y, int32_t z,
-		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
+
+
+	_bool IsExposedFace(CBlock3 currBlock, FACE_DIR eFaceDir, CBlock3 nextBlock);
 
 	uint8_t CalculateVertexAO(_bool side1, _bool side2, _bool corner) const;
 
@@ -115,11 +94,9 @@ private:
 	void BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 	void BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 	void BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
-	void BuildWaterMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads,
-		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ)const;
+	void BuildWaterMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads, std::vector<CChunk3*>& vecAdjChunks)const;
 
-	uint8_t GetCornerWaterLevel(int cx, int cy, int cz,
-		CChunk3* pPX, CChunk3* pMX, CChunk3* pPZ, CChunk3* pMZ) const;
+	uint8_t GetCornerWaterLevel(int cx, int cy, int cz, std::vector<CChunk3*>& vecAdjChunks) const;
 private:
 	CChunk3();
 	~CChunk3() override;
@@ -171,4 +148,24 @@ private:
 public:
 	static UPtr<CChunk3> Create(const DESC& desc);
 };
+NS_END
+
+NS_BEGIN(Engine)
+
+inline std::tuple<uint32_t, uint32_t, uint32_t> CChunk3::BlockIndexDecoding(uint32_t idx)
+{
+	constexpr uint32_t yzStride =
+		VOXEL_CHUNK_Y_SIZE3 * VOXEL_CHUNK_Z_SIZE3;
+
+	uint32_t x = static_cast<uint32_t>(idx / yzStride);
+
+	idx %= yzStride;
+
+	uint32_t z = static_cast<uint32_t>(idx / VOXEL_CHUNK_Y_SIZE3);
+
+	uint32_t y = static_cast<uint32_t>(idx % VOXEL_CHUNK_Y_SIZE3);
+
+	return { x, y, z };
+}
+
 NS_END

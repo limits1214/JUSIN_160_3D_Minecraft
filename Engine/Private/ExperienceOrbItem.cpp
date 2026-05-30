@@ -31,7 +31,7 @@ void CExperienceOrbItem::Update(E::_float fTimeDelta)
 	static float fTemp = 0;
 	fTemp += fTimeDelta;
 
-	int frameIndex = fTemp / 0.1;
+	int frameIndex = int(fTemp / 0.1f);
 	//int col = frameIndex % 4;
 	//int row = frameIndex / 4;
 	m_iFrameCol = frameIndex % 4;

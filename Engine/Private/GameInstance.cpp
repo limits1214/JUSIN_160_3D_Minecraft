@@ -46,8 +46,8 @@ CGameInstance::~CGameInstance()
 HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID3D11Device>& ppDevice, ComPtr<ID3D11DeviceContext>& ppContext)
 {
 	m_hWnd = EngineDesc.hWnd;
-	m_vClientScreenSize.x = EngineDesc.iWinSizeX;
-	m_vClientScreenSize.y = EngineDesc.iWinSizeY;
+	m_vClientScreenSize.x = (float)EngineDesc.iWinSizeX;
+	m_vClientScreenSize.y = (float)EngineDesc.iWinSizeY;
 	
 
 	m_pGraphicDevice = CGraphicDevice::Create(ppDevice, ppContext);
@@ -769,6 +769,7 @@ HRESULT CGameInstance::InitializeMCResource()
 						return E_FAIL;
 					}
 					CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+					return S_OK;
 				};
 
 			{
