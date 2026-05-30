@@ -309,7 +309,7 @@ HRESULT CFallingVoxel::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 		pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
 	}
 	
-	pContext->DrawIndexedInstanced(viBuffer->GetNumIndices(), m_vecInstancedBlockTransform.size(), 0, 0, 0);
+	pContext->DrawIndexedInstanced((UINT)viBuffer->GetNumIndices(), (UINT)m_vecInstancedBlockTransform.size(), 0, 0, 0);
     return S_OK;
 }
 

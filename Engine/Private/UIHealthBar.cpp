@@ -75,7 +75,7 @@ void CUIHealthBar::Update(E::_float fTimeDelta)
 	auto iFullHealthCnt = m_iCurrentHalfHealthCnt / 2;
 	auto iHalfHealthCnt = m_iCurrentHalfHealthCnt % 2;
 
-	for (uint32_t i = 0; i < imaxHealthCnt; ++i)
+	for (int32_t i = 0; i < imaxHealthCnt; ++i)
 	{
 		if (auto* icon = Cast<CUIHealthBarIcon>(GetChildrenNode()[i]))
 		{

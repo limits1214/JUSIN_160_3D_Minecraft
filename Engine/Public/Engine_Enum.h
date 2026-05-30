@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 namespace Engine
 {
@@ -26,10 +26,20 @@ namespace Engine
 		HEIGHT
 	};
 
-	enum class FACE_DIR {
+	enum class FACE_DIR
+	{
 		POS_X = 0, NEG_X,
 		POS_Y, NEG_Y,
 		POS_Z, NEG_Z,
+		END
+	};
+
+	enum class CHUNK_DIR
+	{
+		POS_X = 0, NEG_X,
+		POS_Z, NEG_Z,
+		POS_X_POS_Z, POS_X_NEG_Z,
+		NEG_X_POS_Z, NEG_X_NEG_Z,
 		END
 	};
 
@@ -50,9 +60,9 @@ namespace Engine
 
 	enum class BIOME_TYPE : uint8_t
 	{
-		SNOW,    // ´« µ¤ÀÎ Áö´ë
-		DESERT,  // »ç¸·
-		PLAINS,  // ÆòÁö
+		SNOW,    // ëˆˆ ë®ì¸ ì§€ëŒ€
+		DESERT,  // ì‚¬ë§‰
+		PLAINS,  // í‰ì§€
 		END
 	};
 }

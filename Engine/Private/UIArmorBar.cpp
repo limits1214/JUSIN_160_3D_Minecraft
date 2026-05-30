@@ -53,7 +53,7 @@ void CUIArmorBar::Update(E::_float fTimeDelta)
 	auto iFullCnt = m_iCurrentHalfArmorCnt / 2;
 	auto iHalfCnt = m_iCurrentHalfArmorCnt % 2;
 
-	for (uint32_t i = 0; i < iMaxCnt; ++i)
+	for (int32_t i = 0; i < iMaxCnt; ++i)
 	{
 		if (auto* icon = Cast<CUIArmorBarIcon>(GetChildrenNode()[i]))
 		{

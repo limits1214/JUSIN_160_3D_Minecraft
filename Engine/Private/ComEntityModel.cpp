@@ -79,7 +79,7 @@ HRESULT CComEntityModel::Initialize(void* pArg)
         {
             auto it = m_BonesLookup.find(parentName);
             if (it != m_BonesLookup.end())
-                m_Bones[i].SetParentIndex(it->second);
+                m_Bones[i].SetParentIndex((uint32_t)it->second);
         }
     }
 

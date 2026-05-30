@@ -594,7 +594,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
                 m_fAttackTime = std::min(m_fAttackTime, 1.0f);
 
                 float attackTime = m_fAttackTime;
-                float attackBodyRotY = m_iMouseMoveX;  // 현재 head 회전값
+                float attackBodyRotY = (float)m_iMouseMoveX;  // 현재 head 회전값
 
                 // body 회전
                 if (auto pBody = m_pComEntityModel->GetBone("body"))
