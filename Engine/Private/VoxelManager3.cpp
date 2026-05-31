@@ -340,7 +340,57 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     return S_OK;
 }
 
-void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight)
+void CVoxelManager3::RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 oldBlock)
+{
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+    auto optBlock = GetBlock(wbx, wby, wbz);
+    if (!optBlock.has_value()) return;
+    CBlock3 block = optBlock.value();
+
+    uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(block.GetType());
+    // ----------------------------------------------------
+    // 1. 새 블록 자체의 기본 조명 설정 (블록 내부는 빛을 가두거나 발산함)
+    // ----------------------------------------------------
+    block.SetSkyLight(0);
+    block.SetBlockLight(placedBlockEmitLight); // 광원이면 자신의 밝기, 일반 블록이면 0
+    SetBlock(wbx, wby, wbz, block);
+
+    // ----------------------------------------------------
+    // 2. SkyLight 처리 (빛 차단 및 사방 전파)
+    // ----------------------------------------------------
+    if (oldBlock.GetSkyLight() > 0)
+    {
+        std::queue<std::pair<XMINT3, uint8_t>> skyLightRemovalQ;
+        // 이 자리에 있었던 기존 SkyLight 값을 기준으로 주변 빛 청소 시작
+        skyLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlock.GetSkyLight() });
+
+        // SkyLight용 Removal 함수가 필요합니다. (아래 3번 참고)
+        RuntimeRemoveSkyLighting(skyLightRemovalQ);
+    }
+
+    // ----------------------------------------------------
+    // 3. BlockLight 처리 (기존 빛 차단 OR 새 광원 전파)
+    // ----------------------------------------------------
+    // Case A: 새로 설치된 블록이 광원인 경우 -> 사방으로 빛 확산
+    if (placedBlockEmitLight > 0)
+    {
+        std::queue<std::pair<XMINT3, uint8_t>> blockLightQ;
+        blockLightQ.push({ XMINT3{wbx, wby, wbz}, placedBlockEmitLight });
+        RuntimeFloodFillBlockLighting(blockLightQ);
+    }
+    // Case B: 일반 블록이 설치되어 기존의 빛 줄기를 막은 경우 -> 주변 빛 청소
+    else if (oldBlock.GetBlockLight() > 0)
+    {
+        std::queue<std::pair<XMINT3, uint8_t>> blockLightRemovalQ;
+        blockLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlock.GetBlockLight() });
+        RuntimeRemoveBlockLighting(blockLightRemovalQ);
+    }
+}
+
+void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 oldBlock)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
     constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
@@ -374,7 +424,23 @@ void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int
                     auto nopt = GetBlock(wbx + dx[d], wby + dy[d], wbz + dz[d]);
                     if (nopt.has_value())
                     {
-                        maxSkyLight = std::max(maxSkyLight, nopt.value().GetSkyLight());
+                        CBlock3 nBlock = nopt.value();
+
+                        if (CBlock3::IsOpaque(nBlock.GetType()))
+                            continue;
+
+                        uint8_t nLight = nBlock.GetSkyLight();
+
+                        // 💡 아래 칸(-Y, d == 3)에서 위 칸으로 햇빛이 역행해서 스며들 때는 15를 그대로 가져오면 안 됩니다.
+                        // 아래 칸이 15이더라도 나한테 스며들 때는 무조건 감쇄된 14로 들어와야 천장 역류 버그가 안 생깁니다.
+                        if (d == 3 && nLight == 15)
+                        {
+                            maxSkyLight = std::max(maxSkyLight, (uint8_t)14);
+                        }
+                        else
+                        {
+                            maxSkyLight = std::max(maxSkyLight, nLight);
+                        }
                     }
                 }
 
@@ -402,14 +468,14 @@ void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int
         {
             CBlock3 block = optBlock.value();
 
-            if (bIsLightSource)
+            if (oldBlock.GetBlockLight() > 0)
             {
                 // 광원 제거 로직 수행
                 block.SetBlockLight(0);
                 SetBlock(wbx, wby, wbz, block);
 
                 std::queue<std::pair<XMINT3, uint8_t>> blockLightRemovalQ;
-                blockLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlockLight });
+                blockLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlock.GetBlockLight() });
                 RuntimeRemoveBlockLighting(blockLightRemovalQ);
             }
             else
@@ -421,7 +487,13 @@ void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int
                     auto nopt = GetBlock(wbx + dx[d], wby + dy[d], wbz + dz[d]);
                     if (nopt.has_value())
                     {
-                        maxBlockLight = std::max(maxBlockLight, nopt.value().GetBlockLight());
+                        CBlock3 nBlock = nopt.value();
+
+                        // 💡 [수정] 블록라이트 수집 시에도 이웃의 고체 여부를 반드시 체크!
+                        if (CBlock3::IsOpaque(nBlock.GetType()))
+                            continue;
+
+                        maxBlockLight = std::max(maxBlockLight, nBlock.GetBlockLight());
                     }
                 }
 
@@ -438,7 +510,6 @@ void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int
         }
     }
 }
-
 void CVoxelManager3::RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
     constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
@@ -460,6 +531,9 @@ void CVoxelManager3::RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uin
             if (!nopt.has_value()) continue;
             CBlock3 nBlock = nopt.value();
 
+            // 💡 [수정] 고체 블록 내부는 불을 끌 필요도, 재전파를 받을 필요도 없음
+            if (CBlock3::IsOpaque(nBlock.GetType())) continue;
+
             uint8_t nLight = nBlock.GetBlockLight();
 
             // 내가 전파했던 어두운 자식 빛들을 순차적으로 0으로 끔
@@ -477,7 +551,6 @@ void CVoxelManager3::RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uin
         }
     }
 
-    // 빛 청소가 완전히 끝난 후, 살아남은 다른 광원들로부터 빛을 다시 복구
     if (!rePropagateQ.empty())
     {
         RuntimeFloodFillBlockLighting(rePropagateQ);
@@ -497,12 +570,6 @@ void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, 
         auto [wbx, wby, wbz] = wbcoord;
         auto curBlockOpt = GetBlock(wbx, wby, wbz);
 
-        _bool bIgnore{ false };
-        if (curBlockOpt.has_value() && (curBlockOpt.value().GetType() == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(curBlockOpt.value().GetType())))
-        {
-            bIgnore = true;
-        }
-
         if (curLight <= 1) continue;
 
         for (int d = 0; d < 6; ++d)
@@ -516,11 +583,7 @@ void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, 
 
             CBlock3 nBlock = nopt.value();
 
-            if (!bIgnore)
-            {
-                if (CBlock3::IsOpaque(nBlock.GetType())) continue;
-
-            }
+            if (CBlock3::IsOpaque(nBlock.GetType())) continue;
 
             uint8_t newLight = curLight - 1;
 
@@ -564,21 +627,18 @@ void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, ui
             CBlock3 nBlock = nopt.value();
             //if (nBlock.IsOpaque()) continue;
 
-            if (!CBlock3::IsNeedAlphaTest(nBlock.GetType()))
-            {
-                if (CBlock3::IsOpaque(nBlock.GetType())) continue;
-            }
+            if (CBlock3::IsOpaque(nBlock.GetType())) continue;
 
             // -----------------------------------------------------------------
             // [수정] 물과 공기에 따른 기본 감쇠 차등 적용
             // -----------------------------------------------------------------
             
             
-            uint8_t attenuation = CBlock3::IsWater(nBlock.GetType()) ? 3 : 1;
+            uint8_t attenuation = 1;
             uint8_t newLight = (curLight > attenuation) ? (curLight - attenuation) : 0;
 
             // [수정] 수직 아래 방향 전파 특수 규칙 (다음 칸이 물이 아닐 때만 15 직하강)
-            if (d == 3 && curLight == 15 && !CBlock3::IsWater(nBlock.GetType()))
+            if (d == 3 && curLight == 15)
             {
                 newLight = 15;
             }
@@ -593,6 +653,107 @@ void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, ui
         }
     }
 }
+
+void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
+{
+    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
+    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
+    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
+
+    // 빛이 완전히 0으로 꺼진 좌표들을 모아둘 큐 (2단계 재전파 수집용)
+    std::queue<XMINT3> attenuationQ;
+
+    while (!q.empty())
+    {
+        auto [wbcoord, light] = q.front(); q.pop();
+        auto [wbx, wby, wbz] = wbcoord;
+
+        // 조명이 꺼진 이 자리를 2단계 검증 대상으로 등록
+        attenuationQ.push(wbcoord);
+
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = wbx + dx[d];
+            int ny = wby + dy[d];
+            int nz = wbz + dz[d];
+            auto nopt = GetBlock(nx, ny, nz);
+            if (!nopt.has_value()) continue;
+            CBlock3 nBlock = nopt.value();
+
+            if (CBlock3::IsOpaque(nBlock.GetType())) continue;
+
+            uint8_t nLight = nBlock.GetSkyLight();
+            if (nLight == 0) continue;
+
+            uint8_t attenuation = 1;
+            uint8_t expectedLight = (light > attenuation) ? (light - attenuation) : 0;
+
+            // 수직 직사광선 기둥 라인 검증 (15 -> 15 직하강)
+            bool bIsSkyColumn = (dy[d] == -1 && light == 15 && nLight == 15);
+
+            // 내가 전파했던 빛이 맞다면 과감하게 0으로 끄고 추적 큐에 삽입
+            if (nLight == expectedLight || bIsSkyColumn)
+            {
+                nBlock.SetSkyLight(0);
+                SetBlock(nx, ny, nz, nBlock);
+                q.push({ XMINT3{nx, ny, nz}, nLight });
+            }
+        }
+    }
+
+    // 💡 [2단계 시작] 0으로 완전히 밀어버린 공간들의 사방을 재조사하여 진짜 살아있는 햇빛 우회로를 찾습니다.
+    std::queue<std::pair<XMINT3, uint8_t>> rePropagateQ;
+
+    while (!attenuationQ.empty())
+    {
+        XMINT3 coord = attenuationQ.front(); attenuationQ.pop();
+        auto [wbx, wby, wbz] = coord;
+
+        for (int d = 0; d < 6; ++d)
+        {
+            int nx = wbx + dx[d];
+            int ny = wby + dy[d];
+            int nz = wbz + dz[d];
+            auto nopt = GetBlock(nx, ny, nz);
+            if (!nopt.has_value()) continue;
+            CBlock3 nBlock = nopt.value();
+
+            if (CBlock3::IsOpaque(nBlock.GetType())) continue;
+
+            uint8_t nLight = nBlock.GetSkyLight();
+
+            // 💡 핵심: 0으로 꺼진 공간 주변에 '0이 아닌 빛'이 있다는 것은 
+            // 이번 블록 배치에 영향을 받지 않은 "독립적인 다른 조명 공급원"을 만났다는 뜻입니다!
+            if (nLight > 0)
+            {
+                // 최대 햇빛(15)인 경우, 진짜 하늘과 직통인 기둥인지 위 칸을 검증
+                if (nLight == 15)
+                {
+                    auto optAbove = GetBlock(nx, ny + 1, nz);
+                    if (!optAbove.has_value() || optAbove.value().GetSkyLight() == 15)
+                    {
+                        rePropagateQ.push({ XMINT3{nx, ny, nz}, nLight });
+                    }
+                }
+                else
+                {
+                    // 14 이하의 살아있는 빛들은 확실한 공급원이므로 재전파 대상으로 수집
+                    rePropagateQ.push({ XMINT3{nx, ny, nz}, nLight });
+                }
+            }
+        }
+    }
+
+    // 3단계: 살아남은 진짜 빛들을 어두워진 빈 공간으로 다시 전파시킵니다.
+    if (!rePropagateQ.empty())
+    {
+        RuntimeFloodFillSkyLighting(rePropagateQ);
+    }
+}
+
+
+/*
+
 
 void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q)
 {
@@ -615,35 +776,59 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
             if (!nopt.has_value()) continue;
             CBlock3 nBlock = nopt.value();
 
-            uint8_t nLight = nBlock.GetSkyLight();
+            // 고체 블록은 빛 청소 대상에서 완전 제외
+            if (CBlock3::IsOpaque(nBlock.GetType())) continue;
 
-            // -----------------------------------------------------------------
-            // [수정] 물과 공기에 따른 예상 전파 빛 수치 계산
-            // -----------------------------------------------------------------
-            uint8_t attenuation = CBlock3::IsWater(nBlock.GetType()) ? 3 : 1;
+            uint8_t nLight = nBlock.GetSkyLight();
+            if (nLight == 0) continue; // 이미 꺼진 곳은 통과
+
+            uint8_t attenuation = 1; // 기본 감쇄 (물 등이 있다면 해당 블록 특성에 맞춰 조절)
             uint8_t expectedLight = (light > attenuation) ? (light - attenuation) : 0;
 
-            // 하늘 직사광선(15) 줄기 판정 (다음 칸이 물이 아닐 때만 15가 유지됨)
-            bool bIsSkyColumn = (dy[d] == -1 && light == 15 && nLight == 15 && !CBlock3::IsWater(nBlock.GetType()));
+            // 내 아래 칸(dy == -1)이고, 내가 15이고, 아래 칸도 15라면 수직 직사광선 기둥 라인 맞음
+            bool bIsSkyColumn = (dy[d] == -1 && light == 15 && nLight == 15);
 
-            // 내가 전파했던 하위 빛이 맞다면 (예상한 수치와 일치하거나 직하강 줄기라면)
-            if (nLight != 0 && (nLight == expectedLight || bIsSkyColumn))
+            // [조건 1] 내가 전파했던 자식 조명이 확실한 경우 -> 0으로 끄고 계속 추적
+            if (nLight == expectedLight || bIsSkyColumn)
             {
                 nBlock.SetSkyLight(0);
                 SetBlock(nx, ny, nz, nBlock);
                 q.push({ XMINT3{nx, ny, nz}, nLight });
             }
-            // 나를 비춰주던 다른 살아있는 스카이라이트 줄기를 만난 경우
-            else if (nLight >= light)
+            // [조건 2] 내가 전파한 자식이 아니라, 독립적인 다른 빛 줄기를 만난 경우 (재전파 백업)
+            // ⚠️ 기존의 (nLight >= light) 대신 훨씬 엄격한 기준을 적용합니다.
+            else if (nLight > expectedLight)
             {
-                rePropagateQ.push({ XMINT3{nx, ny, nz}, nLight });
+                // 만약 이웃 빛이 15(최대 햇빛 기둥)라면, 진짜 하늘과 직통 연결된 기둥인지 검증
+                if (nLight == 15)
+                {
+                    auto optAbove = GetBlock(nx, ny + 1, nz);
+                    if (!optAbove.has_value() || optAbove.value().GetSkyLight() == 15)
+                    {
+                        rePropagateQ.push({ XMINT3{nx, ny, nz}, nLight });
+                    }
+                }
+                else
+                {
+                    // 💡 [핵심 버그 수정]: nLight가 나보다 '엄격하게 더 밝은 조명 줄기(nLight > light)'이거나,
+                    // 나와 빛 세기가 같더라도 수직 위 방향(+Y, d==2)에서 내려오는 빛처럼
+                    // 확실하게 상위 소스 기둥인 경우에만 독립 조명 줄기로 인정하여 백업합니다.
+                    // 나와 평행하거나(nLight == light) 나보다 어두운 형제 노드들은 백업하지 않고 같이 소멸되도록 둡니다.
+                    if (nLight > light || (nLight == light && dy[d] == 1))
+                    {
+                        rePropagateQ.push({ XMINT3{nx, ny, nz}, nLight });
+                    }
+                }
             }
         }
     }
 
-    // 제거 루프 완료 후 살아남은 빛들을 다시 사방으로 퍼트려 빈자리를 메웁니다.
-    RuntimeFloodFillSkyLighting(rePropagateQ);
+    if (!rePropagateQ.empty())
+    {
+        RuntimeFloodFillSkyLighting(rePropagateQ);
+    }
 }
+*/
 
 void CVoxelManager3::RuntimeOnBlockPlaced(int32_t wbx, int32_t wby, int32_t wbz, const  CBlock3& newBlock)
 {
@@ -699,9 +884,9 @@ void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& 
         q.pop();
 
         // 1. 현재 좌표의 청크 인덱스 계산
-        int32_t cx = FloorDiv(curWorldPos.x, 32);
-        int32_t cy = FloorDiv(curWorldPos.y, 256);
-        int32_t cz = FloorDiv(curWorldPos.z, 32);
+        int32_t cx = FloorDiv(curWorldPos.x, VOXEL_CHUNK_X_SIZE3);
+        int32_t cy = FloorDiv(curWorldPos.y, VOXEL_CHUNK_Y_SIZE3);
+        int32_t cz = FloorDiv(curWorldPos.z, VOXEL_CHUNK_Z_SIZE3);
 
         uint64_t chunkIdx = encodeChunkCoord(cx, cy, cz);
         if (chunkIdxLookupBundle.find(chunkIdx) == chunkIdxLookupBundle.end()) continue;
@@ -711,8 +896,8 @@ void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& 
 
         CChunk3* pCurChunk = chunkIter->second.get(); // 현재 청크 포인터 캐싱
 
-        int32_t lx = curWorldPos.x - cx * 32;
-        int32_t lz = curWorldPos.z - cz * 32;
+        int32_t lx = curWorldPos.x - cx * VOXEL_CHUNK_X_SIZE3;
+        int32_t lz = curWorldPos.z - cz * VOXEL_CHUNK_Z_SIZE3;
         CBlock3& curBlock = pCurChunk->GetBlock(lx, curWorldPos.y, lz);
 
         if (curBlock.GetBlockLight() > expectedLight) continue;
@@ -727,32 +912,20 @@ void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& 
             int ny = curWorldPos.y + dy[d];
             int nz = curWorldPos.z + dz[d];
 
-            if (ny < 0 || ny >= 256) continue;
+            if (ny < 0 || ny >= VOXEL_CHUNK_Y_SIZE3) continue;
 
-            // 주변 칸의 청크 좌표 계산
-            int32_t ncx = FloorDiv(nx, 32);
-            int32_t ncy = FloorDiv(ny, 256);
-            int32_t ncz = FloorDiv(nz, 32);
+            int32_t ncx = FloorDiv(nx, VOXEL_CHUNK_X_SIZE3);
+            int32_t ncy = FloorDiv(ny, VOXEL_CHUNK_Y_SIZE3);
+            int32_t ncz = FloorDiv(nz, VOXEL_CHUNK_Z_SIZE3);
+
             uint64_t nChunkIdx = encodeChunkCoord(ncx, ncy, ncz);
 
-            CChunk3* pNextChunk = nullptr;
+            auto nChunkIter = m_mapChunks.find(nChunkIdx);
+            if (nChunkIter == m_mapChunks.end()) continue;
 
-            // [최적화 핵심]: 다음 전파할 칸이 현재 청크와 같다면 find를 생략하고 캐싱된 포인터 사용
-            if (nChunkIdx == chunkIdx)
-            {
-                pNextChunk = pCurChunk;
-            }
-            else
-            {
-                //if (chunkIdxLookupBundle.find(nChunkIdx) == chunkIdxLookupBundle.end()) continue;
-                auto nChunkIter = m_mapChunks.find(nChunkIdx);
-                if (nChunkIter == m_mapChunks.end()) continue;
-                pNextChunk = nChunkIter->second.get();
-            }
-
-            int32_t nlx = nx - ncx * 32;
-            int32_t nlz = nz - ncz * 32;
-            CBlock3& nBlock = pNextChunk->GetBlock(nlx, ny, nlz);
+            int32_t nlx = nx - ncx * VOXEL_CHUNK_X_SIZE3;
+            int32_t nlz = nz - ncz * VOXEL_CHUNK_Z_SIZE3;
+            CBlock3& nBlock = nChunkIter->second->GetBlock(nlx, ny, nlz);
 
             if (CBlock3::IsOpaque(nBlock.GetType())) continue;
 
@@ -779,9 +952,9 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
         auto [curWorldPos, expectedLight] = q.front();
         q.pop();
 
-        int32_t cx = FloorDiv(curWorldPos.x, 32);
-        int32_t cy = FloorDiv(curWorldPos.y, 256);
-        int32_t cz = FloorDiv(curWorldPos.z, 32);
+        int32_t cx = FloorDiv(curWorldPos.x, VOXEL_CHUNK_X_SIZE3);
+        int32_t cy = FloorDiv(curWorldPos.y, VOXEL_CHUNK_Y_SIZE3);
+        int32_t cz = FloorDiv(curWorldPos.z, VOXEL_CHUNK_Z_SIZE3);
 
         uint64_t chunkIdx = encodeChunkCoord(cx, cy, cz);
         if (chunkIdxLookupBundle.find(chunkIdx) == chunkIdxLookupBundle.end()) continue;
@@ -789,8 +962,8 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
         auto chunkIter = m_mapChunks.find(chunkIdx);
         if (chunkIter == m_mapChunks.end()) continue;
 
-        int32_t lx = curWorldPos.x - cx * 32;
-        int32_t lz = curWorldPos.z - cz * 32;
+        int32_t lx = curWorldPos.x - cx * VOXEL_CHUNK_X_SIZE3;
+        int32_t lz = curWorldPos.z - cz * VOXEL_CHUNK_Z_SIZE3;
         CBlock3& curBlock = chunkIter->second->GetBlock(lx, curWorldPos.y, lz);
 
         if (curBlock.GetSkyLight() > expectedLight) continue;
@@ -805,19 +978,19 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
             int ny = curWorldPos.y + dy[d];
             int nz = curWorldPos.z + dz[d];
 
-            if (ny < 0 || ny >= 256) continue;
+            if (ny < 0 || ny >= VOXEL_CHUNK_Y_SIZE3) continue;
 
-            int32_t ncx = FloorDiv(nx, 32);
-            int32_t ncy = FloorDiv(ny, 256);
-            int32_t ncz = FloorDiv(nz, 32);
+            int32_t ncx = FloorDiv(nx, VOXEL_CHUNK_X_SIZE3);
+            int32_t ncy = FloorDiv(ny, VOXEL_CHUNK_Y_SIZE3);
+            int32_t ncz = FloorDiv(nz, VOXEL_CHUNK_Z_SIZE3);
 
             uint64_t nChunkIdx = encodeChunkCoord(ncx, ncy, ncz);
 
             auto nChunkIter = m_mapChunks.find(nChunkIdx);
             if (nChunkIter == m_mapChunks.end()) continue;
 
-            int32_t nlx = nx - ncx * 32;
-            int32_t nlz = nz - ncz * 32;
+            int32_t nlx = nx - ncx * VOXEL_CHUNK_X_SIZE3;
+            int32_t nlz = nz - ncz * VOXEL_CHUNK_Z_SIZE3;
             CBlock3& nBlock = nChunkIter->second->GetBlock(nlx, ny, nlz);
             
             if (CBlock3::IsOpaque(nBlock.GetType())) continue;
@@ -828,14 +1001,32 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
             uint8_t newLight = 0;
 
             // d == 3 (아래 방향)이고 현재 내 빛이 만땅(15)이면서, '다음 칸이 물이 아닐 때'만 직하강 노감쇠 적용
-            if (d == 3 && curLight == 15 && !CBlock3::IsWater(nBlock.GetType()))
+            if constexpr (false)
+            {
+                if (d == 3 && curLight == 15)
+                {
+                    newLight = 15;
+                }
+                else
+                {
+                    // 다음 번져갈 칸이 물이면 3 감쇠, 일반 공기면 1 감쇠
+                    uint8_t attenuation =  1;
+
+                    if (curLight > attenuation)
+                        newLight = curLight - attenuation;
+                    else
+                        newLight = 0; // uint8 언더플로우 방지 (안전장치)
+                }
+            }
+
+            if (d == 3 && curLight == 15)
             {
                 newLight = 15;
             }
             else
             {
                 // 다음 번져갈 칸이 물이면 3 감쇠, 일반 공기면 1 감쇠
-                uint8_t attenuation = CBlock3::IsWater(nBlock.GetType()) ? 3 : 1;
+                uint8_t attenuation = 1;
 
                 if (curLight > attenuation)
                     newLight = curLight - attenuation;
@@ -850,55 +1041,6 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
                 q.push({ { nx, ny, nz }, newLight });
             }
         }
-    }
-}
-
-void CVoxelManager3::RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight)
-{
-    constexpr int dx[] = { 1,-1, 0, 0, 0, 0 };
-    constexpr int dy[] = { 0, 0, 1,-1, 0, 0 };
-    constexpr int dz[] = { 0, 0, 0, 0, 1,-1 };
-
-    auto optBlock = GetBlock(wbx, wby, wbz);
-    if (!optBlock.has_value()) return;
-    CBlock3 block = optBlock.value();
-
-    // ----------------------------------------------------
-    // 1. 새 블록 자체의 기본 조명 설정 (블록 내부는 빛을 가두거나 발산함)
-    // ----------------------------------------------------
-    block.SetSkyLight(0);
-    block.SetBlockLight(placedBlockEmitLight); // 광원이면 자신의 밝기, 일반 블록이면 0
-    SetBlock(wbx, wby, wbz, block);
-
-    // ----------------------------------------------------
-    // 2. SkyLight 처리 (빛 차단 및 사방 전파)
-    // ----------------------------------------------------
-    if (oldSkyLight > 0)
-    {
-        std::queue<std::pair<XMINT3, uint8_t>> skyLightRemovalQ;
-        // 이 자리에 있었던 기존 SkyLight 값을 기준으로 주변 빛 청소 시작
-        skyLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldSkyLight });
-
-        // SkyLight용 Removal 함수가 필요합니다. (아래 3번 참고)
-        RuntimeRemoveSkyLighting(skyLightRemovalQ);
-    }
-
-    // ----------------------------------------------------
-    // 3. BlockLight 처리 (기존 빛 차단 OR 새 광원 전파)
-    // ----------------------------------------------------
-    // Case A: 새로 설치된 블록이 광원인 경우 -> 사방으로 빛 확산
-    if (placedBlockEmitLight > 0)
-    {
-        std::queue<std::pair<XMINT3, uint8_t>> blockLightQ;
-        blockLightQ.push({ XMINT3{wbx, wby, wbz}, placedBlockEmitLight });
-        RuntimeFloodFillBlockLighting(blockLightQ);
-    }
-    // Case B: 일반 블록이 설치되어 기존의 빛 줄기를 막은 경우 -> 주변 빛 청소
-    else if (oldBlockLight > 0)
-    {
-        std::queue<std::pair<XMINT3, uint8_t>> blockLightRemovalQ;
-        blockLightRemovalQ.push({ XMINT3{wbx, wby, wbz}, oldBlockLight });
-        RuntimeRemoveBlockLighting(blockLightRemovalQ);
     }
 }
 
@@ -1056,18 +1198,17 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     auto worldBY = res.iWorldBlockY;
                     auto worldBZ = res.iWorldBlockZ;
 
-                    
+                    CBlock3 oldBlock = GetBlock(worldBX, worldBY, worldBZ).value();
+                    //uint8_t oldBlockLight = res.block->GetBlockLight(); // 파괴 전 빛 값 백업
+                    //bool bIsLightSource = CBlock3::GetBlockLightByType(res.block->GetType()) > 0;
 
-                    uint8_t oldBlockLight = res.block->GetBlockLight(); // 파괴 전 빛 값 백업
-                    bool bIsLightSource = CBlock3::GetBlockLightByType(res.block->GetType()) > 0;
 
-
-                    RuntimeOnBlockRemoved(worldBX, worldBY, worldBZ);
+                    //RuntimeOnBlockRemoved(worldBX, worldBY, worldBZ);
                     CBlock3 block{};
                     block.SetType(CBlock3::TYPE::AIR);
                     SetBlock(worldBX, worldBY, worldBZ, block);
 
-                    RuntimeOnBlockRemovedLighting(worldBX, worldBY, worldBZ, bIsLightSource, oldBlockLight);
+                    RuntimeOnBlockRemovedLighting(worldBX, worldBY, worldBZ, oldBlock);
                 }
             }
         }
@@ -1143,13 +1284,11 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     }
                     else
                     {
-                        uint8_t oldSkyLight = 0;
-                        uint8_t oldBlockLight = 0;
+                        CBlock3 oldBlock;
                         auto optPrev = GetBlock(worldBX, worldBY, worldBZ);
                         if (optPrev.has_value())
                         {
-                            oldSkyLight = optPrev.value().GetSkyLight();
-                            oldBlockLight = optPrev.value().GetBlockLight();
+                            oldBlock = optPrev.value();
                         }
 
                         // 2. 실제 블록 배치 (예: 돌 블록이나 횃불 등)
@@ -1162,13 +1301,13 @@ void CVoxelManager3::Update(_float fTimeDelta)
                         {
                             newBlock.SetType(CBlock3::TYPE::PLANK_ACACIA);
                         }
-                        RuntimeOnBlockPlaced(worldBX, worldBY, worldBZ, newBlock);
+                        //RuntimeOnBlockPlaced(worldBX, worldBY, worldBZ, newBlock);
 
                         SetBlock(worldBX, worldBY, worldBZ, newBlock);
 
                         // 3. 조명 함수 호출 (배치된 블록의 광원 수치도 함께 )
                         uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(newBlock.GetType());
-                        RuntimeOnBlockPlacedLighting(worldBX, worldBY, worldBZ, placedBlockEmitLight, oldSkyLight, oldBlockLight);
+                        RuntimeOnBlockPlacedLighting(worldBX, worldBY, worldBZ, oldBlock);
                     }
                     
                 }
@@ -1413,9 +1552,9 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
                 }
 
         // 중심부터 가까운 순으로 정렬
-        std::sort(list.begin(), list.end(), [](const ChunkPos& a, const ChunkPos& b) {
-            return a.dist < b.dist;
-            });
+        //std::sort(list.begin(), list.end(), [](const ChunkPos& a, const ChunkPos& b) {
+        //    return a.dist < b.dist;
+        //    });
 
         std::vector<std::future<uint64_t>>  futvec{};
         for (auto& p : list)
@@ -1587,90 +1726,16 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
             for (std::future<uint64_t>& futChunkIdx : *iter)
             {
                 uint64_t chunkIdx = futChunkIdx.get();
-                // check 인접 청크
-                // 최적화 필요함, 실제 반영이 필요한인접청크만
-
+                
                 const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
 
-                setIdx.insert(chunkIdx);
+                auto adjChunks = CChunk3::MakeAdjChunks(cx, cy, cz);
 
-                //POS_X, POS_Z
+                for (const auto& pChunk : adjChunks)
                 {
-                    uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz + 1);
-                    auto iter = m_mapChunks.find(targetCoord);
-                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
+                    if (pChunk)
                     {
-                        setIdx.insert(targetCoord);
-                    }
-                }
-
-                //POS_X, NEG_Z
-                {
-                    uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz - 1);
-                    auto iter = m_mapChunks.find(targetCoord);
-                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
-                    {
-                        setIdx.insert(targetCoord);
-                    }
-                }
-
-                //NEG_X, POS_Z
-                {
-                    uint64_t targetCoord = encodeChunkCoord(cx - 1, cy, cz + 1);
-                    auto iter = m_mapChunks.find(targetCoord);
-                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
-                    {
-                        setIdx.insert(targetCoord);
-                    }
-                }
-
-                //NEG_X, NEG_Z
-                {
-                    uint64_t targetCoord = encodeChunkCoord(cx - 1, cy, cz - 1);
-                    auto iter = m_mapChunks.find(targetCoord);
-                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
-                    {
-                        setIdx.insert(targetCoord);
-                    }
-                }
-
-                //POS_X
-                {
-                    uint64_t targetCoord = encodeChunkCoord(cx + 1, cy, cz);
-                    auto iter = m_mapChunks.find(targetCoord);
-                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
-                    {
-                        setIdx.insert(targetCoord);
-                    }
-                }
-
-                //NEG_X
-                {
-                    uint64_t targetCoord = encodeChunkCoord(cx - 1, cy, cz);
-                    auto iter = m_mapChunks.find(targetCoord);
-                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
-                    {
-                        setIdx.insert(targetCoord);
-                    }
-                }
-
-                //POS_Z
-                {
-                    uint64_t targetCoord = encodeChunkCoord(cx, cy, cz + 1);
-                    auto iter = m_mapChunks.find(targetCoord);
-                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
-                    {
-                        setIdx.insert(targetCoord);
-                    }
-                }
-
-                //NEG_Z
-                {
-                    uint64_t targetCoord = encodeChunkCoord(cx, cy, cz - 1);
-                    auto iter = m_mapChunks.find(targetCoord);
-                    if (iter != m_mapChunks.end() && !iter->second->GetDead())
-                    {
-                        setIdx.insert(targetCoord);
+                        setIdx.insert(pChunk->GetCoordIdx());
                     }
                 }
             }
@@ -1703,72 +1768,45 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                         CChunk3* pChunk = chunkIter->second.get();
                         const auto& [cx, cy, cz] = decodeChunkCoord(chunkIdx);
 
-                        int32_t worldXOffset = cx * 32;
-                        int32_t worldZOffset = cz * 32;
+                        int32_t worldXOffset = cx * VOXEL_CHUNK_X_SIZE3;
+                        int32_t worldZOffset = cz * VOXEL_CHUNK_Z_SIZE3;
 
                         // 1. 스카이라이트 고속 수직 낙하 스캔 및 지표면/수중 시드 수집
-                        for (int32_t x = 0; x < 32; ++x)
+                        for (int32_t x = 0; x < VOXEL_CHUNK_X_SIZE3; ++x)
                         {
-                            for (int32_t z = 0; z < 32; ++z)
+                            for (int32_t z = 0; z < VOXEL_CHUNK_Z_SIZE3; ++z)
                             {
                                 uint8_t currentLight = 15; // 하늘 최상단은 무조건 15로 시작
 
-                                for (int32_t y = 255; y >= 0; --y)
+                                for (int32_t y = VOXEL_CHUNK_Y_SIZE3 - 1; y >= 0; --y)
                                 {
                                     CBlock3& block = pChunk->GetBlock(x, y, z);
-
                                     
                                     if (CBlock3::IsOpaque(block.GetType()))
                                     {
                                         // 고체 땅을 만나면 바로 직전 칸(공기나 물)을 시드로 집어넣고 아래는 스캔 중단
-                                        if (y < 255 && currentLight > 0)
+                                        if (y < VOXEL_CHUNK_Y_SIZE3-1 && currentLight > 0)
                                         {
                                             skyLightSeedQ.push({ { worldXOffset + x, y + 1, worldZOffset + z }, currentLight });
                                         }
                                         break;
                                     }
 
-                                    // [추가] 물을 만나면 한 칸당 3씩 빛을 깎아내림
-                                    
-                                    
-                                        
-                                    if (CBlock3::IsWater(block.GetType()))
-                                    {
-                                        if (currentLight > 3)
-                                            currentLight -= 3;
-                                        else
-                                            currentLight = 0;
-                                    }
-                                    // 공기(AIR)라면 기존의 currentLight 강도를 그대로 유지(감쇠 없음)
-
-                                    // 현재 계산된 빛 값을 블록에 저장
                                     block.SetSkyLight(currentLight);
-
-                                    // [핵심] 물 속이거나, 공기 중에서 빛이 꺾이기 시작하는 지점(감쇠가 일어난 지점)들은 
-                                    // 전부 이웃 청크나 옆 칸으로 빛을 전파해야 하므로 FloodFill 큐에 시드로 추가합니다.
-                                    if (CBlock3::IsWater(block.GetType()) || currentLight < 15)
-                                    {
-                                        if (currentLight > 0)
-                                        {
-                                            skyLightSeedQ.push({ { worldXOffset + x, y, worldZOffset + z }, currentLight });
-                                        }
-                                    }
-
-                                    // 최하단 바닥(y == 0)까지 빛이 내려왔다면 마지막으로 시드 추가
-                                    if (y == 0 && currentLight > 0)
-                                    {
-                                        skyLightSeedQ.push({ { worldXOffset + x, 0, worldZOffset + z }, currentLight });
-                                    }
                                 }
                             }
                         }
+                        WorkerFloodFillSkyLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), skyLightSeedQ);
+
+
+
 
                         // 1. 내 청크 내부 자체 광원 수집 (기존 루프 - 심플하게 유지)
-                        for (int32_t x = 0; x < 32; ++x)
+                        for (int32_t x = 0; x < VOXEL_CHUNK_X_SIZE3; ++x)
                         {
-                            for (int32_t z = 0; z < 32; ++z)
+                            for (int32_t z = 0; z < VOXEL_CHUNK_Z_SIZE3; ++z)
                             {
-                                for (int32_t y = 255; y >= 0; --y)
+                                for (int32_t y = VOXEL_CHUNK_Y_SIZE3 - 1; y >= 0; --y)
                                 {
                                     CBlock3& block = pChunk->GetBlock(x, y, z);
                                     uint8_t emitLight = CBlock3::GetBlockLightByType(block.GetType());
@@ -1780,6 +1818,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                                 }
                             }
                         }
+                        WorkerFloodFillBlockLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), blockLightSeedQ);
 
                         //  주변 8방향 청크의 경계면 라이팅을 그대로 내 시드로 흡수
                         for (int32_t offsetX = -1; offsetX <= 1; ++offsetX)
@@ -1835,7 +1874,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                     }
 
                     // 3. 포인터 캐싱 최적화가 완비된 워커 조명 전파 가동
-                    WorkerFloodFillSkyLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), skyLightSeedQ);
+                    
                     WorkerFloodFillBlockLighting(const_cast<std::unordered_set<uint64_t>&>(chunkIdxLookupBundle), blockLightSeedQ);
 
                     return chunkIdxLookupBundle;

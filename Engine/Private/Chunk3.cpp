@@ -602,19 +602,25 @@ std::optional<CBlock3> CChunk3::GetBlockAt(int32_t x, int32_t y, int32_t z, std:
 	return std::nullopt;
 }
 
-std::vector<CChunk3*> CChunk3::MakeAdjChunks() const
+std::vector<CChunk3*> CChunk3::MakeAdjChunks(int32_t cx, int32_t cy, int32_t cz)
 {
 	std::vector<CChunk3*> adjChunks{};
 	adjChunks.resize(ETOUI(CHUNK_DIR::END));
-	adjChunks[ETOUI(CHUNK_DIR::POS_X)] = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ);
-	adjChunks[ETOUI(CHUNK_DIR::NEG_X)] = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ);
-	adjChunks[ETOUI(CHUNK_DIR::POS_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ + 1);
-	adjChunks[ETOUI(CHUNK_DIR::NEG_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ - 1);
-	adjChunks[ETOUI(CHUNK_DIR::POS_X_POS_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ + 1);
-	adjChunks[ETOUI(CHUNK_DIR::POS_X_NEG_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ - 1);
-	adjChunks[ETOUI(CHUNK_DIR::NEG_X_POS_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ + 1);
-	adjChunks[ETOUI(CHUNK_DIR::NEG_X_NEG_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ - 1);
+	adjChunks[ETOUI(CHUNK_DIR::POS_X)] = CGameInstance::Get().GetVoxelChunk(cx + 1, cy, cz);
+	adjChunks[ETOUI(CHUNK_DIR::NEG_X)] = CGameInstance::Get().GetVoxelChunk(cx - 1, cy, cz);
+	adjChunks[ETOUI(CHUNK_DIR::POS_Z)] = CGameInstance::Get().GetVoxelChunk(cx, cy, cz + 1);
+	adjChunks[ETOUI(CHUNK_DIR::NEG_Z)] = CGameInstance::Get().GetVoxelChunk(cx, cy, cz - 1);
+	adjChunks[ETOUI(CHUNK_DIR::POS_X_POS_Z)] = CGameInstance::Get().GetVoxelChunk(cx + 1, cy, cz + 1);
+	adjChunks[ETOUI(CHUNK_DIR::POS_X_NEG_Z)] = CGameInstance::Get().GetVoxelChunk(cx + 1, cy, cz - 1);
+	adjChunks[ETOUI(CHUNK_DIR::NEG_X_POS_Z)] = CGameInstance::Get().GetVoxelChunk(cx - 1, cy, cz + 1);
+	adjChunks[ETOUI(CHUNK_DIR::NEG_X_NEG_Z)] = CGameInstance::Get().GetVoxelChunk(cx - 1, cy, cz - 1);
+	adjChunks[ETOUI(CHUNK_DIR::CENTER)] = CGameInstance::Get().GetVoxelChunk(cx, cy, cz);
 	return adjChunks;
+}
+
+std::vector<CChunk3*> CChunk3::MakeAdjChunks() const
+{
+	return MakeAdjChunks(m_iX, m_iY, m_iZ);
 }
 
 bool CChunk3::IsFaceExposed(CBlock3 currBlock, FACE_DIR eDir, std::optional<CBlock3> optNextBlock)
