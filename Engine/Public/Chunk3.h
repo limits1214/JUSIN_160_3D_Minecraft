@@ -71,6 +71,10 @@ public:
 private:
 	std::optional<CBlock3> GetBlockAt(int32_t x, int32_t y, int32_t z, std::vector<CChunk3*>& vecAdjChunks) const;
 
+public:
+	static std::vector<CChunk3*> MakeAdjChunks(int32_t cx, int32_t cy, int32_t cz);
+
+private:
 	std::vector<CChunk3*> MakeAdjChunks() const ;
 
 	static bool IsFaceExposed(CBlock3 curBlock, FACE_DIR eDir, std::optional<CBlock3> optNextBlock);

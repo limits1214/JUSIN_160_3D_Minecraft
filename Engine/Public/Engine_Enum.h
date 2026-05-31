@@ -40,6 +40,7 @@ namespace Engine
 		POS_Z, NEG_Z,
 		POS_X_POS_Z, POS_X_NEG_Z,
 		NEG_X_POS_Z, NEG_X_NEG_Z,
+		CENTER,
 		END
 	};
 

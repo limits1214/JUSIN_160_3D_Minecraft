@@ -165,9 +165,9 @@ public:
 
 public:
 	//void InitialFillingBlockLighting(CChunk3* pChunk);
-	void RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, bool bIsLightSource, uint8_t oldBlockLight);
-	void RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, uint8_t placedBlockEmitLight, uint8_t oldSkyLight, uint8_t oldBlockLight);
-	
+	void RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 oldBlock);
+	void RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 oldBlock);
+
 private:
 	void RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
 	void RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
@@ -216,7 +216,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 0 };
+	int32_t m_iRenderDistance{ 10 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 //public:

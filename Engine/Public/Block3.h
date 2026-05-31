@@ -259,7 +259,7 @@ inline _bool CBlock3::IsAOOclluder(TYPE eType)
 	// - 주변 흙을 시커멓게 만드는 게 싫다면 -> return false;
 	// - 나뭇잎끼리 뭉쳤을 때 입체감을 주고 싶다면 -> return true;
 	// (여기서는 나뭇잎도 고체이므로 true를 준다고 가정)
-	if (IsNeedAlphaTest(eType)) return true;
+	if (IsNeedAlphaTest(eType)) return false;
 
 	return false;
 }
