@@ -304,8 +304,8 @@ HRESULT CChunk3::CreateBuffer()
 				return E_FAIL;
 			}
 
-			m_SolidIndices.clear();
-			m_SolidVertices.clear();
+			std::vector<E::VTX_VOXEL>().swap(m_SolidVertices);
+			std::vector<uint32_t>().swap(m_SolidIndices);
 		}
 		else
 		{
@@ -324,8 +324,9 @@ HRESULT CChunk3::CreateBuffer()
 				return E_FAIL;
 			}
 
-			m_AlphaTestIndices.clear();
-			m_AlphaTestVertices.clear();
+			std::vector<E::VTX_VOXEL>().swap(m_AlphaTestVertices);
+			std::vector<uint32_t>().swap(m_AlphaTestIndices);
+
 		}
 		else
 		{
@@ -344,8 +345,9 @@ HRESULT CChunk3::CreateBuffer()
 				return E_FAIL;
 			}
 
-			m_WaterIndices.clear();
-			m_WaterVertices.clear();
+			std::vector<E::VTX_VOXEL>().swap(m_WaterVertices);
+			std::vector<uint32_t>().swap(m_WaterIndices);
+
 		}
 		else
 		{
@@ -602,26 +604,57 @@ std::optional<CBlock3> CChunk3::GetBlockAt(int32_t x, int32_t y, int32_t z, std:
 
 std::vector<CChunk3*> CChunk3::MakeAdjChunks() const
 {
-	CChunk3* pPlusX = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ);
-	CChunk3* pMinusX = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ);
-	CChunk3* pPlusZ = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ + 1);
-	CChunk3* pMinusZ = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ - 1);
-	CChunk3* pPlusXPlusZ = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ + 1);
-	CChunk3* pPlusXMinusZ = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ - 1);
-	CChunk3* pMinusXPlusZ = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ + 1);
-	CChunk3* pMinusXMinusZ = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ - 1);
-
 	std::vector<CChunk3*> adjChunks{};
 	adjChunks.resize(ETOUI(CHUNK_DIR::END));
-	adjChunks[ETOUI(CHUNK_DIR::POS_X)] = pPlusX;
-	adjChunks[ETOUI(CHUNK_DIR::NEG_X)] = pMinusX;
-	adjChunks[ETOUI(CHUNK_DIR::POS_Z)] = pPlusZ;
-	adjChunks[ETOUI(CHUNK_DIR::NEG_Z)] = pMinusZ;
-	adjChunks[ETOUI(CHUNK_DIR::POS_X_POS_Z)] = pPlusXPlusZ;
-	adjChunks[ETOUI(CHUNK_DIR::POS_X_NEG_Z)] = pPlusXMinusZ;
-	adjChunks[ETOUI(CHUNK_DIR::NEG_X_POS_Z)] = pMinusXPlusZ;
-	adjChunks[ETOUI(CHUNK_DIR::NEG_X_NEG_Z)] = pMinusXMinusZ;
+	adjChunks[ETOUI(CHUNK_DIR::POS_X)] = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ);
+	adjChunks[ETOUI(CHUNK_DIR::NEG_X)] = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ);
+	adjChunks[ETOUI(CHUNK_DIR::POS_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ + 1);
+	adjChunks[ETOUI(CHUNK_DIR::NEG_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ - 1);
+	adjChunks[ETOUI(CHUNK_DIR::POS_X_POS_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ + 1);
+	adjChunks[ETOUI(CHUNK_DIR::POS_X_NEG_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ - 1);
+	adjChunks[ETOUI(CHUNK_DIR::NEG_X_POS_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ + 1);
+	adjChunks[ETOUI(CHUNK_DIR::NEG_X_NEG_Z)] = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ - 1);
 	return adjChunks;
+}
+
+bool CChunk3::IsFaceExposed(CBlock3 currBlock, FACE_DIR eDir, std::optional<CBlock3> optNextBlock)
+{
+	// 1. 인접한 블록이 아예 없다면 (청크가 생성되지 않은 월드의 끝 또는 공백) 
+	//    일반적으로 면을 그려서 막아주거나 하늘을 보여야 하므로 true를 반환합니다.
+	if (!optNextBlock.has_value())
+	{
+		return true;
+	}
+
+	CBlock3::TYPE nextType = optNextBlock.value().GetType();
+
+	// 💡 예외 조건 1: 내가 횃불 같은 특수 오브젝트라면 내 면은 무조건 노출되어야 합니다.
+	if (currBlock.GetType() == CBlock3::TYPE::TORCH_ON)
+	{
+		return true;
+	}
+
+	// 💡 예외 조건 2: 인접한 블록이 횃불이거나 알파 테스트(식물, 유리 등) 블록이라면 
+	//               그 틈새로 내가 보여야 하므로 내 면을 무조건 노출합니다.
+	if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+	{
+		return true;
+	}
+
+	// 2. 현재 내 블록의 속성에 따른 일반적인 컬링 규칙
+	bool isCurrentWater = (currBlock.GetType() == CBlock3::TYPE::WATER_PLACE_HOLDER);
+	bool isCurrentAlpha = CBlock3::IsNeedAlphaTest(currBlock.GetType());
+
+	if (isCurrentWater || isCurrentAlpha)
+	{
+		// 내 블록이 물이거나 알파(반투명)인 경우: 다음 블록이 완전히 비어있는 '공기'여야만 노출
+		return (nextType == CBlock3::TYPE::AIR);
+	}
+	else
+	{
+		// 내 블록이 일반 고체(불투명)인 경우: 다음 블록이 '공기'이거나 '물'일 때 내 면이 노출
+		return (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+	}
 }
 
 void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
@@ -630,17 +663,7 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 	auto& alphaTestQuads = quadBuckets.alphaTest;
 	auto& waterQuads = quadBuckets.water;
 
-	CChunk3* pPlusX = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ);
-	CChunk3* pMinusX = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ);
-	CChunk3* pPlusZ = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ + 1);
-	CChunk3* pMinusZ = CGameInstance::Get().GetVoxelChunk(m_iX, m_iY, m_iZ - 1);
-	CChunk3* pPlusXPlusZ = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ + 1);
-	CChunk3* pPlusXMinusZ = CGameInstance::Get().GetVoxelChunk(m_iX + 1, m_iY, m_iZ - 1);
-	CChunk3* pMinusXPlusZ = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ + 1);
-	CChunk3* pMinusXMinusZ = CGameInstance::Get().GetVoxelChunk(m_iX - 1, m_iY, m_iZ - 1);
-
 	std::vector<CChunk3*> adjChunks{ MakeAdjChunks ()};
-
 
 	for (int x = 0; x < (int)VOXEL_CHUNK_X_SIZE3; ++x)
 	{
@@ -648,9 +671,11 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 		{
 			for (int y = 0; y < (int)VOXEL_CHUNK_Y_SIZE3; ++y)
 			{
-				uint32_t currentIdx = BlockIndexing(x, y, z);
-				CBlock3 currBlock = m_arrBlocks[currentIdx];
-				CBlock3::TYPE curType = m_arrBlocks[currentIdx].GetType();
+				auto currOptBlock = GetBlockAt(x, y, z, adjChunks);
+				if (!currOptBlock.has_value()) continue;
+
+				CBlock3 currBlock = currOptBlock.value();
+				CBlock3::TYPE curType = currBlock.GetType();
 				if (curType == CBlock3::TYPE::AIR) continue;
 
 
@@ -698,34 +723,38 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				{
 					int ny = y + 1;
 
-					CBlock3::TYPE nextType;
+					
+
+					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, adjChunks);
-					if (optNextBlock)
+					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::POS_Y, optNextBlock);
+
+					/*if (optNextBlock)
 					{
 						nextType = optNextBlock.value().GetType();
 					}
 					else
 					{
 						nextType = CBlock3::TYPE::AIR;
-					}
+					}*/
 
 					//CBlock3::TYPE nextType = GetBlockTypeAt(x, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-					bool bExpose = false;
-					if (isCurrentWater || isCurrAlphaTest)
-						bExpose = (nextType == CBlock3::TYPE::AIR); // 물 위에는 공기여야 면이 보임
-					else
-						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER); // 고체 위에는 공기나 물일 때 보임
+					//bool bExpose = false;
+					//if (isCurrentWater || isCurrAlphaTest)
+					//	bExpose = (nextType == CBlock3::TYPE::AIR); // 물 위에는 공기여야 면이 보임
+					//else
+					//	bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER); // 고체 위에는 공기나 물일 때 보임
 
-					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
-					{
-						bExpose = true;
-					}
+					//if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+					//{
+					//	bExpose = true;
+					//}
 
-					if (curType == CBlock3::TYPE::TORCH_ON)
-					{
-						bExpose = true;
-					}
+					//if (curType == CBlock3::TYPE::TORCH_ON)
+					//{
+					//	bExpose = true;
+					//}
 
 					if (bExpose) {
 						VOX_QUAD quad{};
@@ -737,7 +766,7 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 
 						quad.eDir = FACE_DIR::POS_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
-						quad.lighting = (y + 1 < (int)VOXEL_CHUNK_Y_SIZE3) ? m_arrBlocks[BlockIndexing(x, y + 1, z)].GetLight() : 0xFF;
+						
 
 						auto optL = GetBlockAt(x - 1,	ny, z,		adjChunks);
 						auto optR = GetBlockAt(x + 1,	ny, z,		adjChunks);
@@ -748,14 +777,18 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 						auto optFL = GetBlockAt(x - 1,	ny, z + 1,	adjChunks);
 						auto optFR = GetBlockAt(x + 1,	ny, z + 1,	adjChunks);
 
-						_bool bL = optL.has_value() && optL.value().IsOpaque();
-						_bool bR = optR.has_value() && optR.value().IsOpaque();
-						_bool bF = optF.has_value() && optF.value().IsOpaque();
-						_bool bB = optB.has_value() && optB.value().IsOpaque();
-						_bool bBL = optBL.has_value() && optBL.value().IsOpaque();
-						_bool bBR = optBR.has_value() && optBR.value().IsOpaque();
-						_bool bFL = optFL.has_value() && optFL.value().IsOpaque();
-						_bool bFR = optFR.has_value() && optFR.value().IsOpaque();
+						auto optU = GetBlockAt(x, y + 1, z, adjChunks); // 💡 y + 1로 수정
+						quad.lighting = optU.has_value() ? optU.value().GetLight() : 0xFF;
+
+						_bool bL = optL.has_value() && CBlock3::IsAOOclluder(optL.value().GetType());
+						_bool bR = optR.has_value() && CBlock3::IsAOOclluder(optR.value().GetType());
+						_bool bF = optF.has_value() && CBlock3::IsAOOclluder(optF.value().GetType());
+						_bool bB = optB.has_value() && CBlock3::IsAOOclluder(optB.value().GetType());
+						_bool bBL = optBL.has_value() && CBlock3::IsAOOclluder(optBL.value().GetType());
+						_bool bBR = optBR.has_value() && CBlock3::IsAOOclluder(optBR.value().GetType());
+						_bool bFL = optFL.has_value() && CBlock3::IsAOOclluder(optFL.value().GetType());
+						_bool bFR = optFR.has_value() && CBlock3::IsAOOclluder(optFR.value().GetType());
+
 
 						quad.ao[0] = CalculateVertexAO(bL, bF, bFL);
 						quad.ao[1] = CalculateVertexAO(bR, bF, bFR);
@@ -776,32 +809,35 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				// 2. Bottom (-Y)
 				{
 					int ny = y - 1;
-					CBlock3::TYPE nextType;
+					//CBlock3::TYPE nextType;
+					//std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, adjChunks);
+					//if (optNextBlock)
+					//{
+					//	nextType = optNextBlock.value().GetType();
+					//}
+					//else
+					//{
+					//	nextType = CBlock3::TYPE::AIR;
+					//}
 					std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, adjChunks);
-					if (optNextBlock)
-					{
-						nextType = optNextBlock.value().GetType();
-					}
-					else
-					{
-						nextType = CBlock3::TYPE::AIR;
-					}
+					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::NEG_Y, optNextBlock);
 					//CBlock3::TYPE nextType = GetBlockTypeAt(x, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-					bool bExpose = false;
-					if (isCurrentWater || isCurrAlphaTest)
-						bExpose = (nextType == CBlock3::TYPE::AIR); // 밑면이 뚫린 연출(하늘에 떠있는 유체 등)이 아니면 물끼리는 컬링
-					else
-						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+					//bool bExpose = false;
+					//if (isCurrentWater || isCurrAlphaTest)
+					//	bExpose = (nextType == CBlock3::TYPE::AIR); // 밑면이 뚫린 연출(하늘에 떠있는 유체 등)이 아니면 물끼리는 컬링
+					//else
+					//	bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
 
-					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
-					{
-						bExpose = true;
-					}
-					if (curType == CBlock3::TYPE::TORCH_ON)
-					{
-						bExpose = true;
-					}
+					//if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
+					//{
+					//	bExpose = true;
+					//}
+					//if (curType == CBlock3::TYPE::TORCH_ON)
+					//{
+					//	bExpose = true;
+					//}
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v[0] = { fx,     fy, fz };
@@ -811,7 +847,7 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 
 						quad.eDir = FACE_DIR::NEG_Y;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
-						quad.lighting = (y - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y - 1, z)].GetLight() : 0;
+						//quad.lighting = (y - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y - 1, z)].GetLight() : 0;
 
 						auto optL = GetBlockAt(x - 1, ny, z, adjChunks);
 						auto optR = GetBlockAt(x + 1, ny, z, adjChunks);
@@ -822,15 +858,17 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 						auto optFL = GetBlockAt(x - 1, ny, z + 1, adjChunks);
 						auto optFR = GetBlockAt(x + 1, ny, z + 1, adjChunks);
 
-						_bool bL = optL.has_value() && optL.value().IsOpaque();
-						_bool bR = optR.has_value() && optR.value().IsOpaque();
-						_bool bF = optF.has_value() && optF.value().IsOpaque();
-						_bool bB = optB.has_value() && optB.value().IsOpaque();
-						_bool bBL = optBL.has_value() && optBL.value().IsOpaque();
-						_bool bBR = optBR.has_value() && optBR.value().IsOpaque();
-						_bool bFL = optFL.has_value() && optFL.value().IsOpaque();
-						_bool bFR = optFR.has_value() && optFR.value().IsOpaque();
+						_bool bL = optL.has_value() && CBlock3::IsAOOclluder(optL.value().GetType());
+						_bool bR = optR.has_value() && CBlock3::IsAOOclluder(optR.value().GetType());
+						_bool bF = optF.has_value() && CBlock3::IsAOOclluder(optF.value().GetType());
+						_bool bB = optB.has_value() && CBlock3::IsAOOclluder(optB.value().GetType());
+						_bool bBL = optBL.has_value() && CBlock3::IsAOOclluder(optBL.value().GetType());
+						_bool bBR = optBR.has_value() && CBlock3::IsAOOclluder(optBR.value().GetType());
+						_bool bFL = optFL.has_value() && CBlock3::IsAOOclluder(optFL.value().GetType());
+						_bool bFR = optFR.has_value() && CBlock3::IsAOOclluder(optFR.value().GetType());
 
+						auto optD = GetBlockAt(x, y - 1, z, adjChunks); // 💡 y - 1로 수정
+						quad.lighting = optD.has_value() ? optD.value().GetLight() : 0xFF; // 💡 기본값 0xFF로 통일 (엔진 의도에 따라 0도 가능)
 
 
 						quad.ao[0] = CalculateVertexAO(bL, bB, bBL);
@@ -850,20 +888,22 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				// 3. Front (+Z)
 				{
 					int nz = z + 1;
-					CBlock3::TYPE nextType;
+					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(x, y, nz, adjChunks);
-					if (optNextBlock)
-					{
-						nextType = optNextBlock.value().GetType();
-					}
-					else
-					{
-						nextType = CBlock3::TYPE::AIR;
-					}
+					//if (optNextBlock)
+					//{
+					//	nextType = optNextBlock.value().GetType();
+					//}
+					//else
+					//{
+					//	nextType = CBlock3::TYPE::AIR;
+					//}
+
+					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::POS_Z, optNextBlock);
 
 					//CBlock3::TYPE nextType = GetBlockTypeAt(x, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-					bool bExpose = false;
+					/*bool bExpose = false;
 					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR);
 					else
@@ -876,7 +916,8 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 					if (curType == CBlock3::TYPE::TORCH_ON)
 					{
 						bExpose = true;
-					}
+					}*/
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v[0] = { fx + 1, fy + 1, fz + 1 };
@@ -886,7 +927,14 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 
 						quad.eDir = FACE_DIR::POS_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
-						quad.lighting = (z + 1 < (int)VOXEL_CHUNK_Z_SIZE3) ? m_arrBlocks[BlockIndexing(x, y, z + 1)].GetLight() : (pPlusZ ? pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].GetLight() : 0xFF);
+
+						// Front(+Z) 방향의 인접 블록 위치는 (x, y, z + 1) 입니다.
+						auto optF = GetBlockAt(x, y, z + 1, adjChunks);
+
+						// 💡 블록이 존재하면 그 블록의 Light 데이터를 가져오고, 
+						// 청크가 로드되지 않는 등 완전히 비어있는 경계 밖이라면 기본값(0xFF 또는 0)을 줍니다.
+						quad.lighting = optF.has_value() ? optF.value().GetLight() : 0xFF;
+						//quad.lighting = (z + 1 < (int)VOXEL_CHUNK_Z_SIZE3) ? m_arrBlocks[BlockIndexing(x, y, z + 1)].GetLight() : (pPlusZ ? pPlusZ->m_arrBlocks[pPlusZ->BlockIndexing(x, y, 0)].GetLight() : 0xFF);
 
 						auto optL = GetBlockAt(x - 1, y, nz, adjChunks);
 						auto optR = GetBlockAt(x + 1, y, nz, adjChunks);
@@ -897,14 +945,14 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 						auto optDL = GetBlockAt(x - 1, y - 1, nz, adjChunks);
 						auto optDR = GetBlockAt(x + 1, y - 1, nz, adjChunks);
 
-						_bool bL = optL.has_value() && optL.value().IsOpaque();
-						_bool bR = optR.has_value() && optR.value().IsOpaque();
-						_bool bU = optU.has_value() && optU.value().IsOpaque();
-						_bool bD = optD.has_value() && optD.value().IsOpaque();
-						_bool bUL = optUL.has_value() && optUL.value().IsOpaque();
-						_bool bUR = optUR.has_value() && optUR.value().IsOpaque();
-						_bool bDL = optDL.has_value() && optDL.value().IsOpaque();
-						_bool bDR = optDR.has_value() && optDR.value().IsOpaque();
+						_bool bL = optL.has_value() && CBlock3::IsAOOclluder(optL.value().GetType());
+						_bool bR = optR.has_value() && CBlock3::IsAOOclluder(optR.value().GetType());
+						_bool bU = optU.has_value() && CBlock3::IsAOOclluder(optU.value().GetType());
+						_bool bD = optD.has_value() && CBlock3::IsAOOclluder(optD.value().GetType());
+						_bool bUL = optUL.has_value() && CBlock3::IsAOOclluder(optUL.value().GetType());
+						_bool bUR = optUR.has_value() && CBlock3::IsAOOclluder(optUR.value().GetType());
+						_bool bDL = optDL.has_value() && CBlock3::IsAOOclluder(optDL.value().GetType());
+						_bool bDR = optDR.has_value() && CBlock3::IsAOOclluder(optDR.value().GetType());
 
 						quad.ao[0] = CalculateVertexAO(bR, bU, bUR);
 						quad.ao[1] = CalculateVertexAO(bL, bU, bUL);
@@ -923,21 +971,21 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				// 4. Back (-Z)
 				{
 					int nz = z - 1;
-					CBlock3::TYPE nextType;
+					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(x, y, nz, adjChunks);
-					if (optNextBlock)
+					/*if (optNextBlock)
 					{
 						nextType = optNextBlock.value().GetType();
 					}
 					else
 					{
 						nextType = CBlock3::TYPE::AIR;
-					}
-
+					}*/
+					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::NEG_Z, optNextBlock);
 
 					//CBlock3::TYPE nextType = GetBlockTypeAt(x, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-					bool bExpose = false;
+					/*bool bExpose = false;
 					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR);
 					else
@@ -950,7 +998,7 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 					if (curType == CBlock3::TYPE::TORCH_ON)
 					{
 						bExpose = true;
-					}
+					}*/
 
 					if (bExpose) {
 						VOX_QUAD quad{};
@@ -961,7 +1009,13 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 
 						quad.eDir = FACE_DIR::NEG_Z;
 						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
-						quad.lighting = (z - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y, z - 1)].GetLight() : (pMinusZ ? pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].GetLight() : 0xFF);
+						//quad.lighting = (z - 1 >= 0) ? m_arrBlocks[BlockIndexing(x, y, z - 1)].GetLight() : (pMinusZ ? pMinusZ->m_arrBlocks[pMinusZ->BlockIndexing(x, y, (int)VOXEL_CHUNK_Z_SIZE3 - 1)].GetLight() : 0xFF);
+
+						// Back(-Z) 방향의 인접 블록 위치는 (x, y, z - 1) 입니다.
+						auto optB = GetBlockAt(x, y, z - 1, adjChunks);
+
+						// 💡 블록이 존재하면 그 블록의 Light 데이터를 가져오고, 없으면 기본값(0xFF) 처리
+						quad.lighting = optB.has_value() ? optB.value().GetLight() : 0xFF;
 
 						auto optL = GetBlockAt(x - 1, y, nz, adjChunks);
 						auto optR = GetBlockAt(x + 1, y, nz, adjChunks);
@@ -972,14 +1026,14 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 						auto optDL = GetBlockAt(x - 1, y - 1, nz, adjChunks);
 						auto optDR = GetBlockAt(x + 1, y - 1, nz, adjChunks);
 
-						_bool bL = optL.has_value() && optL.value().IsOpaque();
-						_bool bR = optR.has_value() && optR.value().IsOpaque();
-						_bool bU = optU.has_value() && optU.value().IsOpaque();
-						_bool bD = optD.has_value() && optD.value().IsOpaque();
-						_bool bUL = optUL.has_value() && optUL.value().IsOpaque();
-						_bool bUR = optUR.has_value() && optUR.value().IsOpaque();
-						_bool bDL = optDL.has_value() && optDL.value().IsOpaque();
-						_bool bDR = optDR.has_value() && optDR.value().IsOpaque();
+						_bool bL = optL.has_value() && CBlock3::IsAOOclluder(optL.value().GetType());
+						_bool bR = optR.has_value() && CBlock3::IsAOOclluder(optR.value().GetType());
+						_bool bU = optU.has_value() && CBlock3::IsAOOclluder(optU.value().GetType());
+						_bool bD = optD.has_value() && CBlock3::IsAOOclluder(optD.value().GetType());
+						_bool bUL = optUL.has_value() && CBlock3::IsAOOclluder(optUL.value().GetType());
+						_bool bUR = optUR.has_value() && CBlock3::IsAOOclluder(optUR.value().GetType());
+						_bool bDL = optDL.has_value() && CBlock3::IsAOOclluder(optDL.value().GetType());
+						_bool bDR = optDR.has_value() && CBlock3::IsAOOclluder(optDR.value().GetType());
 
 
 						quad.ao[0] = CalculateVertexAO(bL, bU, bUL);
@@ -1000,20 +1054,20 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				{
 					int nx = x + 1;
 
-					CBlock3::TYPE nextType;
+					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(nx, y, z, adjChunks);
-					if (optNextBlock)
+					/*if (optNextBlock)
 					{
 						nextType = optNextBlock.value().GetType();
 					}
 					else
 					{
 						nextType = CBlock3::TYPE::AIR;
-					}
-
+					}*/
+					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::POS_X, optNextBlock);
 					//CBlock3::TYPE nextType = GetBlockTypeAt(nx, y, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-					bool bExpose = false;
+					/*bool bExpose = false;
 					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR);
 					else
@@ -1026,7 +1080,7 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 					if (curType == CBlock3::TYPE::TORCH_ON)
 					{
 						bExpose = true;
-					}
+					}*/
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v[0] = { fx + 1, fy + 1, fz };
@@ -1035,8 +1089,15 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 						quad.v[3] = { fx + 1, fy,     fz };
 
 						quad.eDir = FACE_DIR::POS_X;
-						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
-						quad.lighting = (x + 1 < (int)VOXEL_CHUNK_X_SIZE3) ? m_arrBlocks[BlockIndexing(x + 1, y, z)].GetLight() : (pPlusX ? pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].GetLight() : 0xFF);
+						
+						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currBlock.GetType(), quad.eDir));
+						//quad.lighting = (x + 1 < (int)VOXEL_CHUNK_X_SIZE3) ? m_arrBlocks[BlockIndexing(x + 1, y, z)].GetLight() : (pPlusX ? pPlusX->m_arrBlocks[pPlusX->BlockIndexing(0, y, z)].GetLight() : 0xFF);
+
+						// Right(+X) 방향의 인접 블록 위치는 (x + 1, y, z) 입니다.
+						auto optR = GetBlockAt(x + 1, y, z, adjChunks);
+
+						// 💡 블록이 존재하면 그 블록의 Light 데이터를 가져고, 없으면 기본값(0xFF) 처리
+						quad.lighting = optR.has_value() ? optR.value().GetLight() : 0xFF;
 
 						auto optF = GetBlockAt(nx, y, z + 1, adjChunks);
 						auto optB = GetBlockAt(nx, y, z - 1, adjChunks);
@@ -1048,14 +1109,14 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 						auto optDB = GetBlockAt(nx, y - 1, z - 1, adjChunks);
 
 
-						_bool bF = optF.has_value() && optF.value().IsOpaque();
-						_bool bB = optB.has_value() && optB.value().IsOpaque();
-						_bool bU = optU.has_value() && optU.value().IsOpaque();
-						_bool bD = optD.has_value() && optD.value().IsOpaque();
-						_bool bUF = optUF.has_value() && optUF.value().IsOpaque();
-						_bool bUB = optUB.has_value() && optUB.value().IsOpaque();
-						_bool bDF = optDF.has_value() && optDF.value().IsOpaque();
-						_bool bDB = optDB.has_value() && optDB.value().IsOpaque();
+						_bool bF = optF.has_value() && CBlock3::IsAOOclluder(optF.value().GetType());
+						_bool bB = optB.has_value() && CBlock3::IsAOOclluder(optB.value().GetType());
+						_bool bU = optU.has_value() && CBlock3::IsAOOclluder(optU.value().GetType());
+						_bool bD = optD.has_value() && CBlock3::IsAOOclluder(optD.value().GetType());
+						_bool bUF = optUF.has_value() && CBlock3::IsAOOclluder(optUF.value().GetType());
+						_bool bUB = optUB.has_value() && CBlock3::IsAOOclluder(optUB.value().GetType());
+						_bool bDF = optDF.has_value() && CBlock3::IsAOOclluder(optDF.value().GetType());
+						_bool bDB = optDB.has_value() && CBlock3::IsAOOclluder(optDB.value().GetType());
 
 						quad.ao[0] = CalculateVertexAO(bB, bU, bUB);
 						quad.ao[1] = CalculateVertexAO(bF, bU, bUF);
@@ -1074,21 +1135,21 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				{
 					int nx = x - 1;
 
-					CBlock3::TYPE nextType;
+					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(nx, y, z, adjChunks);
-					if (optNextBlock)
+					/*if (optNextBlock)
 					{
 						nextType = optNextBlock.value().GetType();
 					}
 					else
 					{
 						nextType = CBlock3::TYPE::AIR;
-					}
+					}*/
 
-
+					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::NEG_X, optNextBlock);
 					//CBlock3::TYPE nextType = GetBlockTypeAt(nx, y, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
 
-					bool bExpose = false;
+					/*bool bExpose = false;
 					if (isCurrentWater || isCurrAlphaTest)
 						bExpose = (nextType == CBlock3::TYPE::AIR);
 					else
@@ -1101,7 +1162,8 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 					if (curType == CBlock3::TYPE::TORCH_ON)
 					{
 						bExpose = true;
-					}
+					}*/
+
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v[0] = { fx, fy + 1, fz + 1 };
@@ -1110,8 +1172,14 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 						quad.v[3] = { fx, fy,     fz + 1 };
 
 						quad.eDir = FACE_DIR::NEG_X;
-						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(m_arrBlocks[currentIdx].GetType(), quad.eDir));
-						quad.lighting = (x - 1 >= 0) ? m_arrBlocks[BlockIndexing(x - 1, y, z)].GetLight() : (pMinusX ? pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].GetLight() : 0xFF);
+						quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currBlock.GetType(), quad.eDir));
+						//quad.lighting = (x - 1 >= 0) ? m_arrBlocks[BlockIndexing(x - 1, y, z)].GetLight() : (pMinusX ? pMinusX->m_arrBlocks[pMinusX->BlockIndexing((int)VOXEL_CHUNK_X_SIZE3 - 1, y, z)].GetLight() : 0xFF);
+
+						// Left(-X) 방향의 인접 블록 위치는 (x - 1, y, z) 입니다.
+						auto optL = GetBlockAt(x - 1, y, z, adjChunks);
+
+						// 💡 블록이 존재하면 그 블록의 Light 데이터를 가져오고, 없으면 기본값(0xFF) 처리
+						quad.lighting = optL.has_value() ? optL.value().GetLight() : 0xFF;
 
 						auto optF = GetBlockAt(nx, y, z + 1, adjChunks);
 						auto optB = GetBlockAt(nx, y, z - 1, adjChunks);
@@ -1123,14 +1191,14 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 						auto optDB = GetBlockAt(nx, y - 1, z - 1, adjChunks);
 
 
-						_bool bF = optF.has_value() && optF.value().IsOpaque();
-						_bool bB = optB.has_value() && optB.value().IsOpaque();
-						_bool bU = optU.has_value() && optU.value().IsOpaque();
-						_bool bD = optD.has_value() && optD.value().IsOpaque();
-						_bool bUF = optUF.has_value() && optUF.value().IsOpaque();
-						_bool bUB = optUB.has_value() && optUB.value().IsOpaque();
-						_bool bDF = optDF.has_value() && optDF.value().IsOpaque();
-						_bool bDB = optDB.has_value() && optDB.value().IsOpaque();
+						_bool bF = optF.has_value() && CBlock3::IsAOOclluder(optF.value().GetType());
+						_bool bB = optB.has_value() && CBlock3::IsAOOclluder(optB.value().GetType());
+						_bool bU = optU.has_value() && CBlock3::IsAOOclluder(optU.value().GetType());
+						_bool bD = optD.has_value() && CBlock3::IsAOOclluder(optD.value().GetType());
+						_bool bUF = optUF.has_value() && CBlock3::IsAOOclluder(optUF.value().GetType());
+						_bool bUB = optUB.has_value() && CBlock3::IsAOOclluder(optUB.value().GetType());
+						_bool bDF = optDF.has_value() && CBlock3::IsAOOclluder(optDF.value().GetType());
+						_bool bDB = optDB.has_value() && CBlock3::IsAOOclluder(optDB.value().GetType());
 
 						quad.ao[0] = CalculateVertexAO(bF, bU, bUF);
 						quad.ao[1] = CalculateVertexAO(bB, bU, bUB);
@@ -1147,12 +1215,6 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 			}
 		}
 	}
-}
-
-_bool CChunk3::IsExposedFace(CBlock3 currBlock, FACE_DIR eFaceDir, CBlock3 nextBlock)
-{
-
-	return false;
 }
 
 uint8_t CChunk3::CalculateVertexAO(_bool side1, _bool side2, _bool corner) const

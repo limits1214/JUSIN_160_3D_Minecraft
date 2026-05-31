@@ -73,7 +73,7 @@ public:
 					auto block = GetBlock(x, y, z);
 					if (block
 						&& block->GetType() != CBlock3::TYPE::AIR
-						&& !block->IsWater()
+						&& !CBlock3::IsWater(block-> GetType())
 						)
 						return true;
 				}
