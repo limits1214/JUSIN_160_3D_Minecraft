@@ -73,7 +73,7 @@ private:
 
 	std::vector<CChunk3*> MakeAdjChunks() const ;
 
-
+	static bool IsFaceExposed(CBlock3 curBlock, FACE_DIR eDir, std::optional<CBlock3> optNextBlock);
 private:
 	struct QuadBuckets {
 		std::vector<VOX_QUAD> solid{};
@@ -82,9 +82,6 @@ private:
 	};
 	void NiveFaceCulling(QuadBuckets& quadBuckets) const;
 	//void NiveFaceCulling(std::vector<VOX_QUAD>& solidQuads, std::vector<VOX_QUAD>& alphaTestQuads, std::vector<VOX_QUAD>& waterQuads) const;
-
-
-	_bool IsExposedFace(CBlock3 currBlock, FACE_DIR eFaceDir, CBlock3 nextBlock);
 
 	uint8_t CalculateVertexAO(_bool side1, _bool side2, _bool corner) const;
 
@@ -111,14 +108,6 @@ private:
 
 private:
 	std::array<CBlock3, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3> m_arrBlocks{};
-
-	enum QUAD_TYPE
-	{
-		SOLID,
-		ALPHATEST,
-		WATER,
-		END
-	};
 
 private:
 	void QuadsToVerticies(std::vector<VOX_QUAD>& quads, std::vector<E::VTX_VOXEL>& vertices, std::vector<uint32_t>& indices);

@@ -203,17 +203,24 @@ public:
 	};
 
 	static inline GEO_TYPE GetGeoType(TYPE e);
-	static inline _bool IsFlower(TYPE eType);
-	static inline TYPE GetRandomTypeFlower();
 	static inline uint32_t GetBaseColor(CBlock3::TYPE eType);
 	static inline TEX_TYPE GetTexType(TYPE blockType, FACE_DIR faceDir, uint8_t iFlag = 0);
+
+
+	static inline _bool IsFlower(TYPE eType);
+	static inline TYPE GetRandomTypeFlower();
+
 	static inline _bool IsNeedAlphaTest(TYPE e);
 	static inline std::pair<_float3, _float3> GetOutlineExtents(TYPE e);
 	static inline uint8_t GetBlockLightByType(TYPE e);
 
 	// 불투명한가?
-	inline _bool IsOpaque() const;
-	inline  _bool IsWater() const;
+	//inline _bool IsOpaque() const;
+	;
+	static inline _bool IsAOOclluder(TYPE eType);
+	static inline _bool IsOpaque(TYPE eType);
+	static inline _bool IsWater(TYPE eType);
+	//inline  _bool IsWater() const;
 
 	TYPE GetType() const { return m_eType; }
 	void SetType(TYPE e) { m_eType = e; }
@@ -237,24 +244,34 @@ NS_END
 
 NS_BEGIN(Engine)
 
-inline _bool CBlock3::IsWater() const
+inline _bool CBlock3::IsAOOclluder(TYPE eType)
 {
-	if (m_eType == TYPE::WATER_PLACE_HOLDER)
-	{
-		return true;
-	}
+	// 1. 공기(AIR)는 당연히 AO를 만들지 않음
+	if (eType == TYPE::AIR) return false;
+
+	// 2. 기본적으로 흙, 돌 같은 완전 불투명(Opaque) 블록은 무조건 AO를 만듦
+	if (IsOpaque(eType)) return true;
+
+	// 3. 반투명(Translucent) 블록인 물, 유리는 '빛을 차단하지 않으므로' AO 생성에서 제외(false)
+	//if (IsTranslucent(eType)) return false;
+
+	// 4. 나뭇잎(AlphaTest)의 경우: 
+	// - 주변 흙을 시커멓게 만드는 게 싫다면 -> return false;
+	// - 나뭇잎끼리 뭉쳤을 때 입체감을 주고 싶다면 -> return true;
+	// (여기서는 나뭇잎도 고체이므로 true를 준다고 가정)
+	if (IsNeedAlphaTest(eType)) return true;
 
 	return false;
 }
 
-inline  _bool CBlock3::IsOpaque() const
+inline  _bool CBlock3::IsOpaque(TYPE eType)
 {
-	if (IsFlower(m_eType))
+	if (IsFlower(eType))
 	{
 		return false;
 	}
 
-	switch (m_eType)
+	switch (eType)
 	{
 	case TYPE::AIR:
 	case TYPE::WATER_PLACE_HOLDER:
@@ -273,6 +290,17 @@ inline  _bool CBlock3::IsOpaque() const
 	default:
 		return true;
 	}
+}
+
+inline  _bool CBlock3::IsWater(TYPE e)
+{
+	switch (e)
+	{
+	case  TYPE::WATER_PLACE_HOLDER:
+		return true;
+	}
+
+	return false;
 }
 
 inline uint8_t CBlock3::GetBlockLightByType(TYPE e)

@@ -162,7 +162,9 @@ _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayD
             uint32_t lz = (uint32_t)(bz - cz * (int32_t)VOXEL_CHUNK_Z_SIZE3);
 
             auto block = GetBlockByChunkCoord(pChunk->GetCoordIdx(), lx, ly, lz).value();
-            if (block.GetType() != CBlock3::TYPE::AIR && !block.IsWater())
+
+            
+            if (block.GetType() != CBlock3::TYPE::AIR && !CBlock3::IsWater(block.GetType()))
             {
                 // --- [변경 구간] 정밀 AABB 레이케스트 적용 ---
                 // 1. 블록의 로컬 오프셋 정보 가져오기
@@ -516,7 +518,7 @@ void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, 
 
             if (!bIgnore)
             {
-                if (nBlock.IsOpaque()) continue;
+                if (CBlock3::IsOpaque(nBlock.GetType())) continue;
 
             }
 
@@ -564,17 +566,19 @@ void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, ui
 
             if (!CBlock3::IsNeedAlphaTest(nBlock.GetType()))
             {
-                if (nBlock.IsOpaque()) continue;
+                if (CBlock3::IsOpaque(nBlock.GetType())) continue;
             }
 
             // -----------------------------------------------------------------
             // [수정] 물과 공기에 따른 기본 감쇠 차등 적용
             // -----------------------------------------------------------------
-            uint8_t attenuation = nBlock.IsWater() ? 3 : 1;
+            
+            
+            uint8_t attenuation = CBlock3::IsWater(nBlock.GetType()) ? 3 : 1;
             uint8_t newLight = (curLight > attenuation) ? (curLight - attenuation) : 0;
 
             // [수정] 수직 아래 방향 전파 특수 규칙 (다음 칸이 물이 아닐 때만 15 직하강)
-            if (d == 3 && curLight == 15 && !nBlock.IsWater())
+            if (d == 3 && curLight == 15 && !CBlock3::IsWater(nBlock.GetType()))
             {
                 newLight = 15;
             }
@@ -616,11 +620,11 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
             // -----------------------------------------------------------------
             // [수정] 물과 공기에 따른 예상 전파 빛 수치 계산
             // -----------------------------------------------------------------
-            uint8_t attenuation = nBlock.IsWater() ? 3 : 1;
+            uint8_t attenuation = CBlock3::IsWater(nBlock.GetType()) ? 3 : 1;
             uint8_t expectedLight = (light > attenuation) ? (light - attenuation) : 0;
 
             // 하늘 직사광선(15) 줄기 판정 (다음 칸이 물이 아닐 때만 15가 유지됨)
-            bool bIsSkyColumn = (dy[d] == -1 && light == 15 && nLight == 15 && !nBlock.IsWater());
+            bool bIsSkyColumn = (dy[d] == -1 && light == 15 && nLight == 15 && !CBlock3::IsWater(nBlock.GetType()));
 
             // 내가 전파했던 하위 빛이 맞다면 (예상한 수치와 일치하거나 직하강 줄기라면)
             if (nLight != 0 && (nLight == expectedLight || bIsSkyColumn))
@@ -750,7 +754,7 @@ void CVoxelManager3::WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& 
             int32_t nlz = nz - ncz * 32;
             CBlock3& nBlock = pNextChunk->GetBlock(nlx, ny, nlz);
 
-            if (nBlock.IsOpaque()) continue;
+            if (CBlock3::IsOpaque(nBlock.GetType())) continue;
 
             // 블록 라이트는 방향 관계없이 무조건 1씩 감쇠
             uint8_t newLight = curLight - 1;
@@ -815,8 +819,8 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
             int32_t nlx = nx - ncx * 32;
             int32_t nlz = nz - ncz * 32;
             CBlock3& nBlock = nChunkIter->second->GetBlock(nlx, ny, nlz);
-
-            if (nBlock.IsOpaque()) continue;
+            
+            if (CBlock3::IsOpaque(nBlock.GetType())) continue;
 
             // -----------------------------------------------------------------
             // [수정 핵심] 다음 칸이 물(WATER)인지 공기(AIR)인지에 따른 감쇠 계산
@@ -824,14 +828,14 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
             uint8_t newLight = 0;
 
             // d == 3 (아래 방향)이고 현재 내 빛이 만땅(15)이면서, '다음 칸이 물이 아닐 때'만 직하강 노감쇠 적용
-            if (d == 3 && curLight == 15 && !nBlock.IsWater())
+            if (d == 3 && curLight == 15 && !CBlock3::IsWater(nBlock.GetType()))
             {
                 newLight = 15;
             }
             else
             {
                 // 다음 번져갈 칸이 물이면 3 감쇠, 일반 공기면 1 감쇠
-                uint8_t attenuation = nBlock.IsWater() ? 3 : 1;
+                uint8_t attenuation = CBlock3::IsWater(nBlock.GetType()) ? 3 : 1;
 
                 if (curLight > attenuation)
                     newLight = curLight - attenuation;
@@ -1713,7 +1717,8 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                                 {
                                     CBlock3& block = pChunk->GetBlock(x, y, z);
 
-                                    if (block.IsOpaque())
+                                    
+                                    if (CBlock3::IsOpaque(block.GetType()))
                                     {
                                         // 고체 땅을 만나면 바로 직전 칸(공기나 물)을 시드로 집어넣고 아래는 스캔 중단
                                         if (y < 255 && currentLight > 0)
@@ -1724,7 +1729,10 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                                     }
 
                                     // [추가] 물을 만나면 한 칸당 3씩 빛을 깎아내림
-                                    if (block.IsWater())
+                                    
+                                    
+                                        
+                                    if (CBlock3::IsWater(block.GetType()))
                                     {
                                         if (currentLight > 3)
                                             currentLight -= 3;
@@ -1738,7 +1746,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
 
                                     // [핵심] 물 속이거나, 공기 중에서 빛이 꺾이기 시작하는 지점(감쇠가 일어난 지점)들은 
                                     // 전부 이웃 청크나 옆 칸으로 빛을 전파해야 하므로 FloodFill 큐에 시드로 추가합니다.
-                                    if (block.IsWater() || currentLight < 15)
+                                    if (CBlock3::IsWater(block.GetType()) || currentLight < 15)
                                     {
                                         if (currentLight > 0)
                                         {
@@ -1809,7 +1817,8 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                                                 uint8_t adjLight = adjBlock.GetBlockLight();
 
                                                 // 이웃 청크 경계면에 빛이 켜져 있고 투명하다면 내 큐에 시드로 복사!
-                                                if (adjLight > 1 && !adjBlock.IsOpaque())
+                                                
+                                                if (adjLight > 1 && !CBlock3::IsOpaque(adjBlock.GetType()))
                                                 {
                                                     int32_t adjWorldX = ncx * 32 + ax;
                                                     int32_t adjWorldZ = ncz * 32 + az;
