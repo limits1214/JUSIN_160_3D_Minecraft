@@ -6,6 +6,13 @@
 
 #include "CollSphere.h"
 #include "CollBox.h"
+
+#include "DestroyStage.h"
+
+#include "VoxelManager3.h"
+
+#include "UIController.h"
+
 NS_USING(Engine)
 
 
@@ -219,6 +226,7 @@ root
 */
 void CPlayerEntity::Update(E::_float fTimeDelta)
 {
+
     m_pComEntityModel->ResetBonesChannel();
     if (m_eCameraType == CAMERA_TYPE::FPS)
     {
@@ -580,6 +588,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
 
         {
+
             if (m_bMousePressingLeft)
             {
                 m_bAttacking = true;
@@ -646,6 +655,11 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
             PlayerCameraTrace(fTimeDelta);
         }
     }
+
+
+    ProcessUI(fTimeDelta);
+
+    ProcessDestroyStage(fTimeDelta);
 }
 
 
@@ -707,6 +721,118 @@ HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
     }
     
     return S_OK;
+}
+
+void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pDestroyStage = GetDestroyStage();
+    if (!pDestroyStage) return;
+
+    static float fElapsed = 0;
+    
+
+    //
+    
+    //CGameInstance::Get().VoxelBlockRaycast()
+
+    const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+    std::optional<std::pair<XMINT3, uint8_t>> currDestoryTarget{};
+    CVoxelManager3::BLOCK_RAY_RESULT res;
+    if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin2, rayDir2, 5.f, res))
+    {
+        if (res.block)
+        {
+            currDestoryTarget = { XMINT3{res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ}, static_cast<uint8_t>(res.block.value().GetType())};
+            pDestroyStage->GetTransform().SetPosition(_float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY, (float)res.iWorldBlockZ });
+        }
+        else
+        {
+            currDestoryTarget = std::nullopt;
+        }
+    }
+    else
+    {
+        currDestoryTarget = std::nullopt;
+    }
+    auto eq = [](const std::optional<std::pair<XMINT3, uint8_t>>& a,
+        const std::optional<std::pair<XMINT3, uint8_t>>& b) {
+            if (a.has_value() != b.has_value()) return false;
+            if (!a.has_value()) return true;
+            const auto& [pa, pb] = *a;
+            const auto& [qa, qb] = *b;
+            return pa.x == qa.x && pa.y == qa.y && pa.z == qa.z && pb == qb;
+        };
+
+    if (!eq(currDestoryTarget, m_DestoryStageRaycastTarget)) 
+    { 
+        m_DestoryStageRaycastTarget = currDestoryTarget;
+        m_bDestoryStageStart = false;
+    }
+   
+    if (!m_DestoryStageRaycastTarget)
+    {
+        pDestroyStage->SetRender(false);
+        m_bDestoryStageStart = false;
+        return;
+    }
+
+    m_pActivePlayerCamera->GetRay();
+    if (m_bMousePressingLeft)
+    {
+        if (!m_bDestoryStageStart)
+        {
+            m_bDestoryStageStart = true;
+
+            pDestroyStage->SetRender(true);
+            fElapsed = 0;
+        }
+
+        fElapsed += fTimeDelta;
+
+        float blockDestroyRate = 1.f;
+        float blockDestroyTime = 0.5f;
+        float goal = blockDestroyTime * blockDestroyRate;
+
+        pDestroyStage->SetFrameIndex(fElapsed / (goal / 9));
+        if (pDestroyStage->GetFrameIndex() == 9)
+        {
+            
+        }
+    }
+    else
+    {
+        pDestroyStage->SetRender(false);
+        m_bDestoryStageStart = false;
+    }
+}
+
+CDestroyStage* CPlayerEntity::GetDestroyStage() const
+{
+    return CGameInstance::Get().GetGameObjectByHandleT<CDestroyStage>(m_hDestroyStage);
+}
+
+CUIController* CPlayerEntity::GetUIController() const
+{
+    return CGameInstance::Get().GetGameObjectByHandleT<CUIController>(m_hUIController);
+}
+
+void CPlayerEntity::ProcessUI(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pUIController = GetUIController();
+    if (!pUIController) return;
+
+    if (m_iMouseMoveZ > 0)
+    {
+        auto idx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+        pUIController->GetHotBar()->GetHotBarSelect()->SetSelectIdx(++idx);
+    }
+    else if (m_iMouseMoveZ < 0)
+    {
+        auto idx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+        pUIController->GetHotBar()->GetHotBarSelect()->SetSelectIdx(--idx);
+    }
 }
 
 void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)

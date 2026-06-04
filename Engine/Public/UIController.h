@@ -2,9 +2,12 @@
 
 #pragma once
 #include "UIObject.h"
+
+#include "UIHotBar.h"
+
 NS_BEGIN(Engine)
 
-class CUIHotBar;
+//class CUIHotBar;
 class CUIHealthBar;
 class CUIHungerBar;
 class CUIArmorBar;

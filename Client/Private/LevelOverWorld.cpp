@@ -95,59 +95,146 @@ HRESULT CLevelOverWorld::Initialize()
 
 	
 
+	{
+		E::CPlayerEntity::DESC Desc{};
+		Desc.sObjectTag = "Player";
+		if (auto playerHandle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
+			"00_ENTITY", &Desc))
 		{
-			E::CPlayerEntity::DESC Desc{};
-			Desc.sObjectTag = "Player";
-			if (auto playerHandle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
-				"00_ENTITY", &Desc))
+			if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CPlayerEntity>(playerHandle.value()))
 			{
-				if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CPlayerEntity>(playerHandle.value()))
 				{
+					E::CDropItem::DESC Desc{};
+					Desc.sObjectTag = "DropItem_WoodPickaxe";
+					Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
+					if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+						"01_DROPITEM", &Desc))
 					{
-						E::CDropItem::DESC Desc{};
-						Desc.sObjectTag = "DropItem_WoodPickaxe";
-						Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
-						if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-							"01_DROPITEM", &Desc))
+						//playerObj->SetRightItemHandle(woodPixaxeHandle);
+						if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandle(woodPixaxeHandle.value()))
 						{
-							//playerObj->SetRightItemHandle(woodPixaxeHandle);
-							if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandle(woodPixaxeHandle.value()))
-							{
-								woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
-								woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
-								//woodPixaxeObj->SetParentNode(playerObj);
-							}
+							woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
+							woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
+							//woodPixaxeObj->SetParentNode(playerObj);
 						}
 					}
+				}
 
 
+				{
+					E::CPlayerFPSArm::DESC Desc{};
+					Desc.sObjectTag = "PlayerFPSArm";
+					if (auto fpsArmHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_PlayerFPSArm",
+						"10_PlayerArm", &Desc))
 					{
-						E::CPlayerFPSArm::DESC Desc{};
-						Desc.sObjectTag = "PlayerFPSArm";
-						if (auto fpsArmHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_PlayerFPSArm",
-							"10_PlayerArm", &Desc))
+						playerObj->SetRightItemHandle(fpsArmHandle);
+						if (auto fpsArmObj = E::CGameInstance::Get().GetGameObjectByHandle(fpsArmHandle.value()))
 						{
-							playerObj->SetRightItemHandle(fpsArmHandle);
-							if (auto fpsArmObj = E::CGameInstance::Get().GetGameObjectByHandle(fpsArmHandle.value()))
-							{
-								fpsArmObj->GetTransform().SetPosition(XMVectorSet(0.1f, -0.15f, 0.05f, 1.f));
-								//fpsArmObj->GetTransform().AddRotation(XMVectorSet(1.f, 0.f, 0.f, 0.f), -90.f);
-								//fpsArmObj->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 30.f);
+							fpsArmObj->GetTransform().SetPosition(XMVectorSet(0.1f, -0.15f, 0.05f, 1.f));
+							//fpsArmObj->GetTransform().AddRotation(XMVectorSet(1.f, 0.f, 0.f, 0.f), -90.f);
+							//fpsArmObj->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 30.f);
 
-								fpsArmObj->GetTransform().AddQuaternion(XMQuaternionRotationRollPitchYaw(
-									XMConvertToRadians(-90.f),
-									XMConvertToRadians(30.f),
-									XMConvertToRadians(0.f)
-								));
+							fpsArmObj->GetTransform().AddQuaternion(XMQuaternionRotationRollPitchYaw(
+								XMConvertToRadians(-90.f),
+								XMConvertToRadians(30.f),
+								XMConvertToRadians(0.f)
+							));
 
-								fpsArmObj->GetTransform().SetScale(XMVectorSet(0.3f, 0.3f, 0.3f, 1.f));
-								//woodPixaxeObj->SetParentNode(playerObj);
-							}
+							fpsArmObj->GetTransform().SetScale(XMVectorSet(0.3f, 0.3f, 0.3f, 1.f));
+							//woodPixaxeObj->SetParentNode(playerObj);
 						}
+					}
+				}
+
+
+				{
+					// destroy stage
+					{
+						//"DESTROY_STAGE", "Prototype_GameObject_DestroyStage"
+						E::CGameObject::GAMEOBJECT_DESC Desc{};
+						Desc.sObjectTag = "DestroyStage";
+
+						if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("DESTROY_STAGE", "Prototype_GameObject_DestroyStage",
+							"82_DestroyStage", &Desc))
+						{
+							playerObj->SetDestroyState(handle.value());
+						}
+					}
+				}
+
+
+				{
+					E::CUIController::DESC ControllerDesc{};
+					ControllerDesc.sObjectTag = "UIController";
+					ControllerDesc.HotBar = E::CUIController::DELEGATE_UI_DESC{
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIHotbar"},
+						.LayerID = "80_UI",
+					};
+					ControllerDesc.HotBarSelect = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIHotbarSelect"},
+						.LayerID = "80_UI",
+					};
+
+					ControllerDesc.HealthBar = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIHealthBar"},
+						.LayerID = "80_UI",
+					};
+					ControllerDesc.HealthBarIcon = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIHealthBarIcon"},
+						.LayerID = "80_UIHealthIcon",
+					};
+
+					ControllerDesc.ArmorBar = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIArmorBar"},
+						.LayerID = "80_UI",
+					};
+					ControllerDesc.ArmorBarIcon = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIArmorBarIcon"},
+						.LayerID = "80_UIHealthIcon",
+					};
+
+					ControllerDesc.HungerBar = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIHungerBar"},
+						.LayerID = "80_UI",
+					};
+					ControllerDesc.HungerBarIcon = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIHungerBarIcon"},
+						.LayerID = "80_UIHungerIcon",
+					};
+
+					ControllerDesc.BreathBar = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIBreathBar"},
+						.LayerID = "80_UI",
+					};
+					ControllerDesc.BreathBarIcon = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIBreathBarIcon"},
+						.LayerID = "80_UIBreathIcon",
+					};
+
+
+					ControllerDesc.ExperienceBar = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIExperienceBar"},
+						.LayerID = "80_UI",
+					};
+					ControllerDesc.ExperienceBarGage = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIExperienceBarGage"},
+						.LayerID = "80_UIArmorIcon",
+					};
+
+					ControllerDesc.Crosshair = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UICrosshair"},
+						.LayerID = "80_CrossHair",
+					};
+
+					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIController",
+						"79_UIController", &ControllerDesc))
+					{
+						playerObj->SetUIController(handle.value());
 					}
 				}
 			}
 		}
+	}
 
 		
 
@@ -204,86 +291,8 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
-	{
-		E::CUIController::DESC ControllerDesc{};
-		ControllerDesc.sObjectTag = "UIController";
-		ControllerDesc.HotBar = E::CUIController::DELEGATE_UI_DESC {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIHotbar"},
-			.LayerID = "80_UI",
-		};
-		ControllerDesc.HotBarSelect = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIHotbarSelect"},
-			.LayerID = "80_UI",
-		};
+	
 
-		ControllerDesc.HealthBar = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIHealthBar"},
-			.LayerID = "80_UI",
-		};
-		ControllerDesc.HealthBarIcon = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIHealthBarIcon"},
-			.LayerID = "80_UIHealthIcon",
-		};
-
-		ControllerDesc.ArmorBar = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIArmorBar"},
-			.LayerID = "80_UI",
-		};
-		ControllerDesc.ArmorBarIcon = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIArmorBarIcon"},
-			.LayerID = "80_UIHealthIcon",
-		};
-
-		ControllerDesc.HungerBar = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIHungerBar"},
-			.LayerID = "80_UI",
-		};
-		ControllerDesc.HungerBarIcon = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIHungerBarIcon"},
-			.LayerID = "80_UIHungerIcon",
-		};
-
-		ControllerDesc.BreathBar = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIBreathBar"},
-			.LayerID = "80_UI",
-		};
-		ControllerDesc.BreathBarIcon = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIBreathBarIcon"},
-			.LayerID = "80_UIBreathIcon",
-		};
-		
-
-		ControllerDesc.ExperienceBar = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIExperienceBar"},
-			.LayerID = "80_UI",
-		};
-		ControllerDesc.ExperienceBarGage = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UIExperienceBarGage"},
-			.LayerID = "80_UIArmorIcon",
-		};
-
-		ControllerDesc.Crosshair = {
-			.ProtoPairID = {"UI", "Prototype_GameObject_UICrosshair"},
-			.LayerID = "80_CrossHair",
-		};
-
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIController",
-			"79_UIController", &ControllerDesc))
-		{
-		}
-	}
-
-	// destroy stage
-	{
-		//"DESTROY_STAGE", "Prototype_GameObject_DestroyStage"
-		E::CGameObject::GAMEOBJECT_DESC Desc{};
-		Desc.sObjectTag = "DestroyStage";
-
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("DESTROY_STAGE", "Prototype_GameObject_DestroyStage",
-			"82_DestroyStage", &Desc))
-		{
-		}
-	}
 
 	{
 		E::CCameraObject::CAMERA_DESC Desc{};

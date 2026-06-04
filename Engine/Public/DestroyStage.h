@@ -37,9 +37,14 @@ private:
 private:
 	SPtr<CResDynamicVIBuffer> m_pVIBuffer{};
 	uint32_t m_currentIndexCount{};
-private:
-	_bool m_bRender{ true };
 
+public:
+	void SetRender(_bool b) { m_bRender = b; }
+	void SetFrameIndex(uint32_t i) { m_iFrameIndex = std::clamp(i, (uint32_t)0, (uint32_t)9); }
+	uint32_t GetFrameIndex() const { return m_iFrameIndex; }
+
+private:
+	_bool m_bRender{ false };
 	_bool m_bDirty{ true };
 
 private:

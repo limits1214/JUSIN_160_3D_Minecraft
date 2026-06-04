@@ -119,11 +119,11 @@ void CDestroyStage::Update(E::_float fTimeDelta)
 	float goal = 1.f;
 
 
-	m_iFrameIndex = std::min((int)(m_fElapsed / (goal / 10.f)), 9);
-	if (m_fElapsed > goal)
-	{
-		m_fElapsed = 0.f;
-	}
+	//m_iFrameIndex = std::min((int)(m_fElapsed / (goal / 10.f)), 9);
+	//if (m_fElapsed > goal)
+	//{
+	//	m_fElapsed = 0.f;
+	//}
 }
 
 void CDestroyStage::LateUpdate(E::_float fTimeDelta)

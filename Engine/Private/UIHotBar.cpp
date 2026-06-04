@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
+#include "UIHotbarSelect.h"
 NS_USING(Engine)
 
 CUIHotBar::CUIHotBar()
@@ -126,6 +127,11 @@ HRESULT CUIHotBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 
 	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
 	return S_OK;
+}
+
+CUIHotBarSelect* CUIHotBar::GetHotBarSelect() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUIHotBarSelect>(m_hHotbarSelect);
 }
 
 E::UPtr<CUIHotBar> CUIHotBar::Create()

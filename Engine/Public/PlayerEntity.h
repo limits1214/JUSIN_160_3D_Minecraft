@@ -4,6 +4,8 @@
 
 NS_BEGIN(Engine)
 class CComEntityModel;
+class CDestroyStage;
+class CUIController;
 class ENGINE_DLL CPlayerEntity : public CPlayerEntityObject
 {
 public:
@@ -56,6 +58,25 @@ private:
 	MODE_TYPE m_eModeType{ MODE_TYPE::GOD };
 private:
 	CComEntityModel* m_pComEntityModel{};
+
+public:
+	void SetDestroyState(CHandle h) { m_hDestroyStage = h; }
+private:
+	void ProcessDestroyStage(float fTimeDelta);
+	CDestroyStage* GetDestroyStage() const;
+private:
+	std::optional<std::pair<XMINT3, uint8_t>> m_DestoryStageRaycastTarget{};
+	_bool m_bDestoryStageStart{ false };
+	CHandle m_hDestroyStage{};
+
+
+public:
+	void SetUIController(CHandle h) { m_hUIController = h; }
+private:
+	CUIController* GetUIController() const;
+	void ProcessUI(float fTimeDelta);
+private:
+	CHandle m_hUIController{};
 
 public:
 	void SetRightItemHandle(std::optional<CHandle> h) { m_hRightItem = h; }
