@@ -199,7 +199,11 @@ HRESULT CChunk3::BlockFilling()
 				else
 				{
 					// 💡 위쪽 공기/물 공간을 완벽히 밀어두어야 SpawnTree에서 AIR 검사가 제대로 먹힙니다.
-					m_arrBlocks[idx].SetType(k <= SEA_LEVEL ? CBlock3::TYPE::WATER_PLACE_HOLDER : CBlock3::TYPE::AIR);
+					m_arrBlocks[idx].SetType(k <= SEA_LEVEL ? CBlock3::TYPE::WATER_STILL : CBlock3::TYPE::AIR);
+					if (m_arrBlocks[idx].GetType() == CBlock3::TYPE::WATER_STILL)
+					{
+						m_arrBlocks[idx].SetFlag(7);
+					}
 				}
 
 				// -------------------------------------------------------------
@@ -208,7 +212,7 @@ HRESULT CChunk3::BlockFilling()
 				CBlock3::TYPE currentType = m_arrBlocks[idx].GetType();
 				if (k > BEDROCK_MAX_HEIGHT && k < height - 4)
 				{
-					if (m_arrBlocks[idx].GetType() == CBlock3::TYPE::WATER_PLACE_HOLDER)
+					if (m_arrBlocks[idx].GetType() == CBlock3::TYPE::WATER_STILL)
 						continue;
 
 					float caveNoise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::CAVE).GetNoise(tmpx, (float)k, tmpz);
@@ -509,6 +513,8 @@ HRESULT CChunk3::DrawWater(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 void CChunk3::Update(_float fTimeDelta)
 {
 	CGameInstance::Get().AddColliderGroup("Coll_Chunk", m_pCollBox.get());
+
+
 }
 
 std::optional<CBlock3> CChunk3::GetBlockAt(int32_t x, int32_t y, int32_t z, std::vector<CChunk3*>& vecAdjChunks) const
@@ -648,18 +654,23 @@ bool CChunk3::IsFaceExposed(CBlock3 currBlock, FACE_DIR eDir, std::optional<CBlo
 	}
 
 	// 2. 현재 내 블록의 속성에 따른 일반적인 컬링 규칙
-	bool isCurrentWater = (currBlock.GetType() == CBlock3::TYPE::WATER_PLACE_HOLDER);
+		
+	bool isCurrentWater = CBlock3::IsWater(currBlock.GetType());
 	bool isCurrentAlpha = CBlock3::IsNeedAlphaTest(currBlock.GetType());
 
 	if (isCurrentWater || isCurrentAlpha)
 	{
+		if (isCurrentWater && currBlock.GetType() != nextType)
+		{
+			return true;
+		}
 		// 내 블록이 물이거나 알파(반투명)인 경우: 다음 블록이 완전히 비어있는 '공기'여야만 노출
 		return (nextType == CBlock3::TYPE::AIR);
 	}
 	else
 	{
 		// 내 블록이 일반 고체(불투명)인 경우: 다음 블록이 '공기'이거나 '물'일 때 내 면이 노출
-		return (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+		return (nextType == CBlock3::TYPE::AIR || CBlock3::IsWater(nextType));
 	}
 }
 
@@ -684,8 +695,8 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				CBlock3::TYPE curType = currBlock.GetType();
 				if (curType == CBlock3::TYPE::AIR) continue;
 
-
-				bool isCurrentWater = (curType == CBlock3::TYPE::WATER_PLACE_HOLDER);
+				
+				bool isCurrentWater = CBlock3::IsWater(curType);
 				bool isCurrAlphaTest = CBlock3::IsNeedAlphaTest(curType);
 
 				float fx = (float)x;
@@ -716,51 +727,32 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 					continue;
 				}
 				// NiveFaceCulling 내부 루프 조건절 수정 파트
-				//else if (geoType == CBlock3::GEO_TYPE::WATER)
-				//{
-				//	// 💡 기존의 BuildWaterMesh(fx, fy, fz, 6, solidQuads); 구조에서
-				//	// 이웃 청크 정보와 올바른 반투명 쿼드 컨테이너(waterQuads)를 인자로 전달하도록 교체합니다.
-				//	BuildWaterMesh((int)fx, (int)fy, (int)fz, waterQuads, pPlusX, pMinusX, pPlusZ, pMinusZ);
-				//	continue; // 6면체 기본 불투명 컬링 루틴 패스
-				//}
+				else if (geoType == CBlock3::GEO_TYPE::WATER)
+				{
+					if (curType == CBlock3::TYPE::LAVA_STILL || curType == CBlock3::TYPE::LAVA_FLOW)
+					{
+						BuildLavaMesh((int)fx, (int)fy, (int)fz, solidQuads, adjChunks);
+					}
+					else
+					{
+						// 💡 기존의 BuildWaterMesh(fx, fy, fz, 6, solidQuads); 구조에서
+											// 이웃 청크 정보와 올바른 반투명 쿼드 컨테이너(waterQuads)를 인자로 전달하도록 교체합니다.
+						BuildWaterMesh((int)fx, (int)fy, (int)fz, waterQuads, adjChunks);
+					}
+					
+					continue; // 6면체 기본 불투명 컬링 루틴 패스
+				}
+
+
+
+
 
 
 				// 1. Top (+Y)
 				{
 					int ny = y + 1;
-
-					
-
-					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, adjChunks);
 					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::POS_Y, optNextBlock);
-
-					/*if (optNextBlock)
-					{
-						nextType = optNextBlock.value().GetType();
-					}
-					else
-					{
-						nextType = CBlock3::TYPE::AIR;
-					}*/
-
-					//CBlock3::TYPE nextType = GetBlockTypeAt(x, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
-
-					//bool bExpose = false;
-					//if (isCurrentWater || isCurrAlphaTest)
-					//	bExpose = (nextType == CBlock3::TYPE::AIR); // 물 위에는 공기여야 면이 보임
-					//else
-					//	bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER); // 고체 위에는 공기나 물일 때 보임
-
-					//if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
-					//{
-					//	bExpose = true;
-					//}
-
-					//if (curType == CBlock3::TYPE::TORCH_ON)
-					//{
-					//	bExpose = true;
-					//}
 
 					if (bExpose) {
 						VOX_QUAD quad{};
@@ -815,34 +807,9 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				// 2. Bottom (-Y)
 				{
 					int ny = y - 1;
-					//CBlock3::TYPE nextType;
-					//std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, adjChunks);
-					//if (optNextBlock)
-					//{
-					//	nextType = optNextBlock.value().GetType();
-					//}
-					//else
-					//{
-					//	nextType = CBlock3::TYPE::AIR;
-					//}
+					
 					std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, adjChunks);
 					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::NEG_Y, optNextBlock);
-					//CBlock3::TYPE nextType = GetBlockTypeAt(x, ny, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
-
-					//bool bExpose = false;
-					//if (isCurrentWater || isCurrAlphaTest)
-					//	bExpose = (nextType == CBlock3::TYPE::AIR); // 밑면이 뚫린 연출(하늘에 떠있는 유체 등)이 아니면 물끼리는 컬링
-					//else
-					//	bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
-
-					//if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
-					//{
-					//	bExpose = true;
-					//}
-					//if (curType == CBlock3::TYPE::TORCH_ON)
-					//{
-					//	bExpose = true;
-					//}
 
 					if (bExpose) {
 						VOX_QUAD quad{};
@@ -894,35 +861,10 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				// 3. Front (+Z)
 				{
 					int nz = z + 1;
-					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(x, y, nz, adjChunks);
-					//if (optNextBlock)
-					//{
-					//	nextType = optNextBlock.value().GetType();
-					//}
-					//else
-					//{
-					//	nextType = CBlock3::TYPE::AIR;
-					//}
 
 					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::POS_Z, optNextBlock);
 
-					//CBlock3::TYPE nextType = GetBlockTypeAt(x, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
-
-					/*bool bExpose = false;
-					if (isCurrentWater || isCurrAlphaTest)
-						bExpose = (nextType == CBlock3::TYPE::AIR);
-					else
-						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
-
-					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
-					{
-						bExpose = true;
-					}
-					if (curType == CBlock3::TYPE::TORCH_ON)
-					{
-						bExpose = true;
-					}*/
 
 					if (bExpose) {
 						VOX_QUAD quad{};
@@ -979,32 +921,9 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 					int nz = z - 1;
 					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(x, y, nz, adjChunks);
-					/*if (optNextBlock)
-					{
-						nextType = optNextBlock.value().GetType();
-					}
-					else
-					{
-						nextType = CBlock3::TYPE::AIR;
-					}*/
+					
 					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::NEG_Z, optNextBlock);
 
-					//CBlock3::TYPE nextType = GetBlockTypeAt(x, y, nz, pPlusX, pMinusX, pPlusZ, pMinusZ);
-
-					/*bool bExpose = false;
-					if (isCurrentWater || isCurrAlphaTest)
-						bExpose = (nextType == CBlock3::TYPE::AIR);
-					else
-						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
-
-					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
-					{
-						bExpose = true;
-					}
-					if (curType == CBlock3::TYPE::TORCH_ON)
-					{
-						bExpose = true;
-					}*/
 
 					if (bExpose) {
 						VOX_QUAD quad{};
@@ -1062,31 +981,9 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 
 					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(nx, y, z, adjChunks);
-					/*if (optNextBlock)
-					{
-						nextType = optNextBlock.value().GetType();
-					}
-					else
-					{
-						nextType = CBlock3::TYPE::AIR;
-					}*/
+					
 					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::POS_X, optNextBlock);
-					//CBlock3::TYPE nextType = GetBlockTypeAt(nx, y, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
-
-					/*bool bExpose = false;
-					if (isCurrentWater || isCurrAlphaTest)
-						bExpose = (nextType == CBlock3::TYPE::AIR);
-					else
-						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
-
-					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
-					{
-						bExpose = true;
-					}
-					if (curType == CBlock3::TYPE::TORCH_ON)
-					{
-						bExpose = true;
-					}*/
+					
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v[0] = { fx + 1, fy + 1, fz };
@@ -1141,35 +1038,11 @@ void CChunk3::NiveFaceCulling(QuadBuckets& quadBuckets) const
 				{
 					int nx = x - 1;
 
-					//CBlock3::TYPE nextType;
 					std::optional<CBlock3> optNextBlock = GetBlockAt(nx, y, z, adjChunks);
-					/*if (optNextBlock)
-					{
-						nextType = optNextBlock.value().GetType();
-					}
-					else
-					{
-						nextType = CBlock3::TYPE::AIR;
-					}*/
+					
 
 					bool bExpose = IsFaceExposed(currBlock, FACE_DIR::NEG_X, optNextBlock);
-					//CBlock3::TYPE nextType = GetBlockTypeAt(nx, y, z, pPlusX, pMinusX, pPlusZ, pMinusZ);
-
-					/*bool bExpose = false;
-					if (isCurrentWater || isCurrAlphaTest)
-						bExpose = (nextType == CBlock3::TYPE::AIR);
-					else
-						bExpose = (nextType == CBlock3::TYPE::AIR || nextType == CBlock3::TYPE::WATER_PLACE_HOLDER);
-
-					if (nextType == CBlock3::TYPE::TORCH_ON || CBlock3::IsNeedAlphaTest(nextType))
-					{
-						bExpose = true;
-					}
-					if (curType == CBlock3::TYPE::TORCH_ON)
-					{
-						bExpose = true;
-					}*/
-
+					
 					if (bExpose) {
 						VOX_QUAD quad{};
 						quad.v[0] = { fx, fy + 1, fz + 1 };
@@ -1310,7 +1183,7 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 		quad.eDir = FACE_DIR::POS_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
-		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
 		alphaTestQuads.push_back(quad);
 	}
 
@@ -1330,7 +1203,7 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 		quad.eDir = FACE_DIR::NEG_Y;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
-		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
 		alphaTestQuads.push_back(quad);
 	}
 
@@ -1350,7 +1223,7 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 		quad.eDir = FACE_DIR::POS_Z;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
-		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
 		alphaTestQuads.push_back(quad);
 	}
 
@@ -1370,7 +1243,7 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 		quad.eDir = FACE_DIR::NEG_Z;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
-		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
 		alphaTestQuads.push_back(quad);
 	}
 
@@ -1390,7 +1263,7 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 		quad.eDir = FACE_DIR::POS_X;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
-		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
 		alphaTestQuads.push_back(quad);
 	}
 
@@ -1410,7 +1283,7 @@ void CChunk3::BuildTorchMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 		quad.eDir = FACE_DIR::NEG_X;
 		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(curType, quad.eDir));
 		quad.lighting = blockLight;
-		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 0;
+		quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
 		alphaTestQuads.push_back(quad);
 	}
 }
@@ -1825,6 +1698,320 @@ void CChunk3::BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType
 		solidQuads.push_back(quad);
 	}
 }
+
+void CChunk3::BuildWaterMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads, std::vector<CChunk3*>& vecAdjChunks) const
+{
+	float fx = (float)x;
+	float fy = (float)y;
+	float fz = (float)z;
+
+	CBlock3 currentBlock = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)];
+
+	uint8_t blockLight = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)].GetLight();
+	uint32_t blockColor = CBlock3::GetBaseColor(currentBlock.GetType());
+
+	// 💡 1. 3비트 수위 (0 ~ 7) 읽기
+	// m_iFlag에서 하위 3비트만 마스킹해서 가져옵니다. (예: currentBlock.GetFlag() & 0x07)
+	uint8_t waterLevel = currentBlock.GetFlag() & 0x07;
+
+	// 💡 2. 8분법 공식 적용 (0일 때 1/8, 7일 때 8/8 즉 1.0)
+	float hTop = fy + (((float)waterLevel + 1.f) / 8.f);
+	float vTop = 1.0f - (hTop - fy);
+
+	// -------------------------------------------------------------
+	// 💡 수평 옆면 렌더링을 위한 헬퍼 람다 함수 (8분법 보정 반영)
+	// -------------------------------------------------------------
+	auto ProcessHorizontalFace = [&](FACE_DIR dir, int nx, int ny, int nz, auto&& BuildQuadFunc) {
+		std::optional<CBlock3> optNext = GetBlockAt(nx, ny, nz, vecAdjChunks);
+
+		bool bExpose = false;
+		float hBottom = fy;      // 기본 사각형 바닥 높이
+		float vBottom = 1.0f;    // 기본 사각형 바닥 UV
+
+		if (!optNext.has_value()) {
+			bExpose = true;
+		}
+		else if (optNext->GetType() == CBlock3::TYPE::WATER_STILL || optNext->GetType() == CBlock3::TYPE::WATER_FLOW) {
+			uint8_t nextLevel = optNext->GetFlag() & 0x07; // 이웃 물도 똑같이 3비트 마스킹
+
+			// 내 수위가 더 높을 때만 "그 차이만큼" 단차면을 렌더링
+			if (waterLevel > nextLevel) {
+				bExpose = true;
+				// 💡 보정: 이웃 물의 높이만큼 사각형 바닥을 들어올림 (8분법 공식)
+				hBottom = fy + (((float)nextLevel + 1.f) / 8.f);
+				// 💡 UV 보정: 들어올려진 바닥 높이에 맞춰 UV 텍스처 컷팅
+				vBottom = 1.0f - (hBottom - fy);
+			}
+		}
+		else {
+			// 일반 블록(AIR 등)인 경우 통째로 다 그림
+			bExpose = IsFaceExposed(currentBlock, dir, optNext);
+		}
+
+		if (bExpose) {
+			BuildQuadFunc(hBottom, vBottom);
+		}
+		};
+
+	// [Top] 면 (수정된 hTop 반영)
+	{
+		int ny = y + 1;
+		std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, vecAdjChunks);
+		if (IsFaceExposed(currentBlock, FACE_DIR::POS_Y, optNextBlock)) {
+			VOX_QUAD quad{};
+			quad.v[0] = { fx,        hTop, fz + 1.f }; quad.v[1] = { fx + 1.f,  hTop, fz + 1.f };
+			quad.v[2] = { fx + 1.f,  hTop, fz };       quad.v[3] = { fx,        hTop, fz };
+			quad.uv[0] = { 0.f, 0.f }; quad.uv[1] = { 1.f, 0.f }; quad.uv[2] = { 1.f, 1.f }; quad.uv[3] = { 0.f, 1.f };
+			quad.eDir = FACE_DIR::POS_Y;
+			quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+			quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+			waterQuads.push_back(quad);
+		}
+	}
+
+	// [Bottom] 면 (언제나 고정된 바닥 fy)
+	{
+		int ny = y - 1;
+		std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, vecAdjChunks);
+		if (IsFaceExposed(currentBlock, FACE_DIR::NEG_Y, optNextBlock)) {
+			VOX_QUAD quad{};
+			quad.v[0] = { fx,        fy, fz };          quad.v[1] = { fx + 1.f,  fy, fz };
+			quad.v[2] = { fx + 1.f,  fy, fz + 1.f };    quad.v[3] = { fx,        fy, fz + 1.f };
+			quad.uv[0] = { 0.f, 0.f }; quad.uv[1] = { 1.f, 0.f }; quad.uv[2] = { 1.f, 1.f }; quad.uv[3] = { 0.f, 1.f };
+			quad.eDir = FACE_DIR::NEG_Y;
+			quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+			quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+			waterQuads.push_back(quad);
+		}
+	}
+
+	// [Front] (+Z면)
+	ProcessHorizontalFace(FACE_DIR::POS_Z, x, y, z + 1, [&](float hBottom, float vBottom) {
+		VOX_QUAD quad{};
+		quad.v[0] = { fx + 1.f,  hTop,    fz + 1.f };
+		quad.v[1] = { fx,        hTop,    fz + 1.f };
+		quad.v[2] = { fx,        hBottom, fz + 1.f };
+		quad.v[3] = { fx + 1.f,  hBottom, fz + 1.f };
+
+		quad.uv[0] = { 1.f, vTop }; quad.uv[1] = { 0.f, vTop };
+		quad.uv[2] = { 0.f, vBottom }; quad.uv[3] = { 1.f, vBottom };
+
+		quad.eDir = FACE_DIR::POS_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+		quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		waterQuads.push_back(quad);
+		});
+
+	// [Back] (-Z면)
+	ProcessHorizontalFace(FACE_DIR::NEG_Z, x, y, z - 1, [&](float hBottom, float vBottom) {
+		VOX_QUAD quad{};
+		quad.v[0] = { fx,        hTop,    fz };
+		quad.v[1] = { fx + 1.f,  hTop,    fz };
+		quad.v[2] = { fx + 1.f,  hBottom, fz };
+		quad.v[3] = { fx,        hBottom, fz };
+
+		quad.uv[0] = { 1.f, vTop }; quad.uv[1] = { 0.f, vTop };
+		quad.uv[2] = { 0.f, vBottom }; quad.uv[3] = { 1.f, vBottom };
+
+		quad.eDir = FACE_DIR::NEG_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+		quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		waterQuads.push_back(quad);
+		});
+
+	// [Right] (+X면)
+	ProcessHorizontalFace(FACE_DIR::POS_X, x + 1, y, z, [&](float hBottom, float vBottom) {
+		VOX_QUAD quad{};
+		quad.v[0] = { fx + 1.f,  hTop,    fz };
+		quad.v[1] = { fx + 1.f,  hTop,    fz + 1.f };
+		quad.v[2] = { fx + 1.f,  hBottom, fz + 1.f };
+		quad.v[3] = { fx + 1.f,  hBottom, fz };
+
+		quad.uv[0] = { 1.f, vTop }; quad.uv[1] = { 0.f, vTop };
+		quad.uv[2] = { 0.f, vBottom }; quad.uv[3] = { 1.f, vBottom };
+
+		quad.eDir = FACE_DIR::POS_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+		quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		waterQuads.push_back(quad);
+		});
+
+	// [Left] (-X면)
+	ProcessHorizontalFace(FACE_DIR::NEG_X, x - 1, y, z, [&](float hBottom, float vBottom) {
+		VOX_QUAD quad{};
+		quad.v[0] = { fx,        hTop,    fz + 1.f };
+		quad.v[1] = { fx,        hTop,    fz };
+		quad.v[2] = { fx,        hBottom, fz };
+		quad.v[3] = { fx,        hBottom, fz + 1.f };
+
+		quad.uv[0] = { 1.f, vTop }; quad.uv[1] = { 0.f, vTop };
+		quad.uv[2] = { 0.f, vBottom }; quad.uv[3] = { 1.f, vBottom };
+
+		quad.eDir = FACE_DIR::NEG_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+		quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		waterQuads.push_back(quad);
+		});
+}
+
+void CChunk3::BuildLavaMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads, std::vector<CChunk3*>& vecAdjChunks) const
+{
+	float fx = (float)x;
+	float fy = (float)y;
+	float fz = (float)z;
+
+	CBlock3 currentBlock = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)];
+
+	uint8_t blockLight = m_arrBlocks[BlockIndexing((int)fx, (int)fy, (int)fz)].GetLight();
+	uint32_t blockColor = CBlock3::GetBaseColor(currentBlock.GetType());
+
+	// 💡 1. 3비트 수위 (0 ~ 7) 읽기
+	// m_iFlag에서 하위 3비트만 마스킹해서 가져옵니다. (예: currentBlock.GetFlag() & 0x07)
+	uint8_t waterLevel = currentBlock.GetFlag() & 0x03;
+
+	// 💡 2. 8분법 공식 적용 (0일 때 1/8, 7일 때 8/8 즉 1.0)
+	float hTop = fy + (((float)waterLevel + 1.f) / 4.f);
+	float vTop = 1.0f - (hTop - fy);
+
+	// -------------------------------------------------------------
+	// 💡 수평 옆면 렌더링을 위한 헬퍼 람다 함수 (8분법 보정 반영)
+	// -------------------------------------------------------------
+	auto ProcessHorizontalFace = [&](FACE_DIR dir, int nx, int ny, int nz, auto&& BuildQuadFunc) {
+		std::optional<CBlock3> optNext = GetBlockAt(nx, ny, nz, vecAdjChunks);
+
+		bool bExpose = false;
+		float hBottom = fy;      // 기본 사각형 바닥 높이
+		float vBottom = 1.0f;    // 기본 사각형 바닥 UV
+
+		if (!optNext.has_value()) {
+			bExpose = true;
+		}
+		else if (optNext->GetType() == CBlock3::TYPE::LAVA_STILL || optNext->GetType() == CBlock3::TYPE::LAVA_FLOW) {
+			uint8_t nextLevel = optNext->GetFlag() & 0x07; // 이웃 물도 똑같이 3비트 마스킹
+
+			// 내 수위가 더 높을 때만 "그 차이만큼" 단차면을 렌더링
+			if (waterLevel > nextLevel) {
+				bExpose = true;
+				// 💡 보정: 이웃 물의 높이만큼 사각형 바닥을 들어올림 (8분법 공식)
+				hBottom = fy + (((float)nextLevel + 1.f) / 4.f);
+				// 💡 UV 보정: 들어올려진 바닥 높이에 맞춰 UV 텍스처 컷팅
+				vBottom = 1.0f - (hBottom - fy);
+			}
+		}
+		else {
+			// 일반 블록(AIR 등)인 경우 통째로 다 그림
+			bExpose = IsFaceExposed(currentBlock, dir, optNext);
+		}
+
+		if (bExpose) {
+			BuildQuadFunc(hBottom, vBottom);
+		}
+		};
+
+	// [Top] 면 (수정된 hTop 반영)
+	{
+		int ny = y + 1;
+		std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, vecAdjChunks);
+		if (IsFaceExposed(currentBlock, FACE_DIR::POS_Y, optNextBlock)) {
+			VOX_QUAD quad{};
+			quad.v[0] = { fx,        hTop, fz + 1.f }; quad.v[1] = { fx + 1.f,  hTop, fz + 1.f };
+			quad.v[2] = { fx + 1.f,  hTop, fz };       quad.v[3] = { fx,        hTop, fz };
+			quad.uv[0] = { 0.f, 0.f }; quad.uv[1] = { 1.f, 0.f }; quad.uv[2] = { 1.f, 1.f }; quad.uv[3] = { 0.f, 1.f };
+			quad.eDir = FACE_DIR::POS_Y;
+			quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+			quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+			waterQuads.push_back(quad);
+		}
+	}
+
+	// [Bottom] 면 (언제나 고정된 바닥 fy)
+	{
+		int ny = y - 1;
+		std::optional<CBlock3> optNextBlock = GetBlockAt(x, ny, z, vecAdjChunks);
+		if (IsFaceExposed(currentBlock, FACE_DIR::NEG_Y, optNextBlock)) {
+			VOX_QUAD quad{};
+			quad.v[0] = { fx,        fy, fz };          quad.v[1] = { fx + 1.f,  fy, fz };
+			quad.v[2] = { fx + 1.f,  fy, fz + 1.f };    quad.v[3] = { fx,        fy, fz + 1.f };
+			quad.uv[0] = { 0.f, 0.f }; quad.uv[1] = { 1.f, 0.f }; quad.uv[2] = { 1.f, 1.f }; quad.uv[3] = { 0.f, 1.f };
+			quad.eDir = FACE_DIR::NEG_Y;
+			quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+			quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+			waterQuads.push_back(quad);
+		}
+	}
+
+	// [Front] (+Z면)
+	ProcessHorizontalFace(FACE_DIR::POS_Z, x, y, z + 1, [&](float hBottom, float vBottom) {
+		VOX_QUAD quad{};
+		quad.v[0] = { fx + 1.f,  hTop,    fz + 1.f };
+		quad.v[1] = { fx,        hTop,    fz + 1.f };
+		quad.v[2] = { fx,        hBottom, fz + 1.f };
+		quad.v[3] = { fx + 1.f,  hBottom, fz + 1.f };
+
+		quad.uv[0] = { 1.f, vTop }; quad.uv[1] = { 0.f, vTop };
+		quad.uv[2] = { 0.f, vBottom }; quad.uv[3] = { 1.f, vBottom };
+
+		quad.eDir = FACE_DIR::POS_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+		quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		waterQuads.push_back(quad);
+		});
+
+	// [Back] (-Z면)
+	ProcessHorizontalFace(FACE_DIR::NEG_Z, x, y, z - 1, [&](float hBottom, float vBottom) {
+		VOX_QUAD quad{};
+		quad.v[0] = { fx,        hTop,    fz };
+		quad.v[1] = { fx + 1.f,  hTop,    fz };
+		quad.v[2] = { fx + 1.f,  hBottom, fz };
+		quad.v[3] = { fx,        hBottom, fz };
+
+		quad.uv[0] = { 1.f, vTop }; quad.uv[1] = { 0.f, vTop };
+		quad.uv[2] = { 0.f, vBottom }; quad.uv[3] = { 1.f, vBottom };
+
+		quad.eDir = FACE_DIR::NEG_Z;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+		quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		waterQuads.push_back(quad);
+		});
+
+	// [Right] (+X면)
+	ProcessHorizontalFace(FACE_DIR::POS_X, x + 1, y, z, [&](float hBottom, float vBottom) {
+		VOX_QUAD quad{};
+		quad.v[0] = { fx + 1.f,  hTop,    fz };
+		quad.v[1] = { fx + 1.f,  hTop,    fz + 1.f };
+		quad.v[2] = { fx + 1.f,  hBottom, fz + 1.f };
+		quad.v[3] = { fx + 1.f,  hBottom, fz };
+
+		quad.uv[0] = { 1.f, vTop }; quad.uv[1] = { 0.f, vTop };
+		quad.uv[2] = { 0.f, vBottom }; quad.uv[3] = { 1.f, vBottom };
+
+		quad.eDir = FACE_DIR::POS_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+		quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		waterQuads.push_back(quad);
+		});
+
+	// [Left] (-X면)
+	ProcessHorizontalFace(FACE_DIR::NEG_X, x - 1, y, z, [&](float hBottom, float vBottom) {
+		VOX_QUAD quad{};
+		quad.v[0] = { fx,        hTop,    fz + 1.f };
+		quad.v[1] = { fx,        hTop,    fz };
+		quad.v[2] = { fx,        hBottom, fz };
+		quad.v[3] = { fx,        hBottom, fz + 1.f };
+
+		quad.uv[0] = { 1.f, vTop }; quad.uv[1] = { 0.f, vTop };
+		quad.uv[2] = { 0.f, vBottom }; quad.uv[3] = { 1.f, vBottom };
+
+		quad.eDir = FACE_DIR::NEG_X;
+		quad.blockTexType = static_cast<uint8_t>(CBlock3::GetTexType(currentBlock.GetType(), quad.eDir));
+		quad.lighting = blockLight; quad.color[0] = quad.color[1] = quad.color[2] = quad.color[3] = blockColor; quad.ao[0] = quad.ao[1] = quad.ao[2] = quad.ao[3] = 3;
+		waterQuads.push_back(quad);
+		});
+}
+
+/*
+
+
 void CChunk3::BuildWaterMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads, std::vector<CChunk3*>& vecAdjChunks) const
 {
 	float fx = (float)x;
@@ -1996,55 +2183,59 @@ void CChunk3::BuildWaterMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQu
 		waterQuads.push_back(quad);
 	}
 }
-uint8_t CChunk3::GetCornerWaterLevel(int cx, int cy, int cz, std::vector<CChunk3*>& vecAdjChunks) const
-{
-	// 하나의 꼭짓점을 공유하는 상하좌우 4개의 셀 오프셋
-	int dx[4] = { -1,  0, -1, 0 };
-	int dz[4] = { -1, -1,  0, 0 };
 
-	uint8_t maxLevel = 0;
-	int waterCount = 0;
-	uint8_t centerLevel = 4; // 폴백용 기본값
+*/
 
-	for (int i = 0; i < 4; ++i)
-	{
-		int nx = cx + dx[i];
-		int nz = cz + dz[i];
+//uint8_t CChunk3::GetCornerWaterLevel(int cx, int cy, int cz, std::vector<CChunk3*>& vecAdjChunks) const
+//{
+//	// 하나의 꼭짓점을 공유하는 상하좌우 4개의 셀 오프셋
+//	int dx[4] = { -1,  0, -1, 0 };
+//	int dz[4] = { -1, -1,  0, 0 };
+//
+//	uint8_t maxLevel = 0;
+//	int waterCount = 0;
+//	uint8_t centerLevel = 4; // 폴백용 기본값
+//
+//	for (int i = 0; i < 4; ++i)
+//	{
+//		int nx = cx + dx[i];
+//		int nz = cz + dz[i];
+//
+//		// 기존에 사용하시던 안전한 블록 타입 추출 함수 활용
+//		CBlock3::TYPE neighborType;
+//
+//		auto optBlock = GetBlockAt(nx, cy, nz, vecAdjChunks);
+//		if (optBlock)
+//		{
+//			neighborType = optBlock.value().GetType();
+//		}
+//		else
+//		{
+//			neighborType = CBlock3::TYPE::AIR;
+//		}
+//		//CBlock3::TYPE neighborType = GetBlockTypeAt(nx, cy, nz, pPX, pMX, pPZ, pMZ);
+//
+//		if (neighborType == CBlock3::TYPE::WATER_PLACE_HOLDER)
+//		{
+//			// TODO: 실제 CBlock3에 구현된 수위 getter 연동 (예: GetWaterLevel())
+//			// 지금은 알고리즘 테스트를 위해 x축 방향으로 갈수록 수위가 낮아지는 경사면 레이아웃을 임시 적용합니다.
+//			uint8_t nLevel = 7 - (abs(nx) % 6);
+//			if (nLevel < 1) nLevel = 1;
+//
+//			if (nLevel > maxLevel) maxLevel = nLevel;
+//			waterCount++;
+//		}
+//		else if (neighborType != CBlock3::TYPE::AIR)
+//		{
+//			// 벽면(SOLID)에 붙은 코너 처리를 위해 카운트만 유지하거나 패스합니다.
+//		}
+//	}
+//
+//	// 주변에 물이 아예 없다면 바닥에 붙도록 처리
+//	if (waterCount == 0) return 0;
+//	return maxLevel;
+//}
 
-		// 기존에 사용하시던 안전한 블록 타입 추출 함수 활용
-		CBlock3::TYPE neighborType;
-
-		auto optBlock = GetBlockAt(nx, cy, nz, vecAdjChunks);
-		if (optBlock)
-		{
-			neighborType = optBlock.value().GetType();
-		}
-		else
-		{
-			neighborType = CBlock3::TYPE::AIR;
-		}
-		//CBlock3::TYPE neighborType = GetBlockTypeAt(nx, cy, nz, pPX, pMX, pPZ, pMZ);
-
-		if (neighborType == CBlock3::TYPE::WATER_PLACE_HOLDER)
-		{
-			// TODO: 실제 CBlock3에 구현된 수위 getter 연동 (예: GetWaterLevel())
-			// 지금은 알고리즘 테스트를 위해 x축 방향으로 갈수록 수위가 낮아지는 경사면 레이아웃을 임시 적용합니다.
-			uint8_t nLevel = 7 - (abs(nx) % 6);
-			if (nLevel < 1) nLevel = 1;
-
-			if (nLevel > maxLevel) maxLevel = nLevel;
-			waterCount++;
-		}
-		else if (neighborType != CBlock3::TYPE::AIR)
-		{
-			// 벽면(SOLID)에 붙은 코너 처리를 위해 카운트만 유지하거나 패스합니다.
-		}
-	}
-
-	// 주변에 물이 아예 없다면 바닥에 붙도록 처리
-	if (waterCount == 0) return 0;
-	return maxLevel;
-}
 CChunk3::CChunk3()
 {
 }

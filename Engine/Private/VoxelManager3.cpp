@@ -274,8 +274,10 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     pContext->VSSetShader(solidBlockVS->GetVertexShader().Get(), nullptr, 0);
     pContext->PSSetShader(solidBlockPS->GetPixelShader().Get(), nullptr, 0);
    
-    const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
-    pContext->RSSetState(rasterizer->GetRasterizerState().Get());
+    {
+        const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
+        pContext->RSSetState(rasterizer->GetRasterizerState().Get());
+    }
 
     //auto pCameraObject = CGameInstance::Get().GetActiveGameCamera("Player");
     auto vecCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerCamera");
@@ -302,8 +304,10 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     }
 
 
-    const auto& rs = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
-    pContext->RSSetState(rs->GetRasterizerState().Get());
+    {
+        const auto& rs = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
+        pContext->RSSetState(rs->GetRasterizerState().Get());
+    }
 
     for (auto& pChunk : vecIntersectedChunk)
     {
@@ -328,7 +332,24 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     pContext->OMSetBlendState(alphaBlend->GetBlendState().Get(), fBlendFactor, 0xffffffff);
     pContext->OMSetDepthStencilState(alphaDepth->GetDepthStencilState().Get(), 0);
 
+    {
+        const auto& rs = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
+        pContext->RSSetState(rs->GetRasterizerState().Get());
+    }
+    {
+        auto pResCBuf = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerVoxelWater");
+        D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+        if (SUCCEEDED(pContext->Map(pResCBuf->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+        {
+            E::CB_PER_VOXEL_WATER cbPerVoxelWater{};
+            cbPerVoxelWater.flowFrameIndex = m_iWaterFrame % 64;
+            cbPerVoxelWater.stillFrameIndex = m_iWaterFrame % 32;
 
+            memcpy(mappedSubResource.pData, &cbPerVoxelWater, sizeof(cbPerVoxelWater));
+            pContext->Unmap(pResCBuf->GetCBuffer().Get(), 0);
+        }
+        pContext->VSSetConstantBuffers(8, 1, pResCBuf->GetCBuffer().GetAddressOf());
+    }
     for (auto& pChunk : vecIntersectedChunk)
     {
         pChunk->DrawWater(pContext, ctx);
@@ -431,7 +452,7 @@ void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int
 
                         uint8_t nLight = nBlock.GetSkyLight();
 
-                        // 💡 아래 칸(-Y, d == 3)에서 위 칸으로 햇빛이 역행해서 스며들 때는 15를 그대로 가져오면 안 됩니다.
+                        //  아래 칸(-Y, d == 3)에서 위 칸으로 햇빛이 역행해서 스며들 때는 15를 그대로 가져오면 안 됩니다.
                         // 아래 칸이 15이더라도 나한테 스며들 때는 무조건 감쇄된 14로 들어와야 천장 역류 버그가 안 생깁니다.
                         if (d == 3 && nLight == 15)
                         {
@@ -489,7 +510,7 @@ void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int
                     {
                         CBlock3 nBlock = nopt.value();
 
-                        // 💡 [수정] 블록라이트 수집 시에도 이웃의 고체 여부를 반드시 체크!
+                        //  [수정] 블록라이트 수집 시에도 이웃의 고체 여부를 반드시 체크!
                         if (CBlock3::IsOpaque(nBlock.GetType()))
                             continue;
 
@@ -531,7 +552,7 @@ void CVoxelManager3::RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uin
             if (!nopt.has_value()) continue;
             CBlock3 nBlock = nopt.value();
 
-            // 💡 [수정] 고체 블록 내부는 불을 끌 필요도, 재전파를 받을 필요도 없음
+            //  [수정] 고체 블록 내부는 불을 끌 필요도, 재전파를 받을 필요도 없음
             if (CBlock3::IsOpaque(nBlock.GetType())) continue;
 
             uint8_t nLight = nBlock.GetBlockLight();
@@ -701,7 +722,7 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
         }
     }
 
-    // 💡 [2단계 시작] 0으로 완전히 밀어버린 공간들의 사방을 재조사하여 진짜 살아있는 햇빛 우회로를 찾습니다.
+    //  [2단계 시작] 0으로 완전히 밀어버린 공간들의 사방을 재조사하여 진짜 살아있는 햇빛 우회로를 찾습니다.
     std::queue<std::pair<XMINT3, uint8_t>> rePropagateQ;
 
     while (!attenuationQ.empty())
@@ -722,7 +743,7 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
 
             uint8_t nLight = nBlock.GetSkyLight();
 
-            // 💡 핵심: 0으로 꺼진 공간 주변에 '0이 아닌 빛'이 있다는 것은 
+            //  핵심: 0으로 꺼진 공간 주변에 '0이 아닌 빛'이 있다는 것은 
             // 이번 블록 배치에 영향을 받지 않은 "독립적인 다른 조명 공급원"을 만났다는 뜻입니다!
             if (nLight > 0)
             {
@@ -810,7 +831,7 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
                 }
                 else
                 {
-                    // 💡 [핵심 버그 수정]: nLight가 나보다 '엄격하게 더 밝은 조명 줄기(nLight > light)'이거나,
+                    //  [핵심 버그 수정]: nLight가 나보다 '엄격하게 더 밝은 조명 줄기(nLight > light)'이거나,
                     // 나와 빛 세기가 같더라도 수직 위 방향(+Y, d==2)에서 내려오는 빛처럼
                     // 확실하게 상위 소스 기둥인 경우에만 독립 조명 줄기로 인정하여 백업합니다.
                     // 나와 평행하거나(nLight == light) 나보다 어두운 형제 노드들은 백업하지 않고 같이 소멸되도록 둡니다.
@@ -1208,6 +1229,9 @@ void CVoxelManager3::Update(_float fTimeDelta)
                     block.SetType(CBlock3::TYPE::AIR);
                     SetBlock(worldBX, worldBY, worldBZ, block);
 
+                    TriggerWaterUpdateAround(worldBX, worldBY, worldBZ);
+                    TriggerLavaUpdateAround(worldBX, worldBY, worldBZ);
+
                     RuntimeOnBlockRemovedLighting(worldBX, worldBY, worldBZ, oldBlock);
                 }
             }
@@ -1295,18 +1319,43 @@ void CVoxelManager3::Update(_float fTimeDelta)
                         CBlock3 newBlock{};
                         if (CGameInstance::Get().KeyPressing(DIK_L))
                         {
-                            newBlock.SetType(CBlock3::TYPE::TORCH_ON);
+                            
+                            newBlock.SetType(CBlock3::TYPE::LAVA_STILL);
                         }
                         else
                         {
-                            newBlock.SetType(CBlock3::TYPE::PLANK_ACACIA);
+                           
+                            newBlock.SetType(CBlock3::TYPE::WATER_STILL);
                         }
                         //RuntimeOnBlockPlaced(worldBX, worldBY, worldBZ, newBlock);
 
+                        if (newBlock.GetType() == CBlock3::TYPE::WATER_STILL)
+                        {
+                            newBlock.SetFlag(7);
+                            SWaterTickData data{};
+                            data.bIsStill = true;
+                            data.level = 7;
+                            data.worldPos = { worldBX, worldBY, worldBZ };
+                            m_waterUpdateQ.push(data);
+                        }
+
+                        if (newBlock.GetType() == CBlock3::TYPE::LAVA_STILL)
+                        {
+                            newBlock.SetFlag(3);
+                            SLavaTickData data{};
+                            data.bIsStill = true;
+                            data.level = 3;
+                            data.worldPos = { worldBX, worldBY, worldBZ };
+                            m_lavaUpdateQ.push(data);
+                        }
+
+                        TriggerWaterUpdateAround(worldBX, worldBY, worldBZ);
+                        TriggerLavaUpdateAround(worldBX, worldBY, worldBZ);
+
                         SetBlock(worldBX, worldBY, worldBZ, newBlock);
+                        
 
                         // 3. 조명 함수 호출 (배치된 블록의 광원 수치도 함께 )
-                        uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(newBlock.GetType());
                         RuntimeOnBlockPlacedLighting(worldBX, worldBY, worldBZ, oldBlock);
                     }
                     
@@ -1323,7 +1372,19 @@ void CVoxelManager3::Update(_float fTimeDelta)
         }
     }
 
+    UpdateWaterTick(fTimeDelta);
+    UpdateLavaTick(fTimeDelta);
+    {
+        static float fTemp = 0;
+        fTemp += fTimeDelta;
 
+        int frameIndex = int(fTemp / 0.1f);
+        //int col = frameIndex % 4;
+        //int row = frameIndex / 4;
+        //m_iFrameCol = frameIndex % 4;
+        //m_iFrameRow = frameIndex / 4;
+        m_iWaterFrame = frameIndex;
+    }
 
 
     ////////////////////
@@ -1434,6 +1495,1192 @@ void CVoxelManager3::UpdateGUI()
     }
 }
 
+void CVoxelManager3::UpdateWaterTick(_float fTimeDelta)
+{
+    m_TimerUpdateWaterTick.AppendCurrTime(fTimeDelta);
+    if (m_TimerUpdateWaterTick.Get_Finished())
+    {
+        m_TimerUpdateWaterTick.Reset();
+
+        if (m_waterUpdateQ.empty()) return;
+
+        std::vector<SWaterTickData> currentTicks;
+        while (!m_waterUpdateQ.empty())
+        {
+            currentTicks.push_back(m_waterUpdateQ.front());
+            m_waterUpdateQ.pop();
+        }
+
+        std::set<std::tuple<int, int, int>> nextTickSet;
+        std::set<std::tuple<int, int, int>> decreasedSet;
+
+        constexpr int dx[] = { 1, -1,  0,  0,  0,  0 };
+        constexpr int dy[] = { 0,  0,  1, -1,  0,  0 }; // dy[2]=위, dy[3]=아래
+        constexpr int dz[] = { 0,  0,  0,  0,  1, -1 };
+
+        for (const auto& curr : currentTicks)
+        {
+            auto currBlockOpt = GetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+            if (!currBlockOpt.has_value()) continue;
+
+            CBlock3 currBlock = currBlockOpt.value();
+
+            if (currBlock.GetType() != CBlock3::TYPE::WATER_STILL &&
+                currBlock.GetType() != CBlock3::TYPE::WATER_FLOW) continue;
+
+            uint8_t currLevel = (currBlock.GetType() == CBlock3::TYPE::WATER_STILL) ? 7 : (currBlock.GetFlag() & 0x07);
+
+            // -----------------------------------------------------------------
+            //  1. [소멸/감소 틱 모드] 공급원이 끊겼을 때 도미노처럼 줄어드는 로직
+            // -----------------------------------------------------------------
+            if (currBlock.GetType() == CBlock3::TYPE::WATER_FLOW && curr.eState == SWaterTickData::STATE::DECREASE)
+            {
+                bool bHasSource = false;
+
+                // 위 칸 공급원 확인
+                auto upOpt = GetBlock(curr.worldPos.x, curr.worldPos.y + 1, curr.worldPos.z);
+                if (upOpt.has_value() && (upOpt->GetType() == CBlock3::TYPE::WATER_STILL || upOpt->GetType() == CBlock3::TYPE::WATER_FLOW))
+                {
+                    bHasSource = true;
+                }
+
+                // 수평 4방향 공급원 확인
+                if (!bHasSource)
+                {
+                    for (int d = 0; d < 6; ++d)
+                    {
+                        if (d == 2 || d == 3) continue;
+                        int sx = curr.worldPos.x + dx[d];
+                        int sy = curr.worldPos.y + dy[d];
+                        int sz = curr.worldPos.z + dz[d];
+
+                        auto sOpt = GetBlock(sx, sy, sz);
+                        if (sOpt.has_value())
+                        {
+                            if (sOpt->GetType() == CBlock3::TYPE::WATER_STILL) {
+                                bHasSource = true;
+                                break;
+                            }
+                            if (sOpt->GetType() == CBlock3::TYPE::WATER_FLOW) {
+                                uint8_t sLevel = sOpt->GetFlag() & 0x07;
+                                if (sLevel > currLevel) {
+                                    bHasSource = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 공급원이 정말 없다면 감쇄 프로세스 진행
+                if (!bHasSource)
+                {
+                    auto selfCoord = std::make_tuple(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+
+                    if (currLevel == 0)
+                    {
+                        currBlock.SetType(CBlock3::TYPE::AIR);
+                        currBlock.SetFlag(0);
+                        SetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, currBlock);
+
+                        // 내가 증발했으니 사방의 이웃들을 DECREASE 모드로 깨움
+                        TriggerWaterUpdateAround(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+                    }
+                    else
+                    {
+                        uint8_t decreasedLevel = currLevel - 1;
+                        currBlock.SetFlag(decreasedLevel);
+                        SetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, currBlock);
+
+                        decreasedSet.insert(selfCoord);
+
+                        if (nextTickSet.find(selfCoord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(selfCoord);
+                            m_waterUpdateQ.push({ curr.worldPos, false, decreasedLevel, SWaterTickData::STATE::DECREASE });
+                        }
+
+                        // 나보다 낮거나 같았던 이웃들을 연쇄 소멸(DECREASE) 대상으로 등록
+                        for (int d = 0; d < 6; ++d)
+                        {
+                            if (d == 2) continue; // 위 칸 제외
+                            int nx = curr.worldPos.x + dx[d];
+                            int ny = curr.worldPos.y + dy[d];
+                            int nz = curr.worldPos.z + dz[d];
+
+                            auto nopt = GetBlock(nx, ny, nz);
+                            if (nopt.has_value() && nopt->GetType() == CBlock3::TYPE::WATER_FLOW)
+                            {
+                                uint8_t nLevel = nopt->GetFlag() & 0x07;
+                                auto coord = std::make_tuple(nx, ny, nz);
+
+                                if (nLevel <= currLevel && decreasedSet.find(coord) == decreasedSet.end())
+                                {
+                                    if (nextTickSet.find(coord) == nextTickSet.end())
+                                    {
+                                        nextTickSet.insert(coord);
+                                        m_waterUpdateQ.push({ {nx, ny, nz}, false, nLevel, SWaterTickData::STATE::DECREASE });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    continue; // 감소 연산을 수행했으므로 아래 Spread 코드는 패스
+                }
+            }
+
+            // -----------------------------------------------------------------
+            //  2. [전파 틱 모드 - 수직 낙하 및 용암 상호작용]
+            // -----------------------------------------------------------------
+            int downX = curr.worldPos.x + dx[3];
+            int downY = curr.worldPos.y + dy[3];
+            int downZ = curr.worldPos.z + dz[3];
+
+            auto downOpt = GetBlock(downX, downY, downZ);
+            if (downOpt.has_value())
+            {
+                CBlock3 downBlock = downOpt.value();
+
+                //  [수직 상호작용] 아래 칸이 용암인 경우
+                if (downBlock.GetType() == CBlock3::TYPE::LAVA_STILL || downBlock.GetType() == CBlock3::TYPE::LAVA_FLOW)
+                {
+                    CBlock3 copy = downBlock;
+                    if (downBlock.GetType() == CBlock3::TYPE::LAVA_STILL)
+                        downBlock.SetType(CBlock3::TYPE::OBSIDIAN);
+                    else
+                        downBlock.SetType(CBlock3::TYPE::COBBLESTONE);
+
+                    downBlock.SetFlag(0);
+                    SetBlock(downX, downY, downZ, downBlock);
+
+                    RuntimeOnBlockPlacedLighting(downX, downY, downZ, copy);
+                    TriggerWaterUpdateAround(downX, downY, downZ);
+                    TriggerLavaUpdateAround(downX, downY, downZ);
+
+                    //  [디크리즈 전파 핵심] 나 자신(막힌 물)도 다음 틱에 소멸 연산을 타도록 강제 주입
+                    m_waterUpdateQ.push({ curr.worldPos, false, currLevel, SWaterTickData::STATE::DECREASE });
+                    continue;
+                }
+
+                bool bIsBelowOpen = (downBlock.GetType() == CBlock3::TYPE::AIR || downBlock.GetType() == CBlock3::TYPE::WATER_FLOW);
+                if (bIsBelowOpen)
+                {
+                    if (downBlock.GetType() == CBlock3::TYPE::AIR || (downBlock.GetFlag() & 0x07) < 7)
+                    {
+                        downBlock.SetType(CBlock3::TYPE::WATER_FLOW);
+                        downBlock.SetFlag(7);
+                        SetBlock(downX, downY, downZ, downBlock);
+
+                        auto coord = std::make_tuple(downX, downY, downZ);
+                        if (nextTickSet.find(coord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(coord);
+                            m_waterUpdateQ.push({ {downX, downY, downZ}, false, 7, SWaterTickData::STATE::SPREAD });
+                        }
+                    }
+                    continue; // 아래가 뚫렸으면 수평 전파 안 함
+                }
+            }
+
+            // -----------------------------------------------------------------
+            //  3. [전파 틱 모드 - 수평 및 수직 위방향 상호작용]
+            // -----------------------------------------------------------------
+            if (currLevel > 0)
+            {
+                for (int d = 0; d < 6; ++d)
+                {
+                    if (d == 3) continue; // 아래 칸은 위에서 이미 처리함
+
+                    int nx = curr.worldPos.x + dx[d];
+                    int ny = curr.worldPos.y + dy[d];
+                    int nz = curr.worldPos.z + dz[d];
+
+                    auto nopt = GetBlock(nx, ny, nz);
+                    if (!nopt.has_value()) continue;
+                    CBlock3 nBlock = nopt.value();
+
+                    //  [수평/상단 상호작용] 나아가려는 칸에 용암이 있는가?
+                    if (nBlock.GetType() == CBlock3::TYPE::LAVA_STILL || nBlock.GetType() == CBlock3::TYPE::LAVA_FLOW)
+                    {
+                        CBlock3 copy = nBlock;
+                        if (nBlock.GetType() == CBlock3::TYPE::LAVA_STILL)
+                            nBlock.SetType(CBlock3::TYPE::OBSIDIAN);
+                        else
+                            nBlock.SetType(CBlock3::TYPE::COBBLESTONE);
+
+                        nBlock.SetFlag(0);
+                        SetBlock(nx, ny, nz, nBlock);
+
+                        RuntimeOnBlockPlacedLighting(nx, ny, nz, copy);
+                        TriggerWaterUpdateAround(nx, ny, nz);
+                        TriggerLavaUpdateAround(nx, ny, nz);
+
+                        //  [디크리즈 전파 핵심] 돌에 가로막힌 나 자신도 DECREASE 연산을 전파하도록 큐에 넣음
+                        m_waterUpdateQ.push({ curr.worldPos, false, currLevel, SWaterTickData::STATE::DECREASE });
+                        continue;
+                    }
+
+                    if (d == 2) continue; // 물은 스스로 위로 전파되지 않으므로 상단 순수 전파는 패스
+
+                    // 기존 순수 수평 전파 코드
+                    uint8_t nextLevel = currLevel - 1;
+                    bool bCanSpread = false;
+
+                    if (nBlock.GetType() == CBlock3::TYPE::AIR) bCanSpread = true;
+                    else if (nBlock.GetType() == CBlock3::TYPE::WATER_FLOW && (nBlock.GetFlag() & 0x07) < nextLevel) bCanSpread = true;
+
+                    if (bCanSpread)
+                    {
+                        auto nDownOpt = GetBlock(nx, ny - 1, nz);
+                        if (nDownOpt.has_value() && nDownOpt->GetType() == CBlock3::TYPE::AIR)
+                        {
+                            nextLevel = currLevel;
+                        }
+
+                        nBlock.SetType(CBlock3::TYPE::WATER_FLOW);
+                        nBlock.SetFlag(nextLevel);
+                        SetBlock(nx, ny, nz, nBlock);
+
+                        auto coord = std::make_tuple(nx, ny, nz);
+                        if (nextTickSet.find(coord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(coord);
+                            m_waterUpdateQ.push({ {nx, ny, nz}, false, nextLevel, SWaterTickData::STATE::SPREAD });
+                        }
+                    }
+                }
+            }
+        } // for 끝
+    }
+}
+
+/*
+
+void CVoxelManager3::UpdateWaterTick(_float fTimeDelta)
+{
+    m_TimerUpdateWaterTick.AppendCurrTime(fTimeDelta);
+    if (m_TimerUpdateWaterTick.Get_Finished())
+    {
+        m_TimerUpdateWaterTick.Reset();
+
+        if (m_waterUpdateQ.empty()) return;
+
+        std::vector<SWaterTickData> currentTicks;
+        while (!m_waterUpdateQ.empty())
+        {
+            currentTicks.push_back(m_waterUpdateQ.front());
+            m_waterUpdateQ.pop();
+        }
+
+        std::set<std::tuple<int, int, int>> nextTickSet;
+        std::set<std::tuple<int, int, int>> decreasedSet;
+
+        constexpr int dx[] = { 1, -1,  0,  0,  0,  0 };
+        constexpr int dy[] = { 0,  0,  1, -1,  0,  0 };
+        constexpr int dz[] = { 0,  0,  0,  0,  1, -1 };
+
+        for (const auto& curr : currentTicks)
+        {
+            auto currBlockOpt = GetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+            if (!currBlockOpt.has_value()) continue;
+
+            CBlock3 currBlock = currBlockOpt.value();
+
+            if (currBlock.GetType() != CBlock3::TYPE::WATER_STILL &&
+                currBlock.GetType() != CBlock3::TYPE::WATER_FLOW) continue;
+
+            uint8_t currLevel = (currBlock.GetType() == CBlock3::TYPE::WATER_STILL) ? 7 : (currBlock.GetFlag() & 0x07);
+
+            // -----------------------------------------------------------------
+            //  1. [소멸/감소 틱 모드] 공급원이 끊겼을 때 도미노처럼 줄어드는 로직
+            // -----------------------------------------------------------------
+            if (currBlock.GetType() == CBlock3::TYPE::WATER_FLOW && curr.eState == SWaterTickData::STATE::DECREASE)
+            {
+                bool bHasSource = false;
+
+                // 위 칸 공급원 확인
+                auto upOpt = GetBlock(curr.worldPos.x, curr.worldPos.y + 1, curr.worldPos.z);
+                if (upOpt.has_value() && (upOpt->GetType() == CBlock3::TYPE::WATER_STILL || upOpt->GetType() == CBlock3::TYPE::WATER_FLOW))
+                {
+                    bHasSource = true;
+                }
+
+                // 수평 4방향 공급원 확인
+                if (!bHasSource)
+                {
+                    for (int d = 0; d < 6; ++d)
+                    {
+                        if (d == 2 || d == 3) continue;
+                        int sx = curr.worldPos.x + dx[d];
+                        int sy = curr.worldPos.y + dy[d];
+                        int sz = curr.worldPos.z + dz[d];
+
+                        auto sOpt = GetBlock(sx, sy, sz);
+                        if (sOpt.has_value())
+                        {
+                            if (sOpt->GetType() == CBlock3::TYPE::WATER_STILL) {
+                                bHasSource = true;
+                                break;
+                            }
+                            if (sOpt->GetType() == CBlock3::TYPE::WATER_FLOW) {
+                                uint8_t sLevel = sOpt->GetFlag() & 0x07;
+                                // 유효한 공급원 블록이 여전히 살아있는가?
+                                if (sLevel > currLevel) {
+                                    bHasSource = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 공급원이 정말 없다면 감쇄 프로세스 진행
+                if (!bHasSource)
+                {
+                    auto selfCoord = std::make_tuple(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+
+                    if (currLevel == 0)
+                    {
+                        currBlock.SetType(CBlock3::TYPE::AIR);
+                        currBlock.SetFlag(0);
+                        SetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, currBlock);
+
+                        // 내가 증발했으니 사방의 이웃들을 DECREASE 모드로 깨움
+                        TriggerWaterUpdateAround(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+                    }
+                    else
+                    {
+                        uint8_t decreasedLevel = currLevel - 1;
+                        currBlock.SetFlag(decreasedLevel);
+                        SetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, currBlock);
+
+                        decreasedSet.insert(selfCoord);
+
+                        // 나 자신 다음 틱에 소멸 연산 이어하도록 DECREASE 상태로 예약
+                        if (nextTickSet.find(selfCoord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(selfCoord);
+                            m_waterUpdateQ.push({ curr.worldPos, false, decreasedLevel, SWaterTickData::STATE::DECREASE });
+                        }
+
+                        // 나보다 낮거나 같았던 이웃들을 연쇄 소멸(DECREASE) 대상으로 등록
+                        for (int d = 0; d < 6; ++d)
+                        {
+                            if (d == 2) continue;
+                            int nx = curr.worldPos.x + dx[d];
+                            int ny = curr.worldPos.y + dy[d];
+                            int nz = curr.worldPos.z + dz[d];
+
+                            auto nopt = GetBlock(nx, ny, nz);
+                            if (nopt.has_value() && nopt->GetType() == CBlock3::TYPE::WATER_FLOW)
+                            {
+                                uint8_t nLevel = nopt->GetFlag() & 0x07;
+                                auto coord = std::make_tuple(nx, ny, nz);
+
+                                if (nLevel <= currLevel && decreasedSet.find(coord) == decreasedSet.end())
+                                {
+                                    if (nextTickSet.find(coord) == nextTickSet.end())
+                                    {
+                                        nextTickSet.insert(coord);
+                                        m_waterUpdateQ.push({ {nx, ny, nz}, false, nLevel, SWaterTickData::STATE::DECREASE });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    continue; // 소멸 처리를 했으므로 아래의 전파(Spread) 코드는 건너뜁니다.
+                }
+            }
+
+            // -----------------------------------------------------------------
+            //  2. [전파 틱 모드] 물이 사방으로 뻗어나가는 순수한 전파 로직
+            // (새로 배치된 물이나 흐르는 물은 기본적으로 이 일만 신나게 수행합니다)
+            // -----------------------------------------------------------------
+            int downX = curr.worldPos.x + dx[3];
+            int downY = curr.worldPos.y + dy[3];
+            int downZ = curr.worldPos.z + dz[3];
+
+            auto downOpt = GetBlock(downX, downY, downZ);
+            if (downOpt.has_value())
+            {
+                CBlock3 downBlock = downOpt.value();
+                bool bIsBelowOpen = (downBlock.GetType() == CBlock3::TYPE::AIR || downBlock.GetType() == CBlock3::TYPE::WATER_FLOW);
+
+                if (bIsBelowOpen)
+                {
+                    if (downBlock.GetType() == CBlock3::TYPE::AIR || (downBlock.GetFlag() & 0x07) < 7)
+                    {
+                        downBlock.SetType(CBlock3::TYPE::WATER_FLOW);
+                        downBlock.SetFlag(7);
+                        SetBlock(downX, downY, downZ, downBlock);
+
+                        auto coord = std::make_tuple(downX, downY, downZ);
+                        if (nextTickSet.find(coord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(coord);
+                            //  새로 전파되는 폭포수는 SPREAD 상태로 예약
+                            m_waterUpdateQ.push({ {downX, downY, downZ}, false, 7, SWaterTickData::STATE::SPREAD });
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            // 수평 전파
+            if (currLevel > 0)
+            {
+                for (int d = 0; d < 6; ++d)
+                {
+                    if (d == 2 || d == 3) continue;
+
+                    int nx = curr.worldPos.x + dx[d];
+                    int ny = curr.worldPos.y + dy[d];
+                    int nz = curr.worldPos.z + dz[d];
+
+                    auto nopt = GetBlock(nx, ny, nz);
+                    if (!nopt.has_value()) continue;
+                    CBlock3 nBlock = nopt.value();
+
+                    uint8_t nextLevel = currLevel - 1;
+                    bool bCanSpread = false;
+
+                    if (nBlock.GetType() == CBlock3::TYPE::AIR)
+                    {
+                        bCanSpread = true;
+                    }
+                    else if (nBlock.GetType() == CBlock3::TYPE::WATER_FLOW && (nBlock.GetFlag() & 0x07) < nextLevel)
+                    {
+                        bCanSpread = true;
+                    }
+
+                    if (bCanSpread)
+                    {
+                        auto nDownOpt = GetBlock(nx, ny - 1, nz);
+                        if (nDownOpt.has_value() && nDownOpt->GetType() == CBlock3::TYPE::AIR)
+                        {
+                            nextLevel = currLevel;
+                        }
+
+                        nBlock.SetType(CBlock3::TYPE::WATER_FLOW);
+                        nBlock.SetFlag(nextLevel);
+                        SetBlock(nx, ny, nz, nBlock);
+
+                        auto coord = std::make_tuple(nx, ny, nz);
+                        if (nextTickSet.find(coord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(coord);
+                            //  새로 전파되는 물은 SPREAD 상태로 다음 틱 예약
+                            m_waterUpdateQ.push({ {nx, ny, nz}, false, nextLevel, SWaterTickData::STATE::SPREAD });
+                        }
+                    }
+                }
+            }
+        } // for 끝
+    }
+}
+
+*/
+
+void CVoxelManager3::TriggerWaterUpdateAround(int x, int y, int z)
+{
+    constexpr int dx[] = { 1, -1,  0,  0,  0,  0 };
+    constexpr int dy[] = { 0,  0,  1, -1,  0,  0 };
+    constexpr int dz[] = { 0,  0,  0,  0,  1, -1 };
+
+    for (int i = 0; i < 6; ++i)
+    {
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        int nz = z + dz[i];
+
+        auto opt = GetBlock(nx, ny, nz);
+        if (opt.has_value() && (opt->GetType() == CBlock3::TYPE::WATER_FLOW || opt->GetType() == CBlock3::TYPE::WATER_STILL))
+        {
+            SWaterTickData eventData{};
+            eventData.worldPos = { nx, ny, nz };
+            eventData.bIsStill = false;
+            eventData.level = opt->GetFlag() & 0x07;
+            //  주변 환경이 파괴되어 확인하는 것이므로 DECREASE 상태로 주입!
+            eventData.eState = SWaterTickData::STATE::DECREASE;
+
+            m_waterUpdateQ.push(eventData);
+        }
+    }
+}
+
+
+void CVoxelManager3::UpdateLavaTick(_float fTimeDelta)
+{
+    m_TimerUpdateLavaTick.AppendCurrTime(fTimeDelta);
+    if (m_TimerUpdateLavaTick.Get_Finished())
+    {
+        m_TimerUpdateLavaTick.Reset();
+
+        if (m_lavaUpdateQ.empty()) return;
+
+        std::vector<SLavaTickData> currentTicks;
+        while (!m_lavaUpdateQ.empty())
+        {
+            currentTicks.push_back(m_lavaUpdateQ.front());
+            m_lavaUpdateQ.pop();
+        }
+
+        std::set<std::tuple<int, int, int>> nextTickSet;
+        std::set<std::tuple<int, int, int>> decreasedSet;
+
+        constexpr int dx[] = { 1, -1,  0,  0,  0,  0 };
+        constexpr int dy[] = { 0,  0,  1, -1,  0,  0 };
+        constexpr int dz[] = { 0,  0,  0,  0,  1, -1 };
+
+        for (const auto& curr : currentTicks)
+        {
+            auto currBlockOpt = GetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+            if (!currBlockOpt.has_value()) continue;
+
+            CBlock3 currBlock = currBlockOpt.value();
+
+            if (currBlock.GetType() != CBlock3::TYPE::LAVA_STILL &&
+                currBlock.GetType() != CBlock3::TYPE::LAVA_FLOW) continue;
+
+            uint8_t currLevel = (currBlock.GetType() == CBlock3::TYPE::LAVA_STILL) ? 3 : (currBlock.GetFlag() & 0x03);
+
+            // -----------------------------------------------------------------
+            //  1. [소멸/감소 틱 모드] 공급원이 끊겼을 때 도미노처럼 줄어드는 로직
+            // -----------------------------------------------------------------
+            if (currBlock.GetType() == CBlock3::TYPE::LAVA_FLOW && curr.eState == SLavaTickData::STATE::DECREASE)
+            {
+                bool bHasSource = false;
+
+                // 위 칸 공급원 확인
+                auto upOpt = GetBlock(curr.worldPos.x, curr.worldPos.y + 1, curr.worldPos.z);
+                if (upOpt.has_value() && (upOpt->GetType() == CBlock3::TYPE::LAVA_STILL || upOpt->GetType() == CBlock3::TYPE::LAVA_FLOW))
+                {
+                    bHasSource = true;
+                }
+
+                // 수평 4방향 공급원 확인
+                if (!bHasSource)
+                {
+                    for (int d = 0; d < 6; ++d)
+                    {
+                        if (d == 2 || d == 3) continue;
+                        int sx = curr.worldPos.x + dx[d];
+                        int sy = curr.worldPos.y + dy[d];
+                        int sz = curr.worldPos.z + dz[d];
+
+                        auto sOpt = GetBlock(sx, sy, sz);
+                        if (sOpt.has_value())
+                        {
+                            if (sOpt->GetType() == CBlock3::TYPE::LAVA_STILL) {
+                                bHasSource = true;
+                                break;
+                            }
+                            if (sOpt->GetType() == CBlock3::TYPE::LAVA_FLOW) {
+                                uint8_t sLevel = sOpt->GetFlag() & 0x03;
+                                if (sLevel > currLevel) {
+                                    bHasSource = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 공급원이 정말 없다면 감쇄 프로세스 진행
+                if (!bHasSource)
+                {
+                    auto selfCoord = std::make_tuple(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+
+                    if (currLevel == 0)
+                    {
+                        CBlock3 copy = currBlock;
+                        currBlock.SetType(CBlock3::TYPE::AIR);
+                        currBlock.SetFlag(0);
+                        SetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, currBlock);
+
+                        TriggerLavaUpdateAround(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+                        RuntimeOnBlockPlacedLighting(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, copy);
+                    }
+                    else
+                    {
+                        CBlock3 copy = currBlock;
+                        uint8_t decreasedLevel = currLevel - 1;
+                        currBlock.SetFlag(decreasedLevel);
+                        SetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, currBlock);
+
+                        RuntimeOnBlockPlacedLighting(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, copy);
+                        decreasedSet.insert(selfCoord);
+
+                        if (nextTickSet.find(selfCoord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(selfCoord);
+                            m_lavaUpdateQ.push({ curr.worldPos, false, decreasedLevel, SLavaTickData::STATE::DECREASE });
+                        }
+
+                        // 연쇄 소멸 전파
+                        for (int d = 0; d < 6; ++d)
+                        {
+                            if (d == 2) continue;
+                            int nx = curr.worldPos.x + dx[d];
+                            int ny = curr.worldPos.y + dy[d];
+                            int nz = curr.worldPos.z + dz[d];
+
+                            auto nopt = GetBlock(nx, ny, nz);
+                            if (nopt.has_value() && nopt->GetType() == CBlock3::TYPE::LAVA_FLOW)
+                            {
+                                uint8_t nLevel = nopt->GetFlag() & 0x03;
+                                auto coord = std::make_tuple(nx, ny, nz);
+
+                                if (nLevel <= currLevel && decreasedSet.find(coord) == decreasedSet.end())
+                                {
+                                    if (nextTickSet.find(coord) == nextTickSet.end())
+                                    {
+                                        nextTickSet.insert(coord);
+                                        m_lavaUpdateQ.push({ {nx, ny, nz}, false, nLevel, SLavaTickData::STATE::DECREASE });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            // -----------------------------------------------------------------
+            //  2. [전파 틱 모드 - 수직 낙하 및 물 상호작용]
+            // -----------------------------------------------------------------
+            int downX = curr.worldPos.x + dx[3];
+            int downY = curr.worldPos.y + dy[3];
+            int downZ = curr.worldPos.z + dz[3];
+
+            auto downOpt = GetBlock(downX, downY, downZ);
+            if (downOpt.has_value())
+            {
+                CBlock3 downBlock = downOpt.value();
+
+                //  [수직 상호작용] 아래 칸이 물인 경우
+                if (downBlock.GetType() == CBlock3::TYPE::WATER_STILL || downBlock.GetType() == CBlock3::TYPE::WATER_FLOW)
+                {
+                    CBlock3 copy = downBlock;
+                    if (currBlock.GetType() == CBlock3::TYPE::LAVA_STILL)
+                        downBlock.SetType(CBlock3::TYPE::OBSIDIAN);
+                    else
+                        downBlock.SetType(CBlock3::TYPE::COBBLESTONE);
+
+                    downBlock.SetFlag(0);
+                    SetBlock(downX, downY, downZ, downBlock);
+
+                    RuntimeOnBlockPlacedLighting(downX, downY, downZ, copy);
+                    TriggerWaterUpdateAround(downX, downY, downZ);
+                    TriggerLavaUpdateAround(downX, downY, downZ);
+
+                    //  [디크리즈 전파 핵심] 가로막힌 용암 자신도 DECREASE 상태로 강제 전환
+                    m_lavaUpdateQ.push({ curr.worldPos, false, currLevel, SLavaTickData::STATE::DECREASE });
+                    continue;
+                }
+
+                bool bIsBelowOpen = (downBlock.GetType() == CBlock3::TYPE::AIR || downBlock.GetType() == CBlock3::TYPE::LAVA_FLOW);
+                if (bIsBelowOpen)
+                {
+                    if (downBlock.GetType() == CBlock3::TYPE::AIR || (downBlock.GetFlag() & 0x03) < 3)
+                    {
+                        CBlock3 copy = downBlock;
+                        downBlock.SetType(CBlock3::TYPE::LAVA_FLOW);
+                        downBlock.SetFlag(3);
+                        SetBlock(downX, downY, downZ, downBlock);
+
+                        RuntimeOnBlockPlacedLighting(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, copy);
+
+                        auto coord = std::make_tuple(downX, downY, downZ);
+                        if (nextTickSet.find(coord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(coord);
+                            m_lavaUpdateQ.push({ {downX, downY, downZ}, false, 3, SLavaTickData::STATE::SPREAD });
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            // -----------------------------------------------------------------
+            //  3. [전파 틱 모드 - 수평 및 수직 위방향 상호작용]
+            // -----------------------------------------------------------------
+            if (currLevel > 0)
+            {
+                for (int d = 0; d < 6; ++d)
+                {
+                    if (d == 3) continue;
+
+                    int nx = curr.worldPos.x + dx[d];
+                    int ny = curr.worldPos.y + dy[d];
+                    int nz = curr.worldPos.z + dz[d];
+
+                    auto nopt = GetBlock(nx, ny, nz);
+                    if (!nopt.has_value()) continue;
+                    CBlock3 nBlock = nopt.value();
+
+                    //  [수평/상단 상호작용] 나아가려는 칸에 물이 있는가?
+                    if (nBlock.GetType() == CBlock3::TYPE::WATER_STILL || nBlock.GetType() == CBlock3::TYPE::WATER_FLOW)
+                    {
+                        CBlock3 copy = nBlock;
+                        if (currBlock.GetType() == CBlock3::TYPE::LAVA_STILL)
+                            nBlock.SetType(CBlock3::TYPE::OBSIDIAN);
+                        else
+                            nBlock.SetType(CBlock3::TYPE::COBBLESTONE);
+
+                        nBlock.SetFlag(0);
+                        SetBlock(nx, ny, nz, nBlock);
+
+                        RuntimeOnBlockPlacedLighting(nx, ny, nz, copy);
+                        TriggerWaterUpdateAround(nx, ny, nz);
+                        TriggerLavaUpdateAround(nx, ny, nz);
+
+                        //  [디크리즈 전파 핵심] 막혀버린 용암 자신도 DECREASE 상태로 강제 전환
+                        m_lavaUpdateQ.push({ curr.worldPos, false, currLevel, SLavaTickData::STATE::DECREASE });
+                        continue;
+                    }
+
+                    if (d == 2) continue; // 용암은 순수 전파로 위로 갈 수 없음
+
+                    // 기존 순수 수평 전파 코드
+                    uint8_t nextLevel = currLevel - 1;
+                    bool bCanSpread = false;
+
+                    if (nBlock.GetType() == CBlock3::TYPE::AIR) bCanSpread = true;
+                    else if (nBlock.GetType() == CBlock3::TYPE::LAVA_FLOW && (nBlock.GetFlag() & 0x03) < nextLevel) bCanSpread = true;
+
+                    if (bCanSpread)
+                    {
+                        auto nDownOpt = GetBlock(nx, ny - 1, nz);
+                        CBlock3 copy = nBlock;
+
+                        if (nDownOpt.has_value() && nDownOpt->GetType() == CBlock3::TYPE::AIR)
+                        {
+                            nextLevel = currLevel;
+                        }
+
+                        nBlock.SetType(CBlock3::TYPE::LAVA_FLOW);
+                        nBlock.SetFlag(nextLevel);
+                        SetBlock(nx, ny, nz, nBlock);
+
+                        RuntimeOnBlockPlacedLighting(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, copy);
+
+                        auto coord = std::make_tuple(nx, ny, nz);
+                        if (nextTickSet.find(coord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(coord);
+                            m_lavaUpdateQ.push({ {nx, ny, nz}, false, nextLevel, SLavaTickData::STATE::SPREAD });
+                        }
+                    }
+                }
+            }
+        } // for 끝
+    }
+}
+
+/*
+
+void CVoxelManager3::UpdateLavaTick(_float fTimeDelta)
+{
+    m_TimerUpdateLavaTick.AppendCurrTime(fTimeDelta);
+    if (m_TimerUpdateLavaTick.Get_Finished())
+    {
+        m_TimerUpdateLavaTick.Reset();
+
+        if (m_lavaUpdateQ.empty()) return;
+
+        std::vector<SLavaTickData> currentTicks;
+        while (!m_lavaUpdateQ.empty())
+        {
+            currentTicks.push_back(m_lavaUpdateQ.front());
+            m_lavaUpdateQ.pop();
+        }
+
+        std::set<std::tuple<int, int, int>> nextTickSet;
+        std::set<std::tuple<int, int, int>> decreasedSet;
+
+        constexpr int dx[] = { 1, -1,  0,  0,  0,  0 };
+        constexpr int dy[] = { 0,  0,  1, -1,  0,  0 };
+        constexpr int dz[] = { 0,  0,  0,  0,  1, -1 };
+
+        for (const auto& curr : currentTicks)
+        {
+            auto currBlockOpt = GetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+            if (!currBlockOpt.has_value()) continue;
+
+            CBlock3 currBlock = currBlockOpt.value();
+
+            if (currBlock.GetType() != CBlock3::TYPE::LAVA_STILL &&
+                currBlock.GetType() != CBlock3::TYPE::LAVA_FLOW) continue;
+
+            uint8_t currLevel = (currBlock.GetType() == CBlock3::TYPE::LAVA_STILL) ? 3 : (currBlock.GetFlag() & 0x03);
+
+            // -----------------------------------------------------------------
+            //  1. [소멸/감소 틱 모드] 공급원이 끊겼을 때 도미노처럼 줄어드는 로직
+            // -----------------------------------------------------------------
+            if (currBlock.GetType() == CBlock3::TYPE::LAVA_FLOW && curr.eState == SLavaTickData::STATE::DECREASE)
+            {
+                bool bHasSource = false;
+
+                // 위 칸 공급원 확인
+                auto upOpt = GetBlock(curr.worldPos.x, curr.worldPos.y + 1, curr.worldPos.z);
+                if (upOpt.has_value() && (upOpt->GetType() == CBlock3::TYPE::LAVA_STILL || upOpt->GetType() == CBlock3::TYPE::LAVA_FLOW))
+                {
+                    bHasSource = true;
+                }
+
+                // 수평 4방향 공급원 확인
+                if (!bHasSource)
+                {
+                    for (int d = 0; d < 6; ++d)
+                    {
+                        if (d == 2 || d == 3) continue;
+                        int sx = curr.worldPos.x + dx[d];
+                        int sy = curr.worldPos.y + dy[d];
+                        int sz = curr.worldPos.z + dz[d];
+
+                        auto sOpt = GetBlock(sx, sy, sz);
+                        if (sOpt.has_value())
+                        {
+                            if (sOpt->GetType() == CBlock3::TYPE::LAVA_STILL) {
+                                bHasSource = true;
+                                break;
+                            }
+                            if (sOpt->GetType() == CBlock3::TYPE::LAVA_FLOW) {
+                                uint8_t sLevel = sOpt->GetFlag() & 0x03;
+                                // 유효한 공급원 블록이 여전히 살아있는가?
+                                if (sLevel > currLevel) {
+                                    bHasSource = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 공급원이 정말 없다면 감쇄 프로세스 진행
+                if (!bHasSource)
+                {
+                    auto selfCoord = std::make_tuple(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+
+                    if (currLevel == 0)
+                    {
+                        CBlock3 copy = currBlock;
+
+
+                        currBlock.SetType(CBlock3::TYPE::AIR);
+                        currBlock.SetFlag(0);
+                        SetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, currBlock);
+
+                        // 내가 증발했으니 사방의 이웃들을 DECREASE 모드로 깨움
+                        TriggerLavaUpdateAround(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+
+                        uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(currBlock.GetType());
+                        RuntimeOnBlockPlacedLighting(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, copy);
+                    }
+                    else
+                    {
+                        CBlock3 copy = currBlock;
+
+
+                        uint8_t decreasedLevel = currLevel - 1;
+                        currBlock.SetFlag(decreasedLevel);
+                        SetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, currBlock);
+
+                        uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(currBlock.GetType());
+                        RuntimeOnBlockPlacedLighting(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, copy);
+
+                        decreasedSet.insert(selfCoord);
+
+                        // 나 자신 다음 틱에 소멸 연산 이어하도록 DECREASE 상태로 예약
+                        if (nextTickSet.find(selfCoord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(selfCoord);
+                            m_lavaUpdateQ.push({ curr.worldPos, false, decreasedLevel, SLavaTickData::STATE::DECREASE });
+                        }
+
+                        // 나보다 낮거나 같았던 이웃들을 연쇄 소멸(DECREASE) 대상으로 등록
+                        for (int d = 0; d < 6; ++d)
+                        {
+                            if (d == 2) continue;
+                            int nx = curr.worldPos.x + dx[d];
+                            int ny = curr.worldPos.y + dy[d];
+                            int nz = curr.worldPos.z + dz[d];
+
+                            auto nopt = GetBlock(nx, ny, nz);
+                            if (nopt.has_value() && nopt->GetType() == CBlock3::TYPE::LAVA_FLOW)
+                            {
+                                uint8_t nLevel = nopt->GetFlag() & 0x03;
+                                auto coord = std::make_tuple(nx, ny, nz);
+
+                                if (nLevel <= currLevel && decreasedSet.find(coord) == decreasedSet.end())
+                                {
+                                    if (nextTickSet.find(coord) == nextTickSet.end())
+                                    {
+                                        nextTickSet.insert(coord);
+                                        m_lavaUpdateQ.push({ {nx, ny, nz}, false, nLevel, SLavaTickData::STATE::DECREASE });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    continue; // 소멸 처리를 했으므로 아래의 전파(Spread) 코드는 건너뜁니다.
+                }
+            }
+
+            // -----------------------------------------------------------------
+            //  2. [전파 틱 모드] 물이 사방으로 뻗어나가는 순수한 전파 로직
+            // (새로 배치된 물이나 흐르는 물은 기본적으로 이 일만 신나게 수행합니다)
+            // -----------------------------------------------------------------
+            int downX = curr.worldPos.x + dx[3];
+            int downY = curr.worldPos.y + dy[3];
+            int downZ = curr.worldPos.z + dz[3];
+
+            auto downOpt = GetBlock(downX, downY, downZ);
+            if (downOpt.has_value())
+            {
+                CBlock3 downBlock = downOpt.value();
+
+
+                CBlock3 copy = downBlock;
+
+
+                bool bIsBelowOpen = (downBlock.GetType() == CBlock3::TYPE::AIR || downBlock.GetType() == CBlock3::TYPE::LAVA_FLOW);
+
+                if (bIsBelowOpen)
+                {
+                    if (downBlock.GetType() == CBlock3::TYPE::AIR || (downBlock.GetFlag() & 0x03) < 3)
+                    {
+                        downBlock.SetType(CBlock3::TYPE::LAVA_FLOW);
+                        downBlock.SetFlag(3);
+                        SetBlock(downX, downY, downZ, downBlock);
+
+                        uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(currBlock.GetType());
+                        RuntimeOnBlockPlacedLighting(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, copy);
+
+                        auto coord = std::make_tuple(downX, downY, downZ);
+                        if (nextTickSet.find(coord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(coord);
+                            //  새로 전파되는 폭포수는 SPREAD 상태로 예약
+                            m_lavaUpdateQ.push({ {downX, downY, downZ}, false, 3, SLavaTickData::STATE::SPREAD });
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            // 수평 전파
+            if (currLevel > 0)
+            {
+                for (int d = 0; d < 6; ++d)
+                {
+                    if (d == 2 || d == 3) continue;
+
+                    int nx = curr.worldPos.x + dx[d];
+                    int ny = curr.worldPos.y + dy[d];
+                    int nz = curr.worldPos.z + dz[d];
+
+                    auto nopt = GetBlock(nx, ny, nz);
+                    if (!nopt.has_value()) continue;
+                    CBlock3 nBlock = nopt.value();
+
+                    uint8_t nextLevel = currLevel - 1;
+                    bool bCanSpread = false;
+
+                    if (nBlock.GetType() == CBlock3::TYPE::AIR)
+                    {
+                        bCanSpread = true;
+                    }
+                    else if (nBlock.GetType() == CBlock3::TYPE::LAVA_FLOW && (nBlock.GetFlag() & 0x03) < nextLevel)
+                    {
+                        bCanSpread = true;
+                    }
+
+                    if (bCanSpread)
+                    {
+                        auto nDownOpt = GetBlock(nx, ny - 1, nz);
+
+                        CBlock3 copy = nBlock;
+
+
+                        if (nDownOpt.has_value() && nDownOpt->GetType() == CBlock3::TYPE::AIR)
+                        {
+                            nextLevel = currLevel;
+                        }
+
+                        nBlock.SetType(CBlock3::TYPE::LAVA_FLOW);
+                        nBlock.SetFlag(nextLevel);
+                        SetBlock(nx, ny, nz, nBlock);
+
+                        uint8_t placedBlockEmitLight = CBlock3::GetBlockLightByType(currBlock.GetType());
+                        RuntimeOnBlockPlacedLighting(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z, copy);
+
+                        auto coord = std::make_tuple(nx, ny, nz);
+                        if (nextTickSet.find(coord) == nextTickSet.end())
+                        {
+                            nextTickSet.insert(coord);
+                            //  새로 전파되는 물은 SPREAD 상태로 다음 틱 예약
+                            m_lavaUpdateQ.push({ {nx, ny, nz}, false, nextLevel, SLavaTickData::STATE::SPREAD });
+                        }
+                    }
+                }
+            }
+        } // for 끝
+    }
+}
+*/
+
+void CVoxelManager3::TriggerLavaUpdateAround(int x, int y, int z)
+{
+    constexpr int dx[] = { 1, -1,  0,  0,  0,  0 };
+    constexpr int dy[] = { 0,  0,  1, -1,  0,  0 };
+    constexpr int dz[] = { 0,  0,  0,  0,  1, -1 };
+
+    for (int i = 0; i < 6; ++i)
+    {
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        int nz = z + dz[i];
+
+        auto opt = GetBlock(nx, ny, nz);
+        if (opt.has_value() && (opt->GetType() == CBlock3::TYPE::LAVA_FLOW || opt->GetType() == CBlock3::TYPE::LAVA_STILL))
+        {
+            SLavaTickData eventData{};
+            eventData.worldPos = { nx, ny, nz };
+            eventData.bIsStill = false;
+            eventData.level = opt->GetFlag() & 0x03;
+            //  주변 환경이 파괴되어 확인하는 것이므로 DECREASE 상태로 주입!
+            eventData.eState = SLavaTickData::STATE::DECREASE;
+
+            m_lavaUpdateQ.push(eventData);
+        }
+    }
+}
+
+/*
+
+void CVoxelManager3::UpdateWaterTick(_float fTimeDelta)
+{
+    m_TimerUpdateWaterTick.AppendCurrTime(fTimeDelta);
+    if (m_TimerUpdateWaterTick.Get_Finished())
+    {
+        m_TimerUpdateWaterTick.Reset();
+
+        if (m_waterUpdateQ.empty()) return;
+        size_t currentSize = m_waterUpdateQ.size();
+
+        constexpr int dx[] = { 1, -1,  0,  0,  0,  0 };
+        constexpr int dy[] = { 0,  0,  1, -1,  0,  0 };
+        constexpr int dz[] = { 0,  0,  0,  0,  1, -1 };
+
+        for (size_t i = 0; i < currentSize; ++i)
+        {
+            SWaterTickData curr = m_waterUpdateQ.front();
+            m_waterUpdateQ.pop();
+
+            auto currOpt = GetBlock(curr.worldPos.x, curr.worldPos.y, curr.worldPos.z);
+            if (!currOpt.has_value()) continue;
+
+            if (currOpt.value().GetType() != CBlock3::TYPE::WATER_STILL &&
+                currOpt.value().GetType() != CBlock3::TYPE::WATER_FLOW) continue;
+
+            curr.level = curr.level & 0x07;
+
+            // -----------------------------------------------------------------
+            //  1. 내 바로 아래 칸(-Y) 검사 (수직 낙하 및 폭포 줄기 판정)
+            // -----------------------------------------------------------------
+            int downX = curr.worldPos.x + dx[3];
+            int downY = curr.worldPos.y + dy[3];
+            int downZ = curr.worldPos.z + dz[3];
+
+            auto downOpt = GetBlock(downX, downY, downZ);
+            if (downOpt.has_value())
+            {
+                CBlock3 downBlock = downOpt.value();
+
+                //  [핵심 규칙 확인] 아래가 공기이거나 이미 흐르는 물인가?
+                bool bIsBelowOpen = (downBlock.GetType() == CBlock3::TYPE::AIR ||
+                    downBlock.GetType() == CBlock3::TYPE::WATER_FLOW);
+
+                if (bIsBelowOpen)
+                {
+                    // 아래 칸이 공기이거나, 수위가 7 미만인 물이라면 최대 수위(7) 폭포수로 채워줍니다.
+                    // (이미 수위가 7인 폭포수라면 굳이 데이터 세팅을 중복해서 하지 않고 통과합니다.)
+                    if (downBlock.GetType() == CBlock3::TYPE::AIR || (downBlock.GetFlag() & 0x07) < 7)
+                    {
+                        downBlock.SetType(CBlock3::TYPE::WATER_FLOW);
+                        downBlock.SetFlag(7); // 폭포는 언제나 꽉 찬 수위
+                        SetBlock(downX, downY, downZ, downBlock);
+
+                        SWaterTickData nextData{};
+                        nextData.worldPos = { downX, downY, downZ };
+                        nextData.bIsStill = false;
+                        nextData.level = 7;
+                        m_waterUpdateQ.push(nextData);
+                    }
+
+                    //  [원천 차단] 아래가 공기이거나 물이라는 것은 '내가 지금 폭포 줄기'라는 뜻이므로,
+                    // 옆면으로 물이 번지지 않도록 무조건 여기서 이번 틱의 수평 전파를 패스(continue)합니다!
+                    continue;
+                }
+            }
+
+            // -----------------------------------------------------------------
+            //  2. 수평 4방향 전파 (내 밑이 고체 블록 등으로 단단히 막혔을 때만 일로 내려옴)
+            // -----------------------------------------------------------------
+            if (curr.level > 0)
+            {
+                for (int d = 0; d < 6; ++d)
+                {
+                    if (d == 2 || d == 3) continue; // 위, 아래 제외
+
+                    int nx = curr.worldPos.x + dx[d];
+                    int ny = curr.worldPos.y + dy[d];
+                    int nz = curr.worldPos.z + dz[d];
+
+                    auto nopt = GetBlock(nx, ny, nz);
+                    if (!nopt.has_value()) continue;
+                    CBlock3 nBlock = nopt.value();
+
+                    uint8_t nextLevel = curr.level - 1;
+                    bool bCanSpread = false;
+
+                    if (nBlock.GetType() == CBlock3::TYPE::AIR)
+                    {
+                        bCanSpread = true;
+                    }
+                    else if (nBlock.GetType() == CBlock3::TYPE::WATER_FLOW && (nBlock.GetFlag() & 0x07) < nextLevel)
+                    {
+                        bCanSpread = true;
+                    }
+
+                    if (bCanSpread)
+                    {
+                        // 벼랑 끝 보정: 이웃 칸의 바로 아래가 공기라면 에너지를 유지해 낙하력을 높임
+                        auto nDownOpt = GetBlock(nx, ny - 1, nz);
+                        if (nDownOpt.has_value() && nDownOpt->GetType() == CBlock3::TYPE::AIR)
+                        {
+                            nextLevel = curr.level;
+                        }
+
+                        nBlock.SetType(CBlock3::TYPE::WATER_FLOW);
+                        nBlock.SetFlag(nextLevel);
+                        SetBlock(nx, ny, nz, nBlock);
+
+                        SWaterTickData nextData{};
+                        nextData.worldPos = { nx, ny, nz };
+                        nextData.bIsStill = false;
+                        nextData.level = nextLevel;
+                        m_waterUpdateQ.push(nextData);
+                    }
+                }
+            }
+        } // for 끝
+    }
+}
+
+*/
 uint64_t CVoxelManager3::encodeChunkCoord(int32_t x, int32_t y, int32_t z) 
 {
 	// X: 21비트 (±1,048,575 청크 ≈ ±33.5 million 블록)
@@ -1837,7 +3084,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                                 {
                                     CChunk3* pAdjChunk = nChunkIter->second.get();
 
-                                    // 💡 이웃 청크에서 "우리 청크와 딱 맞닿아 있는 경계 영역"의 로컬 범위를 지정합니다.
+                                    //  이웃 청크에서 "우리 청크와 딱 맞닿아 있는 경계 영역"의 로컬 범위를 지정합니다.
                                     // 대각선 꼭짓점 청크라면 딱 1칸짜리 꼭짓점 기둥만, 직선 청크라면 32칸짜리 한 면만 정밀 타격합니다.
                                     int32_t adjXStart = (offsetX == 1) ? 0 : ((offsetX == -1) ? 31 : 0);
                                     int32_t adjXEnd = (offsetX == 1) ? 0 : ((offsetX == -1) ? 31 : 31);
@@ -1848,7 +3095,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
                                     {
                                         for (int32_t az = adjZStart; az <= adjZEnd; ++az)
                                         {
-                                            // 💡 상하 전파 사각지대를 없애기 위해, 내 Y층 기준 위아래 삼중창(ay-1, ay, ay+1) 전파를 수용하도록 설계할 수 있습니다.
+                                            //  상하 전파 사각지대를 없애기 위해, 내 Y층 기준 위아래 삼중창(ay-1, ay, ay+1) 전파를 수용하도록 설계할 수 있습니다.
                                             // (이웃 청크의 해당 좌표에 빛이 존재한다면, 6방향 플러드 필이 내 청크 안쪽으로 밀고 들어오는 시드가 됩니다.)
                                             for (int32_t ay = 0; ay < 256; ++ay)
                                             {
@@ -2498,10 +3745,10 @@ HRESULT CVoxelManager3::Initialize()
     m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetSeed(m_iNoiseSeed + 32);
     m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    // 💡 주파수를 대폭 낮추어 노이즈 변화를 완만하게 만듭니다. (값 크면 나무가 전멸함)
+    //  주파수를 대폭 낮추어 노이즈 변화를 완만하게 만듭니다. (값 크면 나무가 전멸함)
     m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetFrequency(0.08f);
 
-    // 💡 숲 내부에서 나무가 더 조밀하게 뭉쳐나오도록 Fractal 설정을 추가해주면 훨씬 자연스럽습니다.
+    //  숲 내부에서 나무가 더 조밀하게 뭉쳐나오도록 Fractal 설정을 추가해주면 훨씬 자연스럽습니다.
     m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetFractalType(FastNoiseLite::FractalType_FBm);
     m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetFractalOctaves(3);
 
@@ -2520,6 +3767,14 @@ HRESULT CVoxelManager3::Initialize()
         m_pResSamplerPointWrap = CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
     }
 
+
+    {
+        m_TimerUpdateWaterTick.Set_GoalTime(1 / 4.f);
+    }
+
+    {
+        m_TimerUpdateLavaTick.Set_GoalTime(1.3f);
+    }
 
 
     // test light

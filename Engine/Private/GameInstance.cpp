@@ -394,6 +394,14 @@ HRESULT CGameInstance::InitializeResources()
 		}
 	}
 
+	//
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerVoxelWater", E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_VOXEL_WATER) })))
+		{
+			return E_FAIL;
+		}
+	}
 	
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_LINEAR_WRAP, CResSamplerState::Create()))
 	{
@@ -1212,6 +1220,10 @@ HRESULT CGameInstance::InitializeMCResource()
 				// 91: cobbled_deepslate.png
 				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/cobbled_deepslate.png");
 			}
+			{
+				// 92: lava_placeholder.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/lava/lava_placeholder.png");
+			}
 			
 		}
 
@@ -1233,6 +1245,49 @@ HRESULT CGameInstance::InitializeMCResource()
 			CGameInstance::Get().DelResource("VOXEL_MANAGER_TEX", "TEXTURES");
 		}
 
+		// water_still
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/water/water_still.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "WATER_STILL", pTexture);
+			GetGraphicDeviceContext()->PSSetShaderResources(13, 1, pTexture->GetSRV().GetAddressOf());
+		}
+
+		// water_flow
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/water/water_flow.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "WATER_FLOW", pTexture);
+			GetGraphicDeviceContext()->PSSetShaderResources(14, 1, pTexture->GetSRV().GetAddressOf());
+		}
+
+		// lava_still
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/lava/lava_still.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "LAVA_STILL", pTexture);
+			GetGraphicDeviceContext()->PSSetShaderResources(15, 1, pTexture->GetSRV().GetAddressOf());
+		}
+
+		// lava_flow
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/lava/lava_flow.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "LAVA_FLOW", pTexture);
+			GetGraphicDeviceContext()->PSSetShaderResources(16, 1, pTexture->GetSRV().GetAddressOf());
+		}
 
 	}
 
