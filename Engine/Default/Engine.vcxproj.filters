@@ -445,6 +445,9 @@
     <Filter Include="Resource\Buffer\VIBuffer\FallingVoxelVIBuffer">
       <UniqueIdentifier>{bd75ae31-e499-49ec-9eec-c03d54773d5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\UI\UIController">
+      <UniqueIdentifier>{7a60ec6b-146e-49ac-93bc-b35c4ca922c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -873,6 +876,9 @@
     <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h">
       <Filter>Resource\Buffer\VIBuffer\FallingVoxelVIBuffer</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\UIController.h">
+      <Filter>GameObject\UI\UIController</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1288,6 +1294,9 @@
     </ClCompile>
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp">
       <Filter>Resource\Buffer\VIBuffer\FallingVoxelVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIController.cpp">
+      <Filter>GameObject\UI\UIController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -218,6 +218,7 @@
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\public\LevelLoading.h" />
     <ClInclude Include="..\public\LevelLogo.h" />
+    <ClInclude Include="..\public\LevelOverWorld.h" />
     <ClInclude Include="..\public\LevelTestSimpleGreedy.h" />
     <ClInclude Include="..\public\LevelTestWorld.h" />
     <ClInclude Include="..\public\MainApp.h" />
@@ -234,6 +235,7 @@
     <ClCompile Include="..\private\BackGround.cpp" />
     <ClCompile Include="..\private\LevelLoading.cpp" />
     <ClCompile Include="..\private\LevelLogo.cpp" />
+    <ClCompile Include="..\private\LevelOverWorld.cpp" />
     <ClCompile Include="..\private\LevelTestSimpleGreedy.cpp" />
     <ClCompile Include="..\private\LevelTestWorld.cpp" />
     <ClCompile Include="..\private\MainApp.cpp" />

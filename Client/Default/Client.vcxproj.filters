@@ -37,6 +37,9 @@
     <Filter Include="Levels\Test\World">
       <UniqueIdentifier>{b299669c-af1f-47e9-bd91-1449e385f2de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Levels\OverWorld">
+      <UniqueIdentifier>{a5c0d243-164a-4249-92ac-03a93941b3bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -81,6 +84,9 @@
     <ClInclude Include="..\Public\Level_Defines.h">
       <Filter>99.Defines</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\LevelOverWorld.h">
+      <Filter>Levels\OverWorld</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -109,6 +115,9 @@
     </ClCompile>
     <ClCompile Include="..\private\LevelTestWorld.cpp">
       <Filter>Levels\Test\World</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\LevelOverWorld.cpp">
+      <Filter>Levels\OverWorld</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
