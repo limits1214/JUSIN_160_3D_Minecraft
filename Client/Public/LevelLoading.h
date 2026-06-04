@@ -24,6 +24,9 @@ private:
 	void ThreadStart();
 	void LoadingCheck();
 
+private:
+	HRESULT LoadingOverWorldLevel();
+
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};

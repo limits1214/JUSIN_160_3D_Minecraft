@@ -48,6 +48,11 @@ HRESULT CMainApp::Initialize()
 			CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::TEST_WORLD));
 		});
 
+	E::CGameInstance::Get().RegisterLevelChangeFunc("TO_OVERWORLD", [=]() {
+		Engine::CGameInstance::Get().ChangeLevel(
+			CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::THE_OVERWORLD));
+		});
+
 	return S_OK;
 }
 

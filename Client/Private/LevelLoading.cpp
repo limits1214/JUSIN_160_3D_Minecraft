@@ -7,6 +7,7 @@
 
 #include "LevelTestSimpleGreedy.h"
 #include "LevelTestWorld.h"
+#include "LevelOverWorld.h"
 NS_USING(Client)
 
 CLevelLoading::CLevelLoading(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext, LEVEL eNextLevelIndex) noexcept
@@ -75,6 +76,9 @@ HRESULT CLevelLoading::LoadEnd()
 	case LEVEL::TEST_WORLD:
 		pNewLevel = CLevelTestWorld::Create();
 		break;
+	case LEVEL::THE_OVERWORLD:
+		pNewLevel = CLevelOverWorld::Create();
+		break;
 	}
 	assert(pNewLevel);
 
@@ -110,6 +114,19 @@ void CLevelLoading::ThreadStart()
 
 	}
 	break;
+	case LEVEL::THE_OVERWORLD:
+	{
+		m_futLoadFinish = E::CGameInstance::Get().WorkerEnqueueWithFuture("LOADING_OVERWORLD", [this]()
+			{
+				if (FAILED(LoadingOverWorldLevel()))
+				{
+					return false;
+				}
+
+				return  true;
+			});
+	}
+	break;
 
 	default:
 		m_bLoadEnd = true;
@@ -132,6 +149,159 @@ void CLevelLoading::LoadingCheck()
 			}
 		}
 	}
+}
+
+#include "CowEntity.h"
+#include "PigEntity.h"
+#include "ChickenEntity.h"
+#include "PlayerEntity.h"
+#include "SkeletonEntity.h"
+#include "DropItem.h"
+#include "ExperienceOrbItem.h"
+#include "UICrossHair.h"
+#include "UIHotBar.h"
+#include "UIHotBarSelect.h"
+#include "UIHealthBar.h"
+#include "UIHealthBarIcon.h"
+#include "UIExperienceBar.h"
+#include "UIExperienceBarGage.h"
+#include "UIArmorBar.h"
+#include "UIArmorBarIcon.h"
+#include "UIHungerBar.h"
+#include "UIHungerBarIcon.h"
+#include "UIBreathBar.h"
+#include "UIBreathBarIcon.h"
+#include "UIController.h"
+#include "BlockOutline.h"
+#include "PlayerFPSArm.h"
+#include "DestroyStage.h"
+#include "FallingVoxel.h"
+
+HRESULT CLevelLoading::LoadingOverWorldLevel()
+{
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_CowEntity", E::CCowEntity::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PigEntity", E::CPigEntity::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_ChickenEntity", E::CChickenEntity::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_PlayerEntity", E::CPlayerEntity::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_SkeletonEntity", E::CSkeletonEntity::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_DropItem", E::CDropItem::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_ExperienceOrb", E::CExperienceOrbItem::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UICrosshair", E::CUICrosshair::Create())))
+	{
+		return E_FAIL;
+	}
+	//UIHotbar
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHotbar", E::CUIHotBar::Create())))
+	{
+		return E_FAIL;
+	}
+	//UIHotbarSelect
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHotbarSelect", E::CUIHotBarSelect::Create())))
+	{
+		return E_FAIL;
+	}
+	//UIHealthBar
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHealthBar", E::CUIHealthBar::Create())))
+	{
+		return E_FAIL;
+	}
+	//UIHealthIcon
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHealthBarIcon", E::CUIHealthBarIcon::Create())))
+	{
+		return E_FAIL;
+	}
+	//UIExperienceBar
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIExperienceBar", E::CUIExperienceBar::Create())))
+	{
+		return E_FAIL;
+	}
+	//UIExperienceBarGage
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIExperienceBarGage", E::CUIExperienceBarGage::Create())))
+	{
+		return E_FAIL;
+	}
+	//UIArmorBar
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIArmorBar", E::CUIArmorBar::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIArmorBarIcon", E::CUIArmorBarIcon::Create())))
+	{
+		return E_FAIL;
+	}
+	//UIHungerBar
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHungerBar", E::CUIHungerBar::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIHungerBarIcon", E::CUIHungerBarIcon::Create())))
+	{
+		return E_FAIL;
+	}
+	//CUIBreathBar
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIBreathBar", E::CUIBreathBar::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIBreathBarIcon", E::CUIBreathBarIcon::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIController", E::CUIController::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("BLOCK_OUTLINE", "Prototype_GameObject_BlockOutline", E::CBlockOutline::Create())))
+	{
+		return E_FAIL;
+	}
+
+	//PlayerFPSArm
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_PlayerFPSArm", E::CPlayerFPSArm::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("DESTROY_STAGE", "Prototype_GameObject_DestroyStage", E::CDestroyStage::Create())))
+	{
+		return E_FAIL;
+	}
+
+	//CFallingVoxel
+	if (FAILED(E::CGameInstance::Get().AddPrototype("FALLING_VOXEL", "Prototype_GameObject_FallingVoxel", E::CFallingVoxel::Create())))
+	{
+		return E_FAIL;
+	}
+
+	return S_OK;
 }
 
 Engine::UPtr<CLevelLoading> CLevelLoading::Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext, LEVEL eNextLevelIndex)

@@ -276,6 +276,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UIArmorBarIcon.h" />
     <ClInclude Include="..\public\UIBreathBar.h" />
     <ClInclude Include="..\public\UIBreathBarIcon.h" />
+    <ClInclude Include="..\public\UIController.h" />
     <ClInclude Include="..\public\UIExperienceBarGage.h" />
     <ClInclude Include="..\public\UIHealthBar.h" />
     <ClInclude Include="..\public\Helper.h" />
@@ -493,6 +494,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UIArmorBarIcon.cpp" />
     <ClCompile Include="..\private\UIBreathBar.cpp" />
     <ClCompile Include="..\private\UIBreathBarIcon.cpp" />
+    <ClCompile Include="..\private\UIController.cpp" />
     <ClCompile Include="..\private\UIExperienceBarGage.cpp" />
     <ClCompile Include="..\private\UIHealthBar.cpp" />
     <ClCompile Include="..\private\UIExperienceBar.cpp" />
