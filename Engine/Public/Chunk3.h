@@ -96,8 +96,9 @@ private:
 	void BuildSlapMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 	void BuildStairMesh(float fx, float fy, float fz, CBlock3::TYPE curType, std::vector<VOX_QUAD>& alphaTestQuads) const;
 	void BuildWaterMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads, std::vector<CChunk3*>& vecAdjChunks)const;
+	void BuildLavaMesh(int x, int y, int z, std::vector<VOX_QUAD>& waterQuads, std::vector<CChunk3*>& vecAdjChunks)const;
 
-	uint8_t GetCornerWaterLevel(int cx, int cy, int cz, std::vector<CChunk3*>& vecAdjChunks) const;
+	//uint8_t GetCornerWaterLevel(int cx, int cy, int cz, std::vector<CChunk3*>& vecAdjChunks) const;
 private:
 	CChunk3();
 	~CChunk3() override;

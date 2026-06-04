@@ -86,6 +86,12 @@ public:
 		LADDER,
 		COBBLESTONE,
 		COBBLED_DEEPSLATE,
+		WATER_STILL,
+		WATER_FLOW,
+
+		LAVA_PLACE_HOLDER,
+		LAVA_STILL,
+		LAVA_FLOW,
 		END
 	};
 
@@ -186,6 +192,7 @@ public:
 		LADDER,
 		COBBLESTONE,
 		COBBLED_DEEPSLATE,
+		LAVA_PLACE_HOLDER,
 		END
 	};
 
@@ -199,6 +206,7 @@ public:
 		ENCHANTING_TABLE,
 		LADDER,
 		WATER,
+		//LAVA,
 		END
 	};
 
@@ -271,10 +279,14 @@ inline  _bool CBlock3::IsOpaque(TYPE eType)
 		return false;
 	}
 
+	if (IsWater(eType))
+	{
+		return false;
+	}
+
 	switch (eType)
 	{
 	case TYPE::AIR:
-	case TYPE::WATER_PLACE_HOLDER:
 	case TYPE::TORCH_ON:
 	case TYPE::FIJI_SHORT_GRASS:
 	case TYPE::FIJI_TALL_GRASS_BOTTOM:
@@ -297,6 +309,12 @@ inline  _bool CBlock3::IsWater(TYPE e)
 	switch (e)
 	{
 	case  TYPE::WATER_PLACE_HOLDER:
+	case TYPE::WATER_FLOW:
+	case TYPE::WATER_STILL:
+
+	case TYPE::LAVA_PLACE_HOLDER:
+	case TYPE::LAVA_FLOW:
+	case TYPE::LAVA_STILL:
 		return true;
 	}
 
@@ -308,6 +326,11 @@ inline uint8_t CBlock3::GetBlockLightByType(TYPE e)
 	switch (e)
 	{
 	case TYPE::TORCH_ON:
+		return 15;
+
+	case TYPE::LAVA_PLACE_HOLDER:
+	case TYPE::LAVA_FLOW:
+	case TYPE::LAVA_STILL:
 		return 15;
 	}
 
@@ -429,6 +452,13 @@ inline CBlock3::TEX_TYPE CBlock3::GetTexType(CBlock3::TYPE blockType, FACE_DIR f
 
 	case TYPE::COBBLESTONE:				return TEX_TYPE::COBBLESTONE;
 	case TYPE::COBBLED_DEEPSLATE:		return TEX_TYPE::COBBLED_DEEPSLATE;
+
+	case TYPE::WATER_FLOW:				return static_cast<TEX_TYPE>(13);
+	case TYPE::WATER_STILL:				return static_cast<TEX_TYPE>(14);
+
+	case TYPE::LAVA_PLACE_HOLDER:		return TEX_TYPE::LAVA_PLACE_HOLDER;
+	case TYPE::LAVA_FLOW:				return static_cast<TEX_TYPE>(15);
+	case TYPE::LAVA_STILL:				return static_cast<TEX_TYPE>(16);
 
 	case TYPE::GRASS:
 		switch (faceDir)
@@ -655,6 +685,11 @@ inline CBlock3::GEO_TYPE CBlock3::GetGeoType(TYPE e)
 
 
 	case TYPE::WATER_PLACE_HOLDER:
+	case TYPE::WATER_FLOW:
+	case TYPE::WATER_STILL:
+	case TYPE::LAVA_PLACE_HOLDER:
+	case TYPE::LAVA_FLOW:
+	case TYPE::LAVA_STILL:
 		return GEO_TYPE::WATER;
 
 	case TYPE::SLAP_PLANK_CHERRY:

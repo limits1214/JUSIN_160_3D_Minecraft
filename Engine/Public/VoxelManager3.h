@@ -3,6 +3,7 @@
 #include "Chunk3.h"
 #include "IRenderable.h"
 #include <FastNoiseLite.h>
+#include "Timer.h"
 
 NS_BEGIN(Engine)
 class CResTexture2DArray;
@@ -190,6 +191,49 @@ public:
 	void Update(_float fTimeDelta);
 	void UpdateGUI();
 
+private:
+	//struct SWaterTickData
+	//{
+	//	DirectX::XMINT3 worldPos;
+	//	uint8_t level;
+	//	bool bIsStill; // true면 WATER_STILL, false면 WATER_FLOWING
+	//};
+
+	struct SWaterTickData
+	{
+		XMINT3 worldPos; // 구조체에 맞게 변수명 조절
+		bool bIsStill;
+		uint8_t level;
+
+		// 💡 [핵심 추가] 이 틱이 전파용인지, 소멸(감소)용인지 구분
+		enum class STATE { SPREAD, DECREASE };
+		STATE eState = STATE::SPREAD; // 기본값은 전파
+	};
+
+	std::queue<SWaterTickData> m_waterUpdateQ;
+	void UpdateWaterTick(_float fTimeDelta);
+	CTimer m_TimerUpdateWaterTick{};
+
+	void TriggerWaterUpdateAround(int x, int y, int z);
+
+
+private:
+	struct SLavaTickData
+	{
+		XMINT3 worldPos; // 구조체에 맞게 변수명 조절
+		bool bIsStill;
+		uint8_t level;
+
+		// 💡 [핵심 추가] 이 틱이 전파용인지, 소멸(감소)용인지 구분
+		enum class STATE { SPREAD, DECREASE };
+		STATE eState = STATE::SPREAD; // 기본값은 전파
+	};
+	std::queue<SLavaTickData> m_lavaUpdateQ;
+	void UpdateLavaTick(_float fTimeDelta);
+	CTimer m_TimerUpdateLavaTick{};
+
+	void TriggerLavaUpdateAround(int x, int y, int z);
+
 public:
 	static uint64_t encodeChunkCoord(int32_t x, int32_t y, int32_t z) ;
 	static std::tuple<int32_t, int32_t, int32_t> decodeChunkCoord(uint64_t key) ;
@@ -231,6 +275,8 @@ private:
 	FastNoiseLite m_Noises[ETOUI(NOISE_TYPE::END)];
 	int m_iNoiseSeed{ 160 };
 
+private:
+	uint32_t m_iWaterFrame{ 0 };
 
 private:
 	SPtr<CResTexture2DArray> m_pResBlocksTexutreArray{};

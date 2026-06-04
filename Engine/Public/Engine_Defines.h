@@ -30,6 +30,7 @@ using namespace Microsoft::WRL;
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
 #include <ctime>
 #include <memory>
 #include <optional>

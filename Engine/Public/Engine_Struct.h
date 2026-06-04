@@ -219,6 +219,13 @@ namespace Engine
 		_float3 _pad{};
 	}CB_PER_UI;
 
+	typedef struct tagConstantBufferVoxelWater
+	{
+		int32_t stillFrameIndex{}; // m_iWaterFrame % 32
+		int32_t flowFrameIndex{};  // m_iWaterFrame % 64
+		_float2   _pddding;
+	}CB_PER_VOXEL_WATER;
+
 	typedef struct tagVoxQuad
 	{
 		_float3 v[4];
