@@ -77,7 +77,7 @@ HRESULT CUIController::Initialize(void* pArg)
 			{
 				m_hHotBar = handle.value();
 
-				if (auto pBarObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+				if (auto pBarObj = E::CGameInstance::Get().GetGameObjectByHandleT<CUIHotBar>(handle.value()))
 				{
 					auto protoID = pDesc->HotBarSelect.ProtoPairID;
 					auto layerID = pDesc->HotBarSelect.LayerID;
@@ -86,9 +86,12 @@ HRESULT CUIController::Initialize(void* pArg)
 					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
 						layerID, &Desc))
 					{
+						pBarObj->SetHotBarSelect(handle.value());
+
 						if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
 						{
 							pObj->SetParentNode(pBarObj);
+							
 						}
 					}
 				}

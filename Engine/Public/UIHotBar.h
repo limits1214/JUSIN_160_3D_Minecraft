@@ -1,6 +1,9 @@
 #pragma once
 #include "UIObject.h"
+#include "UIHotbarSelect.h"
 NS_BEGIN(Engine)
+
+//class CUIHotBarSelect;
 
 class ENGINE_DLL CUIHotBar final : public E::CUIObject
 {
@@ -26,6 +29,12 @@ public:
 
 private:
 	_bool m_bRender{ true };
+
+public:
+	void SetHotBarSelect(CHandle h) { m_hHotbarSelect = h; }
+	CUIHotBarSelect* GetHotBarSelect() const;
+private:
+	CHandle m_hHotbarSelect{};
 
 public:
 	static E::UPtr<CUIHotBar> Create();
