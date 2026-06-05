@@ -59,6 +59,26 @@ CUICrosshair* CUIController::GetCrosshair() const
 	return CGameInstance::Get().GetGameObjectByHandleT<CUICrosshair>(m_hCrosshair);
 }
 
+CUIInventory* CUIController::Getinventory() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUIInventory>(m_hInventory);
+}
+
+CUICraftingTable* CUIController::GetCraftingTable() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUICraftingTable>(m_hCraftingTable);
+}
+
+CUIBlastFurnace* CUIController::GetBlastFurnace() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUIBlastFurnace>(m_hBlastFurnace);
+}
+
+CUIEnchantingTable* CUIController::GetEnchantingTable() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUIEnchantingTable>(m_hEnchantingTable);
+}
+
 HRESULT CUIController::Initialize(void* pArg)
 {
 	auto* pDesc = static_cast<CUIController::DESC*>(pArg);
@@ -266,6 +286,57 @@ HRESULT CUIController::Initialize(void* pArg)
 		}
 	}
 
+	{
+		auto protoID = pDesc->Inventory.ProtoPairID;
+		auto layerID = pDesc->Inventory.LayerID;
+
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "Inventory";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
+			layerID, &Desc))
+		{
+			m_hInventory = handle.value();
+		}
+	}
+
+	{
+		auto protoID = pDesc->CraftingTable.ProtoPairID;
+		auto layerID = pDesc->CraftingTable.LayerID;
+
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "CraftingTable";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
+			layerID, &Desc))
+		{
+			m_hCraftingTable = handle.value();
+		}
+	}
+
+	{
+		auto protoID = pDesc->BlastFurnace.ProtoPairID;
+		auto layerID = pDesc->BlastFurnace.LayerID;
+
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "BlastFurnace";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
+			layerID, &Desc))
+		{
+			m_hBlastFurnace = handle.value();
+		}
+	}
+
+	{
+		auto protoID = pDesc->EnchantingTable.ProtoPairID;
+		auto layerID = pDesc->EnchantingTable.LayerID;
+
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "EnchantingTable";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
+			layerID, &Desc))
+		{
+			m_hEnchantingTable = handle.value();
+		}
+	}
     return S_OK;
 }
 

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "UIInventory.h"
+#include "UIEnchantingTable.h"
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
@@ -7,16 +7,16 @@
 
 NS_USING(Engine)
 
-CUIInventory::CUIInventory()
+CUIEnchantingTable::CUIEnchantingTable()
 {
 }
 
 
-CUIInventory::~CUIInventory()
+CUIEnchantingTable::~CUIEnchantingTable()
 {
 }
 
-void CUIInventory::UpdateGUI()
+void CUIEnchantingTable::UpdateGUI()
 {
 	CUIObject::UpdateGUI();
 
@@ -26,14 +26,14 @@ void CUIInventory::UpdateGUI()
 	}
 }
 
-HRESULT CUIInventory::Initialize(void* pArg)
+HRESULT CUIEnchantingTable::Initialize(void* pArg)
 {
 	auto pDesc = static_cast<CUIObject::UIOBJECT_DESC*>(pArg);
 	pDesc->fSizeX = 176.f * MC_UI_SCALE;
 	pDesc->fSizeY = 166.f * MC_UI_SCALE;
 
-	pDesc->fX = (1280.f * 0.5f) ;
-	pDesc->fY = (720.f * 0.5f) ;
+	pDesc->fX = (1280.f * 0.5f);
+	pDesc->fY = (720.f * 0.5f);
 
 	if (FAILED(CUIObject::Initialize(pArg)))
 		return E_FAIL;
@@ -68,15 +68,15 @@ HRESULT CUIInventory::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CUIInventory::PriorityUpdate(E::_float fTimeDelta)
+void CUIEnchantingTable::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CUIInventory::Update(E::_float fTimeDelta)
+void CUIEnchantingTable::Update(E::_float fTimeDelta)
 {
 }
 
-void CUIInventory::LateUpdate(E::_float fTimeDelta)
+void CUIEnchantingTable::LateUpdate(E::_float fTimeDelta)
 {
 	if (m_bRender)
 	{
@@ -86,7 +86,7 @@ void CUIInventory::LateUpdate(E::_float fTimeDelta)
 	GetTransform().Update();
 }
 
-HRESULT CUIInventory::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CUIEnchantingTable::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_UI");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI");
@@ -118,7 +118,7 @@ HRESULT CUIInventory::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 
 	{
 		E::CB_PER_UI perUI{};
-		perUI.texIndex = PackTexId(12, 2);
+		perUI.texIndex = PackTexId(12, 5);
 		perUI.texCoord = { 0 / 256.f, 0 / 256.f };
 		perUI.uvSize = { 176.f / 256.f, 166.f / 256.f };
 		if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
@@ -146,23 +146,23 @@ HRESULT CUIInventory::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 	return S_OK;
 }
 
-E::UPtr<CUIInventory> CUIInventory::Create()
+E::UPtr<CUIEnchantingTable> CUIEnchantingTable::Create()
 {
-	auto pInstance = E::ToUPtr(new CUIInventory{});
+	auto pInstance = E::ToUPtr(new CUIEnchantingTable{});
 	if (FAILED(pInstance->InitializePrototype()))
 	{
-		MSG_BOX("Failed to Created : CUIInventory");
+		MSG_BOX("Failed to Created : CUIEnchantingTable");
 		return nullptr;
 	}
 	return  pInstance;
 }
 
-E::UPtr<E::CPrototype> CUIInventory::Clone(void* pArg)
+E::UPtr<E::CPrototype> CUIEnchantingTable::Clone(void* pArg)
 {
-	auto	pInstance = E::ToUPtr(new CUIInventory{ *this });
+	auto	pInstance = E::ToUPtr(new CUIEnchantingTable{ *this });
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned : CUIInventory");
+		MSG_BOX("Failed to Cloned : CUIEnchantingTable");
 		return nullptr;
 	}
 

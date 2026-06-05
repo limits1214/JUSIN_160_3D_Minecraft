@@ -54,15 +54,15 @@ void CPlayerEntity::UpdateGUI()
         ImGui::Text("MousePressingLeft: %i", m_bMousePressingLeft);
         ImGui::Text("MousePressingRight: %i", m_bMousePressingRight);
 
-        ImGui::Text("NumKeyPressing_1: %i", m_iNumKeyPressing[1]);
-        ImGui::Text("NumKeyPressing_2: %i", m_iNumKeyPressing[2]);
-        ImGui::Text("NumKeyPressing_3: %i", m_iNumKeyPressing[3]);
-        ImGui::Text("NumKeyPressing_4: %i", m_iNumKeyPressing[4]);
-        ImGui::Text("NumKeyPressing_5: %i", m_iNumKeyPressing[5]);
-        ImGui::Text("NumKeyPressing_6: %i", m_iNumKeyPressing[6]);
-        ImGui::Text("NumKeyPressing_7: %i", m_iNumKeyPressing[7]);
-        ImGui::Text("NumKeyPressing_8: %i", m_iNumKeyPressing[8]);
-        ImGui::Text("NumKeyPressing_9: %i", m_iNumKeyPressing[9]);
+        ImGui::Text("NumKeyPressing_1: %i", m_bNumKeyPressing[1]);
+        ImGui::Text("NumKeyPressing_2: %i", m_bNumKeyPressing[2]);
+        ImGui::Text("NumKeyPressing_3: %i", m_bNumKeyPressing[3]);
+        ImGui::Text("NumKeyPressing_4: %i", m_bNumKeyPressing[4]);
+        ImGui::Text("NumKeyPressing_5: %i", m_bNumKeyPressing[5]);
+        ImGui::Text("NumKeyPressing_6: %i", m_bNumKeyPressing[6]);
+        ImGui::Text("NumKeyPressing_7: %i", m_bNumKeyPressing[7]);
+        ImGui::Text("NumKeyPressing_8: %i", m_bNumKeyPressing[8]);
+        ImGui::Text("NumKeyPressing_9: %i", m_bNumKeyPressing[9]);
 
         ImGui::TreePop();
     }
@@ -175,15 +175,17 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_iMouseMoveZ = CGameInstance::Get().MouseMove(MOUSEMOVESTATE::Z);
         m_bMousePressingLeft = CGameInstance::Get().MousePressing(MOUSEKEYSTATE::LB);
         m_bMousePressingRight = CGameInstance::Get().MousePressing(MOUSEKEYSTATE::RB);
-        m_iNumKeyPressing[1] = CGameInstance::Get().KeyPressing(DIK_1);
-        m_iNumKeyPressing[2] = CGameInstance::Get().KeyPressing(DIK_2);
-        m_iNumKeyPressing[3] = CGameInstance::Get().KeyPressing(DIK_3);
-        m_iNumKeyPressing[4] = CGameInstance::Get().KeyPressing(DIK_4);
-        m_iNumKeyPressing[5] = CGameInstance::Get().KeyPressing(DIK_5);
-        m_iNumKeyPressing[6] = CGameInstance::Get().KeyPressing(DIK_6);
-        m_iNumKeyPressing[7] = CGameInstance::Get().KeyPressing(DIK_7);
-        m_iNumKeyPressing[8] = CGameInstance::Get().KeyPressing(DIK_8);
-        m_iNumKeyPressing[9] = CGameInstance::Get().KeyPressing(DIK_9);
+        m_bNumKeyPressing[1] = CGameInstance::Get().KeyPressing(DIK_1);
+        m_bNumKeyPressing[2] = CGameInstance::Get().KeyPressing(DIK_2);
+        m_bNumKeyPressing[3] = CGameInstance::Get().KeyPressing(DIK_3);
+        m_bNumKeyPressing[4] = CGameInstance::Get().KeyPressing(DIK_4);
+        m_bNumKeyPressing[5] = CGameInstance::Get().KeyPressing(DIK_5);
+        m_bNumKeyPressing[6] = CGameInstance::Get().KeyPressing(DIK_6);
+        m_bNumKeyPressing[7] = CGameInstance::Get().KeyPressing(DIK_7);
+        m_bNumKeyPressing[8] = CGameInstance::Get().KeyPressing(DIK_8);
+        m_bNumKeyPressing[9] = CGameInstance::Get().KeyPressing(DIK_9);
+
+        m_bKeyDownE = CGameInstance::Get().KeyDown(DIK_E);
 
     }
     else
@@ -201,7 +203,8 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_iMouseMoveZ = 0;
         m_bMousePressingLeft = false;
         m_bMousePressingRight = false;
-        memset(&m_iNumKeyPressing, 0, sizeof(m_iNumKeyPressing));
+        memset(&m_bNumKeyPressing, 0, sizeof(m_bNumKeyPressing));
+        m_bKeyDownE = false;
     }
 }
 
@@ -819,6 +822,12 @@ CUIController* CPlayerEntity::GetUIController() const
 
 void CPlayerEntity::ProcessUI(float fTimeDelta)
 {
+    ProcessUIInventory(fTimeDelta);
+    ProcessUIHotbar(fTimeDelta);
+}
+
+void CPlayerEntity::ProcessUIHotbar(float fTimeDelta)
+{
     if (!m_pActivePlayerCamera) return;
     auto* pUIController = GetUIController();
     if (!pUIController) return;
@@ -832,6 +841,16 @@ void CPlayerEntity::ProcessUI(float fTimeDelta)
     {
         auto idx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
         pUIController->GetHotBar()->GetHotBarSelect()->SetSelectIdx(--idx);
+    }
+}
+
+void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pUIController = GetUIController();
+    if (m_bKeyDownE)
+    {
+        pUIController->Getinventory()->SetRender(!pUIController->Getinventory()->GetRender());
     }
 }
 

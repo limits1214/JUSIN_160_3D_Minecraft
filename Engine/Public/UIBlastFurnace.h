@@ -1,15 +1,16 @@
+
 #pragma once
 #include "UIObject.h"
 NS_BEGIN(Engine)
 class CComConstantBuffer;
-class ENGINE_DLL CUIInventory final : public E::CUIObject
+class ENGINE_DLL CUIBlastFurnace final : public E::CUIObject
 {
 public:
-	DECLARE_DERIVED_TYPE(CUIInventory, CUIObject)
+	DECLARE_DERIVED_TYPE(CUIBlastFurnace, CUIObject)
 
 private:
-	CUIInventory();
-	~CUIInventory() override;
+	CUIBlastFurnace();
+	~CUIBlastFurnace() override;
 
 public:
 	void UpdateGUI() override;
@@ -33,7 +34,7 @@ private:
 	CComConstantBuffer* m_pComCBufferPerUI{};
 
 public:
-	static E::UPtr<CUIInventory> Create();
+	static E::UPtr<CUIBlastFurnace> Create();
 	E::UPtr<E::CPrototype> Clone(void* pArg) override;
 };
 
