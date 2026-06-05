@@ -4,6 +4,11 @@
 #include "UIObject.h"
 
 #include "UIHotBar.h"
+#include "UIInventory.h"
+
+#include "UICraftingTable.h"
+#include "UIBlastFurnace.h"
+#include "UIEnchantingTable.h"
 
 NS_BEGIN(Engine)
 
@@ -44,6 +49,12 @@ public:
 		DELEGATE_UI_DESC BreathBarIcon{};
 
 		DELEGATE_UI_DESC Crosshair{};
+
+		DELEGATE_UI_DESC Inventory{};
+
+		DELEGATE_UI_DESC CraftingTable{};
+		DELEGATE_UI_DESC BlastFurnace{};
+		DELEGATE_UI_DESC EnchantingTable{};
 		
 	}DESC;
 public:
@@ -64,6 +75,10 @@ public:
 	CUIBreathBar* GetBreathBar() const;
 	CUIExperienceBar* GetExperienceBar() const;
 	CUICrosshair* GetCrosshair() const;
+	CUIInventory* Getinventory() const;
+	CUICraftingTable* GetCraftingTable() const;
+	CUIBlastFurnace* GetBlastFurnace() const;
+	CUIEnchantingTable* GetEnchantingTable() const;
 
 private:
 	CHandle m_hHotBar{};
@@ -73,6 +88,10 @@ private:
 	CHandle m_hBreathBar{};
 	CHandle m_hExperienceBar{};
 	CHandle m_hCrosshair{};
+	CHandle m_hInventory{};
+	CHandle m_hCraftingTable{};
+	CHandle m_hBlastFurnace{};
+	CHandle m_hEnchantingTable{};
 
 public:
 	HRESULT Initialize(void* pArg) override;

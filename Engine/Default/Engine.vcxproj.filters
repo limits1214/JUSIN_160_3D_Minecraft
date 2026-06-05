@@ -448,6 +448,15 @@
     <Filter Include="GameObject\UI\UIController">
       <UniqueIdentifier>{7a60ec6b-146e-49ac-93bc-b35c4ca922c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\UI\CraftingTable">
+      <UniqueIdentifier>{99d26066-5953-463d-8107-0e35c737d99a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\BlastFurnace">
+      <UniqueIdentifier>{ea64046c-36c3-4245-9b6f-8b30782228f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\EnchantingTable">
+      <UniqueIdentifier>{023a3ff9-43ff-4ca5-beb4-ba2da5751275}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -879,6 +888,15 @@
     <ClInclude Include="..\public\UIController.h">
       <Filter>GameObject\UI\UIController</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\UICraftingTable.h">
+      <Filter>GameObject\UI\CraftingTable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIBlastFurnace.h">
+      <Filter>GameObject\UI\BlastFurnace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIEnchantingTable.h">
+      <Filter>GameObject\UI\EnchantingTable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1297,6 +1315,15 @@
     </ClCompile>
     <ClCompile Include="..\private\UIController.cpp">
       <Filter>GameObject\UI\UIController</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UICraftingTable.cpp">
+      <Filter>GameObject\UI\CraftingTable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIBlastFurnace.cpp">
+      <Filter>GameObject\UI\BlastFurnace</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIEnchantingTable.cpp">
+      <Filter>GameObject\UI\EnchantingTable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

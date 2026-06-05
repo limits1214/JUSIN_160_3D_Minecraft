@@ -226,6 +226,26 @@ HRESULT CLevelOverWorld::Initialize()
 						.LayerID = "80_CrossHair",
 					};
 
+					ControllerDesc.Inventory = {
+						.ProtoPairID = { "UI", "Prototype_GameObject_UIInventory" },
+						.LayerID = "80_UI"
+					};
+
+					ControllerDesc.CraftingTable = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UICraftingTable"},
+						.LayerID = "80_UI"
+					};
+
+					ControllerDesc.BlastFurnace = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIBlastFurnace"},
+						.LayerID = "80_UI"
+					};
+
+					ControllerDesc.EnchantingTable = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIEnchantingTable"},
+						.LayerID = "80_UI"
+					};
+
 					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIController",
 						"79_UIController", &ControllerDesc))
 					{

@@ -2,14 +2,14 @@
 #include "UIObject.h"
 NS_BEGIN(Engine)
 class CComConstantBuffer;
-class ENGINE_DLL CUIInventory final : public E::CUIObject
+class ENGINE_DLL CUICraftingTable final : public E::CUIObject
 {
 public:
-	DECLARE_DERIVED_TYPE(CUIInventory, CUIObject)
+	DECLARE_DERIVED_TYPE(CUICraftingTable, CUIObject)
 
 private:
-	CUIInventory();
-	~CUIInventory() override;
+	CUICraftingTable();
+	~CUICraftingTable() override;
 
 public:
 	void UpdateGUI() override;
@@ -33,7 +33,7 @@ private:
 	CComConstantBuffer* m_pComCBufferPerUI{};
 
 public:
-	static E::UPtr<CUIInventory> Create();
+	static E::UPtr<CUICraftingTable> Create();
 	E::UPtr<E::CPrototype> Clone(void* pArg) override;
 };
 

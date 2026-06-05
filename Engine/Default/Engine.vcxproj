@@ -274,9 +274,12 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
     <ClInclude Include="..\public\UIArmorBar.h" />
     <ClInclude Include="..\public\UIArmorBarIcon.h" />
+    <ClInclude Include="..\public\UIBlastFurnace.h" />
     <ClInclude Include="..\public\UIBreathBar.h" />
     <ClInclude Include="..\public\UIBreathBarIcon.h" />
     <ClInclude Include="..\public\UIController.h" />
+    <ClInclude Include="..\public\UICraftingTable.h" />
+    <ClInclude Include="..\public\UIEnchantingTable.h" />
     <ClInclude Include="..\public\UIExperienceBarGage.h" />
     <ClInclude Include="..\public\UIHealthBar.h" />
     <ClInclude Include="..\public\Helper.h" />
@@ -492,9 +495,12 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
     <ClCompile Include="..\private\UIArmorBar.cpp" />
     <ClCompile Include="..\private\UIArmorBarIcon.cpp" />
+    <ClCompile Include="..\private\UIBlastFurnace.cpp" />
     <ClCompile Include="..\private\UIBreathBar.cpp" />
     <ClCompile Include="..\private\UIBreathBarIcon.cpp" />
     <ClCompile Include="..\private\UIController.cpp" />
+    <ClCompile Include="..\private\UICraftingTable.cpp" />
+    <ClCompile Include="..\private\UIEnchantingTable.cpp" />
     <ClCompile Include="..\private\UIExperienceBarGage.cpp" />
     <ClCompile Include="..\private\UIHealthBar.cpp" />
     <ClCompile Include="..\private\UIExperienceBar.cpp" />

@@ -35,8 +35,8 @@ void CUIObject::CalcUICoord()
 	auto clientWidth = clientSize.x;
 	auto clientHeight = clientSize.y;
 	GetTransform().SetScale(E::_float3{ m_fSizeX, m_fSizeY, 1.f });
-	auto a = m_fX - clientWidth * 0.5f;
-	auto b = -m_fY + clientHeight * 0.5f;
+	//auto a = m_fX - clientWidth * 0.5f;
+	//auto b = -m_fY + clientHeight * 0.5f;
 
 	
 	GetTransform().SetPosition(XMVectorSet(m_fX - clientWidth * 0.5f, -m_fY + clientHeight * 0.5f, GetTransform().GetPosition().z, 1.f));

@@ -75,6 +75,8 @@ public:
 private:
 	CUIController* GetUIController() const;
 	void ProcessUI(float fTimeDelta);
+	void ProcessUIHotbar(float fTimeDelta);
+	void ProcessUIInventory(float fTimeDelta);
 private:
 	CHandle m_hUIController{};
 
@@ -120,7 +122,10 @@ private:
 	_bool m_bKeyPressingE{ false };
 	_bool m_bKeyPressingShift{ false };
 	_bool m_bKeyPressingSpace{ false };
-	_bool m_iNumKeyPressing[10]{};
+	_bool m_bNumKeyPressing[10]{};
+
+	_bool m_bKeyDownE{ false };
+
 	int32_t m_iMouseMoveX{ 0 };
 	int32_t m_iMouseMoveY{ 0 };
 	int32_t m_iMouseMoveZ{ 0 };

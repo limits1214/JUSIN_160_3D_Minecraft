@@ -172,6 +172,10 @@ void CLevelLoading::LoadingCheck()
 #include "UIBreathBar.h"
 #include "UIBreathBarIcon.h"
 #include "UIController.h"
+#include "UIInventory.h"
+#include "UICraftingTable.h"
+#include "UIBlastFurnace.h"
+#include "UIEnchantingTable.h"
 #include "BlockOutline.h"
 #include "PlayerFPSArm.h"
 #include "DestroyStage.h"
@@ -278,6 +282,22 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 	{
 		return E_FAIL;
 	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIInventory", E::CUIInventory::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UICraftingTable", E::CUICraftingTable::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIBlastFurnace", E::CUIBlastFurnace::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIEnchantingTable", E::CUIEnchantingTable::Create())))
+	{
+		return E_FAIL;
+	}
 
 	if (FAILED(E::CGameInstance::Get().AddPrototype("BLOCK_OUTLINE", "Prototype_GameObject_BlockOutline", E::CBlockOutline::Create())))
 	{
@@ -300,6 +320,8 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 	{
 		return E_FAIL;
 	}
+
+
 
 	return S_OK;
 }
