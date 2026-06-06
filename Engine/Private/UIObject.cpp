@@ -12,6 +12,20 @@ CUIObject::~CUIObject()
 {
 }
 
+void CUIObject::UpdateGUI()
+{
+	CGameObject::UpdateGUI();
+
+	if (ImGui::DragFloat("fX", (float*)&m_fX, 0.1f))
+	{
+		CalcUICoord();
+	}
+	if (ImGui::DragFloat("fY", (float*)&m_fY, 0.1f))
+	{
+		CalcUICoord();
+	}
+}
+
 HRESULT CUIObject::Initialize(void* pArg)
 {
 	auto		pDesc = static_cast<UIOBJECT_DESC*>(pArg);

@@ -239,6 +239,29 @@ _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayD
 }
 
 
+void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block)
+{
+    auto optOldBlock = GetBlock(wbx, wby, wbz);
+    if (!optOldBlock.has_value()) return;
+    CBlock3 oldBlock = optOldBlock.value();
+
+    if (block.GetType() == CBlock3::TYPE::AIR)
+    {
+        CBlock3 block{};
+        block.SetType(CBlock3::TYPE::AIR);
+        SetBlock(wbx, wby, wbz, block);
+
+        TriggerWaterUpdateAround(wbx, wby, wbz);
+        TriggerLavaUpdateAround(wbx, wby, wbz);
+
+        RuntimeOnBlockRemovedLighting(wbx, wby, wbz, oldBlock);
+    }
+    else
+    {
+
+    }
+}
+
 HRESULT CVoxelManager3::QueuingInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& desc)
 {
     m_queueInRangeChunkCreate.clear();

@@ -5,6 +5,8 @@
 #include "Resources.h"
 #include "ComConstantBuffer.h"
 
+#include "UIItem.h"
+
 NS_USING(Engine)
 
 CUIInventory::CUIInventory()
@@ -65,6 +67,8 @@ HRESULT CUIInventory::Initialize(void* pArg)
 		//m_pComOverlayTransform->SetScale(GetTransform().GetScale());
 	}
 
+	InitializeSlot();
+
 	return S_OK;
 }
 
@@ -74,6 +78,229 @@ void CUIInventory::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIInventory::Update(E::_float fTimeDelta)
 {
+	if (m_hOnCursorItem)
+	{
+		if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hOnCursorItem.value()))
+		{
+			POINT mousePos;
+			GetCursorPos(&mousePos);
+			ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+
+			pItem->SetOrigin(_float2{ (float)mousePos.x, (float)mousePos.y });
+
+
+
+
+
+			if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB)
+				|| CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+			{
+				for (auto& slot : m_vecInventorySlot)
+				{
+					//if (slot.hItem.has_value()) continue;
+
+					auto itemOrigin = pItem->GetOrigin();
+					auto slotOrigin = slot.vOriginPos;
+
+					auto slotMinX = slotOrigin.x - 8 * MC_UI_SCALE;
+					auto slotMinY = slotOrigin.y - 8 * MC_UI_SCALE;
+					auto slotMaxX = slotOrigin.x + 8 * MC_UI_SCALE;
+					auto slotMaxY = slotOrigin.y + 8 * MC_UI_SCALE;
+
+
+					if (itemOrigin.x > slotMinX
+						&& itemOrigin.x < slotMaxX
+						&& itemOrigin.y > slotMinY
+						&& itemOrigin.y < slotMaxY)
+					{
+						if (slot.hItem.has_value())
+						{
+							if (auto pSlotItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
+							{
+								if (pSlotItem->GetItemType() == pItem->GetItemType())
+								{
+									if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+									{
+										auto isUnCountable = pSlotItem->GetCnt() == 0;
+										if (isUnCountable)
+										{
+											std::swap(m_hOnCursorItem, slot.hItem);
+										}
+										else
+										{
+											auto isMaxOver = pItem->GetCnt() + pSlotItem->GetCnt() >= 64;
+											if (isMaxOver)
+											{
+												std::swap(m_hOnCursorItem, slot.hItem);
+											}
+											else
+											{
+												pSlotItem->SetCnt(pItem->GetCnt() + pSlotItem->GetCnt());
+												pItem->SetPendingDestroyCascade();
+												m_hOnCursorItem = std::nullopt;
+											}
+										}
+									}
+									else
+									{
+										auto isUnCountable = pSlotItem->GetCnt() == 0;
+										if (isUnCountable)
+										{
+											std::swap(m_hOnCursorItem, slot.hItem);
+										}
+										else
+										{
+											auto isCanAdd = pSlotItem->GetCnt() < 64;
+											if (isCanAdd)
+											{
+												pSlotItem->SetCnt(pSlotItem->GetCnt() + 1);
+
+												if (pItem->GetCnt() > 1)
+												{
+													pItem->SetCnt(pItem->GetCnt() - 1);
+												}
+												else
+												{
+													pItem->SetPendingDestroyCascade();
+													m_hOnCursorItem = std::nullopt;
+												}
+											}
+											else
+											{
+												std::swap(m_hOnCursorItem, slot.hItem);
+											}
+										}
+									}
+								}
+								else
+								{
+									std::swap(m_hOnCursorItem, slot.hItem);
+									int x = 0;
+								}
+							}
+						}
+						else
+						{
+							if (pItem->GetCnt() <= 1)
+							{
+								slot.hItem = m_hOnCursorItem;
+								m_hOnCursorItem = std::nullopt;
+							}
+							else
+							{
+								if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+								{
+									slot.hItem = m_hOnCursorItem;
+									m_hOnCursorItem = std::nullopt;
+								}
+								else
+								{
+									pItem->SetCnt(pItem->GetCnt() - 1);
+									
+									{
+										E::CUIItem::DESC Desc{};
+										Desc.fX = itemOrigin.x;
+										Desc.fY = itemOrigin.y;
+										Desc.sObjectTag = "UIItem";
+										Desc.eType = pItem->GetItemType();
+										if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+											"80_UI", &Desc))
+										{
+											slot.hItem = handle;
+											if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+											{
+												pItem->SetOrigin(slotOrigin);
+												pItem->SetCnt(1);
+											}
+										}
+									}
+								}
+							}
+						}
+
+						pItem->SetOrigin(slotOrigin);
+						break;
+					}
+				}
+			}
+
+
+			
+		}
+	}
+	else
+	{
+		if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB)
+			|| CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+		{
+			POINT mousePos;
+			GetCursorPos(&mousePos);
+			ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+
+			for (auto& slot : m_vecInventorySlot)
+			{
+				if (!slot.hItem.has_value()) continue;
+
+				auto itemOrigin = _float2{ (float)mousePos.x, (float)mousePos.y };
+				auto slotOrigin = slot.vOriginPos;
+
+				auto slotMinX = slotOrigin.x - 8 * MC_UI_SCALE;
+				auto slotMinY = slotOrigin.y - 8 * MC_UI_SCALE;
+				auto slotMaxX = slotOrigin.x + 8 * MC_UI_SCALE;
+				auto slotMaxY = slotOrigin.y + 8 * MC_UI_SCALE;
+
+
+				if (itemOrigin.x > slotMinX
+					&& itemOrigin.x < slotMaxX
+					&& itemOrigin.y > slotMinY
+					&& itemOrigin.y < slotMaxY)
+				{
+					if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+					{
+						m_hOnCursorItem = slot.hItem;
+						slot.hItem = std::nullopt;
+					}
+					else
+					{
+						if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
+						{
+							auto currItemCnt = pItem->GetCnt();
+							if (currItemCnt <= 1)
+							{
+								m_hOnCursorItem = slot.hItem;
+								slot.hItem = std::nullopt;
+							}
+							else
+							{
+								auto dvd2 = currItemCnt / 2;
+								auto remain = currItemCnt - dvd2;
+								pItem->SetCnt(remain);
+
+								{
+									E::CUIItem::DESC Desc{};
+									Desc.fX = itemOrigin.x;
+									Desc.fY = itemOrigin.y;
+									Desc.sObjectTag = "UIItem";
+									Desc.eType = pItem->GetItemType();
+									if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+										"80_UI", &Desc))
+									{
+										if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+										{
+											pItem->SetCnt(dvd2);
+										}
+										m_hOnCursorItem = handle;
+									}
+								}
+							}
+						}
+					}
+					
+					break;
+				}
+			}
+		}
+	}
 }
 
 void CUIInventory::LateUpdate(E::_float fTimeDelta)
@@ -144,6 +371,213 @@ HRESULT CUIInventory::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 
 
 	return S_OK;
+}
+
+void CUIInventory::InitializeSlot()
+{
+	{
+		auto posX = 16.f;
+		auto posY = 16.f;
+		InventorySlot armorHelmet{};
+		armorHelmet.eType = SlotType::ARMOR_HELMET;
+		armorHelmet.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		armorHelmet.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(armorHelmet);
+	}
+
+	{
+		auto posX = 16.f;
+		auto posY = 34.f;
+		InventorySlot armorChestplate{};
+		armorChestplate.eType = SlotType::ARMOR_CHESTPLATE;
+		armorChestplate.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		armorChestplate.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(armorChestplate);
+	}
+
+	{
+		auto posX = 16.f;
+		auto posY = 52.f;
+		InventorySlot armorLeggins{};
+		armorLeggins.eType = SlotType::ARMOR_LEGGINGS;
+		armorLeggins.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		armorLeggins.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(armorLeggins);
+	}
+
+	{
+		auto posX = 16.f;
+		auto posY = 70.f;
+		InventorySlot armorBoots{};
+		armorBoots.eType = SlotType::ARMOR_BOOTS;
+		armorBoots.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		armorBoots.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(armorBoots);
+	}
+
+	{
+		auto posX = 85.f;
+		auto posY = 70.f;
+		InventorySlot shiled{};
+		shiled.eType = SlotType::SHIELD;
+		shiled.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		shiled.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(shiled);
+	}
+
+	{
+		auto posX = 106.f;
+		auto posY = 26.f;
+		InventorySlot craftLt{};
+		craftLt.eType = SlotType::CRAFT_LT;
+		craftLt.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftLt.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(craftLt);
+	}
+
+	{
+		auto posX = 124.f;
+		auto posY = 26.f;
+		InventorySlot craftRt{};
+		craftRt.eType = SlotType::CRAFT_RT;
+		craftRt.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftRt.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(craftRt);
+	}
+
+	{
+		auto posX = 106.f;
+		auto posY = 44.f;
+		InventorySlot craftLb{};
+		craftLb.eType = SlotType::CRAFT_LB;
+		craftLb.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftLb.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(craftLb);
+	}
+
+	{
+		auto posX = 124.f;
+		auto posY = 44.f;
+		InventorySlot craftRb{};
+		craftRb.eType = SlotType::CRAFT_RB;
+		craftRb.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftRb.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(craftRb);
+	}
+
+	{
+		auto posX = 162.f;
+		auto posY = 36.f;
+		InventorySlot craftResult{};
+		craftResult.eType = SlotType::CRAFT_RESULT;
+		craftResult.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftResult.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(craftResult);
+	}
+
+	for (uint32_t i = 0; i < 9; ++i)
+	{
+		for (uint32_t j = 0; j < 3; ++j)
+		{
+			m_InventoryIdxs[9 * j + i] = m_vecInventorySlot.size();
+
+			auto posX = 16.f + (i * 18.f);
+			auto posY = 92.f + (j * 18.f);
+
+			InventorySlot InvenSlot{};
+			InvenSlot.eType = SlotType::INVENTORY;
+			InvenSlot.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+			InvenSlot.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+			m_vecInventorySlot.push_back(InvenSlot);
+		}
+	}
+
+	
+	for (uint32_t i = 0; i < 9; ++i)
+	{
+		m_HotbarIdxs[i] = m_vecInventorySlot.size();
+		auto posX = 16.f + (i * 18.f);
+		auto posY = 150.f ;
+
+		InventorySlot hotbarSlot{};
+		hotbarSlot.eType = SlotType::HOTBAR;
+		hotbarSlot.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		hotbarSlot.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		m_vecInventorySlot.push_back(hotbarSlot);
+	}
+
+	
+	{
+		E::CUIItem::DESC Desc{};
+		Desc.fX = m_vecInventorySlot[m_HotbarIdxs[0]].vOriginPos.x;
+		Desc.fY = m_vecInventorySlot[m_HotbarIdxs[0]].vOriginPos.y;
+		Desc.eType = CUIItem::TYPE::BLOCK_TNT;
+		Desc.sObjectTag = "UIItem";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+			"80_UI", &Desc))
+		{
+			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+			{
+				pItem->SetCnt(18);
+			}
+			m_vecInventorySlot[m_HotbarIdxs[0]].hItem = handle;
+			//m_hOnCursorItem = handle;
+		}
+	}
+
+	{
+		E::CUIItem::DESC Desc{};
+		Desc.fX = m_vecInventorySlot[m_HotbarIdxs[1]].vOriginPos.x;
+		Desc.fY = m_vecInventorySlot[m_HotbarIdxs[1]].vOriginPos.y;
+		Desc.eType = CUIItem::TYPE::BLOCK_DIRT;
+		Desc.sObjectTag = "UIItem";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+			"80_UI", &Desc))
+		{
+			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+			{
+				pItem->SetCnt(18);
+			}
+			m_vecInventorySlot[m_HotbarIdxs[1]].hItem = handle;
+			//m_hOnCursorItem = handle;
+		}
+	}
+
+	{
+		E::CUIItem::DESC Desc{};
+		Desc.fX = m_vecInventorySlot[m_HotbarIdxs[2]].vOriginPos.x;
+		Desc.fY = m_vecInventorySlot[m_HotbarIdxs[2]].vOriginPos.y;
+		Desc.eType = CUIItem::TYPE::BLOCK_COBBLESTONE;
+		Desc.sObjectTag = "UIItem";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+			"80_UI", &Desc))
+		{
+			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+			{
+				pItem->SetCnt(60);
+			}
+			m_vecInventorySlot[m_HotbarIdxs[2]].hItem = handle;
+			//m_hOnCursorItem = handle;
+		}
+	}
+
+	{
+		E::CUIItem::DESC Desc{};
+		Desc.fX = m_vecInventorySlot[m_HotbarIdxs[3]].vOriginPos.x;
+		Desc.fY = m_vecInventorySlot[m_HotbarIdxs[3]].vOriginPos.y;
+		Desc.eType = CUIItem::TYPE::BLOCK_COBBLESTONE;
+		Desc.sObjectTag = "UIItem";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+			"80_UI", &Desc))
+		{
+			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+			{
+				pItem->SetCnt(31);
+			}
+			m_vecInventorySlot[m_HotbarIdxs[3]].hItem = handle;
+			//m_hOnCursorItem = handle;
+		}
+	}
 }
 
 E::UPtr<CUIInventory> CUIInventory::Create()

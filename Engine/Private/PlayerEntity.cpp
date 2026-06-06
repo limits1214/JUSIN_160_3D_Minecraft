@@ -186,7 +186,7 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_bNumKeyPressing[9] = CGameInstance::Get().KeyPressing(DIK_9);
 
         m_bKeyDownE = CGameInstance::Get().KeyDown(DIK_E);
-
+        m_bMouseDownRight = CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB);
     }
     else
     {
@@ -205,6 +205,7 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_bMousePressingRight = false;
         memset(&m_bNumKeyPressing, 0, sizeof(m_bNumKeyPressing));
         m_bKeyDownE = false;
+        m_bMouseDownRight = false;
     }
 }
 
@@ -659,7 +660,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
         }
     }
 
-
+    ProcessBlockSet(fTimeDelta);
     ProcessUI(fTimeDelta);
 
     ProcessDestroyStage(fTimeDelta);
@@ -800,7 +801,9 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
         pDestroyStage->SetFrameIndex(fElapsed / (goal / 9));
         if (pDestroyStage->GetFrameIndex() == 9)
         {
-            
+            CBlock3 newBlock{};
+            newBlock.SetType(CBlock3::TYPE::AIR);
+            CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, newBlock);
         }
     }
     else
@@ -813,6 +816,14 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
 CDestroyStage* CPlayerEntity::GetDestroyStage() const
 {
     return CGameInstance::Get().GetGameObjectByHandleT<CDestroyStage>(m_hDestroyStage);
+}
+
+void CPlayerEntity::ProcessBlockSet(float fTimeDelta)
+{
+    if (m_bMouseDownRight)
+    {
+
+    }
 }
 
 CUIController* CPlayerEntity::GetUIController() const

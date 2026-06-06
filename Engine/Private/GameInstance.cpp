@@ -233,6 +233,8 @@ HRESULT CGameInstance::Draw()
 		return E_FAIL;
 	}
 
+	m_pFontManager->LateDraw();
+
 	//if (FAILED(m_pLevelManager->Render()))
 	//{
 	//	return E_FAIL;
@@ -1224,7 +1226,7 @@ HRESULT CGameInstance::InitializeMCResource()
 				// 92: lava_placeholder.png
 				VoxelManagerTexAdd("./Resources/Texture/Blocks/lava/lava_placeholder.png");
 			}
-			
+
 		}
 
 		{
@@ -1289,6 +1291,59 @@ HRESULT CGameInstance::InitializeMCResource()
 			GetGraphicDeviceContext()->PSSetShaderResources(16, 1, pTexture->GetSRV().GetAddressOf());
 		}
 
+	}
+
+	{
+		auto CubeItem300_300TexAdd = [&](const _string& path)
+			{
+				auto pTexture = CResTexture2D::Create(path);
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_300_300", "TEXTURES", pTexture);
+				return S_OK;
+			};
+
+		{
+			{
+				// 0
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Dirt.png");
+			}
+
+			{
+				// 1
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Cobblestone.png");
+			}
+
+			{
+				// 2
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Sand.png");
+			}
+
+			{
+				// 3
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/TNT.png");
+			}
+		}
+
+
+
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_TEX_300_300", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_300_300", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(17, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+
+		{
+			CGameInstance::Get().DelResource("MC_TEX_300_300", "TEXTURES");
+		}
 	}
 
 	// initialize cube item
@@ -1991,6 +2046,11 @@ CChunk3* CGameInstance::GetVoxelChunkByWorldBlockCoord(int32_t x, int32_t y, int
 	return m_pVoxelManager3->GetChunkByWorldBlockCoord(x, y, z);
 }
 
+void CGameInstance::VoxelProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block)
+{
+	return m_pVoxelManager3->ProcessPlayerBlockSet(wbx, wby, wbz, block);
+}
+
 std::optional<CBlock3> CGameInstance::GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const
 {
 	return m_pVoxelManager3->GetBlock(wbx, wby, wbz);
@@ -2017,7 +2077,10 @@ void CGameInstance::FontDraw(const StringID& fontName, const _tchar* pText, cons
 {
 	m_pFontManager->Draw(fontName, pText, vPosition, fScale, vColor, fRotation, vOrigin);
 }
-
+void CGameInstance::FontAddLateDraw(const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
+{
+	m_pFontManager->AddLateDraw(fontName, pText, vPosition, fScale, vColor, fRotation, vOrigin);
+}
 #pragma endregion
 
 

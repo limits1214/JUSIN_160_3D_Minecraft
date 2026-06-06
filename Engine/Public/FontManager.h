@@ -6,6 +6,16 @@ NS_BEGIN(Engine)
 class CFontManager final : public CEngineBase
 {
 private:
+	struct LateDrawDesc
+	{
+		_wstring txt{};
+		_float2 vPosition{};
+		float fScale{};
+		_float4 vColor{};
+		_float fRotation{};
+		_float2 vOrigin{};
+	};
+private:
 	explicit CFontManager(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
 	~CFontManager() override;
 
@@ -14,9 +24,16 @@ public:
 
 public:
 	void Draw(const StringID& fontName, const _tchar* pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin);
+	void AddLateDraw(const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin);
+
+public:
+	void LateDraw();
 
 private:
 	HRESULT Initialize();
+
+private:
+	std::unordered_map<StringID, std::vector<LateDrawDesc>> m_mapLateDraws{};
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};

@@ -457,6 +457,9 @@
     <Filter Include="GameObject\UI\EnchantingTable">
       <UniqueIdentifier>{023a3ff9-43ff-4ca5-beb4-ba2da5751275}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\UI\Item">
+      <UniqueIdentifier>{2185abf2-6f66-40c0-a9b7-cccbe4e31117}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -897,6 +900,9 @@
     <ClInclude Include="..\public\UIEnchantingTable.h">
       <Filter>GameObject\UI\EnchantingTable</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\UIItem.h">
+      <Filter>GameObject\UI\Item</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1324,6 +1330,9 @@
     </ClCompile>
     <ClCompile Include="..\private\UIEnchantingTable.cpp">
       <Filter>GameObject\UI\EnchantingTable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIItem.cpp">
+      <Filter>GameObject\UI\Item</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

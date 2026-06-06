@@ -246,6 +246,8 @@ public:
 	const std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>>& GetVoxelEditShadow() const;
 	CChunk3* GetVoxelChunk(int32_t x, int32_t y, int32_t z) const;
 	CChunk3* GetVoxelChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const;
+
+	void VoxelProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
 	std::optional<CBlock3> GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
 	void SetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
 	_bool VoxelBlockRaycast(const _float3& rayOrigin,
@@ -258,6 +260,8 @@ public:
 	
 #pragma region FONT_MANAGER
 	void FontDraw(const StringID& fontName, const _tchar* pText, const _float2& vPosition, float fScale = 1.f, _fvector vColor = XMVectorSet(1.f, 1.f, 1.f, 1.f), _float fRotation = 0.f, const _float2& vOrigin = { 0.f, 0.f });
+	void FontAddLateDraw(const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale = 1.f, _fvector vColor = XMVectorSet(1.f, 1.f, 1.f, 1.f), _float fRotation = 0.f, const _float2& vOrigin = { 0.f, 0.f });
+
 #pragma
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};

@@ -4,6 +4,29 @@ NS_BEGIN(Engine)
 class CComConstantBuffer;
 class ENGINE_DLL CUIInventory final : public E::CUIObject
 {
+private:
+	enum class SlotType
+	{
+		HOTBAR,
+		INVENTORY,
+		ARMOR_HELMET,
+		ARMOR_CHESTPLATE,
+		ARMOR_LEGGINGS,
+		ARMOR_BOOTS,
+		SHIELD,
+		CRAFT_LT,
+		CRAFT_RT,
+		CRAFT_LB,
+		CRAFT_RB,
+		CRAFT_RESULT,
+	};
+
+	struct InventorySlot
+	{
+		_float2 vOriginPos{};
+		SlotType eType{};
+		std::optional<CHandle> hItem{};
+	};
 public:
 	DECLARE_DERIVED_TYPE(CUIInventory, CUIObject)
 
@@ -31,6 +54,18 @@ private:
 private:
 	CComConstantBuffer* m_pComCBufferPerObject{};
 	CComConstantBuffer* m_pComCBufferPerUI{};
+
+private:
+	void InitializeSlot();
+private:
+	std::vector<InventorySlot> m_vecInventorySlot{};
+	//std::unordered_map<uint64_t, InventorySlot> m_mapInventorySlots{};
+
+private:
+	std::optional<CHandle> m_hOnCursorItem{};
+
+	size_t m_InventoryIdxs[9*3]{};
+	size_t m_HotbarIdxs[9]{};
 
 public:
 	static E::UPtr<CUIInventory> Create();

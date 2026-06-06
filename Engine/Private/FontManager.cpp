@@ -22,12 +22,64 @@ void CFontManager::UpdateGUI()
 
 void CFontManager::Draw(const StringID& fontName, const _tchar* pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
 {
-    
     if (auto font = CGameInstance::Get().GetResourceFirst<CResFontCustom>("FONT", fontName))
     {
         m_pBatch->Begin();
         font->GetFont()->DrawString(m_pBatch.get(), pText, vPosition, vColor, fRotation, vOrigin, fScale);
         m_pBatch->End();
+    }
+}
+
+void CFontManager::AddLateDraw(const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
+{
+    LateDrawDesc Desc{};
+    Desc.txt = _wstring{ pText };
+    Desc.vPosition = vPosition;
+    Desc.fScale = fScale;
+    XMStoreFloat4(&Desc.vColor, vColor);
+    Desc.fRotation = fRotation;
+    Desc.vOrigin = vOrigin;
+
+    auto iter = m_mapLateDraws.find(fontName);
+    if (iter == m_mapLateDraws.end())
+    {
+        std::vector<LateDrawDesc> v{Desc};
+        m_mapLateDraws.emplace(fontName, v);
+    }
+    else
+    {
+        iter->second.push_back(Desc);
+    }
+   
+}
+
+void CFontManager::LateDraw()
+{
+    for (const auto& [fontName, vecDesc] : m_mapLateDraws)
+    {
+        if (auto font = CGameInstance::Get().GetResourceFirst<CResFontCustom>("FONT", fontName))
+        {
+            m_pBatch->Begin();
+
+            for (const auto& Desc : vecDesc)
+            {
+                font->GetFont()->DrawString(m_pBatch.get(), Desc.txt.data(), Desc.vPosition, XMLoadFloat4(&Desc.vColor), Desc.fRotation, Desc.vOrigin, Desc.fScale);
+            }
+            
+            m_pBatch->End();
+        }
+    }
+
+    m_mapLateDraws.clear();
+
+    {
+        m_pContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+
+        // 2. 깊이/스텐실 스테이트 복구 (3D 렌더링을 위해 다시 켜기)
+        m_pContext->OMSetDepthStencilState(nullptr, 0); // 엔진 내 기본 DepthStencilState가 있다면 nullptr 대신 그걸 대입
+
+        // 3. 래스터라이저 스테이트 복구 (CullMode 등을 다시 원래대로)
+        m_pContext->RSSetState(nullptr); // 엔진 내 기본 RasterizerState가 있다면 대입
     }
 }
 
