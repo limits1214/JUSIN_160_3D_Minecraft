@@ -176,6 +176,9 @@ void CLevelLoading::LoadingCheck()
 #include "UICraftingTable.h"
 #include "UIBlastFurnace.h"
 #include "UIEnchantingTable.h"
+
+#include "UIItem.h"
+
 #include "BlockOutline.h"
 #include "PlayerFPSArm.h"
 #include "DestroyStage.h"
@@ -295,6 +298,10 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 		return E_FAIL;
 	}
 	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIEnchantingTable", E::CUIEnchantingTable::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIItem", E::CUIItem::Create())))
 	{
 		return E_FAIL;
 	}

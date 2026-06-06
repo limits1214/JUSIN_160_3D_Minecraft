@@ -138,6 +138,10 @@ public:
 				}
 		return false;
 	}
+
+public:
+	void ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
+
 public:
 	HRESULT QueuingInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& desc);
 	HRESULT QueuingOutRangeChunkRelease(const OUT_RANGE_CHUNK_RELEASE_DESC& desc);
@@ -204,8 +208,7 @@ private:
 		XMINT3 worldPos; // 구조체에 맞게 변수명 조절
 		bool bIsStill;
 		uint8_t level;
-
-		// 💡 [핵심 추가] 이 틱이 전파용인지, 소멸(감소)용인지 구분
+		
 		enum class STATE { SPREAD, DECREASE };
 		STATE eState = STATE::SPREAD; // 기본값은 전파
 	};
@@ -224,7 +227,6 @@ private:
 		bool bIsStill;
 		uint8_t level;
 
-		// 💡 [핵심 추가] 이 틱이 전파용인지, 소멸(감소)용인지 구분
 		enum class STATE { SPREAD, DECREASE };
 		STATE eState = STATE::SPREAD; // 기본값은 전파
 	};

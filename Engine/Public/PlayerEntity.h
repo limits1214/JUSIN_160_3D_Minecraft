@@ -69,6 +69,8 @@ private:
 	_bool m_bDestoryStageStart{ false };
 	CHandle m_hDestroyStage{};
 
+public:
+	void ProcessBlockSet(float fTimeDelta);
 
 public:
 	void SetUIController(CHandle h) { m_hUIController = h; }
@@ -131,6 +133,7 @@ private:
 	int32_t m_iMouseMoveZ{ 0 };
 	_bool m_bMousePressingLeft{ false };
 	_bool m_bMousePressingRight{ false };
+	_bool m_bMouseDownRight{ false };
 
 private:
 	UPtr<CCollider> m_pCenterCollider{};

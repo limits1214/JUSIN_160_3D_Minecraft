@@ -366,6 +366,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UIHungerBar.h" />
     <ClInclude Include="..\public\UIHungerBarIcon.h" />
     <ClInclude Include="..\public\UIInventory.h" />
+    <ClInclude Include="..\public\UIItem.h" />
     <ClInclude Include="..\public\UIObject.h" />
     <ClInclude Include="..\public\VoxelManager3.h" />
     <ClInclude Include="..\public\VoxelObject.h" />
@@ -598,6 +599,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UIHungerBar.cpp" />
     <ClCompile Include="..\private\UIHungerBarIcon.cpp" />
     <ClCompile Include="..\private\UIInventory.cpp" />
+    <ClCompile Include="..\private\UIItem.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
     <ClCompile Include="..\private\VoxelManager3.cpp" />
     <ClCompile Include="..\private\VoxelObject.cpp" />

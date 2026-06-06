@@ -152,21 +152,24 @@ HRESULT CRenderer::Draw()
         return E_FAIL;
     }
 
-
+    // Test
+    {
+        E::CGameInstance::Get().FontAddLateDraw("NeoDGM_20px", L"흙이 운다 흙흑", {});
+    }
 
     
-	E::CGameInstance::Get().FontDraw("NeoDGM_20px", L"흙이 운다 흙흑", {});
+	//E::CGameInstance::Get().FontDraw("NeoDGM_20px", L"흙이 운다 흙흑", {});
 
     // TODO: 제거
-    {
-        m_pContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+    //{
+    //    m_pContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
-        // 2. 깊이/스텐실 스테이트 복구 (3D 렌더링을 위해 다시 켜기)
-        m_pContext->OMSetDepthStencilState(nullptr, 0); // 엔진 내 기본 DepthStencilState가 있다면 nullptr 대신 그걸 대입
+    //    // 2. 깊이/스텐실 스테이트 복구 (3D 렌더링을 위해 다시 켜기)
+    //    m_pContext->OMSetDepthStencilState(nullptr, 0); // 엔진 내 기본 DepthStencilState가 있다면 nullptr 대신 그걸 대입
 
-        // 3. 래스터라이저 스테이트 복구 (CullMode 등을 다시 원래대로)
-        m_pContext->RSSetState(nullptr); // 엔진 내 기본 RasterizerState가 있다면 대입
-    }
+    //    // 3. 래스터라이저 스테이트 복구 (CullMode 등을 다시 원래대로)
+    //    m_pContext->RSSetState(nullptr); // 엔진 내 기본 RasterizerState가 있다면 대입
+    //}
 
     return S_OK;
 }

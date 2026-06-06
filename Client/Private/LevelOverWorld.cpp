@@ -33,6 +33,8 @@
 
 #include "FallingVoxel.h"
 
+#include "UIItem.h"
+
 NS_USING(Client)
 
 CLevelOverWorld::CLevelOverWorld()
@@ -256,7 +258,14 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
-		
+	//{
+	//	E::CUIItem::DESC Desc{};
+	//	Desc.sObjectTag = "UIItem";
+	//	if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+	//		"80_UI", &Desc))
+	//	{
+	//	}
+	//}
 
 		//{
 		//	E::CDropItem::DESC Desc{};

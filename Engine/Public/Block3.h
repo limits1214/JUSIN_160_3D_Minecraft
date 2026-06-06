@@ -242,7 +242,7 @@ public:
 	uint8_t GetFlag() const { return m_iFlag; }
 	void SetFlag(uint8_t iFlag) { m_iFlag = iFlag; }
 private:
-	TYPE m_eType{ TYPE::GRASS };
+	TYPE m_eType{ TYPE::AIR };
 	//햇빛 15 → 14 → 13 → 12 → ... → 0 (완전 어둠)
 	uint8_t m_iLight{}; // 상위 4bit: skylight, 하위4bit: blocklight
 	uint8_t  m_iFlag{}; // etc
