@@ -87,7 +87,7 @@ void CPlayerEntity::UpdateGUI()
                     tmp.x += 1.f;
                     woodPixaxeObj->AddDropItem(tmp, {}, PackTexId(6, 0));
                     tmp.x += 1.f;
-                    woodPixaxeObj->AddDropItem(tmp, {}, PackTexId(6, 0));
+                    woodPixaxeObj->AddDropItem(tmp, {}, PackTexId(6, 7));
                     tmp.x += 1.f;
                     woodPixaxeObj->AddDropItem(tmp, {}, PackTexId(6, 0));
                     tmp.x += 1.f;
@@ -99,7 +99,7 @@ void CPlayerEntity::UpdateGUI()
                 }
             }
         }
-
+        if (0)
         {
             E::CDropBlock::DESC Desc{};
             Desc.sObjectTag = "CDropBlock_CubeItemDirt";

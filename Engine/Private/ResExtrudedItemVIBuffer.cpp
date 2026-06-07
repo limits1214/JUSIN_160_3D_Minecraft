@@ -65,10 +65,10 @@ HRESULT CResExtrudedItemVIBuffer::Load(const std::any& arg)
             _float3 normal)
             {
                 uint16_t base = (uint16_t)vertices.size();
-                vertices.push_back({ p0, normal, uv0, argDesc->texIndex });
-                vertices.push_back({ p1, normal, uv1, argDesc->texIndex });
-                vertices.push_back({ p2, normal, uv2, argDesc->texIndex });
-                vertices.push_back({ p3, normal, uv3, argDesc->texIndex });
+                vertices.push_back({ p0, normal, uv0 });
+                vertices.push_back({ p1, normal, uv1 });
+                vertices.push_back({ p2, normal, uv2 });
+                vertices.push_back({ p3, normal, uv3 });
                 //PackTexId(6, argDesc->resourceIdx)
                 //    PackTexId(6, argDesc->resourceIdx)
                 //    PackTexId(6, argDesc->resourceIdx)
