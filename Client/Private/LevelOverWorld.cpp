@@ -95,7 +95,40 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
-	
+	{
+		E::CDropItem::DESC Desc{};
+		Desc.sObjectTag = "DropItem_WoodPickaxe";
+		Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
+		if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+			"01_DROPITEM", &Desc))
+		{
+			//playerObj->SetRightItemHandle(woodPixaxeHandle);
+			if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandle(woodPixaxeHandle.value()))
+			{
+				//woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
+				//woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
+				//woodPixaxeObj->SetParentNode(playerObj);
+			}
+		}
+	}
+
+
+	{
+		E::CDropItem::DESC Desc{};
+		Desc.sObjectTag = "DropItem_CooperHelmet";
+		Desc.viBufferId = { "MC_ITEM_VIBuffer", "CopperHelmet" };
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+			"01_DROPITEM", &Desc))
+		{
+			//playerObj->SetRightItemHandle(woodPixaxeHandle);
+			if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
+			{
+				//woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
+				//woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
+				//woodPixaxeObj->SetParentNode(playerObj);
+			}
+		}
+	}
 
 	{
 		E::CPlayerEntity::DESC Desc{};
@@ -105,22 +138,7 @@ HRESULT CLevelOverWorld::Initialize()
 		{
 			if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CPlayerEntity>(playerHandle.value()))
 			{
-				{
-					E::CDropItem::DESC Desc{};
-					Desc.sObjectTag = "DropItem_WoodPickaxe";
-					Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
-					if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-						"01_DROPITEM", &Desc))
-					{
-						//playerObj->SetRightItemHandle(woodPixaxeHandle);
-						if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandle(woodPixaxeHandle.value()))
-						{
-							woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
-							woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
-							//woodPixaxeObj->SetParentNode(playerObj);
-						}
-					}
-				}
+				
 
 
 				{

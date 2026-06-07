@@ -13,6 +13,8 @@
 
 #include "UIController.h"
 
+#include "DropItem.h"
+
 NS_USING(Engine)
 
 
@@ -65,6 +67,48 @@ void CPlayerEntity::UpdateGUI()
         ImGui::Text("NumKeyPressing_9: %i", m_bNumKeyPressing[9]);
 
         ImGui::TreePop();
+    }
+
+    if (ImGui::Button("Test Drop Item"))
+    {
+        if(1)
+        {
+            E::CDropItem::DESC Desc{};
+            Desc.sObjectTag = "DropItem_WoodPickaxe";
+            Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
+            if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+                "01_DROPITEM", &Desc))
+            {
+                //playerObj->SetRightItemHandle(woodPixaxeHandle);
+                if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandle(woodPixaxeHandle.value()))
+                {
+                    auto tmp = GetTransform().GetPosition();
+                    tmp.x += 1.f;
+                    woodPixaxeObj->GetTransform().SetPosition(tmp);
+                    //woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
+                    //woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
+                    //woodPixaxeObj->SetParentNode(playerObj);
+                }
+            }
+        }
+
+        {
+            E::CDropItem::DESC Desc{};
+            Desc.sObjectTag = "DropItem_CubeItemDirt";
+            Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
+            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+                "01_DROPITEM", &Desc))
+            {
+                if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropItem>(handle.value()))
+                {
+                    pObj->SetVelocity({0.f, 4.f, 0.f});
+                    pObj->GetTransform().SetPosition(GetTransform().GetPosition());
+                    //woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
+                    //woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
+                    //woodPixaxeObj->SetParentNode(playerObj);
+                }
+            }
+        }
     }
 
     if (ImGui::TreeNode("CAMERATYPE"))

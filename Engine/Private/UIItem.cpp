@@ -213,63 +213,67 @@ HRESULT CUIItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 
 	// durability
 	{
+		if (m_fDurability < 1.f)
 		{
 			{
-				E::CB_PER_UI perUI{};
-				perUI.texIndex = PackTexId(12, 0);
-				perUI.texCoord = { 1.f / 256.f, 144.f / 256.f };
-				perUI.uvSize = { 1.f / 256.f, 1.f / 256.f };
-
-				if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
 				{
-					return E_FAIL;
+					E::CB_PER_UI perUI{};
+					perUI.texIndex = PackTexId(12, 0);
+					perUI.texCoord = { 1.f / 256.f, 144.f / 256.f };
+					perUI.uvSize = { 1.f / 256.f, 1.f / 256.f };
+
+					if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
+					{
+						return E_FAIL;
+					}
+					pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+					pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
 				}
-				pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
-				pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+				{
+					E::CB_PER_OBJECT cbPerObject{};
+					cbPerObject.matWorld = *m_pComDurabilityBgTransform->GetCombinedWorldMatrix();
+					XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityBgTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+					if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+					{
+						return E_FAIL;
+					}
+					pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+					pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+				}
+
+				pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
 			}
+
 			{
-				E::CB_PER_OBJECT cbPerObject{};
-				cbPerObject.matWorld = *m_pComDurabilityBgTransform->GetCombinedWorldMatrix();
-				XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityBgTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
-				if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
 				{
-					return E_FAIL;
-				}
-				pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
-				pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
-			}
+					E::CB_PER_UI perUI{};
+					perUI.texIndex = PackTexId(12, 0);
+					perUI.texCoord = { 0.f / 256.f, 144.f / 256.f };
+					perUI.uvSize = { 1.f / 256.f, 1.f / 256.f };
 
-			pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+					if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
+					{
+						return E_FAIL;
+					}
+					pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+					pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+				}
+				{
+					E::CB_PER_OBJECT cbPerObject{};
+					cbPerObject.matWorld = *m_pComDurabilityGageTransform->GetCombinedWorldMatrix();
+					XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityGageTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+					if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+					{
+						return E_FAIL;
+					}
+					pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+					pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+				}
+
+				pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+			}
 		}
-
-		{
-			{
-				E::CB_PER_UI perUI{};
-				perUI.texIndex = PackTexId(12, 0);
-				perUI.texCoord = { 0.f / 256.f, 144.f / 256.f };
-				perUI.uvSize = { 1.f / 256.f, 1.f / 256.f };
-
-				if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
-				{
-					return E_FAIL;
-				}
-				pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
-				pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
-			}
-			{
-				E::CB_PER_OBJECT cbPerObject{};
-				cbPerObject.matWorld = *m_pComDurabilityGageTransform->GetCombinedWorldMatrix();
-				XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityGageTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
-				if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
-				{
-					return E_FAIL;
-				}
-				pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
-				pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
-			}
-
-			pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
-		}
+		
 
 	}
 	return S_OK;

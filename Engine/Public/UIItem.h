@@ -13,6 +13,8 @@ public:
 		BLOCK_COBBLESTONE,
 		BLOCK_SAND,
 		BLOCK_TNT,
+		ITEM_WoodPickaxe,
+		ITEM_CooperHelmet,
 		END
 	};
 
@@ -22,25 +24,35 @@ private:
 		CB_PER_UI perUI{};
 		switch (eType)
 		{
-		case CUIItem::TYPE::BLOCK_DIRT:
+		case TYPE::BLOCK_DIRT:
 			perUI.texIndex = PackTexId(17, 0);
 			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
 			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
-		case CUIItem::TYPE::BLOCK_COBBLESTONE:
+		case TYPE::BLOCK_COBBLESTONE:
 			perUI.texIndex = PackTexId(17, 1);
 			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
 			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
-		case CUIItem::TYPE::BLOCK_SAND:
+		case TYPE::BLOCK_SAND:
 			perUI.texIndex = PackTexId(17, 2);
 			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
 			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
-		case CUIItem::TYPE::BLOCK_TNT:
+		case TYPE::BLOCK_TNT:
 			perUI.texIndex = PackTexId(17, 3);
 			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
 			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
+			return perUI;
+		case TYPE::ITEM_WoodPickaxe:
+			perUI.texIndex = PackTexId(6, 0);
+			perUI.texCoord = { 0 / 16.f, 0 / 16.f };
+			perUI.uvSize = { 16.f / 16.f, 16.f / 16.f };
+			return perUI;
+		case TYPE::ITEM_CooperHelmet:
+			perUI.texIndex = PackTexId(6, 6);
+			perUI.texCoord = { 0 / 16.f, 0 / 16.f };
+			perUI.uvSize = { 16.f / 16.f, 16.f / 16.f };
 			return perUI;
 		case CUIItem::TYPE::END:
 			return perUI;

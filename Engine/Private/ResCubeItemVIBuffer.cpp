@@ -63,6 +63,15 @@ HRESULT CResCubeItemVIBuffer::Load(const std::any& arg)
             {_float3{-0.5f, -0.5f,  0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{0.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Y)]},
         };
 
+        constexpr float DROP_SCALE = 0.25f;
+
+        for (auto& v : vertices)
+        {
+            v.pos.x *= DROP_SCALE;
+            v.pos.y *= DROP_SCALE;
+            v.pos.z *= DROP_SCALE;
+        }
+
         std::vector<uint16_t> indices;
         for (uint16_t i = 0; i < 6; i++)  // 면 6개
         {
