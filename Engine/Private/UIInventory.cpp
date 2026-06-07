@@ -578,6 +578,41 @@ void CUIInventory::InitializeSlot()
 			//m_hOnCursorItem = handle;
 		}
 	}
+
+	{
+		E::CUIItem::DESC Desc{};
+		Desc.fX = m_vecInventorySlot[m_HotbarIdxs[4]].vOriginPos.x;
+		Desc.fY = m_vecInventorySlot[m_HotbarIdxs[4]].vOriginPos.y;
+		Desc.eType = CUIItem::TYPE::ITEM_WoodPickaxe;
+		Desc.sObjectTag = "UIItem";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+			"80_UI", &Desc))
+		{
+			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+			{
+				pItem->SetCnt(0);
+			}
+			m_vecInventorySlot[m_HotbarIdxs[4]].hItem = handle;
+			//m_hOnCursorItem = handle;
+		}
+	}
+	{
+		E::CUIItem::DESC Desc{};
+		Desc.fX = m_vecInventorySlot[m_HotbarIdxs[5]].vOriginPos.x;
+		Desc.fY = m_vecInventorySlot[m_HotbarIdxs[5]].vOriginPos.y;
+		Desc.eType = CUIItem::TYPE::ITEM_CooperHelmet;
+		Desc.sObjectTag = "UIItem";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+			"80_UI", &Desc))
+		{
+			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+			{
+				pItem->SetCnt(0);
+			}
+			m_vecInventorySlot[m_HotbarIdxs[5]].hItem = handle;
+			//m_hOnCursorItem = handle;
+		}
+	}
 }
 
 E::UPtr<CUIInventory> CUIInventory::Create()

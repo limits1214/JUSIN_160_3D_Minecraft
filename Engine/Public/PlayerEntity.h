@@ -142,6 +142,7 @@ private:
 	CCameraObject* m_pActivePlayerCamera{};
 	CCameraObject* m_pPlayerCamera{};
 	_bool m_bPlayerCameraLookBack{false};
+
 private:
 	_float3 m_vVelocity{};
 	bool     m_bOnGround{ false };

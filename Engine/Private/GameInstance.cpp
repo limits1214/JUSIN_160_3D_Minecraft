@@ -1563,6 +1563,7 @@ HRESULT CGameInstance::InitializeMCResource()
 
 	// initialize item texture
 	{
+		
 		// 0: woodPickaxe
 		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Pickaxe/wood_pickaxe.png")))
 		{
@@ -1631,6 +1632,18 @@ HRESULT CGameInstance::InitializeMCResource()
 				if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResExtrudedItemVIBuffer::Create()))
 				{
 					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 , .texIndex = PackTexId(6, 5) });
+				}
+			}
+		}
+
+		// 6: copperHelmet
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Helmet/copper_helmet.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "CopperHelmet", CResExtrudedItemVIBuffer::Create()))
+				{
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 6 , .texIndex = PackTexId(6, 6) });
 				}
 			}
 		}
