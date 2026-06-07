@@ -592,11 +592,20 @@ HRESULT CGameInstance::InitializeMCResource()
 
 	// initialize item shader
 	{
-		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Item", "./Resources/Shader/Item/Item.hlsl"))
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropItem", "./Resources/Shader/Item/DropItem.hlsl"))
 		{
 			res->Load();
 		}
-		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Item", "./Resources/Shader/Item/Item.hlsl"))
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropItem", "./Resources/Shader/Item/DropItem.hlsl"))
+		{
+			res->Load();
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropBlock", "./Resources/Shader/Item/DropBlock.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropBlock", "./Resources/Shader/Item/DropBlock.hlsl"))
 		{
 			res->Load();
 		}
@@ -1350,12 +1359,12 @@ HRESULT CGameInstance::InitializeMCResource()
 	{
 		if (auto res = AddResource("MC_ITEM_VIBuffer", "CubeItemDirt", CResCubeItemVIBuffer::Create()))
 		{
-			uint32_t tmp[ETOUI(FACE_DIR::END)]{PackTexId(9, 0),PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
+			//uint32_t tmp[ETOUI(FACE_DIR::END)]{PackTexId(9, 0),PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
 
 			CResCubeItemVIBuffer::DESC desc{};
 			desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
 			//desc.resourceIdx = 0;
-			memcpy(desc.texIndices, tmp, sizeof(tmp));
+			//memcpy(desc.texIndices, tmp, sizeof(tmp));
 
 			res->Load(desc);
 		}

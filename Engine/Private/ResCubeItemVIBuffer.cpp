@@ -24,43 +24,43 @@ HRESULT CResCubeItemVIBuffer::Load(const std::any& arg)
 
     m_eState = STATE::LOADING;
     {
-        std::vector<VTX_ITEM> vertices =
+        std::vector<VTX_DROP_BLOCK> vertices =
         {
             // 앞면 (Z+)
-            {_float3{-0.5f,  0.5f,  0.5f}, _float3{ 0.f,  0.f,  1.f}, _float2{0.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_Z)]},
-            {_float3{-0.5f, -0.5f,  0.5f}, _float3{ 0.f,  0.f,  1.f}, _float2{0.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_Z)]},
-            {_float3{ 0.5f, -0.5f,  0.5f}, _float3{ 0.f,  0.f,  1.f}, _float2{1.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_Z)]},
-            {_float3{ 0.5f,  0.5f,  0.5f}, _float3{ 0.f,  0.f,  1.f}, _float2{1.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_Z)]},
+            {_float3{-0.5f,  0.5f,  0.5f}, _float3{ 0.f,  0.f,  1.f}, _float2{0.f, 0.f}, ETOUI(FACE_DIR::POS_Z)},
+            {_float3{-0.5f, -0.5f,  0.5f}, _float3{ 0.f,  0.f,  1.f}, _float2{0.f, 1.f}, ETOUI(FACE_DIR::POS_Z)},
+            {_float3{ 0.5f, -0.5f,  0.5f}, _float3{ 0.f,  0.f,  1.f}, _float2{1.f, 1.f}, ETOUI(FACE_DIR::POS_Z)},
+            {_float3{ 0.5f,  0.5f,  0.5f}, _float3{ 0.f,  0.f,  1.f}, _float2{1.f, 0.f}, ETOUI(FACE_DIR::POS_Z)},
 
             // 뒷면 (Z-)
-            {_float3{-0.5f,  0.5f, -0.5f}, _float3{ 0.f,  0.f, -1.f}, _float2{0.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Z)]},
-            {_float3{ 0.5f,  0.5f, -0.5f}, _float3{ 0.f,  0.f, -1.f}, _float2{1.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Z)]},
-            {_float3{ 0.5f, -0.5f, -0.5f}, _float3{ 0.f,  0.f, -1.f}, _float2{1.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Z)]},
-            {_float3{-0.5f, -0.5f, -0.5f}, _float3{ 0.f,  0.f, -1.f}, _float2{0.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Z)]},
+            {_float3{-0.5f,  0.5f, -0.5f}, _float3{ 0.f,  0.f, -1.f}, _float2{0.f, 0.f}, ETOUI(FACE_DIR::NEG_Z)},
+            {_float3{ 0.5f,  0.5f, -0.5f}, _float3{ 0.f,  0.f, -1.f}, _float2{1.f, 0.f}, ETOUI(FACE_DIR::NEG_Z)},
+            {_float3{ 0.5f, -0.5f, -0.5f}, _float3{ 0.f,  0.f, -1.f}, _float2{1.f, 1.f}, ETOUI(FACE_DIR::NEG_Z)},
+            {_float3{-0.5f, -0.5f, -0.5f}, _float3{ 0.f,  0.f, -1.f}, _float2{0.f, 1.f}, ETOUI(FACE_DIR::NEG_Z)},
 
             // 오른쪽 (X+)
-            {_float3{ 0.5f,  0.5f, -0.5f}, _float3{ 1.f,  0.f,  0.f}, _float2{0.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_X)]},
-            {_float3{ 0.5f,  0.5f,  0.5f}, _float3{ 1.f,  0.f,  0.f}, _float2{1.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_X)]},
-            {_float3{ 0.5f, -0.5f,  0.5f}, _float3{ 1.f,  0.f,  0.f}, _float2{1.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_X)]},
-            {_float3{ 0.5f, -0.5f, -0.5f}, _float3{ 1.f,  0.f,  0.f}, _float2{0.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_X)]},
+            {_float3{ 0.5f,  0.5f, -0.5f}, _float3{ 1.f,  0.f,  0.f}, _float2{0.f, 0.f}, ETOUI(FACE_DIR::POS_X)},
+            {_float3{ 0.5f,  0.5f,  0.5f}, _float3{ 1.f,  0.f,  0.f}, _float2{1.f, 0.f}, ETOUI(FACE_DIR::POS_X)},
+            {_float3{ 0.5f, -0.5f,  0.5f}, _float3{ 1.f,  0.f,  0.f}, _float2{1.f, 1.f}, ETOUI(FACE_DIR::POS_X)},
+            {_float3{ 0.5f, -0.5f, -0.5f}, _float3{ 1.f,  0.f,  0.f}, _float2{0.f, 1.f}, ETOUI(FACE_DIR::POS_X)},
 
             // 왼쪽 (X-)
-            {_float3{-0.5f,  0.5f,  0.5f}, _float3{-1.f,  0.f,  0.f}, _float2{0.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_X)]},
-            {_float3{-0.5f,  0.5f, -0.5f}, _float3{-1.f,  0.f,  0.f}, _float2{1.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_X)]},
-            {_float3{-0.5f, -0.5f, -0.5f}, _float3{-1.f,  0.f,  0.f}, _float2{1.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_X)]},
-            {_float3{-0.5f, -0.5f,  0.5f}, _float3{-1.f,  0.f,  0.f}, _float2{0.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_X)]},
+            {_float3{-0.5f,  0.5f,  0.5f}, _float3{-1.f,  0.f,  0.f}, _float2{0.f, 0.f}, ETOUI(FACE_DIR::NEG_X)},
+            {_float3{-0.5f,  0.5f, -0.5f}, _float3{-1.f,  0.f,  0.f}, _float2{1.f, 0.f}, ETOUI(FACE_DIR::NEG_X)},
+            {_float3{-0.5f, -0.5f, -0.5f}, _float3{-1.f,  0.f,  0.f}, _float2{1.f, 1.f}, ETOUI(FACE_DIR::NEG_X)},
+            {_float3{-0.5f, -0.5f,  0.5f}, _float3{-1.f,  0.f,  0.f}, _float2{0.f, 1.f}, ETOUI(FACE_DIR::NEG_X)},
 
             // 위쪽 (Y+)
-            {_float3{-0.5f,  0.5f,  0.5f}, _float3{ 0.f,  1.f,  0.f}, _float2{0.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_Y)]},
-            {_float3{ 0.5f,  0.5f,  0.5f}, _float3{ 0.f,  1.f,  0.f}, _float2{1.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_Y)]},
-            {_float3{ 0.5f,  0.5f, -0.5f}, _float3{ 0.f,  1.f,  0.f}, _float2{1.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_Y)]},
-            {_float3{-0.5f,  0.5f, -0.5f}, _float3{ 0.f,  1.f,  0.f}, _float2{0.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::POS_Y)]},
+            {_float3{-0.5f,  0.5f,  0.5f}, _float3{ 0.f,  1.f,  0.f}, _float2{0.f, 0.f}, ETOUI(FACE_DIR::POS_Y)},
+            {_float3{ 0.5f,  0.5f,  0.5f}, _float3{ 0.f,  1.f,  0.f}, _float2{1.f, 0.f}, ETOUI(FACE_DIR::POS_Y)},
+            {_float3{ 0.5f,  0.5f, -0.5f}, _float3{ 0.f,  1.f,  0.f}, _float2{1.f, 1.f}, ETOUI(FACE_DIR::POS_Y)},
+            {_float3{-0.5f,  0.5f, -0.5f}, _float3{ 0.f,  1.f,  0.f}, _float2{0.f, 1.f}, ETOUI(FACE_DIR::POS_Y)},
 
             // 아래쪽 (Y-)
-            {_float3{-0.5f, -0.5f, -0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{0.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Y)]},
-            {_float3{ 0.5f, -0.5f, -0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{1.f, 0.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Y)]},
-            {_float3{ 0.5f, -0.5f,  0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{1.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Y)]},
-            {_float3{-0.5f, -0.5f,  0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{0.f, 1.f}, argDesc->texIndices[ETOUI(FACE_DIR::NEG_Y)]},
+            {_float3{-0.5f, -0.5f, -0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{0.f, 0.f}, ETOUI(FACE_DIR::NEG_Y)},
+            {_float3{ 0.5f, -0.5f, -0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{1.f, 0.f}, ETOUI(FACE_DIR::NEG_Y)},
+            {_float3{ 0.5f, -0.5f,  0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{1.f, 1.f}, ETOUI(FACE_DIR::NEG_Y)},
+            {_float3{-0.5f, -0.5f,  0.5f}, _float3{ 0.f, -1.f,  0.f}, _float2{0.f, 1.f}, ETOUI(FACE_DIR::NEG_Y)},
         };
 
         constexpr float DROP_SCALE = 0.25f;
@@ -85,7 +85,7 @@ HRESULT CResCubeItemVIBuffer::Load(const std::any& arg)
         }
 
         m_iNumVertices = (uint32_t)vertices.size();
-        m_iVertexStride = sizeof(VTX_ITEM);
+        m_iVertexStride = sizeof(VTX_DROP_BLOCK);
 
         D3D11_BUFFER_DESC vertexDesc{
             .ByteWidth = m_iVertexStride * m_iNumVertices,

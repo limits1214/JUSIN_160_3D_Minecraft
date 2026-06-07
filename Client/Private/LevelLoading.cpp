@@ -157,6 +157,7 @@ void CLevelLoading::LoadingCheck()
 #include "PlayerEntity.h"
 #include "SkeletonEntity.h"
 #include "DropItem.h"
+#include "DropBlock.h"
 #include "ExperienceOrbItem.h"
 #include "UICrossHair.h"
 #include "UIHotBar.h"
@@ -211,6 +212,10 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 	}
 
 	if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_DropItem", E::CDropItem::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_DropBlock", E::CDropBlock::Create())))
 	{
 		return E_FAIL;
 	}

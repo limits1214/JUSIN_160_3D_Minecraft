@@ -1,37 +1,35 @@
-#include "DropItem.h"
+#include "DropBlock.h"
 #include "GameInstance.h"
 #include "Resources.h"
 #include "CollBox.h"
 
 NS_USING(Engine)
 
-CDropItem::CDropItem()
+CDropBlock::CDropBlock()
 {
 }
 
-CDropItem::CDropItem(const CDropItem& rhs)
+CDropBlock::CDropBlock(const CDropBlock& rhs)
     : CItemObject{ rhs }
 {
 
 }
 
-CDropItem::~CDropItem()
+CDropBlock::~CDropBlock()
 {
 }
 
-HRESULT CDropItem::Initialize(void* pArg)
+HRESULT CDropBlock::Initialize(void* pArg)
 {
-	auto pDesc = static_cast<DESC*>(pArg);
+    auto pDesc = static_cast<DESC*>(pArg);
 
-	m_viBufferID = pDesc->viBufferId;
+    m_viBufferID = pDesc->viBufferId;
     if (FAILED(CItemObject::Initialize(pArg)))
     {
         return E_FAIL;
     }
 
-    m_pCenterCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.49f, 0.25f });
-
-
+    //m_pCenterCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.49f, 0.25f });
 
     if (auto res = CResDynamicBuffer::Create())
     {
@@ -43,7 +41,7 @@ HRESULT CDropItem::Initialize(void* pArg)
         //UINT StructureByteStride;
         CResDynamicBuffer::DESC Desc{};
         Desc.desc = {
-            .ByteWidth = ((uint32_t)sizeof(VTX_DROP_ITEM_INSTANCED_DATA) * m_iNumElements),
+            .ByteWidth = ((uint32_t)sizeof(VTX_DROP_BLOCK_INSTANCED_DATA) * m_iNumElements),
             .Usage = D3D11_USAGE_DYNAMIC,
             .BindFlags = D3D11_BIND_VERTEX_BUFFER,
             .CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
@@ -58,14 +56,14 @@ HRESULT CDropItem::Initialize(void* pArg)
         m_pResInstancedBuffer = res;
     }
 
-	return S_OK;
+    return S_OK;
 }
 
-void CDropItem::PriorityUpdate(E::_float fTimeDelta)
+void CDropBlock::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CDropItem::Update(E::_float fTimeDelta)
+void CDropBlock::Update(E::_float fTimeDelta)
 {
     m_vecInstancedData.clear();
 
@@ -81,45 +79,21 @@ void CDropItem::Update(E::_float fTimeDelta)
         _matrix matWorld = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
         XMStoreFloat4x4(&item.matWorld, matRot * matBob * matWorld);
 
-        VTX_DROP_ITEM_INSTANCED_DATA inst{};
+        item.boxCollider->Transform(matWorld);
+        E::CGameInstance::Get().AddColliderGroup("Coll_DropBlockCenter", item.boxCollider.get());
+
+        VTX_DROP_BLOCK_INSTANCED_DATA inst{};
         inst.matWorld = item.matWorld;
-        inst.texIndex = item.texIndex;
+        //memcpy(&inst.texIndexs, item.texIndexs.data(), item.texIndexs.size());
+        memcpy(&inst.texIndexs, item.texIndexs.data(), sizeof(uint32_t) * item.texIndexs.size());
         m_vecInstancedData.push_back(inst);
     }
-
-
-    //m_vecInstancedData.clear();
-
-    //for (auto& item : m_vecDropItems)
-    //{
-    //    if (m_bGravity)
-    //        VelocityUpdate(item, fTimeDelta);
-
-    //    if (m_bAnimation)
-    //        AnimateTransformUpdate(item, fTimeDelta);
-
-    //    // 인스턴스 데이터 갱신
-    //    VTX_ITEM_INSTANCED_DATA inst{};
-    //    // item에서 matWorld, texIndex 채우기
-    //    m_vecInstancedData.push_back(inst);
-    //}
-
-
-    //if (m_bGravity)
-    //{
-    //    VelocityUpdate(fTimeDelta);
-    //}
-
-    //if (m_bAnimation)
-    //{
-    //    AnimateTransformUpdate(fTimeDelta);
-    //}
 }
 
-void CDropItem::LateUpdate(E::_float fTimeDelta)
+void CDropBlock::LateUpdate(E::_float fTimeDelta)
 {
-   // E::CGameInstance::Get().AddColliderGroup("Coll_DropItemCenter", m_pCenterCollider.get());
-    //m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
+    // E::CGameInstance::Get().AddColliderGroup("Coll_DropItemCenter", m_pCenterCollider.get());
+    // m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
 
     E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
     //GetTransform().SetParentWorldMatrix(*m_pComAnimateTransform->GetWorldMatrix());
@@ -136,24 +110,24 @@ void CDropItem::LateUpdate(E::_float fTimeDelta)
     //}
 }
 
-HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CDropBlock::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
-	//{
-	//	auto pResCBuf = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerQuadItemAnim");
-	//	D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-	//	if (SUCCEEDED(pContext->Map(pResCBuf->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-	//	{
-	//		E::CB_PER_QUADITEM_ANIM cbPerQuadItemAnim{};
-	//		memcpy(mappedSubResource.pData, &cbPerQuadItemAnim, sizeof(cbPerQuadItemAnim));
-	//		pContext->Unmap(pResCBuf->GetCBuffer().Get(), 0);
-	//	}
-	//	pContext->VSSetConstantBuffers(5, 1, pResCBuf->GetCBuffer().GetAddressOf());
-	//}
+    //{
+    //	auto pResCBuf = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerQuadItemAnim");
+    //	D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+    //	if (SUCCEEDED(pContext->Map(pResCBuf->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+    //	{
+    //		E::CB_PER_QUADITEM_ANIM cbPerQuadItemAnim{};
+    //		memcpy(mappedSubResource.pData, &cbPerQuadItemAnim, sizeof(cbPerQuadItemAnim));
+    //		pContext->Unmap(pResCBuf->GetCBuffer().Get(), 0);
+    //	}
+    //	pContext->VSSetConstantBuffers(5, 1, pResCBuf->GetCBuffer().GetAddressOf());
+    //}
 
-	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropItem");
-	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropItem");
-	//const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>("MC_ITEM_VIBuffer", "CubeItemDirt");
-	const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>(m_viBufferID.first, m_viBufferID.second);
+    const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropBlock");
+    const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropBlock");
+    //const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>("MC_ITEM_VIBuffer", "CubeItemDirt");
+    const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>(m_viBufferID.first, m_viBufferID.second);
 
     pContext->IASetInputLayout(vs->GetInputLayout().Get());
     pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
@@ -165,7 +139,7 @@ HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
     };
     uint32_t strides[] = {
         viBuffer->GetVertexStride(),
-        (uint32_t)sizeof(VTX_DROP_ITEM_INSTANCED_DATA),
+        (uint32_t)sizeof(VTX_DROP_BLOCK_INSTANCED_DATA),
     };
     uint32_t offsets[] = {
         0,
@@ -181,29 +155,29 @@ HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 
         if (SUCCEEDED(pContext->Map(pCbPerObject->GetBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
         {
-            std::memcpy(mappedSubResource.pData, m_vecInstancedData.data(), sizeof(VTX_DROP_ITEM_INSTANCED_DATA) * m_vecInstancedData.size());
+            std::memcpy(mappedSubResource.pData, m_vecInstancedData.data(), sizeof(VTX_DROP_BLOCK_INSTANCED_DATA) * m_vecInstancedData.size());
             pContext->Unmap(pCbPerObject->GetBuffer().Get(), 0);
         }
     }
 
-	{
-		const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
-		pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
-	}
+    {
+        const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
+        pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
+    }
 
     //pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
     pContext->DrawIndexedInstanced((UINT)viBuffer->GetNumIndices(), (UINT)m_vecInstancedData.size(), 0, 0, 0);
-	
-	return S_OK;
+
+    return S_OK;
 }
 
-void CDropItem::AnimateTransformUpdate(InstancedDropItemDesc& item, E::_float fTimeDelta)
+void CDropBlock::AnimateTransformUpdate(InstancedDropBlockDesc& item, E::_float fTimeDelta)
 {
     item.fBobTime += fTimeDelta * BOB_SPEED;
     item.fBobYRot += fTimeDelta * XMConvertToRadians(ROT_SPEED);
     item.fBobYOffset = sinf(item.fBobTime) * BOB_AMPLITUDE;
 }
-void CDropItem::VelocityUpdate(InstancedDropItemDesc& item, E::_float fTimeDelta)
+void CDropBlock::VelocityUpdate(InstancedDropBlockDesc& item, E::_float fTimeDelta)
 {
     XMVECTOR vVel = XMLoadFloat3(&item.vVelocity);
     XMVECTOR vWishDir = XMVectorZero();
@@ -284,24 +258,40 @@ void CDropItem::VelocityUpdate(InstancedDropItemDesc& item, E::_float fTimeDelta
     XMStoreFloat3(&item.vVelocity, vVel);
 }
 
-UPtr<CDropItem> CDropItem::Create()
+
+void CDropBlock::AddDropItem(_float3 vPos, _float3 vVelocity, const std::vector<uint32_t>& vecTexindex)
 {
-    auto pInstance = ToUPtr(new CDropItem{});
+    InstancedDropBlockDesc Desc{};
+    Desc.vPos = vPos;
+    Desc.vVelocity = vVelocity;
+    Desc.texIndexs = vecTexindex;
+    Desc.boxCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.49f, 0.25f });
+    Desc.boxCollider->SetInnerPointer(this);
+    Desc.boxCollider->SetInnerHint("CDropBlock");
+    m_vecDropItems.push_back(Desc);
+    CollHint hint{};
+    hint.iter = std::prev(m_vecDropItems.end());
+    Desc.boxCollider->SetInnerHint2(&hint, sizeof(hint));
+}
+
+UPtr<CDropBlock> CDropBlock::Create()
+{
+    auto pInstance = ToUPtr(new CDropBlock{});
     if (FAILED(pInstance->InitializePrototype()))
     {
-        MSG_BOX("Failed to Create: CDropItem");
+        MSG_BOX("Failed to Create: CDropBlock");
         return nullptr;
     }
 
     return pInstance;
 }
 
-UPtr<CPrototype> CDropItem::Clone(void* pArg)
+UPtr<CPrototype> CDropBlock::Clone(void* pArg)
 {
-    auto pInstance = ToUPtr(new CDropItem{ *this });
+    auto pInstance = ToUPtr(new CDropBlock{ *this });
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX("Failed to Cloned: CDropItem");
+        MSG_BOX("Failed to Cloned: CDropBlock");
         return nullptr;
     }
 

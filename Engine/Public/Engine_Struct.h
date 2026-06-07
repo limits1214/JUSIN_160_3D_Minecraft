@@ -129,6 +129,29 @@ namespace Engine
 		uint32_t texIndex{};  //  4 bytes
 	} VTX_ITEM;
 
+	typedef struct tagItemInstancedData
+	{
+		_float4x4 matWorld{};
+		uint32_t   texIndex{};
+	}VTX_DROP_ITEM_INSTANCED_DATA;
+
+
+	typedef struct tagVertexDropBlock
+	{
+		_float3 pos{};   // 12 bytes
+		_float3 normal{};     // 12 bytes  (조명 계산용)
+		_float2 texCoord{}; //  8 bytes
+		uint32_t faceId;
+		//uint32_t texIndex{};  //  4 bytes
+
+	} VTX_DROP_BLOCK;
+
+	typedef struct tagBlockInstancedData
+	{
+		_float4x4 matWorld{};
+		uint32_t   texIndexs[6]{};
+	}VTX_DROP_BLOCK_INSTANCED_DATA;
+
 	typedef struct tagVertexFallingVoxel
 	{
 		_float3 pos{};   // 12 bytes

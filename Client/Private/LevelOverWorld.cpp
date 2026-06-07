@@ -95,6 +95,7 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
+	if(false)
 	{
 		E::CDropItem::DESC Desc{};
 		Desc.sObjectTag = "DropItem_WoodPickaxe";
@@ -112,7 +113,7 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
-
+	if (false)
 	{
 		E::CDropItem::DESC Desc{};
 		Desc.sObjectTag = "DropItem_CooperHelmet";
