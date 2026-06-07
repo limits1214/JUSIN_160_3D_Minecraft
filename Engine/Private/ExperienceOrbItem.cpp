@@ -69,8 +69,8 @@ HRESULT CExperienceOrbItem::Render(ID3D11DeviceContext* pContext, const E::RENDE
 		}
 		pContext->VSSetConstantBuffers(5, 1, pResCBuf->GetCBuffer().GetAddressOf());
 	}
-	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Item");
-	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Item");
+	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropItem");
+	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropItem");
 	const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResQuadItemVIBuffer>("MC_ITEM_VIBuffer", "ExperienceOrb");
 
 	pContext->IASetInputLayout(vs->GetInputLayout().Get());

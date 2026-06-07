@@ -903,6 +903,9 @@
     <ClInclude Include="..\public\UIItem.h">
       <Filter>GameObject\UI\Item</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\DropBlock.h">
+      <Filter>GameObject\Item\Drop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1334,6 +1337,9 @@
     <ClCompile Include="..\private\UIItem.cpp">
       <Filter>GameObject\UI\Item</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\DropBlock.cpp">
+      <Filter>GameObject\Item\Drop</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1347,9 +1353,6 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Entity.hlsl">
       <Filter>100.Shaders\Entity</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Item.hlsl">
-      <Filter>100.Shaders\Item</Filter>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Crosshair\CrossHair.hlsl">
       <Filter>100.Shaders\CrossHair</Filter>
@@ -1374,6 +1377,12 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FallingVoxel\FallingVoxel.hlsl">
       <Filter>100.Shaders\FallingVoxel</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\DropItem.hlsl">
+      <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\DropBlock.hlsl">
+      <Filter>100.Shaders\Item</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

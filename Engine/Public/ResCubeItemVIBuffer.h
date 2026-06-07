@@ -14,7 +14,7 @@ public:
 	{
 		std::pair<StringID, StringID> textureId;
 		//uint32_t resourceIdx{};
-		uint32_t texIndices[ETOUI(FACE_DIR::END)]{};
+		//uint32_t texIndices[ETOUI(FACE_DIR::END)]{};
 	} DESC;
 
 private:
