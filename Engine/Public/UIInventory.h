@@ -77,6 +77,11 @@ private:
 	size_t m_InventoryIdxs[9*3]{};
 	size_t m_InventoryHotbarIdxs[9]{};
 
+	size_t m_CraftLTIdx{};
+	size_t m_CraftRTIdx{};
+	size_t m_CraftLBIdx{};
+	size_t m_CraftRBIdx{};
+	size_t m_CraftResultIdx{};
 	//onlyview
 	size_t m_IngameHotbarIdxs[9]{};
 
@@ -87,6 +92,8 @@ public:
 public:
 	std::optional<CHandle> GetHotbarSlotHandle(size_t hotbarIdx) { return m_vecInventorySlot[m_InventoryHotbarIdxs[std::clamp(hotbarIdx, (size_t)0, (size_t)9)]].hItem; };
 
+private:
+	void UpdateCrafting(_float fTimeDelta);
 public:
 	static E::UPtr<CUIInventory> Create();
 	E::UPtr<E::CPrototype> Clone(void* pArg) override;

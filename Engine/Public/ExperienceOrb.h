@@ -1,22 +1,22 @@
 #pragma once
-#include "ItemObject.h"
+#include "EntityObject.h"
 
 NS_BEGIN(Engine)
 class CComEntityModel;
-class ENGINE_DLL CExperienceOrbItem : public CItemObject
+class ENGINE_DLL CExperienceOrb : public CEntityObject
 {
 public:
-	typedef struct tagDesc : CItemObject::DESC
+	typedef struct tagDesc : CEntityObject::DESC
 	{
 
 	}DESC;
 
 public:
-	DECLARE_DERIVED_TYPE(CExperienceOrbItem, CItemObject)
+	DECLARE_DERIVED_TYPE(CExperienceOrb, CEntityObject)
 
 private:
-	explicit CExperienceOrbItem();
-	~CExperienceOrbItem() override;
+	explicit CExperienceOrb();
+	~CExperienceOrb() override;
 
 public:
 	HRESULT Initialize(void* pArg) override;
@@ -32,7 +32,7 @@ private:
 	int m_iFrameCol{};
 	int m_iFrameRow{};
 public:
-	static UPtr<CExperienceOrbItem> Create();
+	static UPtr<CExperienceOrb> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
 };
 

@@ -148,11 +148,11 @@ public:
 private:
 	uint8_t m_iCnt{ 1 };
 
-public:
-	void SetDurability(_float f) { m_fDurability = f; }
-	_float GetDurability() const { return m_fDurability ; }
-private:
-	_float m_fDurability{ 1.f };
+//public:
+//	void SetDurability(_float f) { m_fDurability = f; }
+//	_float GetDurability() const { return m_fDurability ; }
+//private:
+//	_float m_fDurability{ 1.f };
 
 public:
 	_bool GetOnCursor() const { return m_bOnCursor; }
@@ -162,7 +162,8 @@ private:
 
 public:
 	//void SetItemInfo(const CItemObject::ItemInfo& info) { m_ItemInfo = info; }
-	CItemObject::ItemInfo GetItemInfo() const { return m_ItemInfo; }
+	CItemObject::ItemInfo GetItemInfo()  { return m_ItemInfo; }
+	//CItemObject::ItemInfo& GetItemInfoRef() { return m_ItemInfo; }
 private:
 	CItemObject::ItemInfo m_ItemInfo{};
 

@@ -18,7 +18,7 @@ HRESULT CPlayerFPSArm::Initialize(void* pArg)
 	auto pDesc = static_cast<DESC*>(pArg);
 
 	//m_viBufferID = pDesc->viBufferId;
-	if (FAILED(CItemObject::Initialize(pArg)))
+	if (FAILED(CEntityObject::Initialize(pArg)))
 	{
 		return E_FAIL;
 	}

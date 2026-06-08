@@ -10,7 +10,7 @@
 #include "PlayerEntity.h"
 #include "SkeletonEntity.h"
 #include "DropItem.h"
-#include "ExperienceOrbItem.h"
+#include "ExperienceOrb.h"
 #include "UICrosshair.h"
 #include "UICamera.h"
 
@@ -119,7 +119,7 @@ HRESULT CLevelTestWorld::Initialize()
 			int x = 0;
 		}
 
-		if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_ExperienceOrb", E::CExperienceOrbItem::Create())))
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_ExperienceOrb", E::CExperienceOrb::Create())))
 		{
 			int x = 0;
 		}
@@ -323,7 +323,7 @@ HRESULT CLevelTestWorld::Initialize()
 		}
 
 		{
-			E::CExperienceOrbItem::DESC Desc{};
+			E::CExperienceOrb::DESC Desc{};
 			Desc.sObjectTag = "ExperienceOrb";
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
 				"01_DROPITEM", &Desc))

@@ -1,20 +1,20 @@
-#include "ExperienceOrbItem.h"
+#include "ExperienceOrb.h"
 #include "GameInstance.h"
 #include "Resources.h"
 #include "CameraObject.h"
 NS_USING(Engine)
 
-CExperienceOrbItem::CExperienceOrbItem()
+CExperienceOrb::CExperienceOrb()
 {
 }
 
-CExperienceOrbItem::~CExperienceOrbItem()
+CExperienceOrb::~CExperienceOrb()
 {
 }
 
-HRESULT CExperienceOrbItem::Initialize(void* pArg)
+HRESULT CExperienceOrb::Initialize(void* pArg)
 {
-	if (FAILED(CItemObject::Initialize(pArg)))
+	if (FAILED(CEntityObject::Initialize(pArg)))
 	{
 		return E_FAIL;
 	}
@@ -22,11 +22,11 @@ HRESULT CExperienceOrbItem::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CExperienceOrbItem::PriorityUpdate(E::_float fTimeDelta)
+void CExperienceOrb::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CExperienceOrbItem::Update(E::_float fTimeDelta)
+void CExperienceOrb::Update(E::_float fTimeDelta)
 {
 	static float fTemp = 0;
 	fTemp += fTimeDelta;
@@ -38,14 +38,14 @@ void CExperienceOrbItem::Update(E::_float fTimeDelta)
 	m_iFrameRow = frameIndex / 4;
 }
 
-void CExperienceOrbItem::LateUpdate(E::_float fTimeDelta)
+void CExperienceOrb::LateUpdate(E::_float fTimeDelta)
 {
 	E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
 	GetTransform().Update();
 
 }
 
-HRESULT CExperienceOrbItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CExperienceOrb::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
 	
 	{
@@ -181,24 +181,24 @@ HRESULT CExperienceOrbItem::Render(ID3D11DeviceContext* pContext, const E::RENDE
 	return S_OK;
 }
 
-UPtr<CExperienceOrbItem> CExperienceOrbItem::Create()
+UPtr<CExperienceOrb> CExperienceOrb::Create()
 {
-	auto pInstance = ToUPtr(new CExperienceOrbItem{});
+	auto pInstance = ToUPtr(new CExperienceOrb{});
 	if (FAILED(pInstance->InitializePrototype()))
 	{
-		MSG_BOX("Failed to Create: CExperienceOrbItem");
+		MSG_BOX("Failed to Create: CExperienceOrb");
 		return nullptr;
 	}
 
 	return pInstance;
 }
 
-UPtr<CPrototype> CExperienceOrbItem::Clone(void* pArg)
+UPtr<CPrototype> CExperienceOrb::Clone(void* pArg)
 {
-	auto pInstance = ToUPtr(new CExperienceOrbItem{ *this });
+	auto pInstance = ToUPtr(new CExperienceOrb{ *this });
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned: CExperienceOrbItem");
+		MSG_BOX("Failed to Cloned: CExperienceOrb");
 		return nullptr;
 	}
 

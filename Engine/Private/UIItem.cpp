@@ -25,8 +25,8 @@ void CUIItem::UpdateGUI()
 	{
 		m_bRender = !m_bRender;
 	}
-
-	if (ImGui::DragFloat("Durability", &m_fDurability, 0.01, 0.f, 1.f))
+	
+	if (ImGui::DragFloat("Durability", &m_ItemInfo.fDurability, 0.01, 0.f, 1.f))
 	{
 
 	}
@@ -86,7 +86,7 @@ HRESULT CUIItem::Initialize(void* pArg)
 		tmp.z -= 0.02f;
 
 		m_pComDurabilityGageTransform->SetPosition(tmp);
-		auto x = 16.f * MC_UI_SCALE * m_fDurability;
+		auto x = 16.f * MC_UI_SCALE * m_ItemInfo.fDurability;
 		auto y = 1.f * MC_UI_SCALE;
 		m_pComDurabilityGageTransform->SetScale(_float3{ x,y, 1.f });
 	}
@@ -140,11 +140,11 @@ void CUIItem::LateUpdate(E::_float fTimeDelta)
 	//m_pComDurabilityGageTransform->SetPosition(itemPos);
 
 	auto gageScale = m_pComDurabilityBgTransform->GetScale();
-	gageScale.x = 16.f * MC_UI_SCALE * m_fDurability;
+	gageScale.x = 16.f * MC_UI_SCALE * m_ItemInfo.fDurability;
 	m_pComDurabilityGageTransform->SetScale(gageScale);
 
 	float fullWidth = 16.f * MC_UI_SCALE;
-	gageScale.x = fullWidth * m_fDurability;
+	gageScale.x = fullWidth * m_ItemInfo.fDurability;
 	m_pComDurabilityGageTransform->SetScale(gageScale);
 
 	float offsetX = (fullWidth - gageScale.x) * 0.5f;
@@ -221,7 +221,7 @@ HRESULT CUIItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 
 	// durability
 	{
-		if (m_fDurability < 1.f)
+		if (m_ItemInfo.fDurability < 1.f)
 		{
 			{
 				{
