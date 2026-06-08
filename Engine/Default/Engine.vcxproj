@@ -251,6 +251,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\DInputManager.h" />
     <ClInclude Include="..\public\DropBlock.h" />
     <ClInclude Include="..\public\DropItem.h" />
+    <ClInclude Include="..\public\DropItemObject.h" />
     <ClInclude Include="..\Public\Engine_Base.h" />
     <ClInclude Include="..\Public\Engine_Defines.h" />
     <ClInclude Include="..\Public\Engine_Enum.h" />
@@ -278,6 +279,8 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UIBlastFurnace.h" />
     <ClInclude Include="..\public\UIBreathBar.h" />
     <ClInclude Include="..\public\UIBreathBarIcon.h" />
+    <ClInclude Include="..\public\UIChest.h" />
+    <ClInclude Include="..\public\UIChest2.h" />
     <ClInclude Include="..\public\UIController.h" />
     <ClInclude Include="..\public\UICraftingTable.h" />
     <ClInclude Include="..\public\UIEnchantingTable.h" />
@@ -494,6 +497,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\CowEntity.cpp" />
     <ClCompile Include="..\private\DropBlock.cpp" />
+    <ClCompile Include="..\private\DropItemObject.cpp" />
     <ClCompile Include="..\private\FallingVoxel.cpp" />
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
     <ClCompile Include="..\private\UIArmorBar.cpp" />
@@ -501,6 +505,8 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UIBlastFurnace.cpp" />
     <ClCompile Include="..\private\UIBreathBar.cpp" />
     <ClCompile Include="..\private\UIBreathBarIcon.cpp" />
+    <ClCompile Include="..\private\UIChest.cpp" />
+    <ClCompile Include="..\private\UIChest2.cpp" />
     <ClCompile Include="..\private\UIController.cpp" />
     <ClCompile Include="..\private\UICraftingTable.cpp" />
     <ClCompile Include="..\private\UIEnchantingTable.cpp" />

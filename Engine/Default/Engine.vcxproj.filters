@@ -460,6 +460,18 @@
     <Filter Include="GameObject\UI\Item">
       <UniqueIdentifier>{2185abf2-6f66-40c0-a9b7-cccbe4e31117}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Item\Drop\Item">
+      <UniqueIdentifier>{89fad06b-3813-466f-b5e9-cfb37b583bc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\Drop\Block">
+      <UniqueIdentifier>{6015b916-185f-4958-aae3-cd83165eed96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\Chest">
+      <UniqueIdentifier>{4456d761-92a2-4d7b-8daf-bc356ac2f839}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\Chest2">
+      <UniqueIdentifier>{63931cca-54a8-4b65-948b-875a3693040a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -783,9 +795,6 @@
     <ClInclude Include="..\public\ItemObject.h">
       <Filter>GameObject\Item</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\DropItem.h">
-      <Filter>GameObject\Item\Drop</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\ItemPickaxe.h">
       <Filter>Game\Item\Pickaxe</Filter>
     </ClInclude>
@@ -903,8 +912,20 @@
     <ClInclude Include="..\public\UIItem.h">
       <Filter>GameObject\UI\Item</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\DropBlock.h">
+    <ClInclude Include="..\public\DropItemObject.h">
       <Filter>GameObject\Item\Drop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DropBlock.h">
+      <Filter>GameObject\Item\Drop\Block</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DropItem.h">
+      <Filter>GameObject\Item\Drop\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIChest.h">
+      <Filter>GameObject\UI\Chest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIChest2.h">
+      <Filter>GameObject\UI\Chest2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1217,9 +1238,6 @@
     <ClCompile Include="..\private\ItemObject.cpp">
       <Filter>GameObject\Item</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\DropItem.cpp">
-      <Filter>GameObject\Item\Drop</Filter>
-    </ClCompile>
     <ClCompile Include="..\private\ItemPickaxe.cpp">
       <Filter>Game\Item\Pickaxe</Filter>
     </ClCompile>
@@ -1337,8 +1355,20 @@
     <ClCompile Include="..\private\UIItem.cpp">
       <Filter>GameObject\UI\Item</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\DropBlock.cpp">
+    <ClCompile Include="..\private\DropItemObject.cpp">
       <Filter>GameObject\Item\Drop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DropBlock.cpp">
+      <Filter>GameObject\Item\Drop\Block</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DropItem.cpp">
+      <Filter>GameObject\Item\Drop\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIChest.cpp">
+      <Filter>GameObject\UI\Chest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIChest2.cpp">
+      <Filter>GameObject\UI\Chest2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

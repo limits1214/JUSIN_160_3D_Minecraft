@@ -9,6 +9,8 @@
 #include "UICraftingTable.h"
 #include "UIBlastFurnace.h"
 #include "UIEnchantingTable.h"
+#include "UIChest.h"
+#include "UIChest2.h"
 
 NS_BEGIN(Engine)
 
@@ -55,6 +57,9 @@ public:
 		DELEGATE_UI_DESC CraftingTable{};
 		DELEGATE_UI_DESC BlastFurnace{};
 		DELEGATE_UI_DESC EnchantingTable{};
+
+		DELEGATE_UI_DESC Chest{};
+		DELEGATE_UI_DESC Chest2{};
 		
 	}DESC;
 public:
@@ -79,6 +84,8 @@ public:
 	CUICraftingTable* GetCraftingTable() const;
 	CUIBlastFurnace* GetBlastFurnace() const;
 	CUIEnchantingTable* GetEnchantingTable() const;
+	CUIChest* GetChest() const;
+	CUIChest2* GetChest2() const;
 
 private:
 	CHandle m_hHotBar{};
@@ -92,6 +99,8 @@ private:
 	CHandle m_hCraftingTable{};
 	CHandle m_hBlastFurnace{};
 	CHandle m_hEnchantingTable{};
+	CHandle m_hChest{};
+	CHandle m_hChest2{};
 
 public:
 	HRESULT Initialize(void* pArg) override;

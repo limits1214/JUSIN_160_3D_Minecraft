@@ -762,6 +762,24 @@ HRESULT CGameInstance::InitializeMCResource()
 				}
 				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
 			}
+			{
+				//6
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/chest.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+			{
+				//7
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/chest2.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
 		}
 
 		{
@@ -1657,7 +1675,7 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
-		// 7: copperHelmet
+		// 7: copper_pickaxe
 		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Pickaxe/copper_pickaxe.png")))
 		{
 			if (SUCCEEDED(pRes->Load()))

@@ -1,5 +1,6 @@
 #pragma once
 #include "UIObject.h"
+#include "ItemObject.h"
 NS_BEGIN(Engine)
 class CComConstantBuffer;
 class ENGINE_DLL CUIInventory final : public E::CUIObject
@@ -7,7 +8,7 @@ class ENGINE_DLL CUIInventory final : public E::CUIObject
 private:
 	enum class SlotType
 	{
-		HOTBAR,
+		INVENTORY_HOTBAR,
 		INVENTORY,
 		ARMOR_HELMET,
 		ARMOR_CHESTPLATE,
@@ -19,7 +20,11 @@ private:
 		CRAFT_LB,
 		CRAFT_RB,
 		CRAFT_RESULT,
+
+		INGAME_HOTBAR,
+
 	};
+
 
 	struct InventorySlot
 	{
@@ -51,6 +56,12 @@ public:
 private:
 	_bool m_bRender{ false };
 
+public:
+	HRESULT AddItemToInventory(const CItemObject::ItemInfo& info);
+
+private:
+	std::optional<size_t> IsCanAddItem(const CItemObject::ItemInfo& info);
+
 private:
 	CComConstantBuffer* m_pComCBufferPerObject{};
 	CComConstantBuffer* m_pComCBufferPerUI{};
@@ -60,12 +71,21 @@ private:
 private:
 	std::vector<InventorySlot> m_vecInventorySlot{};
 	//std::unordered_map<uint64_t, InventorySlot> m_mapInventorySlots{};
-
 private:
 	std::optional<CHandle> m_hOnCursorItem{};
 
 	size_t m_InventoryIdxs[9*3]{};
-	size_t m_HotbarIdxs[9]{};
+	size_t m_InventoryHotbarIdxs[9]{};
+
+	//onlyview
+	size_t m_IngameHotbarIdxs[9]{};
+
+public:
+	void SetIngameHotbar();
+	void SetInventoryHotbar();
+
+public:
+	std::optional<CHandle> GetHotbarSlotHandle(size_t hotbarIdx) { return m_vecInventorySlot[m_InventoryHotbarIdxs[std::clamp(hotbarIdx, (size_t)0, (size_t)9)]].hItem; };
 
 public:
 	static E::UPtr<CUIInventory> Create();

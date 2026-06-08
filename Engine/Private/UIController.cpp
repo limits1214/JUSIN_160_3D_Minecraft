@@ -79,6 +79,16 @@ CUIEnchantingTable* CUIController::GetEnchantingTable() const
 	return CGameInstance::Get().GetGameObjectByHandleT<CUIEnchantingTable>(m_hEnchantingTable);
 }
 
+CUIChest* CUIController::GetChest() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUIChest>(m_hChest);
+}
+
+CUIChest2* CUIController::GetChest2() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUIChest2>(m_hChest);
+}
+
 HRESULT CUIController::Initialize(void* pArg)
 {
 	auto* pDesc = static_cast<CUIController::DESC*>(pArg);
@@ -335,6 +345,32 @@ HRESULT CUIController::Initialize(void* pArg)
 			layerID, &Desc))
 		{
 			m_hEnchantingTable = handle.value();
+		}
+	}
+
+	{
+		auto protoID = pDesc->Chest.ProtoPairID;
+		auto layerID = pDesc->Chest.LayerID;
+
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "Chest";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
+			layerID, &Desc))
+		{
+			m_hChest = handle.value();
+		}
+	}
+
+	{
+		auto protoID = pDesc->Chest2.ProtoPairID;
+		auto layerID = pDesc->Chest2.LayerID;
+
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "Chest2";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
+			layerID, &Desc))
+		{
+			m_hChest2 = handle.value();
 		}
 	}
     return S_OK;

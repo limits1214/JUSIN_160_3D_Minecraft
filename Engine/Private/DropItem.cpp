@@ -10,7 +10,7 @@ CDropItem::CDropItem()
 }
 
 CDropItem::CDropItem(const CDropItem& rhs)
-    : CItemObject{ rhs }
+    : CDropItemObject{ rhs }
 {
 
 }
@@ -21,17 +21,10 @@ CDropItem::~CDropItem()
 
 HRESULT CDropItem::Initialize(void* pArg)
 {
-	auto pDesc = static_cast<DESC*>(pArg);
-
-	m_viBufferID = pDesc->viBufferId;
-    if (FAILED(CItemObject::Initialize(pArg)))
+    if (FAILED(CDropItemObject::Initialize(pArg)))
     {
         return E_FAIL;
     }
-
-    m_pCenterCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.49f, 0.25f });
-
-
 
     if (auto res = CResDynamicBuffer::Create())
     {
@@ -69,7 +62,7 @@ void CDropItem::Update(E::_float fTimeDelta)
 {
     m_vecInstancedData.clear();
 
-    for (auto& item : m_vecDropItems)
+    for (auto& item : m_vecDropItemObjects)
     {
         if (m_bGravity)    VelocityUpdate(item, fTimeDelta);
         if (m_bAnimation)  AnimateTransformUpdate(item, fTimeDelta);
@@ -81,74 +74,28 @@ void CDropItem::Update(E::_float fTimeDelta)
         _matrix matWorld = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
         XMStoreFloat4x4(&item.matWorld, matRot * matBob * matWorld);
 
+        item.boxCollider->Transform(matWorld);
+        E::CGameInstance::Get().AddColliderGroup("Coll_DropItemObject", item.boxCollider.get());
+
         VTX_DROP_ITEM_INSTANCED_DATA inst{};
         inst.matWorld = item.matWorld;
-        inst.texIndex = item.texIndex;
+        inst.texIndex = item.texIndexs.front();
         m_vecInstancedData.push_back(inst);
+
     }
 
 
-    //m_vecInstancedData.clear();
-
-    //for (auto& item : m_vecDropItems)
-    //{
-    //    if (m_bGravity)
-    //        VelocityUpdate(item, fTimeDelta);
-
-    //    if (m_bAnimation)
-    //        AnimateTransformUpdate(item, fTimeDelta);
-
-    //    // 인스턴스 데이터 갱신
-    //    VTX_ITEM_INSTANCED_DATA inst{};
-    //    // item에서 matWorld, texIndex 채우기
-    //    m_vecInstancedData.push_back(inst);
-    //}
-
-
-    //if (m_bGravity)
-    //{
-    //    VelocityUpdate(fTimeDelta);
-    //}
-
-    //if (m_bAnimation)
-    //{
-    //    AnimateTransformUpdate(fTimeDelta);
-    //}
 }
 
 void CDropItem::LateUpdate(E::_float fTimeDelta)
 {
-   // E::CGameInstance::Get().AddColliderGroup("Coll_DropItemCenter", m_pCenterCollider.get());
-    //m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
 
     E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
-    //GetTransform().SetParentWorldMatrix(*m_pComAnimateTransform->GetWorldMatrix());
-    //GetTransform().Update();
-
-    //_matrix tmpWorld;
-    //if (m_bAnimation)
-    //{
-    //    tmpWorld = XMLoadFloat4x4(m_pComAnimateTransform->GetCombinedWorldMatrix()) * XMLoadFloat4x4(GetTransform().GetCombinedWorldMatrix());
-    //}
-    //else
-    //{
-    //    tmpWorld = XMLoadFloat4x4(GetTransform().GetCombinedWorldMatrix());
-    //}
+   
 }
 
 HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
-	//{
-	//	auto pResCBuf = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerQuadItemAnim");
-	//	D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-	//	if (SUCCEEDED(pContext->Map(pResCBuf->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-	//	{
-	//		E::CB_PER_QUADITEM_ANIM cbPerQuadItemAnim{};
-	//		memcpy(mappedSubResource.pData, &cbPerQuadItemAnim, sizeof(cbPerQuadItemAnim));
-	//		pContext->Unmap(pResCBuf->GetCBuffer().Get(), 0);
-	//	}
-	//	pContext->VSSetConstantBuffers(5, 1, pResCBuf->GetCBuffer().GetAddressOf());
-	//}
 
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropItem");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropItem");
@@ -195,93 +142,6 @@ HRESULT CDropItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
     pContext->DrawIndexedInstanced((UINT)viBuffer->GetNumIndices(), (UINT)m_vecInstancedData.size(), 0, 0, 0);
 	
 	return S_OK;
-}
-
-void CDropItem::AnimateTransformUpdate(InstancedDropItemDesc& item, E::_float fTimeDelta)
-{
-    item.fBobTime += fTimeDelta * BOB_SPEED;
-    item.fBobYRot += fTimeDelta * XMConvertToRadians(ROT_SPEED);
-    item.fBobYOffset = sinf(item.fBobTime) * BOB_AMPLITUDE;
-}
-void CDropItem::VelocityUpdate(InstancedDropItemDesc& item, E::_float fTimeDelta)
-{
-    XMVECTOR vVel = XMLoadFloat3(&item.vVelocity);
-    XMVECTOR vWishDir = XMVectorZero();
-
-    // 가속
-    float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
-    float fAddSpeed = m_fSpeed - fCurrSpeed;
-    if (fAddSpeed > 0.f)
-    {
-        float fAccelSpeed = std::min(18.f * m_fSpeed * fTimeDelta, fAddSpeed);
-        vVel += vWishDir * fAccelSpeed;
-    }
-
-    // 수평 속도 제한
-    XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
-    float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
-    if (fHorizSpeed > m_fSpeed)
-    {
-        vHoriz = XMVector3Normalize(vHoriz) * m_fSpeed;
-        vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
-    }
-
-    // 마찰
-    if (item.bOnGround)
-    {
-        float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
-        if (fSpeed > 0.f)
-        {
-            float fNewSpeed = std::max(fSpeed - fSpeed * 15.f * fTimeDelta, 0.f);
-            float vy = XMVectorGetY(vVel);
-            vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
-        }
-    }
-
-    // 중력
-    if (!item.bOnGround)
-        vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
-
-    // AABB 충돌
-    const XMFLOAT3 halfExtents = { 0.25f, 0.49f, 0.25f };
-    XMFLOAT3 c = item.vPos;
-
-    // Y
-    float velY = XMVectorGetY(vVel);
-    float prevY = c.y;
-    c.y += velY * fTimeDelta;
-    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
-    {
-        if (velY < 0.f)
-        {
-            c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;
-            item.bOnGround = true;
-        }
-        else c.y = prevY;
-        vVel = XMVectorSetY(vVel, 0.f);
-    }
-    else item.bOnGround = false;
-
-    // X
-    float px = c.x;
-    c.x += XMVectorGetX(vVel) * fTimeDelta;
-    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
-    {
-        c.x = px;
-        vVel = XMVectorSetX(vVel, 0.f);
-    }
-
-    // Z
-    float pz = c.z;
-    c.z += XMVectorGetZ(vVel) * fTimeDelta;
-    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
-    {
-        c.z = pz;
-        vVel = XMVectorSetZ(vVel, 0.f);
-    }
-
-    item.vPos = c;
-    XMStoreFloat3(&item.vVelocity, vVel);
 }
 
 UPtr<CDropItem> CDropItem::Create()

@@ -267,6 +267,16 @@ HRESULT CLevelOverWorld::Initialize()
 						.LayerID = "80_UI"
 					};
 
+					ControllerDesc.Chest = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIChest"},
+						.LayerID = "80_UI"
+					};
+
+					ControllerDesc.Chest2 = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIChest2"},
+						.LayerID = "80_UI"
+					};
+
 					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIController",
 						"79_UIController", &ControllerDesc))
 					{
