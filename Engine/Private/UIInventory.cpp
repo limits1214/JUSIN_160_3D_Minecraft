@@ -310,6 +310,8 @@ void CUIInventory::Update(E::_float fTimeDelta)
 			}
 		}
 	}
+
+	UpdateCrafting(fTimeDelta);
 }
 
 void CUIInventory::LateUpdate(E::_float fTimeDelta)
@@ -593,6 +595,7 @@ void CUIInventory::InitializeSlot()
 	}
 
 	{
+		m_CraftLTIdx = m_vecInventorySlot.size();
 		auto posX = 106.f;
 		auto posY = 26.f;
 		InventorySlot craftLt{};
@@ -603,6 +606,7 @@ void CUIInventory::InitializeSlot()
 	}
 
 	{
+		m_CraftRTIdx = m_vecInventorySlot.size();
 		auto posX = 124.f;
 		auto posY = 26.f;
 		InventorySlot craftRt{};
@@ -613,6 +617,7 @@ void CUIInventory::InitializeSlot()
 	}
 
 	{
+		m_CraftLBIdx = m_vecInventorySlot.size();
 		auto posX = 106.f;
 		auto posY = 44.f;
 		InventorySlot craftLb{};
@@ -623,6 +628,7 @@ void CUIInventory::InitializeSlot()
 	}
 
 	{
+		m_CraftRBIdx = m_vecInventorySlot.size();
 		auto posX = 124.f;
 		auto posY = 44.f;
 		InventorySlot craftRb{};
@@ -633,6 +639,7 @@ void CUIInventory::InitializeSlot()
 	}
 
 	{
+		m_CraftResultIdx = m_vecInventorySlot.size();
 		auto posX = 162.f;
 		auto posY = 36.f;
 		InventorySlot craftResult{};
@@ -855,6 +862,44 @@ void CUIInventory::SetInventoryHotbar()
 			}
 		}
 	}
+}
+
+void CUIInventory::UpdateCrafting(_float fTimeDelta)
+{
+	CItemObject::ItemInfo LTInfo{};
+	CItemObject::ItemInfo RTInfo{};
+	CItemObject::ItemInfo LBInfo{};
+	CItemObject::ItemInfo RBInfo{};
+	if (auto h = m_vecInventorySlot[m_CraftLTIdx].hItem)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(h.value()))
+		{
+			LTInfo = pObj->GetItemInfo();
+		}
+	}
+	if (auto h = m_vecInventorySlot[m_CraftRTIdx].hItem)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(h.value()))
+		{
+			RTInfo = pObj->GetItemInfo();
+		}
+	}
+	if (auto h = m_vecInventorySlot[m_CraftLBIdx].hItem)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(h.value()))
+		{
+			LBInfo = pObj->GetItemInfo();
+		}
+	}
+	if (auto h = m_vecInventorySlot[m_CraftRBIdx].hItem)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(h.value()))
+		{
+			RBInfo = pObj->GetItemInfo();
+		}
+	}
+
+	int x = 0;
 }
 
 E::UPtr<CUIInventory> CUIInventory::Create()

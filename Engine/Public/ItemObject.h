@@ -9,10 +9,6 @@ class ENGINE_DLL CItemObject : public CGameObject
 public:
 	enum class ITEM_TYPE
 	{
-		//BLOCK_DIRT,
-		//BLOCK_COBBLESTONE,
-		//BLOCK_SAND,
-		//BLOCK_TNT,
 		ITEM_WoodPickaxe,
 		ITEM_CooperPickaxe,
 		ITEM_CooperHelmet,
@@ -20,9 +16,10 @@ public:
 	};
 	struct ItemInfo
 	{
-		//CUIItem::TYPE eItemUIType{ CUIItem::TYPE::END};
 		ITEM_TYPE eItemType{ CItemObject::ITEM_TYPE::END };
 		std::optional<CBlock3> block{};
+		_float fDurability{ 1.f };
+		uint8_t iCnt{};
 	};
 
 	static uint32_t GetPackedTexIdByType(ITEM_TYPE eType)
@@ -47,6 +44,12 @@ public:
 	}DESC;
 public:
 	DECLARE_DERIVED_TYPE(CItemObject, CGameObject)
+
+public:
+	ItemInfo& GetItemInfoRef() { return m_ItemInfo; }
+
+private:
+	ItemInfo m_ItemInfo{};
 
 protected:
 	explicit CItemObject();

@@ -313,26 +313,14 @@
     <Filter Include="Game\Manager">
       <UniqueIdentifier>{18206a88-6672-4c8a-b907-bddea2e4edb6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Item">
-      <UniqueIdentifier>{91f53f7c-733a-49d8-b63e-6124e108c022}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameObject\Item\Drop">
       <UniqueIdentifier>{b578ad8f-d538-41d0-89a3-10fc3f5e09c0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Item\Pickaxe">
-      <UniqueIdentifier>{f5649b3f-e242-4928-8ebd-12ca91fe2a3e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Item\Pickaxe\Wood">
-      <UniqueIdentifier>{385c43bc-4ff1-4964-ac9c-86dd70870534}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer">
       <UniqueIdentifier>{be8b1ed9-9d5a-4e89-979d-3337b2bbd10f}</UniqueIdentifier>
     </Filter>
     <Filter Include="100.Shaders\Item">
       <UniqueIdentifier>{f4c1913b-cc14-4a0e-9938-203d6882240b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObject\Item\ExperienceOrb">
-      <UniqueIdentifier>{ece6a9f2-bb91-4e58-ab01-e9b9d8d5539d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded">
       <UniqueIdentifier>{4d2708e9-1b02-4d45-bc68-dbebdfcc0fee}</UniqueIdentifier>
@@ -369,9 +357,6 @@
     </Filter>
     <Filter Include="Resource\Entity\Geometry\Steve\Arm">
       <UniqueIdentifier>{5c7021ed-ac7d-4a28-87b8-539c0a50cf5b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObject\Item\PlayerFPSArm">
-      <UniqueIdentifier>{6e5e5c7f-24db-4137-ab66-24f335d6ec64}</UniqueIdentifier>
     </Filter>
     <Filter Include="Particle">
       <UniqueIdentifier>{7547f2c7-321b-40d5-a03d-9c6629ef60cd}</UniqueIdentifier>
@@ -471,6 +456,15 @@
     </Filter>
     <Filter Include="GameObject\UI\Chest2">
       <UniqueIdentifier>{63931cca-54a8-4b65-948b-875a3693040a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\PlayerFPSArm">
+      <UniqueIdentifier>{6e5e5c7f-24db-4137-ab66-24f335d6ec64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\ExperienceOrb">
+      <UniqueIdentifier>{ece6a9f2-bb91-4e58-ab01-e9b9d8d5539d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\Item">
+      <UniqueIdentifier>{92f0cd25-a9b9-481b-bfee-670091b545ac}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -786,23 +780,14 @@
     <ClInclude Include="..\public\ResEnttGeoSkeleton.h">
       <Filter>Resource\Entity\Geometry\Skeleton</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\Item.h">
-      <Filter>Game\Item</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\GameManager.h">
       <Filter>Game\Manager</Filter>
     </ClInclude>
     <ClInclude Include="..\public\ItemObject.h">
       <Filter>GameObject\Item</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\ItemPickaxe.h">
-      <Filter>Game\Item\Pickaxe</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\ItemWoodPickaxe.h">
-      <Filter>Game\Item\Pickaxe\Wood</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\ExperienceOrbItem.h">
-      <Filter>GameObject\Item\ExperienceOrb</Filter>
+    <ClInclude Include="..\public\ExperienceOrb.h">
+      <Filter>GameObject\Entity\ExperienceOrb</Filter>
     </ClInclude>
     <ClInclude Include="..\public\ResExtrudedItemVIBuffer.h">
       <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded</Filter>
@@ -829,7 +814,7 @@
       <Filter>Resource\Entity\Geometry\Steve\Arm</Filter>
     </ClInclude>
     <ClInclude Include="..\public\PlayerFPSArm.h">
-      <Filter>GameObject\Item\PlayerFPSArm</Filter>
+      <Filter>GameObject\Entity\PlayerFPSArm</Filter>
     </ClInclude>
     <ClInclude Include="..\public\ParticleManager.h">
       <Filter>Particle\Manager</Filter>
@@ -926,6 +911,9 @@
     </ClInclude>
     <ClInclude Include="..\public\UIChest2.h">
       <Filter>GameObject\UI\Chest2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Item.h">
+      <Filter>GameObject\Item\Item</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1229,23 +1217,14 @@
     <ClCompile Include="..\private\ResEnttGeoSkeleton.cpp">
       <Filter>Resource\Entity\Geometry\Skeleton</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\Item.cpp">
-      <Filter>Game\Item</Filter>
-    </ClCompile>
     <ClCompile Include="..\private\GameManager.cpp">
       <Filter>Game\Manager</Filter>
     </ClCompile>
     <ClCompile Include="..\private\ItemObject.cpp">
       <Filter>GameObject\Item</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\ItemPickaxe.cpp">
-      <Filter>Game\Item\Pickaxe</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\ItemWoodPickaxe.cpp">
-      <Filter>Game\Item\Pickaxe\Wood</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\ExperienceOrbItem.cpp">
-      <Filter>GameObject\Item\ExperienceOrb</Filter>
+    <ClCompile Include="..\private\ExperienceOrb.cpp">
+      <Filter>GameObject\Entity\ExperienceOrb</Filter>
     </ClCompile>
     <ClCompile Include="..\private\ResExtrudedItemVIBuffer.cpp">
       <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded</Filter>
@@ -1272,7 +1251,7 @@
       <Filter>Resource\Entity\Geometry\Steve\Arm</Filter>
     </ClCompile>
     <ClCompile Include="..\private\PlayerFPSArm.cpp">
-      <Filter>GameObject\Item\PlayerFPSArm</Filter>
+      <Filter>GameObject\Entity\PlayerFPSArm</Filter>
     </ClCompile>
     <ClCompile Include="..\private\ParticleManager.cpp">
       <Filter>Particle\Manager</Filter>
@@ -1369,6 +1348,9 @@
     </ClCompile>
     <ClCompile Include="..\private\UIChest2.cpp">
       <Filter>GameObject\UI\Chest2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Item.cpp">
+      <Filter>GameObject\Item\Item</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

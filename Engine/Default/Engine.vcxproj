@@ -264,7 +264,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\EntityModelBone.h" />
     <ClInclude Include="..\public\EntityModelMesh.h" />
     <ClInclude Include="..\public\EntityObject.h" />
-    <ClInclude Include="..\public\ExperienceOrbItem.h" />
+    <ClInclude Include="..\public\ExperienceOrb.h" />
     <ClInclude Include="..\public\FallingVoxel.h" />
     <ClInclude Include="..\public\FlyCamera.h" />
     <ClInclude Include="..\public\FontManager.h" />
@@ -273,6 +273,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\GameObject.h" />
     <ClInclude Include="..\public\GameObjectManager.h" />
     <ClInclude Include="..\public\GraphicDevice.h" />
+    <ClInclude Include="..\public\Item.h" />
     <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
     <ClInclude Include="..\public\UIArmorBar.h" />
     <ClInclude Include="..\public\UIArmorBarIcon.h" />
@@ -290,10 +291,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\HumanoidEntityObject.h" />
     <ClInclude Include="..\public\ImguiManager.h" />
     <ClInclude Include="..\Public\ISerializer.h" />
-    <ClInclude Include="..\public\Item.h" />
     <ClInclude Include="..\public\ItemObject.h" />
-    <ClInclude Include="..\public\ItemPickaxe.h" />
-    <ClInclude Include="..\public\ItemWoodPickaxe.h" />
     <ClInclude Include="..\public\Level.h" />
     <ClInclude Include="..\public\LevelManager.h" />
     <ClInclude Include="..\public\LightManager.h" />
@@ -499,6 +497,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\DropBlock.cpp" />
     <ClCompile Include="..\private\DropItemObject.cpp" />
     <ClCompile Include="..\private\FallingVoxel.cpp" />
+    <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
     <ClCompile Include="..\private\UIArmorBar.cpp" />
     <ClCompile Include="..\private\UIArmorBarIcon.cpp" />
@@ -521,7 +520,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\EntityModelBone.cpp" />
     <ClCompile Include="..\private\EntityModelMesh.cpp" />
     <ClCompile Include="..\private\EntityObject.cpp" />
-    <ClCompile Include="..\private\ExperienceOrbItem.cpp" />
+    <ClCompile Include="..\private\ExperienceOrb.cpp" />
     <ClCompile Include="..\private\FlyCamera.cpp" />
     <ClCompile Include="..\private\FontManager.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />
@@ -532,10 +531,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Helper.cpp" />
     <ClCompile Include="..\private\HumanoidEntityObject.cpp" />
     <ClCompile Include="..\private\ImguiManager.cpp" />
-    <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\ItemObject.cpp" />
-    <ClCompile Include="..\private\ItemPickaxe.cpp" />
-    <ClCompile Include="..\private\ItemWoodPickaxe.cpp" />
     <ClCompile Include="..\private\Level.cpp" />
     <ClCompile Include="..\private\LevelManager.cpp" />
     <ClCompile Include="..\private\LightManager.cpp" />

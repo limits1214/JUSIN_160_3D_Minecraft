@@ -1,18 +1,18 @@
 #pragma once
-#include "ItemObject.h"
+#include "EntityObject.h"
 
 NS_BEGIN(Engine)
 class CComEntityModel;
-class ENGINE_DLL CPlayerFPSArm : public CItemObject
+class ENGINE_DLL CPlayerFPSArm : public CEntityObject
 {
 public:
-	typedef struct tagDesc : CItemObject::DESC
+	typedef struct tagDesc : CEntityObject::DESC
 	{
 		std::pair<StringID, StringID> viBufferId{};
 	}DESC;
 
 public:
-	DECLARE_DERIVED_TYPE(CDropItem, CItemObject)
+	DECLARE_DERIVED_TYPE(CDropItem, CEntityObject)
 
 private:
 	explicit CPlayerFPSArm();
