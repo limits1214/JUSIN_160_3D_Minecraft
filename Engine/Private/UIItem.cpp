@@ -38,8 +38,9 @@ HRESULT CUIItem::Initialize(void* pArg)
 	pDesc->fSizeX = 16.f * MC_UI_SCALE;
 	pDesc->fSizeY = 16.f * MC_UI_SCALE;
 
-	m_eType = pDesc->eType;
-	m_PerUI = GetPerUIByType(m_eType);
+	//m_eType = pDesc->eType;
+	m_ItemInfo = pDesc->itemInfo;
+	//m_PerUI = GetPerUIByType(m_eType);
 
 	//pDesc->fX = (1280.f * 0.5f);
 	//pDesc->fY = (720.f * 0.5f);
@@ -90,8 +91,15 @@ HRESULT CUIItem::Initialize(void* pArg)
 		m_pComDurabilityGageTransform->SetScale(_float3{ x,y, 1.f });
 	}
 
-
-	m_PerUI = GetPerUIByType(m_eType);
+	if (m_ItemInfo.block)
+	{
+		 m_PerUI = GetPerUIByType(m_ItemInfo.block.value().GetType());
+	}
+	else
+	{
+		m_PerUI = GetPerUIByType(m_ItemInfo.eItemType);
+	}
+	
 
 	return S_OK;
 }

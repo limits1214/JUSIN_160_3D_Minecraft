@@ -177,6 +177,8 @@ void CLevelLoading::LoadingCheck()
 #include "UICraftingTable.h"
 #include "UIBlastFurnace.h"
 #include "UIEnchantingTable.h"
+#include "UIChest.h"
+#include "UIChest2.h"
 
 #include "UIItem.h"
 
@@ -306,6 +308,15 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 	{
 		return E_FAIL;
 	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIChest", E::CUIChest::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIChest2", E::CUIChest2::Create())))
+	{
+		return E_FAIL;
+	}
+
 	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIItem", E::CUIItem::Create())))
 	{
 		return E_FAIL;

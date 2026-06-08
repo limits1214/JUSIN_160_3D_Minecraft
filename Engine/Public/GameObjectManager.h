@@ -126,8 +126,8 @@ inline T* Engine::CGameObjectManager::GetGameObjectByHandleT(const CHandle& hand
 	{
 		return nullptr;
 	}
-
-	if (obj->GetType() != T::StaticType)
+	
+	if (!obj->IsA(T::StaticType))
 	{
 		return nullptr;
 	}
@@ -146,7 +146,7 @@ inline const T* Engine::CGameObjectManager::GetGameObjectByHandleT(const CHandle
 		return nullptr;
 	}
 
-	if (obj->GetType() != T::StaticType)
+	if (!obj->IsA(T::StaticType))
 	{
 		return nullptr;
 	}

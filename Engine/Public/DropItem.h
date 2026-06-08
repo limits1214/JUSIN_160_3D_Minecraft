@@ -1,32 +1,14 @@
 #pragma once
-#include "ItemObject.h"
+#include "DropItemObject.h"
 
 NS_BEGIN(Engine)
 class CCollider;
 class CResDynamicBuffer;
-class ENGINE_DLL CDropItem : public CItemObject
+class ENGINE_DLL CDropItem : public CDropItemObject
 {
-public:
-	typedef struct tagDesc : CItemObject::DESC
-	{
-		std::pair<StringID, StringID> viBufferId{};
-	}DESC;
-public:
-	struct InstancedDropItemDesc
-	{
-		_float3 vPos{};
-		_float3 vVelocity{};
-		bool    bOnGround{ false };
-		_float  fBobYOffset{};
-		_float  fBobYRot{};
-		_float  fBobTime{};
-		uint32_t texIndex{};
-
-		_float4x4 matWorld{};
-	};
 
 public:
-	DECLARE_DERIVED_TYPE(CDropItem, CItemObject)
+	DECLARE_DERIVED_TYPE(CDropItem, CDropItemObject)
 
 private:
 	explicit CDropItem();
@@ -43,48 +25,8 @@ public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
-	std::pair<StringID, StringID> m_viBufferID{};
-
-private:
-	UPtr<CCollider> m_pCenterCollider{};
-
-public:
-	void SetGravity(_bool b) { m_bGravity = b; }
-	_bool GetGravity() const { return m_bGravity; }
-private:
-	_bool m_bGravity{ true };
-
-
-private:
-	_bool m_bAnimation{ true };
-	void AnimateTransformUpdate(InstancedDropItemDesc& item, E::_float fTimeDelta);
-
-
-	static constexpr float BOB_SPEED = 2.0f;   // 위아래 속도
-	static constexpr float BOB_AMPLITUDE = 0.1f;   // 위아래 폭 (픽셀 단위)
-	static constexpr float ROT_SPEED = 90.0f;   // 회전 속도 (라디안/초)
-
-private:
-	void VelocityUpdate(InstancedDropItemDesc& item, E::_float fTimeDelta);
-
-private:
-	_float m_fSpeed{ 5.f };
-
-
-public:
-	void AddDropItem(_float3 vPos, _float3 vVelocity, uint32_t iTexIndex)
-	{
-		InstancedDropItemDesc Desc{};
-		Desc.vPos = vPos;
-		Desc.vVelocity = vVelocity;
-		Desc.texIndex = iTexIndex;
-		m_vecDropItems.push_back(Desc);
-	}
-private:
-	std::vector<InstancedDropItemDesc>  m_vecDropItems;
 	std::vector<VTX_DROP_ITEM_INSTANCED_DATA> m_vecInstancedData{};
-	uint32_t m_iNumElements{ 1000 };
-	//uint32_t m_iElementStride{ sizeof(_float4x4) };
+	uint32_t m_iNumElements{ 100 };
 	SPtr<CResDynamicBuffer> m_pResInstancedBuffer{};
 
 public:

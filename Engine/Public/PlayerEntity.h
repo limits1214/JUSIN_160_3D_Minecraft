@@ -79,6 +79,7 @@ private:
 	void ProcessUI(float fTimeDelta);
 	void ProcessUIHotbar(float fTimeDelta);
 	void ProcessUIInventory(float fTimeDelta);
+	void ProcessThrowItem(float fTimeDelta);
 private:
 	CHandle m_hUIController{};
 
@@ -127,6 +128,7 @@ private:
 	_bool m_bNumKeyPressing[10]{};
 
 	_bool m_bKeyDownE{ false };
+	_bool m_bKeyDownQ{ false };
 
 	int32_t m_iMouseMoveX{ 0 };
 	int32_t m_iMouseMoveY{ 0 };

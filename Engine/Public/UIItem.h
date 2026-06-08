@@ -1,60 +1,113 @@
 
 #pragma once
+
 #include "UIObject.h"
+
+#include "ItemObject.h"
+
 NS_BEGIN(Engine)
 class CComConstantBuffer;
 class CComTransform;
 class ENGINE_DLL CUIItem final : public E::CUIObject
 {
 public:
-	enum class TYPE
+	//enum class TYPE
+	//{
+	//	BLOCK_DIRT,
+	//	BLOCK_COBBLESTONE,
+	//	BLOCK_SAND,
+	//	BLOCK_TNT,
+	//	ITEM_WoodPickaxe,
+	//	ITEM_CooperPickaxe,
+	//	ITEM_CooperHelmet,
+	//	END
+	//};
+
+public:
+	static _bool IsCountableItem(CItemObject::ITEM_TYPE eType)
 	{
-		BLOCK_DIRT,
-		BLOCK_COBBLESTONE,
-		BLOCK_SAND,
-		BLOCK_TNT,
-		ITEM_WoodPickaxe,
-		ITEM_CooperHelmet,
-		END
-	};
+		switch (eType)
+		{
+		case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+			return false;
+		}
+		return true;
+	}
 
 private:
-	static CB_PER_UI GetPerUIByType(TYPE eType)
+	static CB_PER_UI GetPerUIByType(CBlock3::TYPE eType)
 	{
 		CB_PER_UI perUI{};
 		switch (eType)
 		{
-		case TYPE::BLOCK_DIRT:
+		case CBlock3::TYPE::DIRT:
 			perUI.texIndex = PackTexId(17, 0);
 			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
 			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
-		case TYPE::BLOCK_COBBLESTONE:
+		case CBlock3::TYPE::COBBLESTONE:
 			perUI.texIndex = PackTexId(17, 1);
 			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
 			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
-		case TYPE::BLOCK_SAND:
+		case CBlock3::TYPE::SAND:
 			perUI.texIndex = PackTexId(17, 2);
 			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
 			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
-		case TYPE::BLOCK_TNT:
+		case CBlock3::TYPE::TNT:
 			perUI.texIndex = PackTexId(17, 3);
 			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
 			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
-		case TYPE::ITEM_WoodPickaxe:
-			perUI.texIndex = PackTexId(6, 0);
+		case CBlock3::TYPE::END:
+			return perUI;
+		}
+		return perUI;
+	}
+	static CB_PER_UI GetPerUIByType(CItemObject::ITEM_TYPE eType)
+	{
+		CB_PER_UI perUI{};
+		switch (eType)
+		{
+		//case CItemObject::ITEM_TYPE::BLOCK_DIRT:
+		//	perUI.texIndex = PackTexId(17, 0);
+		//	perUI.texCoord = { 0 / 300.f, 0 / 300.f };
+		//	perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
+		//	return perUI;
+		//case CItemObject::ITEM_TYPE::BLOCK_COBBLESTONE:
+		//	perUI.texIndex = PackTexId(17, 1);
+		//	perUI.texCoord = { 0 / 300.f, 0 / 300.f };
+		//	perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
+		//	return perUI;
+		//case CItemObject::ITEM_TYPE::BLOCK_SAND:
+		//	perUI.texIndex = PackTexId(17, 2);
+		//	perUI.texCoord = { 0 / 300.f, 0 / 300.f };
+		//	perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
+		//	return perUI;
+		//case CItemObject::ITEM_TYPE::BLOCK_TNT:
+		//	perUI.texIndex = PackTexId(17, 3);
+		//	perUI.texCoord = { 0 / 300.f, 0 / 300.f };
+		//	perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
+		//	return perUI;
+		case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
+			perUI.texIndex = CItemObject::GetPackedTexIdByType(eType);
 			perUI.texCoord = { 0 / 16.f, 0 / 16.f };
 			perUI.uvSize = { 16.f / 16.f, 16.f / 16.f };
 			return perUI;
-		case TYPE::ITEM_CooperHelmet:
-			perUI.texIndex = PackTexId(6, 6);
+		case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+			perUI.texIndex = CItemObject::GetPackedTexIdByType(eType);
 			perUI.texCoord = { 0 / 16.f, 0 / 16.f };
 			perUI.uvSize = { 16.f / 16.f, 16.f / 16.f };
 			return perUI;
-		case CUIItem::TYPE::END:
+		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+			perUI.texIndex = CItemObject::GetPackedTexIdByType(eType);
+			perUI.texCoord = { 0 / 16.f, 0 / 16.f };
+			perUI.uvSize = { 16.f / 16.f, 16.f / 16.f };
+			return perUI;
+		case CItemObject::ITEM_TYPE::END:
 			return perUI;
 		}
 		return perUI;
@@ -62,7 +115,8 @@ private:
 public:
 	typedef struct tagDesc : public CUIObject::UIOBJECT_DESC
 	{
-		TYPE eType;
+		//CItemObject::ITEM_TYPE eType;
+		CItemObject::ItemInfo itemInfo{};
 	}DESC;
 public:
 	DECLARE_DERIVED_TYPE(CUIItem, CUIObject)
@@ -106,12 +160,17 @@ public:
 private:
 	_bool m_bOnCursor{ false };
 
+public:
+	//void SetItemInfo(const CItemObject::ItemInfo& info) { m_ItemInfo = info; }
+	CItemObject::ItemInfo GetItemInfo() const { return m_ItemInfo; }
+private:
+	CItemObject::ItemInfo m_ItemInfo{};
 
 public:
-	TYPE GetItemType() const { return m_eType; }
-	void SetItemType(TYPE eType) { m_eType = eType; }
+	//CItemObject::ITEM_TYPE GetItemType() const { return m_eType; }
+	//void SetItemType(CItemObject::ITEM_TYPE eType) { m_eType = eType; }
 private:
-	TYPE m_eType{TYPE::END};
+	//CItemObject::ITEM_TYPE m_eType{ CItemObject::ITEM_TYPE::END};
 	CB_PER_UI m_PerUI{};
 
 private:

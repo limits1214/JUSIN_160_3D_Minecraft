@@ -16,6 +16,8 @@
 #include "DropItem.h"
 #include "DropBlock.h"
 
+#include "UIItem.h"
+
 NS_USING(Engine)
 
 
@@ -74,24 +76,44 @@ void CPlayerEntity::UpdateGUI()
     {
         if(1)
         {
+            CItemObject::ItemInfo ItemInfo{};
+            //ItemInfo.eItemUIType = CUIItem::TYPE::ITEM_WoodPickaxe;
+            ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
+
+            //CUIItem::GetPerUIByType(ItemInfo);
+           
+            ;
+
             E::CDropItem::DESC Desc{};
             Desc.sObjectTag = "DropItem_WoodPickaxe";
-            Desc.viBufferId = { "MC_ITEM_VIBuffer", "WoodPickaxe" };
+            Desc.viBufferId = { "MC_ITEM_VIBuffer", CDropItemObject::GetVIBufferName(ItemInfo) };
             if (auto woodPixaxeHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-                "01_DROPITEM", &Desc))
+                CDropItemObject::GetDropItemLayer(ItemInfo), &Desc))
             {
+               
+                   
                 //playerObj->SetRightItemHandle(woodPixaxeHandle);
                 if (auto woodPixaxeObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropItem>(woodPixaxeHandle.value()))
                 {
-                    auto tmp = GetTransform().GetPosition();
-                    tmp.x += 1.f;
-                    woodPixaxeObj->AddDropItem(tmp, {}, PackTexId(6, 0));
-                    tmp.x += 1.f;
-                    woodPixaxeObj->AddDropItem(tmp, {}, PackTexId(6, 7));
-                    tmp.x += 1.f;
-                    woodPixaxeObj->AddDropItem(tmp, {}, PackTexId(6, 0));
-                    tmp.x += 1.f;
-                    woodPixaxeObj->AddDropItem(tmp, {}, PackTexId(6, 0));
+                    CItemObject::ItemInfo ItemInfo{};
+                    //ItemInfo.eItemUIType = CUIItem::TYPE::ITEM_WoodPickaxe;
+                    ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
+                    auto pos = GetTransform().GetPosition();
+                    pos.x += 1.f;
+                    ;
+                    woodPixaxeObj->AddDropItemObject(ItemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(CItemObject::ITEM_TYPE::ITEM_WoodPickaxe) });
+                    pos.x += 1.f;
+
+                    //ItemInfo.eItemUIType = CUIItem::TYPE::ITEM_CooperPickaxe;
+                    ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_CooperPickaxe;
+                    woodPixaxeObj->AddDropItemObject(ItemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(CItemObject::ITEM_TYPE::ITEM_CooperPickaxe) });
+                    pos.x += 1.f;
+
+                    //ItemInfo.eItemUIType = CUIItem::TYPE::ITEM_WoodPickaxe;
+                    ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
+                    woodPixaxeObj->AddDropItemObject(ItemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(CItemObject::ITEM_TYPE::ITEM_WoodPickaxe) });
+                    pos.x += 1.f;
+                    woodPixaxeObj->AddDropItemObject(ItemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(CItemObject::ITEM_TYPE::ITEM_WoodPickaxe) });
 
                     //woodPixaxeObj->GetTransform().SetPosition(XMVectorSet(0.f, 0.2f, 0.4f, 1.f));
                     //woodPixaxeObj->GetTransform().SetRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -90);
@@ -99,26 +121,26 @@ void CPlayerEntity::UpdateGUI()
                 }
             }
         }
-        if (0)
-        {
-            E::CDropBlock::DESC Desc{};
-            Desc.sObjectTag = "CDropBlock_CubeItemDirt";
-            Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
-            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropBlock",
-                "01_DROPITEM", &Desc))
-            {
-                if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(handle.value()))
-                {
-                   
-                    auto tmp = GetTransform().GetPosition();
-                    /*              tmp.x += 1.f;
-                                  woodPixaxeObj->GetTransform().SetPosition(tmp);*/
+        //if (0)
+        //{
+        //    E::CDropBlock::DESC Desc{};
+        //    Desc.sObjectTag = "CDropBlock_CubeItemDirt";
+        //    Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
+        //    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropBlock",
+        //        "01_DROPITEM", &Desc))
+        //    {
+        //        if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(handle.value()))
+        //        {
+        //           
+        //            auto pos = GetTransform().GetPosition();
+        //            /*              tmp.x += 1.f;
+        //                          woodPixaxeObj->GetTransform().SetPosition(tmp);*/
 
-                    std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
-                    pObj->AddDropItem(tmp, {0.f, 4.f, 0.f}, a);
-                }
-            }
-        }
+        //            std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
+        //            pObj->AddDropItemObject(pos, {0.f, 4.f, 0.f}, a);
+        //        }
+        //    }
+        //}
     }
 
     if (ImGui::TreeNode("CAMERATYPE"))
@@ -240,6 +262,7 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_bNumKeyPressing[9] = CGameInstance::Get().KeyPressing(DIK_9);
 
         m_bKeyDownE = CGameInstance::Get().KeyDown(DIK_E);
+        m_bKeyDownQ = CGameInstance::Get().KeyDown(DIK_Q);
         m_bMouseDownRight = CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB);
     }
     else
@@ -259,6 +282,7 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_bMousePressingRight = false;
         memset(&m_bNumKeyPressing, 0, sizeof(m_bNumKeyPressing));
         m_bKeyDownE = false;
+        m_bKeyDownQ = false;
         m_bMouseDownRight = false;
     }
 }
@@ -713,7 +737,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
             PlayerCameraTrace(fTimeDelta);
         }
     }
-
+    ProcessThrowItem(fTimeDelta);
     ProcessBlockSet(fTimeDelta);
     ProcessUI(fTimeDelta);
 
@@ -749,16 +773,32 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
     //Coll_DropBlockCenter
 
-    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_DropBlockCenter"))
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_DropItemObject"))
     {
         for (auto& pColl : *pCollGroup)
         {
             if (CGameInstance::Get().IntersectColl(pColl, m_pCenterCollider.get()))
             {
-                if (auto pObj = Cast<CDropBlock>(pColl->GetInnerPointer()))
+                if (auto pObj = Cast<CDropItemObject>(pColl->GetInnerPointer()))
                 {
                     auto pHint = static_cast<CDropBlock::CollHint*>(pColl->GetInnerHint2());
-                    pObj->GetDropItems().erase(pHint->iter);
+                    const auto& itemInfo = pHint->iter->itemInfo;
+                    auto* pUIController = GetUIController();
+
+                    if (auto block = itemInfo.block)
+                    {
+                        //pUIController->Getinventory().
+                    }
+                    else
+                    {
+
+                    }
+                    
+                    if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
+                    {
+                        pObj->GetDropItemObjects().erase(pHint->iter);
+                    }
+
                 }
             }
         }
@@ -877,17 +917,18 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, newBlock);
         
         
-        
-            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer("01_DROPBLOCK_CUBE"))
+            CItemObject::ItemInfo ItemInfo{};
+            ItemInfo.block = res.block;
+            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(ItemInfo)))
             {
                 if (!pLayer->empty())
                 {
                     if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
                     {
-                        auto tmp = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
-                        tmp.x += 0.5f;
-                        tmp.y += 0.5f;
-                        tmp.z += 0.5f;
+                        auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
+                        pos.x += 0.5f;
+                        pos.y += 0.5f;
+                        pos.z += 0.5f;
 
                         auto type = res.block->GetType();
 
@@ -898,7 +939,9 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
                         }
 
                         // std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
-                        pObj->AddDropItem(tmp, { 0.f, 2.f, 0.f }, texs);
+                        
+                        
+                        pObj->AddDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f }, texs);
                     }
                 }
             }
@@ -908,14 +951,14 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
                 Desc.sObjectTag = "CDropBlock_Cube";
                 Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
                 if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropBlock",
-                    "01_DROPBLOCK_CUBE", &Desc))
+                    CDropItemObject::GetDropItemLayer(ItemInfo), &Desc))
                 {
                     if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(handle.value()))
                     {
-                        auto tmp = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
-                        tmp.x += 0.5f;
-                        tmp.y += 0.5f;
-                        tmp.z += 0.5f;
+                        auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
+                        pos.x += 0.5f;
+                        pos.y += 0.5f;
+                        pos.z += 0.5f;
 
                         auto type = res.block->GetType();
 
@@ -925,8 +968,9 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
                             texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
                         }
 
+                       
                         // std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
-                        pObj->AddDropItem(tmp, { 0.f, 2.f, 0.f }, texs);
+                        pObj->AddDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f }, texs);
                     }
                 }
             }
@@ -988,6 +1032,177 @@ void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
     if (m_bKeyDownE)
     {
         pUIController->Getinventory()->SetRender(!pUIController->Getinventory()->GetRender());
+    }
+}
+
+void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pUIController = GetUIController();
+    if (m_bKeyDownQ)
+    {
+        auto selectIdx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+        if (auto handle = pUIController->Getinventory()->GetHotbarSlotHandle(selectIdx))
+        {
+            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+            {
+                auto itemInfo = pObj->GetItemInfo();
+                if (itemInfo.block)
+                {
+                    auto cnt = pObj->GetCnt();
+                    if (cnt == 1)
+                    {
+                        pObj->SetPendingDestroyCascade();
+                    }
+                    else
+                    {
+                        pObj->SetCnt(cnt - 1);
+                    }
+
+
+
+                    {
+                        _float3 startPos{};
+                        XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                        startPos.y += 1.f;
+
+                        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo)))
+                        {
+                            if (!pLayer->empty())
+                            {
+                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
+                                {
+                                    auto pos = startPos;
+
+                                    auto type = itemInfo.block->GetType();
+
+                                    std::vector<uint32_t> texs{};
+                                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
+                                    {
+                                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
+                                    }
+
+                                    // std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
+
+                                    pObj->AddDropItemObject(itemInfo, pos, { 0.f, 2.f, 0.f }, texs);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            E::CDropBlock::DESC Desc{};
+                            Desc.sObjectTag = "CDropBlock_Cube";
+                            Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
+                            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropBlock",
+                                CDropItemObject::GetDropItemLayer(itemInfo), &Desc))
+                            {
+                                if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(handle.value()))
+                                {
+                                    auto pos = startPos;
+
+                                    auto type = itemInfo.block->GetType();
+
+                                    std::vector<uint32_t> texs{};
+                                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
+                                    {
+                                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
+                                    }
+
+                                    // std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
+                                    pObj->AddDropItemObject(itemInfo, pos, { 0.f, 2.f, 0.f }, texs);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (CUIItem::IsCountableItem(itemInfo.eItemType))
+                    {
+                        auto cnt = pObj->GetCnt();
+                        if (cnt == 1)
+                        {
+                            pObj->SetPendingDestroyCascade();
+                        }
+                        else
+                        {
+                            pObj->SetCnt(cnt - 1);
+                        }
+
+
+                        {
+                            _float3 startPos{};
+                            XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                            startPos.y += 1.f;
+
+                            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo)))
+                            {
+                                if (!pLayer->empty())
+                                {
+                                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                                    {
+                                        auto pos = startPos;
+                                        pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                E::CDropBlock::DESC Desc{};
+                                Desc.sObjectTag = "CDropBlock_Cube";
+                                Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(itemInfo) };
+                                if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+                                    CDropItemObject::GetDropItemLayer(itemInfo), &Desc))
+                                {
+                                    if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(handle.value()))
+                                    {
+                                        auto pos = startPos;
+                                        pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        pObj->SetPendingDestroyCascade();
+
+                        {
+                            _float3 startPos{};
+                            XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                            startPos.y += 1.f;
+
+                            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo)))
+                            {
+                                if (!pLayer->empty())
+                                {
+                                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                                    {
+                                        auto pos = startPos;
+                                        pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                E::CDropBlock::DESC Desc{};
+                                Desc.sObjectTag = "CDropBlock_Cube";
+                                Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(itemInfo) };
+                                if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
+                                    CDropItemObject::GetDropItemLayer(itemInfo), &Desc))
+                                {
+                                    if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(handle.value()))
+                                    {
+                                        auto pos = startPos;
+                                        pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
