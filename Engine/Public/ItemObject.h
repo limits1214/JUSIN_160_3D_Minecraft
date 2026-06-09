@@ -14,13 +14,18 @@ public:
 		ITEM_CooperHelmet,
 		END
 	};
-	struct ItemInfo
+
+	static _bool IsCountableItem(CItemObject::ITEM_TYPE eType)
 	{
-		ITEM_TYPE eItemType{ CItemObject::ITEM_TYPE::END };
-		std::optional<CBlock3> block{};
-		_float fDurability{ 1.f };
-		uint8_t iCnt{};
-	};
+		switch (eType)
+		{
+		case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+			return false;
+		}
+		return true;
+	}
 
 	static uint32_t GetPackedTexIdByType(ITEM_TYPE eType)
 	{
@@ -37,19 +42,35 @@ public:
 		}
 		return 0;
 	}
+
+	struct ItemInfo
+	{
+		ITEM_TYPE eItemType{ CItemObject::ITEM_TYPE::END };
+		std::optional<CBlock3> block{};
+		_float fDurability{ 1.f };
+		uint8_t iCnt{};
+	};
+
 public:
 	typedef struct tagDesc : GAMEOBJECT_DESC
 	{
-
+		ItemInfo info{};
 	}DESC;
 public:
 	DECLARE_DERIVED_TYPE(CItemObject, CGameObject)
 
 public:
-	ItemInfo& GetItemInfoRef() { return m_ItemInfo; }
+	ItemInfo* GetItemInfo()
+	{
+		if (!m_ItemInfo.has_value())
+			return nullptr;
+
+		return &m_ItemInfo.value();
+	}
+	void SetItemInfo(std::optional<ItemInfo> info) { m_ItemInfo = info; }
 
 private:
-	ItemInfo m_ItemInfo{};
+	std::optional<ItemInfo> m_ItemInfo{};
 
 protected:
 	explicit CItemObject();

@@ -45,6 +45,7 @@ private:
 public:
 	std::optional<CHandle> AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, std::string_view sLayerName, void* pArg);
 	const std::vector<CHandle>* GetLayer(std::string_view sLayerName) const;
+	const std::vector<CHandle>* GetLayer(std::string_view sLayerName, const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, void* pArg) ;
 	void DelLayer(std::string_view sLayerName);
 
 public:
