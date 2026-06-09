@@ -81,6 +81,7 @@ private:
 	void ProcessUI(float fTimeDelta);
 	void ProcessUIHotbar(float fTimeDelta);
 	void ProcessUIInventory(float fTimeDelta);
+	void ProcessUIInventoryCrafting(float fTimeDelta);
 	void ProcessThrowItem(float fTimeDelta);
 private:
 	CHandle m_hUIController{};
@@ -169,6 +170,8 @@ private:
 	std::array<std::optional<CItemObject::ItemInfo>, 9*3> m_ItemArrInventory{};
 	std::array<std::optional<CItemObject::ItemInfo>, 9> m_ItemArrHotbar{};
 	std::array<std::optional<CItemObject::ItemInfo>, 5> m_ItemArrInvenCrafting{};
+
+	std::optional < CItemObject::SRecipe > m_ItemInvenCraftingOriginRecipe{};
 
 
 	CHandle m_hInventoryUIItemOnCursor{};

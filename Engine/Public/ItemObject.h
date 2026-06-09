@@ -6,6 +6,7 @@
 NS_BEGIN(Engine)
 class ENGINE_DLL CItemObject : public CGameObject
 {
+
 public:
 	enum class ITEM_TYPE
 	{
@@ -16,6 +17,124 @@ public:
 		ITEM_Stick,
 		END
 	};
+	struct ItemInfo
+	{
+		ITEM_TYPE eItemType{ CItemObject::ITEM_TYPE::END };
+		std::optional<CBlock3> block{};
+		_float fDurability{ 1.f };
+		uint8_t iCnt{};
+	};
+
+public:
+	
+	struct SRecipe
+	{
+		SRecipe() { pattern.resize(9); }
+		std::vector<std::pair<std::optional<ItemInfo>, void*>> pattern{};
+		ItemInfo result{};
+		std::string name{};
+	};
+	inline static std::vector< SRecipe> s_vecRecipies{};
+	inline static _bool s_bRecipiesInitialize{false};
+	static void RecipeInitialize();
+
+
+	struct STrimmedGrid
+	{
+		int iWidth{};
+		int iHeight{};
+		std::vector<std::pair<std::optional<ItemInfo>, void*>> grid{};
+	};
+
+	static STrimmedGrid GetTrimmedGrid(const std::vector<std::pair<std::optional<ItemInfo>, void*>>& grid, int iGridWidth, int iGridHeight)
+	{
+		int minX = iGridWidth, maxX = -1;
+		int minY = iGridHeight, maxY = -1;
+
+		for (int y = 0; y < iGridHeight; ++y)
+		{
+			for (int x = 0; x < iGridWidth; ++x)
+			{
+				int idx = y * iGridWidth + x;
+				if (grid[idx].first)
+				{
+					if (x < minX) minX = x;
+					if (x > maxX) maxX = x;
+					if (y < minY) minY = y;
+					if (y > maxY) maxY = y;
+				}
+			}
+		}
+
+		if (maxX == -1) return {};
+
+		int trimmedW = maxX - minX + 1;
+		int trimmedH = maxY - minY + 1;
+
+		STrimmedGrid result{};
+		result.iWidth = trimmedW;
+		result.iHeight = trimmedH;
+		result.grid.resize(trimmedW * trimmedH);
+		for (int y = 0; y < trimmedH; ++y)
+		{
+			for (int x = 0; x < trimmedW; ++x)
+			{
+				int srcIdx = (minY + y) * iGridWidth + (minX + x);
+				int destIdx = y * trimmedW + x;
+				result.grid[destIdx] = grid[srcIdx];
+			}
+		}
+
+		return result;
+	}
+
+	static _bool MatchTrimmedGrid(const STrimmedGrid& srcGrid, const STrimmedGrid& dstGrid)
+	{
+		if (srcGrid.iWidth != dstGrid.iWidth || srcGrid.iHeight != dstGrid.iHeight)
+		{
+			return false;
+		}
+
+		for (size_t i = 0; i < srcGrid.grid.size(); ++i)
+		{
+			if (srcGrid.grid[i].first.has_value() != dstGrid.grid[i].first.has_value())
+			{
+				return false;
+			}
+
+			if (srcGrid.grid[i].first.has_value())
+			{
+				if (srcGrid.grid[i].first->block.has_value() != dstGrid.grid[i].first->block.has_value())
+				{
+					return false;
+				}
+				if (srcGrid.grid[i].first->block.has_value())
+				{
+					if (srcGrid.grid[i].first->block->GetType() != dstGrid.grid[i].first->block->GetType())
+					{
+						return false;
+					}
+				}
+				else
+				{
+					if (srcGrid.grid[i].first->eItemType != dstGrid.grid[i].first->eItemType)
+					{
+						return false;
+					}
+				}
+
+				if (srcGrid.grid[i].first->iCnt < dstGrid.grid[i].first->iCnt)
+				{
+					return false;
+				}
+			}
+
+			
+		}
+
+		return true;
+	}
+
 
 	static _bool IsCountableItem(CItemObject::ITEM_TYPE eType)
 	{
@@ -47,14 +166,7 @@ public:
 		return 0;
 	}
 
-	struct ItemInfo
-	{
-		ITEM_TYPE eItemType{ CItemObject::ITEM_TYPE::END };
-		std::optional<CBlock3> block{};
-		_float fDurability{ 1.f };
-		uint8_t iCnt{};
-	};
-
+	
 public:
 	typedef struct tagDesc : GAMEOBJECT_DESC
 	{

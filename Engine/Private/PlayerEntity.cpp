@@ -229,6 +229,9 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
     m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.25f, 0.9f, 0.25f });
 
     ReadyPlayerItem();
+
+    // TEST
+    CItemObject::RecipeInitialize();
     return S_OK;
 }
 
@@ -568,6 +571,7 @@ void CPlayerEntity::ProcessUI(float fTimeDelta)
 {
     ProcessUIInventory(fTimeDelta);
     ProcessInventoryUIItemOnCursor(fTimeDelta);
+    ProcessUIInventoryCrafting(fTimeDelta);
 
     ProcessUIHotbar(fTimeDelta);
 }
@@ -609,6 +613,51 @@ void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
         pUIController->Getinventory()->SetInventoryShieldItemData(&m_ItemShiled, 1);
         pUIController->Getinventory()->SetInventoryCraftingItemData(m_ItemArrInvenCrafting.data(), 5);
     }
+}
+
+void CPlayerEntity::ProcessUIInventoryCrafting(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pInven = GetUIController()->Getinventory();
+    
+    // 0   CRAFT_LT,
+    // 1   CRAFT_RT,
+    // 2   CRAFT_LB,
+    // 3   CRAFT_RB,
+    // 4   CRAFT_RESULT,
+
+    ;
+    std::vector<std::pair<std::optional<CItemObject::ItemInfo>, void*>> craftingInfo{};
+    craftingInfo.resize(4);
+
+    for(int i = 0; i < 4; ++i)
+        craftingInfo[i].first = m_ItemArrInvenCrafting[i];
+
+    auto craftingTrimmedGrid = CItemObject::GetTrimmedGrid(craftingInfo, 2, 2);
+
+    std::optional<CItemObject::SRecipe> optMatchRecipe{};
+
+    for (const auto& recipe : CItemObject::s_vecRecipies)
+    {
+        auto recipeTrimmedGrid = CItemObject::GetTrimmedGrid(recipe.pattern, 3, 3);
+        if (CItemObject::MatchTrimmedGrid(craftingTrimmedGrid, recipeTrimmedGrid))
+        {
+            optMatchRecipe = recipe;
+            break;
+        }
+    }
+
+    if (optMatchRecipe)
+    {
+        m_ItemArrInvenCrafting[4] = optMatchRecipe->result;
+        m_ItemInvenCraftingOriginRecipe = optMatchRecipe;
+    }
+    else
+    {
+        m_ItemArrInvenCrafting[4] = std::nullopt;
+        m_ItemInvenCraftingOriginRecipe = std::nullopt;
+    }
+    
 }
 
 void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
@@ -1360,6 +1409,8 @@ void CPlayerEntity::ReadyPlayerItem()
     CItemObject::ItemInfo info{};
     info.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
     m_ItemArrHotbar[0] = info;
+
+
 }
 
 HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
@@ -1568,6 +1619,9 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
         {
             for (const auto& slot : GetUIController()->Getinventory()->GetInvenSlots())
             {
+                
+
+
                 auto itemOrigin = pObj->GetOrigin();
                 auto slotOrigin = slot.vOriginPos;
 
@@ -1588,6 +1642,68 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                     {
                         if (auto pItemInfo = pObj->GetItemInfoPtr())
                         {
+
+                            // 크래프팅결과
+                            if (slot.eType == CUIInventory::SlotType::CRAFT_RESULT)
+                            {
+                                auto funcGetCraftRes = [&]()
+                                    {
+                                        if (m_ItemInvenCraftingOriginRecipe)
+                                        {
+                                            if (pItemInfo->iCnt + m_ItemInvenCraftingOriginRecipe->result.iCnt <= 64)
+                                            {
+                                                pItemInfo->iCnt += m_ItemInvenCraftingOriginRecipe->result.iCnt;
+
+                                                std::vector<std::pair<std::optional<CItemObject::ItemInfo>, void*>> craftingInfo{};
+                                                craftingInfo.resize(4);
+                                                for (int i = 0; i < 4; ++i)
+                                                {
+                                                    craftingInfo[i].first = m_ItemArrInvenCrafting[i];
+                                                    craftingInfo[i].second = &m_ItemArrInvenCrafting[i];
+                                                }
+
+                                                auto craftingTrimmedGrid = CItemObject::GetTrimmedGrid(craftingInfo, 2, 2);
+                                                auto trimmedGrid = CItemObject::GetTrimmedGrid(m_ItemInvenCraftingOriginRecipe->pattern, 3, 3);
+                                                for (uint32_t i = 0; i < trimmedGrid.grid.size(); ++i)
+                                                {
+                                                    auto pCraft = static_cast<std::optional<CItemObject::ItemInfo>*>(craftingTrimmedGrid.grid[i].second);
+
+                                                    if (pCraft->value().iCnt >= trimmedGrid.grid[i].first->iCnt)
+                                                    {
+                                                        pCraft->value().iCnt -= trimmedGrid.grid[i].first->iCnt;
+                                                        if (pCraft->value().iCnt <= 0)
+                                                        {
+                                                            *pCraft = std::nullopt;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    };
+                                if (pTargetInfo->value().block && pItemInfo->block)
+                                {
+                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                    {
+                                        funcGetCraftRes();
+                                    }
+
+                                }
+                                else if (!pTargetInfo->value().block && pItemInfo->block || pTargetInfo->value().block && !pItemInfo->block)
+                                {
+                                }
+                                else
+                                {
+                                    if (CItemObject::IsCountableItem(pItemInfo->eItemType))
+                                    {
+                                        if (pItemInfo->eItemType == pTargetInfo->value().eItemType)
+                                        {
+                                            funcGetCraftRes();
+                                        }
+                                    }
+                                }
+
+                                continue;
+                            }
                             
                             if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
                             {
@@ -1720,6 +1836,10 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                     {
                         if (auto pItemInfo = pObj->GetItemInfoPtr())
                         {
+                            if (slot.eType == CUIInventory::SlotType::CRAFT_RESULT)
+                            {
+                                continue;
+                            }
                             if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
                             {
                                 *pTargetInfo = *pItemInfo;
@@ -1796,6 +1916,7 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                     // 해당 아이템 슬롯이 잇는경우에만
                     if (pTargetInfo && pTargetInfo->has_value())
                     {
+                        
                         auto funcSpawnOnCursorItem = [&](const CItemObject::ItemInfo& movedItemInfo)
                             {
                                 {
@@ -1843,6 +1964,44 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                                     *pTargetInfo = std::nullopt;
                                 }
                             };
+
+                        if (slot.eType == CUIInventory::SlotType::CRAFT_RESULT)
+                        {
+                            {
+                                if (m_ItemInvenCraftingOriginRecipe)
+                                {
+                                    funcSpawnOnCursorItem(pTargetInfo->value());
+                                    *pTargetInfo = std::nullopt;
+
+                                    std::vector<std::pair<std::optional<CItemObject::ItemInfo>, void*>> craftingInfo{};
+                                    craftingInfo.resize(4);
+                                    for (int i = 0; i < 4; ++i)
+                                    {
+                                        craftingInfo[i].first = m_ItemArrInvenCrafting[i];
+                                        craftingInfo[i].second = &m_ItemArrInvenCrafting[i];
+                                    }
+
+                                    auto craftingTrimmedGrid = CItemObject::GetTrimmedGrid(craftingInfo, 2, 2);
+                                    auto trimmedGrid = CItemObject::GetTrimmedGrid(m_ItemInvenCraftingOriginRecipe->pattern, 3, 3);
+                                    for (uint32_t i = 0; i < trimmedGrid.grid.size(); ++i)
+                                    {
+                                        auto pCraft = static_cast<std::optional<CItemObject::ItemInfo>*>(craftingTrimmedGrid.grid[i].second);
+                                        
+                                        if (pCraft->value().iCnt >= trimmedGrid.grid[i].first->iCnt)
+                                        {
+                                            pCraft->value().iCnt -= trimmedGrid.grid[i].first->iCnt;
+                                            if (pCraft->value().iCnt <= 0)
+                                            {
+                                                *pCraft = std::nullopt;
+                                            }
+                                        }
+                                    }
+                                    
+                                }
+                            }
+
+                            continue;
+                        }
 
 
                         if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
