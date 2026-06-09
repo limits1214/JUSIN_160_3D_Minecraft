@@ -302,7 +302,6 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
     ProcessUI(fTimeDelta);
 
-    ProcessUIItemOnCursor(fTimeDelta);
 
 }
 
@@ -512,6 +511,8 @@ CUIController* CPlayerEntity::GetUIController() const
 void CPlayerEntity::ProcessUI(float fTimeDelta)
 {
     ProcessUIInventory(fTimeDelta);
+    ProcessInventoryUIItemOnCursor(fTimeDelta);
+
     ProcessUIHotbar(fTimeDelta);
 }
 
@@ -544,8 +545,11 @@ void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
         pUIController->Getinventory()->SetRender(!pUIController->Getinventory()->GetRender());
     }
 
-    pUIController->Getinventory()->SetInventoryHotbarItemData(m_ItemArrHotbar.data(), 9);
-    pUIController->Getinventory()->SetInventoryItemData(m_ItemArrInventory.data(), 9 * 3);
+    if (pUIController->Getinventory()->GetRender())
+    {
+        pUIController->Getinventory()->SetInventoryHotbarItemData(m_ItemArrHotbar.data(), 9);
+        pUIController->Getinventory()->SetInventoryItemData(m_ItemArrInventory.data(), 9 * 3);
+    }
 }
 
 void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
@@ -577,32 +581,7 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
                     XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                     startPos.y += 1.f;
 
-                    {
-                        E::CDropItemObject::DESC Desc{};
-                        Desc.sObjectTag = "CDropBlock_Cube";
-                        Desc.viBufferId = { "MC_ITEM_VIBuffer", CDropItemObject::GetVIBufferName(newInfo) };
-
-                        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(newInfo), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
-                        {
-                            if (!pLayer->empty())
-                            {
-                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
-                                {
-                                    auto pos = startPos;
-
-                                    auto type = newInfo.block->GetType();
-
-                                    std::vector<uint32_t> texs{};
-                                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
-                                    {
-                                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
-                                    }
-
-                                    pObj->AddDropItemObject(newInfo, pos, { 0.f, 2.f, 0.f }, texs);
-                                }
-                            }
-                        }
-                    }
+                    SpawnDropItemObject(newInfo, startPos, { 0.f, 2.f, 0.f });
                 }
             }
             else // not block
@@ -636,153 +615,11 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
                     XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                     startPos.y += 1.f;
 
-                    {
-                        E::CDropItemObject::DESC Desc{};
-                        Desc.sObjectTag = "CDropItem";
-                        Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(newInfo) };
-
-                        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(newInfo), "ITEM", "Prototype_GameObject_DropItem", &Desc))
-                        {
-                            if (!pLayer->empty())
-                            {
-                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
-                                {
-                                    auto pos = startPos;
-                                    pObj->AddDropItemObject(newInfo, pos, {}, { CItemObject::GetPackedTexIdByType(newInfo.eItemType) });
-                                }
-                            }
-                        }
-                    }
+                    SpawnDropItemObject(newInfo, startPos, { 0.f, 2.f, 0.f });
                 }
             }
            
             
-        }
-
-        if (false)
-        {
-            if (auto handle = pUIController->Getinventory()->GetHotbarSlotHandle(selectIdx))
-            {
-                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-                {
-                    auto itemInfo = pObj->GetItemInfo();
-                    if (itemInfo.block)
-                    {
-                        auto cnt = pObj->GetCnt();
-                        if (cnt == 1)
-                        {
-                            pObj->SetPendingDestroyCascade();
-                        }
-                        else
-                        {
-                            pObj->SetCnt(cnt - 1);
-                        }
-
-
-
-                        {
-                            _float3 startPos{};
-                            XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
-                            startPos.y += 1.f;
-
-                            {
-                                E::CDropItemObject::DESC Desc{};
-                                Desc.sObjectTag = "CDropBlock_Cube";
-                                Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
-
-                                if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
-                                {
-                                    if (!pLayer->empty())
-                                    {
-                                        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
-                                        {
-                                            auto pos = startPos;
-
-                                            auto type = itemInfo.block->GetType();
-
-                                            std::vector<uint32_t> texs{};
-                                            for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
-                                            {
-                                                texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
-                                            }
-
-                                            pObj->AddDropItemObject(itemInfo, pos, { 0.f, 2.f, 0.f }, texs);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (CItemObject::IsCountableItem(itemInfo.eItemType))
-                        {
-                            auto cnt = pObj->GetCnt();
-                            if (cnt == 1)
-                            {
-                                pObj->SetPendingDestroyCascade();
-                            }
-                            else
-                            {
-                                pObj->SetCnt(cnt - 1);
-                            }
-
-
-                            {
-                                _float3 startPos{};
-                                XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
-                                startPos.y += 1.f;
-
-                                {
-                                    E::CDropItemObject::DESC Desc{};
-                                    Desc.sObjectTag = "CDropItem";
-                                    Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(itemInfo) };
-
-                                    if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo), "ITEM", "Prototype_GameObject_DropItem", &Desc))
-                                    {
-                                        if (!pLayer->empty())
-                                        {
-                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
-                                            {
-                                                auto pos = startPos;
-                                                pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            pObj->SetPendingDestroyCascade();
-
-                            {
-                                _float3 startPos{};
-                                XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
-                                startPos.y += 1.f;
-
-
-                                {
-                                    E::CDropItemObject::DESC Desc{};
-                                    Desc.sObjectTag = "CDropItem";
-                                    Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(itemInfo) };
-                                    if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo), "ITEM", "Prototype_GameObject_DropItem", &Desc))
-                                    {
-                                        if (!pLayer->empty())
-                                        {
-                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
-                                            {
-                                                auto pos = startPos;
-                                                pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -1468,7 +1305,7 @@ void CPlayerEntity::ReadyPlayerItem()
 
 HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
 {
-    auto checkRoutine = [&](std::optional<CItemObject::ItemInfo>* pArr, size_t size)->HRESULT
+    auto funcCheckRoutine = [&](std::optional<CItemObject::ItemInfo>* pArr, size_t size)->HRESULT
         {
             // hotbar check
             for (uint32_t i = 0; i < size; ++i)
@@ -1523,12 +1360,12 @@ HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
         };
 
 
-    if (SUCCEEDED(checkRoutine(m_ItemArrHotbar.data(), 9)))
+    if (SUCCEEDED(funcCheckRoutine(m_ItemArrHotbar.data(), 9)))
     {
         return S_OK;
     }
 
-    if (SUCCEEDED(checkRoutine(m_ItemArrInventory.data(), 9 * 3)))
+    if (SUCCEEDED(funcCheckRoutine(m_ItemArrInventory.data(), 9 * 3)))
     {
         return S_OK;
     }
@@ -1589,9 +1426,76 @@ HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
     return E_FAIL;
 }
 
-void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
+void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
 {
-    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+    auto* pUIController = GetUIController();
+    if (!pUIController) return;
+    if (!pUIController->Getinventory()->GetRender())
+    {
+        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hInventoryUIItemOnCursor))
+        {
+            // todo: countable item 하나씩 뿌리기
+            if (auto pInfo = pObj->GetItemInfoPtr())
+            {
+                _float3 startPos{};
+                XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                startPos.y += 1.f;
+                SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+            }
+            pObj->SetPendingDestroyCascade();
+        }
+        return;
+    }
+
+    auto invenSlotToMemberItem = [&](CUIInventory::InventorySlot slot)->std::optional<CItemObject::ItemInfo>*
+        {
+            std::optional<CItemObject::ItemInfo>* pTargetInfo{};
+
+            //INVENTORY_HOTBAR,
+            //    INVENTORY,
+            //    ARMOR_HELMET,
+            //    ARMOR_CHESTPLATE,
+            //    ARMOR_LEGGINGS,
+            //    ARMOR_BOOTS,
+            //    SHIELD,
+            //    CRAFT_LT,
+            //    CRAFT_RT,
+            //    CRAFT_LB,
+            //    CRAFT_RB,
+            //    CRAFT_RESULT,
+            switch (slot.eType)
+            {
+            case CUIInventory::SlotType::INVENTORY_HOTBAR:
+                return  &m_ItemArrHotbar[slot.typeIdx];
+            case CUIInventory::SlotType::INVENTORY:
+                return  &m_ItemArrInventory[slot.typeIdx];
+            case CUIInventory::SlotType::ARMOR_HELMET:
+                return &m_ItemArrArmor[0];
+            case CUIInventory::SlotType::ARMOR_CHESTPLATE:
+                return &m_ItemArrArmor[1];
+            case CUIInventory::SlotType::ARMOR_LEGGINGS:
+                return &m_ItemArrArmor[2];
+            case CUIInventory::SlotType::ARMOR_BOOTS:
+                return &m_ItemArrArmor[3];
+            case CUIInventory::SlotType::SHIELD:
+                return &m_ItemShiled;
+            case CUIInventory::SlotType::CRAFT_LT:
+                return &m_ItemArrInvenCrafting[0];
+            case CUIInventory::SlotType::CRAFT_RT:
+                return &m_ItemArrInvenCrafting[1];
+            case CUIInventory::SlotType::CRAFT_LB:
+                return &m_ItemArrInvenCrafting[2];
+            case CUIInventory::SlotType::CRAFT_RB:
+                return &m_ItemArrInvenCrafting[3];
+            case CUIInventory::SlotType::CRAFT_RESULT:
+                return &m_ItemArrInvenCrafting[4];
+            }
+
+            return nullptr;
+        };
+
+
+    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hInventoryUIItemOnCursor))
     {
         POINT mousePos;
         GetCursorPos(&mousePos);
@@ -1605,8 +1509,6 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
         {
             for (const auto& slot : GetUIController()->Getinventory()->GetInvenSlots())
             {
-                //if (slot.hItem.has_value()) continue;
-
                 auto itemOrigin = pObj->GetOrigin();
                 auto slotOrigin = slot.vOriginPos;
 
@@ -1621,80 +1523,21 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                     && itemOrigin.y > slotMinY
                     && itemOrigin.y < slotMaxY)
                 {
-                    std::optional<CItemObject::ItemInfo>* pTargetInfo{};
-
-                    //INVENTORY_HOTBAR,
-                       //    INVENTORY,
-                       //    ARMOR_HELMET,
-                       //    ARMOR_CHESTPLATE,
-                       //    ARMOR_LEGGINGS,
-                       //    ARMOR_BOOTS,
-                       //    SHIELD,
-                       //    CRAFT_LT,
-                       //    CRAFT_RT,
-                       //    CRAFT_LB,
-                       //    CRAFT_RB,
-                       //    CRAFT_RESULT,
-                    switch (slot.eType)
-                    {
-                    case CUIInventory::SlotType::INVENTORY_HOTBAR:
-                        pTargetInfo = &m_ItemArrHotbar[slot.typeIdx];
-                        break;
-                    case CUIInventory::SlotType::INVENTORY:
-                        pTargetInfo = &m_ItemArrInventory[slot.typeIdx];
-                        break;
-                    case CUIInventory::SlotType::ARMOR_HELMET:
-                        pTargetInfo = &m_ItemArrArmor[0];
-                        break;
-                    case CUIInventory::SlotType::ARMOR_CHESTPLATE:
-                        pTargetInfo = &m_ItemArrArmor[1];
-                        break;
-                    case CUIInventory::SlotType::ARMOR_LEGGINGS:
-                        pTargetInfo = &m_ItemArrArmor[2];
-                        break;
-                    case CUIInventory::SlotType::ARMOR_BOOTS:
-                        pTargetInfo = &m_ItemArrArmor[3];
-                        break;
-                    case CUIInventory::SlotType::SHIELD:
-                        pTargetInfo = &m_ItemShiled;
-                        break;
-                    case CUIInventory::SlotType::CRAFT_LT:
-                        pTargetInfo = &m_ItemArrInvenCrafting[0];
-                        break;
-                    case CUIInventory::SlotType::CRAFT_RT:
-                        pTargetInfo = &m_ItemArrInvenCrafting[1];
-                        break;
-                    case CUIInventory::SlotType::CRAFT_LB:
-                        pTargetInfo = &m_ItemArrInvenCrafting[2];
-                        break;
-                    case CUIInventory::SlotType::CRAFT_RB:
-                        pTargetInfo = &m_ItemArrInvenCrafting[3];
-                        break;
-                    case CUIInventory::SlotType::CRAFT_RESULT:
-                        pTargetInfo = &m_ItemArrInvenCrafting[4];
-                        break;
-                    }
-
+                    std::optional<CItemObject::ItemInfo>* pTargetInfo{ invenSlotToMemberItem(slot) };
 
                     if (pTargetInfo && pTargetInfo->has_value())
                     {
                         if (auto pItemInfo = pObj->GetItemInfoPtr())
                         {
+                            
                             if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
                             {
-                                if (pTargetInfo->value().block && pItemInfo->block)
-                                {
-                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                auto funcIfMaxSwapElseCntUp = [&]()
                                     {
                                         auto isMaxOver = pItemInfo->iCnt + pTargetInfo->value().iCnt >= 64;
                                         if (isMaxOver)
                                         {
-                                            auto swapcopy = pTargetInfo->value();
-                                            auto swapcopy2 = *pItemInfo;
-
-                                            *pItemInfo = swapcopy;
-                                            *pTargetInfo = swapcopy2;
-
+                                            std::swap(pTargetInfo->value(), *pItemInfo);
                                             pObj->RePerUI();
                                         }
                                         else
@@ -1702,27 +1545,23 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                                             pTargetInfo->value().iCnt += pItemInfo->iCnt;
                                             pObj->SetPendingDestroy();
                                         }
+                                    };
+                                if (pTargetInfo->value().block && pItemInfo->block)
+                                {
+                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                    {
+                                        funcIfMaxSwapElseCntUp();
                                     }
                                     else
                                     {
-                                        auto swapcopy = pTargetInfo->value();
-                                        auto swapcopy2 = *pItemInfo;
-
-                                        *pItemInfo = swapcopy;
-                                        *pTargetInfo = swapcopy2;
-
+                                        std::swap(pTargetInfo->value(), *pItemInfo);
                                         pObj->RePerUI();
                                     }
                                     
                                 }
                                 else if (!pTargetInfo->value().block && pItemInfo->block || pTargetInfo->value().block && !pItemInfo->block)
                                 {
-                                    auto swapcopy = pTargetInfo->value();
-                                    auto swapcopy2 = *pItemInfo;
-
-                                    *pItemInfo = swapcopy;
-                                    *pTargetInfo = swapcopy2;
-
+                                    std::swap(pTargetInfo->value(), *pItemInfo);
                                     pObj->RePerUI();
                                 }
                                 else
@@ -1731,52 +1570,25 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                                     {
                                         if (pItemInfo->eItemType == pTargetInfo->value().eItemType)
                                         {
-                                            auto isMaxOver = pItemInfo->iCnt + pTargetInfo->value().iCnt >= 64;
-                                            if (isMaxOver)
-                                            {
-                                                auto swapcopy = pTargetInfo->value();
-                                                auto swapcopy2 = *pItemInfo;
-
-                                                *pItemInfo = swapcopy;
-                                                *pTargetInfo = swapcopy2;
-
-                                                pObj->RePerUI();
-                                            }
-                                            else
-                                            {
-                                                pTargetInfo->value().iCnt += pItemInfo->iCnt;
-                                                pObj->SetPendingDestroy();
-                                            }
+                                            funcIfMaxSwapElseCntUp();
                                         }
                                         else
                                         {
-                                            auto swapcopy = pTargetInfo->value();
-                                            auto swapcopy2 = *pItemInfo;
-
-                                            *pItemInfo = swapcopy;
-                                            *pTargetInfo = swapcopy2;
-
+                                            std::swap(pTargetInfo->value(), *pItemInfo);
                                             pObj->RePerUI();
                                         }
                                         
                                     }
                                     else
                                     {
-                                        auto swapcopy = pTargetInfo->value();
-                                        auto swapcopy2 = *pItemInfo;
-
-                                        *pItemInfo = swapcopy;
-                                        *pTargetInfo = swapcopy2;
-
+                                        std::swap(pTargetInfo->value(), *pItemInfo);
                                         pObj->RePerUI();
                                     }
                                 }
                             }
                             else
                             {
-                                if (pTargetInfo->value().block && pItemInfo->block)
-                                {
-                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                auto funcItemCntAdd = [&]()
                                     {
                                         auto isCanAdd = pTargetInfo->value().iCnt < 64;
                                         if (isCanAdd)
@@ -1794,35 +1606,26 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                                         }
                                         else
                                         {
-                                            auto swapcopy = pTargetInfo->value();
-                                            auto swapcopy2 = *pItemInfo;
-
-                                            *pItemInfo = swapcopy;
-                                            *pTargetInfo = swapcopy2;
-
+                                            std::swap(pTargetInfo->value(), *pItemInfo);
                                             pObj->RePerUI();
                                         }
+                                    };
+                                if (pTargetInfo->value().block && pItemInfo->block)
+                                {
+                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                    {
+                                        funcItemCntAdd();
                                     }
                                     else
                                     {
-                                        auto swapcopy = pTargetInfo->value();
-                                        auto swapcopy2 = *pItemInfo;
-
-                                        *pItemInfo = swapcopy;
-                                        *pTargetInfo = swapcopy2;
-
+                                        std::swap(pTargetInfo->value(), *pItemInfo);
                                         pObj->RePerUI();
                                     }
                                     
                                 }
                                 else if (!pTargetInfo->value().block && pItemInfo->block || pTargetInfo->value().block && !pItemInfo->block)
                                 {
-                                    auto swapcopy = pTargetInfo->value();
-                                    auto swapcopy2 = *pItemInfo;
-
-                                    *pItemInfo = swapcopy;
-                                    *pTargetInfo = swapcopy2;
-
+                                    std::swap(pTargetInfo->value(), *pItemInfo);
                                     pObj->RePerUI();
                                 }
                                 else
@@ -1831,51 +1634,18 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                                     {
                                         if (pItemInfo->eItemType == pTargetInfo->value().eItemType)
                                         {
-                                            auto isCanAdd = pTargetInfo->value().iCnt < 64;
-                                            if (isCanAdd)
-                                            {
-                                                pTargetInfo->value().iCnt += 1;
-
-                                                if (pItemInfo->iCnt > 1)
-                                                {
-                                                    pItemInfo->iCnt -= 1;
-                                                }
-                                                else
-                                                {
-                                                    pObj->SetPendingDestroyCascade();
-                                                }
-                                            }
-                                            else
-                                            {
-                                                auto swapcopy = pTargetInfo->value();
-                                                auto swapcopy2 = *pItemInfo;
-
-                                                *pItemInfo = swapcopy;
-                                                *pTargetInfo = swapcopy2;
-
-                                                pObj->RePerUI();
-                                            }
+                                            funcItemCntAdd();
                                         }
                                         else
                                         {
-                                            auto swapcopy = pTargetInfo->value();
-                                            auto swapcopy2 = *pItemInfo;
-
-                                            *pItemInfo = swapcopy;
-                                            *pTargetInfo = swapcopy2;
-
+                                            std::swap(pTargetInfo->value(), *pItemInfo);
                                             pObj->RePerUI();
                                         }
                                         
                                     }
                                     else
                                     {
-                                        auto swapcopy = pTargetInfo->value();
-                                        auto swapcopy2 = *pItemInfo;
-
-                                        *pItemInfo = swapcopy;
-                                        *pTargetInfo = swapcopy2;
-
+                                        std::swap(pTargetInfo->value(), *pItemInfo);
                                         pObj->RePerUI();
                                     }
                                 }
@@ -1886,6 +1656,7 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                             pObj->SetPendingDestroyCascade();
                         }
                     }
+                    // 타겟이 없는경우 온커서에 있는거 그대로 넘기기
                     else
                     {
                         if (auto pItemInfo = pObj->GetItemInfoPtr())
@@ -1894,7 +1665,6 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                             {
                                 *pTargetInfo = *pItemInfo;
                                 pObj->SetPendingDestroyCascade();
-
                                 
                             }
                             else
@@ -1914,8 +1684,6 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                                         pItemInfo->iCnt -= 1;
 
                                         *pTargetInfo = copy;
-
-
                                     }
                                 }
                                 else
@@ -1924,179 +1692,23 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                                     pObj->SetPendingDestroyCascade();
                                 }
                             }
-
-
-
-
-
-
-                            
                         }
                         else
                         {
                             pObj->SetPendingDestroyCascade();
                         }
-                        
-
-                        //if (pItem->GetCnt() <= 1)
-                        //{
-                        //    slot.hItem = m_hOnCursorItem;
-                        //    m_hOnCursorItem = std::nullopt;
-                        //}
-                        //else
-                        //{
-                        //    if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
-                        //    {
-                        //        slot.hItem = m_hOnCursorItem;
-                        //        m_hOnCursorItem = std::nullopt;
-                        //    }
-                        //    else
-                        //    {
-                        //        pItem->SetCnt(pItem->GetCnt() - 1);
-
-                        //        {
-                        //            E::CUIItem::DESC Desc{};
-                        //            Desc.fX = itemOrigin.x;
-                        //            Desc.fY = itemOrigin.y;
-                        //            Desc.sObjectTag = "UIItem";
-                        //            Desc.itemInfo = pItem->GetItemInfo();
-                        //            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                        //                "80_UI", &Desc))
-                        //            {
-                        //                slot.hItem = handle;
-                        //                if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-                        //                {
-                        //                    pItem->SetOrigin(slotOrigin);
-                        //                    pItem->SetCnt(1);
-                        //                }
-                        //            }
-                        //        }
-                        //    }
-                        //}
                     }
 
 
                     pObj->SetOrigin(slotOrigin);
                     break;
-      
-                    /*
-                    
-                    
-                    if (slot.hItem.has_value())
-                    {
-                        if (auto pSlotItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
-                        {
-                            if (pSlotItem->GetItemInfo().eItemType == pItem->GetItemInfo().eItemType)
-                            {
-                                if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
-                                {
-                                    auto isUnCountable = pSlotItem->GetCnt() == 0;
-                                    if (isUnCountable)
-                                    {
-                                        std::swap(m_hOnCursorItem, slot.hItem);
-                                    }
-                                    else
-                                    {
-                                        auto isMaxOver = pItem->GetCnt() + pSlotItem->GetCnt() >= 64;
-                                        if (isMaxOver)
-                                        {
-                                            std::swap(m_hOnCursorItem, slot.hItem);
-                                        }
-                                        else
-                                        {
-                                            pSlotItem->SetCnt(pItem->GetCnt() + pSlotItem->GetCnt());
-                                            pItem->SetPendingDestroyCascade();
-                                            m_hOnCursorItem = std::nullopt;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    auto isUnCountable = pSlotItem->GetCnt() == 0;
-                                    if (isUnCountable)
-                                    {
-                                        std::swap(m_hOnCursorItem, slot.hItem);
-                                    }
-                                    else
-                                    {
-                                        auto isCanAdd = pSlotItem->GetCnt() < 64;
-                                        if (isCanAdd)
-                                        {
-                                            pSlotItem->SetCnt(pSlotItem->GetCnt() + 1);
-
-                                            if (pItem->GetCnt() > 1)
-                                            {
-                                                pItem->SetCnt(pItem->GetCnt() - 1);
-                                            }
-                                            else
-                                            {
-                                                pItem->SetPendingDestroyCascade();
-                                                m_hOnCursorItem = std::nullopt;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            std::swap(m_hOnCursorItem, slot.hItem);
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                std::swap(m_hOnCursorItem, slot.hItem);
-                                int x = 0;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (pItem->GetCnt() <= 1)
-                        {
-                            slot.hItem = m_hOnCursorItem;
-                            m_hOnCursorItem = std::nullopt;
-                        }
-                        else
-                        {
-                            if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
-                            {
-                                slot.hItem = m_hOnCursorItem;
-                                m_hOnCursorItem = std::nullopt;
-                            }
-                            else
-                            {
-                                pItem->SetCnt(pItem->GetCnt() - 1);
-
-                                {
-                                    E::CUIItem::DESC Desc{};
-                                    Desc.fX = itemOrigin.x;
-                                    Desc.fY = itemOrigin.y;
-                                    Desc.sObjectTag = "UIItem";
-                                    Desc.itemInfo = pItem->GetItemInfo();
-                                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                                        "80_UI", &Desc))
-                                    {
-                                        slot.hItem = handle;
-                                        if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-                                        {
-                                            pItem->SetOrigin(slotOrigin);
-                                            pItem->SetCnt(1);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    pItem->SetOrigin(slotOrigin);
-                    break;
-                    */
                 }
             }
         }
     }
+    // onCursor에 아이템이 없는경우
     else
     {
-        
         if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB) || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
         {
             POINT mousePos;
@@ -2120,265 +1732,137 @@ void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
                     && itemOrigin.y < slotMaxY)
                 {
 
-                    std::optional<CItemObject::ItemInfo>* pTargetInfo{};
+                    std::optional<CItemObject::ItemInfo>* pTargetInfo{ invenSlotToMemberItem(slot) };
 
-                    //INVENTORY_HOTBAR,
-                       //    INVENTORY,
-                       //    ARMOR_HELMET,
-                       //    ARMOR_CHESTPLATE,
-                       //    ARMOR_LEGGINGS,
-                       //    ARMOR_BOOTS,
-                       //    SHIELD,
-                       //    CRAFT_LT,
-                       //    CRAFT_RT,
-                       //    CRAFT_LB,
-                       //    CRAFT_RB,
-                       //    CRAFT_RESULT,
-                    switch (slot.eType)
-                    {
-                    case CUIInventory::SlotType::INVENTORY_HOTBAR:
-                        pTargetInfo = &m_ItemArrHotbar[slot.typeIdx];
-                        break;
-                    case CUIInventory::SlotType::INVENTORY:
-                        pTargetInfo = &m_ItemArrInventory[slot.typeIdx];
-                        break;
-                    case CUIInventory::SlotType::ARMOR_HELMET:
-                        pTargetInfo = &m_ItemArrArmor[0];
-                        break;
-                    case CUIInventory::SlotType::ARMOR_CHESTPLATE:
-                        pTargetInfo = &m_ItemArrArmor[1];
-                        break;
-                    case CUIInventory::SlotType::ARMOR_LEGGINGS:
-                        pTargetInfo = &m_ItemArrArmor[2];
-                        break;
-                    case CUIInventory::SlotType::ARMOR_BOOTS:
-                        pTargetInfo = &m_ItemArrArmor[3];
-                        break;
-                    case CUIInventory::SlotType::SHIELD:
-                        pTargetInfo = &m_ItemShiled;
-                        break;
-                    case CUIInventory::SlotType::CRAFT_LT:
-                        pTargetInfo = &m_ItemArrInvenCrafting[0];
-                        break;
-                    case CUIInventory::SlotType::CRAFT_RT:
-                        pTargetInfo = &m_ItemArrInvenCrafting[1];
-                        break;
-                    case CUIInventory::SlotType::CRAFT_LB:
-                        pTargetInfo = &m_ItemArrInvenCrafting[2];
-                        break;
-                    case CUIInventory::SlotType::CRAFT_RB:
-                        pTargetInfo = &m_ItemArrInvenCrafting[3];
-                        break;
-                    case CUIInventory::SlotType::CRAFT_RESULT:
-                        pTargetInfo = &m_ItemArrInvenCrafting[4];
-                        break;
-                    }
-
+                    // 해당 아이템 슬롯이 잇는경우에만
                     if (pTargetInfo && pTargetInfo->has_value())
                     {
-                        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
-                        {
+                        auto funcSpawnOnCursorItem = [&](const CItemObject::ItemInfo& movedItemInfo)
                             {
-                                E::CUIItem::DESC Desc{};
-                                Desc.fX = itemOrigin.x;
-                                Desc.fY = itemOrigin.y;
-                                Desc.sObjectTag = "UIItem";
-                                if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                                    "80_UI", &Desc))
                                 {
-                                    m_hUIItemOnCursor = handle.value();
-                                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+                                    E::CUIItem::DESC Desc{};
+                                    Desc.fX = itemOrigin.x;
+                                    Desc.fY = itemOrigin.y;
+                                    Desc.sObjectTag = "UIItem";
+                                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                        "80_UI", &Desc))
                                     {
-                                        pObj->SetItemInfo(pTargetInfo->value());
+                                        m_hInventoryUIItemOnCursor = handle.value();
+                                        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hInventoryUIItemOnCursor))
+                                        {
+                                            pObj->SetItemInfo(movedItemInfo);
+                                        }
                                     }
                                 }
-                            }
+                            };
 
-                            if (pTargetInfo->value().block)
+
+                        auto funcItemDivideToOnCurosr = [&](std::optional<CItemObject::ItemInfo>& targetInfo)
                             {
-                                *pTargetInfo = std::nullopt;
-                            }
-                            else
-                            {
-                                if (CItemObject::IsCountableItem(pTargetInfo->value().eItemType))
+                                auto currItemCnt = targetInfo.value().iCnt;
+                                if (currItemCnt > 1)
                                 {
-                                    *pTargetInfo = std::nullopt;
+                                    auto dvd2 = currItemCnt / 2;
+                                    auto remain = currItemCnt - dvd2;
+
+                                    targetInfo.value().iCnt = remain;
+
+                                    {
+                                        CItemObject::ItemInfo newInfo{ targetInfo.value() };
+                                        newInfo.iCnt = dvd2;
+
+                                        funcSpawnOnCursorItem(newInfo);
+                                    }
                                 }
                                 else
                                 {
+                                    {
+                                        funcSpawnOnCursorItem(targetInfo.value());
+                                    }
+
+
                                     *pTargetInfo = std::nullopt;
                                 }
-                            }
+                            };
+
+
+                        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                        {
+                            funcSpawnOnCursorItem(pTargetInfo->value());
+
+                            *pTargetInfo = std::nullopt;
                         }
                         else
                         {
                             auto currItemCnt = pTargetInfo->value().iCnt;
                             if (pTargetInfo->value().block)
                             {
-                                if (currItemCnt > 1)
-                                {
-                                    auto dvd2 = currItemCnt / 2;
-                                    auto remain = currItemCnt - dvd2;
-
-                                    pTargetInfo->value().iCnt = remain;
-
-                                    {
-                                        CItemObject::ItemInfo newInfo{ pTargetInfo->value() };
-                                        newInfo.iCnt = dvd2;
-
-                                        E::CUIItem::DESC Desc{};
-                                        Desc.fX = itemOrigin.x;
-                                        Desc.fY = itemOrigin.y;
-                                        Desc.sObjectTag = "UIItem";
-                                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                                            "80_UI", &Desc))
-                                        {
-                                            m_hUIItemOnCursor = handle.value();
-                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
-                                            {
-                                                pObj->SetItemInfo(newInfo);
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    {
-                                        E::CUIItem::DESC Desc{};
-                                        Desc.fX = itemOrigin.x;
-                                        Desc.fY = itemOrigin.y;
-                                        Desc.sObjectTag = "UIItem";
-                                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                                            "80_UI", &Desc))
-                                        {
-                                            m_hUIItemOnCursor = handle.value();
-                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
-                                            {
-                                                pObj->SetItemInfo(pTargetInfo->value());
-                                            }
-                                        }
-                                    }
-
-
-                                    *pTargetInfo = std::nullopt;
-                                }
-                                
+                                funcItemDivideToOnCurosr(*pTargetInfo);
                             }
                             else
                             {
                                 if (CItemObject::IsCountableItem(pTargetInfo->value().eItemType))
                                 {
-                                    if (currItemCnt > 1)
-                                    {
-                                        auto dvd2 = currItemCnt / 2;
-                                        auto remain = currItemCnt - dvd2;
-
-                                        pTargetInfo->value().iCnt = remain;
-
-                                        {
-                                            CItemObject::ItemInfo newInfo{ pTargetInfo->value() };
-                                            newInfo.iCnt = dvd2;
-
-                                            E::CUIItem::DESC Desc{};
-                                            Desc.fX = itemOrigin.x;
-                                            Desc.fY = itemOrigin.y;
-                                            Desc.sObjectTag = "UIItem";
-                                            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                                                "80_UI", &Desc))
-                                            {
-                                                m_hUIItemOnCursor = handle.value();
-                                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
-                                                {
-                                                    pObj->SetItemInfo(newInfo);
-                                                }
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        {
-                                            E::CUIItem::DESC Desc{};
-                                            Desc.fX = itemOrigin.x;
-                                            Desc.fY = itemOrigin.y;
-                                            Desc.sObjectTag = "UIItem";
-                                            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                                                "80_UI", &Desc))
-                                            {
-                                                m_hUIItemOnCursor = handle.value();
-                                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
-                                                {
-                                                    pObj->SetItemInfo(pTargetInfo->value());
-                                                }
-                                            }
-                                        }
-
-
-                                        *pTargetInfo = std::nullopt;
-                                    }
+                                    funcItemDivideToOnCurosr(*pTargetInfo);
                                 }
                                 else
                                 {
-                                    {
-                                        E::CUIItem::DESC Desc{};
-                                        Desc.fX = itemOrigin.x;
-                                        Desc.fY = itemOrigin.y;
-                                        Desc.sObjectTag = "UIItem";
-                                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                                            "80_UI", &Desc))
-                                        {
-                                            m_hUIItemOnCursor = handle.value();
-                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
-                                            {
-                                                pObj->SetItemInfo(pTargetInfo->value());
-                                            }
-                                        }
-                                    }
-
+                                    funcSpawnOnCursorItem(pTargetInfo->value());
 
                                     *pTargetInfo = std::nullopt;
-
                                 }
                             }
-
-                            /*
-                            
-                            if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
-                            {
-                                auto currItemCnt = pItem->GetCnt();
-                                if (currItemCnt <= 1)
-                                {
-                                    m_hOnCursorItem = slot.hItem;
-                                    slot.hItem = std::nullopt;
-                                }
-                                else
-                                {
-                                    auto dvd2 = currItemCnt / 2;
-                                    auto remain = currItemCnt - dvd2;
-                                    pItem->SetCnt(remain);
-
-                                    {
-                                        E::CUIItem::DESC Desc{};
-                                        Desc.fX = itemOrigin.x;
-                                        Desc.fY = itemOrigin.y;
-                                        Desc.sObjectTag = "UIItem";
-                                        Desc.itemInfo = pItem->GetItemInfo();
-                                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-                                            "80_UI", &Desc))
-                                        {
-                                            if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-                                            {
-                                                pItem->SetCnt(dvd2);
-                                            }
-                                            m_hOnCursorItem = handle;
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            */
                         }
                     }
                     break;
+                }
+            }
+        }
+    }
+}
+
+void CPlayerEntity::SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel)
+{
+    if (info.block)
+    {
+        E::CDropItemObject::DESC Desc{};
+        Desc.sObjectTag = "CDropBlock_Cube";
+        Desc.viBufferId = { "MC_ITEM_VIBuffer", CDropItemObject::GetVIBufferName(info) };
+
+        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(info), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
+        {
+            if (!pLayer->empty())
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
+                {
+                    auto type = info.block->GetType();
+
+                    std::vector<uint32_t> texs{};
+                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
+                    {
+                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
+                    }
+
+                    pObj->AddDropItemObject(info, pos, vel, texs);
+                }
+            }
+        }
+    }
+    else
+    {
+        {
+            E::CDropItemObject::DESC Desc{};
+            Desc.sObjectTag = "CDropItem";
+            Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(info) };
+
+            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(info), "ITEM", "Prototype_GameObject_DropItem", &Desc))
+            {
+                if (!pLayer->empty())
+                {
+                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                    {
+                        pObj->AddDropItemObject(info, pos, vel, { CItemObject::GetPackedTexIdByType(info.eItemType) });
+                    }
                 }
             }
         }

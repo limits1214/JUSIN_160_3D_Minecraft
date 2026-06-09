@@ -79,6 +79,8 @@ void CUIInventory::PriorityUpdate(E::_float fTimeDelta)
 void CUIInventory::Update(E::_float fTimeDelta)
 {
 	return;
+	/*
+	
 	if (m_hOnCursorItem)
 	{
 		if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hOnCursorItem.value()))
@@ -193,7 +195,7 @@ void CUIInventory::Update(E::_float fTimeDelta)
 								else
 								{
 									pItem->SetCnt(pItem->GetCnt() - 1);
-									
+
 									{
 										E::CUIItem::DESC Desc{};
 										Desc.fX = itemOrigin.x;
@@ -222,7 +224,7 @@ void CUIInventory::Update(E::_float fTimeDelta)
 			}
 
 
-			
+
 		}
 	}
 	else
@@ -292,14 +294,17 @@ void CUIInventory::Update(E::_float fTimeDelta)
 							}
 						}
 					}
-					
+
 					break;
 				}
 			}
 		}
 	}
-
+	
 	UpdateCrafting(fTimeDelta);
+
+	*/
+
 }
 
 void CUIInventory::LateUpdate(E::_float fTimeDelta)
@@ -872,6 +877,8 @@ void CUIInventory::SetInventoryItemData(std::optional<CItemObject::ItemInfo>* pA
 
 void CUIInventory::UpdateCrafting(_float fTimeDelta)
 {
+	/*
+	
 	CItemObject::ItemInfo LTInfo{};
 	CItemObject::ItemInfo RTInfo{};
 	CItemObject::ItemInfo LBInfo{};
@@ -904,6 +911,7 @@ void CUIInventory::UpdateCrafting(_float fTimeDelta)
 			RBInfo = pObj->GetItemInfo();
 		}
 	}
+	*/
 
 	int x = 0;
 }

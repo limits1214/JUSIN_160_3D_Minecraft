@@ -115,14 +115,14 @@ private:
 //	_bool m_bOnCursor{ false };
 
 public:
-	CItemObject::ItemInfo GetItemInfo()
-	{
-		if (m_ItemInfo)
-		{
-			return m_ItemInfo.value();
-		}
-		return {};
-	}
+	//CItemObject::ItemInfo GetItemInfo()
+	//{
+	//	if (m_ItemInfo)
+	//	{
+	//		return m_ItemInfo.value();
+	//	}
+	//	return {};
+	//}
 	CItemObject::ItemInfo* GetItemInfoPtr()
 	{
 		if (!m_ItemInfo.has_value())
