@@ -1687,6 +1687,30 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 8: coal
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/coal.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "Coal", CResExtrudedItemVIBuffer::Create()))
+				{
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 8 });
+				}
+			}
+		}
+
+		// 9: stick.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/stick.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "Stick", CResExtrudedItemVIBuffer::Create()))
+				{
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 9 });
+				}
+			}
+		}
+
 
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY

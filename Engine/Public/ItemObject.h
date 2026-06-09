@@ -12,6 +12,8 @@ public:
 		ITEM_WoodPickaxe,
 		ITEM_CooperPickaxe,
 		ITEM_CooperHelmet,
+		ITEM_Coal,
+		ITEM_Stick,
 		END
 	};
 
@@ -37,8 +39,10 @@ public:
 			return  PackTexId(6, 7);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
 			return  PackTexId(6, 6);
-		case Engine::CItemObject::ITEM_TYPE::END:
-			break;
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Coal:
+			return  PackTexId(6, 8);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Stick:
+			return  PackTexId(6, 9);
 		}
 		return 0;
 	}

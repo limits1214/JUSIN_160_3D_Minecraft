@@ -79,6 +79,12 @@ private:
 	size_t m_InventoryIdxs[9*3]{};
 	size_t m_InventoryHotbarIdxs[9]{};
 
+	size_t m_ArmorHelmetIdx{};
+	size_t m_ArmorChestplateIdx{};
+	size_t m_ArmorLeggingsIdx{};
+	size_t m_ArmorBootsIdx{};
+	size_t m_ShiledIdx{};
+
 	size_t m_CraftLTIdx{};
 	size_t m_CraftRTIdx{};
 	size_t m_CraftLBIdx{};
@@ -94,6 +100,10 @@ private:
 public:
 	void SetInventoryHotbarItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size);
 	void SetInventoryItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size);
+
+	void SetInventoryArmorItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size);
+	void SetInventoryShieldItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size);
+	void SetInventoryCraftingItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size);
 
 public:
 	std::optional<CHandle> GetHotbarSlotHandle(size_t hotbarIdx) { return m_vecInventorySlot[m_InventoryHotbarIdxs[std::clamp(hotbarIdx, (size_t)0, (size_t)9)]].hItem; };

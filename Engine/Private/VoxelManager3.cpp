@@ -247,8 +247,6 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
 
     if (block.GetType() == CBlock3::TYPE::AIR)
     {
-        CBlock3 block{};
-        block.SetType(CBlock3::TYPE::AIR);
         SetBlock(wbx, wby, wbz, block);
 
         TriggerWaterUpdateAround(wbx, wby, wbz);
@@ -259,6 +257,36 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
     else
     {
 
+        // 2. 실제 블록 배치 (예: 돌 블록이나 횃불 등)
+
+        //RuntimeOnBlockPlaced(worldBX, worldBY, worldBZ, newBlock);
+
+        if (block.GetType() == CBlock3::TYPE::WATER_STILL)
+        {
+            block.SetFlag(7);
+            SWaterTickData data{};
+            data.bIsStill = true;
+            data.level = 7;
+            data.worldPos = { wbx, wby, wbz };
+            m_waterUpdateQ.push(data);
+        }
+
+        if (block.GetType() == CBlock3::TYPE::LAVA_STILL)
+        {
+            block.SetFlag(3);
+            SLavaTickData data{};
+            data.bIsStill = true;
+            data.level = 3;
+            data.worldPos = { wbx, wby, wbz };
+            m_lavaUpdateQ.push(data);
+        }
+
+        TriggerWaterUpdateAround(wbx, wby, wbz);
+        TriggerLavaUpdateAround(wbx, wby, wbz);
+
+        SetBlock(wbx, wby, wbz, block);
+
+        RuntimeOnBlockPlacedLighting(wbx, wby, wbz, oldBlock);
     }
 }
 
