@@ -210,6 +210,11 @@ public:
 		END
 	};
 
+
+public:
+	CBlock3() = default;
+	CBlock3(TYPE type) : m_eType{ type } {};
+
 	static inline GEO_TYPE GetGeoType(TYPE e);
 	static inline uint32_t GetBaseColor(CBlock3::TYPE eType);
 	static inline TEX_TYPE GetTexType(TYPE blockType, FACE_DIR faceDir, uint8_t iFlag = 0);
