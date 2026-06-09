@@ -171,8 +171,11 @@ private:
 	std::array<std::optional<CItemObject::ItemInfo>, 5> m_ItemArrInvenCrafting{};
 
 
-	CHandle m_hUIItemOnCursor{};
-	void ProcessUIItemOnCursor(_float fTimeDelta);
+	CHandle m_hInventoryUIItemOnCursor{};
+	void ProcessInventoryUIItemOnCursor(_float fTimeDelta);
+
+private:
+	void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
 
 
 public:
