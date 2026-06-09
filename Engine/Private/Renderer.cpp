@@ -147,15 +147,23 @@ HRESULT CRenderer::Draw()
             m_pContext->GSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
         }
     }
+
+    // Test
+    {
+        E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_20px", L"흙이 운다 흙흑", {});
+    }
     if (FAILED(RenderUI(ctx)))
     {
         return E_FAIL;
     }
 
-    // Test
+    if (FAILED(RenderUIToolTip(ctx)))
     {
-        E::CGameInstance::Get().FontAddLateDraw("NeoDGM_20px", L"흙이 운다 흙흑", {});
+        return E_FAIL;
     }
+
+
+    
 
     
 	//E::CGameInstance::Get().FontDraw("NeoDGM_20px", L"흙이 운다 흙흑", {});
@@ -247,6 +255,26 @@ HRESULT CRenderer::RenderUI(const RENDER_CTX& ctx)
         {
             pRenderObject->Render(m_pContext.Get(), ctx);
         }
+    }
+
+    {
+        E::CGameInstance::Get().FontLateDraw(RENDERGROUP::UI);
+    }
+
+    return S_OK;
+}
+HRESULT CRenderer::RenderUIToolTip(const RENDER_CTX& ctx)
+{
+    for (auto& pRenderObject : m_RenderObject[ETOUI(RENDERGROUP::UI_TOOLTIP)])
+    {
+        if (pRenderObject->HasRenderPass(ctx.pass))
+        {
+            pRenderObject->Render(m_pContext.Get(), ctx);
+        }
+    }
+
+    {
+        E::CGameInstance::Get().FontLateDraw(RENDERGROUP::UI_TOOLTIP);
     }
 
     return S_OK;

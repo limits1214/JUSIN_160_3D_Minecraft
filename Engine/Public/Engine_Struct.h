@@ -235,11 +235,14 @@ namespace Engine
 
 	typedef struct tagConstantBufferPerUI
 	{
-		_float2 texCoord{}; //  8 bytes
-		_float2 uvSize{}; // textureSize
-		_float4 color{1.f, 1.f, 1.f, 1.f};
-		uint32_t texIndex{};  //  4 bytes
-		_float3 _pad{};
+		_float2  texCoord{};
+		_float2  uvSize{};
+		_float4  color{ 1.f, 1.f, 1.f, 1.f };
+		uint32_t texIndex{};
+		_float2  borderUV{};
+		float    _pad0{};
+		_float2  borderPx{};
+		_float2  rectSizePx{};
 	}CB_PER_UI;
 
 	typedef struct tagConstantBufferVoxelWater

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "GameObject.h"
 #include "Block3.h"
 //#include "UIItem.h"
@@ -135,6 +135,43 @@ public:
 		return true;
 	}
 
+	static const _tchar* GetItemName(const ItemInfo& info)
+	{
+		if (info.block)
+		{
+			switch (info.block->GetType())
+			{
+			case CBlock3::TYPE::DIRT:
+				return L"흙흙";
+			case CBlock3::TYPE::LOG_ACACIA:
+				return L"아카시아나무";
+			case CBlock3::TYPE::LOG_BIRCH:
+				return L"BIRCH나무";
+			case CBlock3::TYPE::LOG_OAK:
+				return L"참나무";
+			case CBlock3::TYPE::LOG_CHERRY:
+				return L"벗꼿나무";
+			};
+		}
+		else
+		{
+			switch (info.eItemType)
+			{
+			case ITEM_TYPE::ITEM_WoodPickaxe:
+				return L"나무곡괭이";
+			case ITEM_TYPE::ITEM_CooperPickaxe:
+				return L"구리곡괭이";
+			case ITEM_TYPE::ITEM_CooperHelmet:
+				return L"구리헬맷";
+			case ITEM_TYPE::ITEM_Coal:
+				return L"석탄";
+			case ITEM_TYPE::ITEM_Stick:
+				return L"막대";
+			};
+		}
+
+		return L"NO_NAME";
+	}
 
 	static _bool IsCountableItem(CItemObject::ITEM_TYPE eType)
 	{

@@ -233,8 +233,6 @@ HRESULT CGameInstance::Draw()
 		return E_FAIL;
 	}
 
-	m_pFontManager->LateDraw();
-
 	//if (FAILED(m_pLevelManager->Render()))
 	//{
 	//	return E_FAIL;
@@ -2157,9 +2155,17 @@ void CGameInstance::FontDraw(const StringID& fontName, const _tchar* pText, cons
 {
 	m_pFontManager->Draw(fontName, pText, vPosition, fScale, vColor, fRotation, vOrigin);
 }
-void CGameInstance::FontAddLateDraw(const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
+void CGameInstance::FontAddLateDraw(RENDERGROUP eRenderGroup, const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
 {
-	m_pFontManager->AddLateDraw(fontName, pText, vPosition, fScale, vColor, fRotation, vOrigin);
+	m_pFontManager->AddLateDraw(eRenderGroup, fontName, pText, vPosition, fScale, vColor, fRotation, vOrigin);
+}
+_float2 CGameInstance::FontMeasureString(const StringID& fontName, const wchar_t* txt, float scale) const
+{
+	return m_pFontManager->MeasureString(fontName, txt, scale);
+}
+void CGameInstance::FontLateDraw(RENDERGROUP eRenderGroup)
+{
+	m_pFontManager->LateDraw(eRenderGroup);
 }
 #pragma endregion
 

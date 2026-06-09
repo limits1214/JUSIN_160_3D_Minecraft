@@ -7,6 +7,8 @@
 
 #include "UIItem.h"
 
+#include "UIController.h"
+
 NS_USING(Engine)
 
 CUIInventory::CUIInventory()
@@ -78,6 +80,60 @@ void CUIInventory::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIInventory::Update(E::_float fTimeDelta)
 {
+	if (!m_bRender)return;
+
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+	ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+
+	_bool bIntersected{ false };
+	for (const auto& slot : m_vecInventorySlot)
+	{
+		auto itemOrigin = _float2{ (float)mousePos.x, (float)mousePos.y };
+		auto slotOrigin = slot.vOriginPos;
+
+		auto slotMinX = slotOrigin.x - 8 * MC_UI_SCALE;
+		auto slotMinY = slotOrigin.y - 8 * MC_UI_SCALE;
+		auto slotMaxX = slotOrigin.x + 8 * MC_UI_SCALE;
+		auto slotMaxY = slotOrigin.y + 8 * MC_UI_SCALE;
+
+
+		if (itemOrigin.x > slotMinX
+			&& itemOrigin.x < slotMaxX
+			&& itemOrigin.y > slotMinY
+			&& itemOrigin.y < slotMaxY)
+		{
+			bIntersected = true;
+			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
+			{
+				if (auto pInfo = pItem->GetItemInfoPtr())
+				{
+					if (auto pUIController = CGameInstance::Get().GetGameObjectByHandleT<CUIController>(m_hUIController))
+					{
+						
+						pUIController->GetTextBg()->SetRender(true);
+						pUIController->GetTextBg()->SetText(CItemObject::GetItemName(*pInfo));
+					}
+				}
+				else
+				{
+					if (auto pUIController = CGameInstance::Get().GetGameObjectByHandleT<CUIController>(m_hUIController))
+					{
+						pUIController->GetTextBg()->SetRender(false);
+					}
+				}
+				
+			}
+		}
+	}
+
+	if (!bIntersected)
+	{
+		if (auto pUIController = CGameInstance::Get().GetGameObjectByHandleT<CUIController>(m_hUIController))
+		{
+			pUIController->GetTextBg()->SetRender(false);
+		}
+	}
 	return;
 	/*
 	

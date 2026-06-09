@@ -30,7 +30,7 @@ void CFontManager::Draw(const StringID& fontName, const _tchar* pText, const _fl
     }
 }
 
-void CFontManager::AddLateDraw(const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
+void CFontManager::AddLateDraw(RENDERGROUP eRenderGroup, const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
 {
     LateDrawDesc Desc{};
     Desc.txt = _wstring{ pText };
@@ -40,22 +40,34 @@ void CFontManager::AddLateDraw(const StringID& fontName, const _wstring& pText, 
     Desc.fRotation = fRotation;
     Desc.vOrigin = vOrigin;
 
-    auto iter = m_mapLateDraws.find(fontName);
-    if (iter == m_mapLateDraws.end())
+    auto iter = m_mapLateDraws[ETOUI(eRenderGroup)].find(fontName);
+    if (iter == m_mapLateDraws[ETOUI(eRenderGroup)].end())
     {
-        std::vector<LateDrawDesc> v{Desc};
-        m_mapLateDraws.emplace(fontName, v);
+        std::vector<LateDrawDesc> v{ Desc };
+        m_mapLateDraws[ETOUI(eRenderGroup)].emplace(fontName, v);
     }
     else
     {
         iter->second.push_back(Desc);
     }
-   
+
 }
 
-void CFontManager::LateDraw()
+_float2 CFontManager::MeasureString(const StringID& fontName, const wchar_t* txt, float scale) const
 {
-    for (const auto& [fontName, vecDesc] : m_mapLateDraws)
+    if (auto font = CGameInstance::Get().GetResourceFirst<CResFontCustom>("FONT", fontName))
+    {
+        XMVECTOR size = font->GetFont()->MeasureString(txt);
+        XMFLOAT2 result;
+        XMStoreFloat2(&result, size * scale);
+        return result;
+    }
+    return { 0.f, 0.f };
+}
+
+void CFontManager::LateDraw(RENDERGROUP eRenderGroup)
+{
+    for (const auto& [fontName, vecDesc] : m_mapLateDraws[ETOUI(eRenderGroup)])
     {
         if (auto font = CGameInstance::Get().GetResourceFirst<CResFontCustom>("FONT", fontName))
         {
@@ -70,7 +82,7 @@ void CFontManager::LateDraw()
         }
     }
 
-    m_mapLateDraws.clear();
+    m_mapLateDraws[ETOUI(eRenderGroup)].clear();
 
     {
         m_pContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);

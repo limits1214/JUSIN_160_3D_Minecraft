@@ -42,6 +42,7 @@ private:
 	HRESULT RenderBlend(const RENDER_CTX& ctx);
 	HRESULT RenderCollider(const RENDER_CTX& ctx);
 	HRESULT RenderUI(const RENDER_CTX& ctx);
+	HRESULT RenderUIToolTip(const RENDER_CTX& ctx);
 
 public:
 	static UPtr<CRenderer> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);

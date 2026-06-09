@@ -89,6 +89,11 @@ CUIChest2* CUIController::GetChest2() const
 	return CGameInstance::Get().GetGameObjectByHandleT<CUIChest2>(m_hChest);
 }
 
+CUITextBg* CUIController::GetTextBg() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUITextBg>(m_hTextBg);
+}
+
 HRESULT CUIController::Initialize(void* pArg)
 {
 	auto* pDesc = static_cast<CUIController::DESC*>(pArg);
@@ -306,6 +311,10 @@ HRESULT CUIController::Initialize(void* pArg)
 			layerID, &Desc))
 		{
 			m_hInventory = handle.value();
+			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIInventory>(m_hInventory))
+			{
+				pObj->SetUIController(GetHandle());
+			}
 		}
 	}
 
@@ -371,6 +380,19 @@ HRESULT CUIController::Initialize(void* pArg)
 			layerID, &Desc))
 		{
 			m_hChest2 = handle.value();
+		}
+	}
+
+	{
+		auto protoID = pDesc->TextBg.ProtoPairID;
+		auto layerID = pDesc->TextBg.LayerID;
+
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "TextBg";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
+			layerID, &Desc))
+		{
+			m_hTextBg = handle.value();
 		}
 	}
     return S_OK;

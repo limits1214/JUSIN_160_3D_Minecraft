@@ -370,6 +370,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UIInventory.h" />
     <ClInclude Include="..\public\UIItem.h" />
     <ClInclude Include="..\public\UIObject.h" />
+    <ClInclude Include="..\public\UITextBg.h" />
     <ClInclude Include="..\public\VoxelManager3.h" />
     <ClInclude Include="..\public\VoxelObject.h" />
     <ClInclude Include="..\public\WorkerManager.h" />
@@ -605,6 +606,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UIInventory.cpp" />
     <ClCompile Include="..\private\UIItem.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
+    <ClCompile Include="..\private\UITextBg.cpp" />
     <ClCompile Include="..\private\VoxelManager3.cpp" />
     <ClCompile Include="..\private\VoxelObject.cpp" />
     <ClCompile Include="..\private\WorkerManager.cpp" />

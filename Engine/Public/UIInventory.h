@@ -93,6 +93,11 @@ private:
 
 
 public:
+	void SetUIController(CHandle h) { m_hUIController = h; }
+private:
+	CHandle m_hUIController{};
+
+public:
 	void SetPlayerHandle(CHandle h) { m_hPlayerHandle = h; }
 private:
 	CHandle m_hPlayerHandle{};
