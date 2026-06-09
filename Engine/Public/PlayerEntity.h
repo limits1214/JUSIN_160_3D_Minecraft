@@ -72,7 +72,7 @@ private:
 	CHandle m_hDestroyStage{};
 
 public:
-	void ProcessBlockSet(float fTimeDelta);
+	void ProcessRightClick(float fTimeDelta);
 
 public:
 	void SetUIController(CHandle h){m_hUIController = h; }

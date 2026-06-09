@@ -38,6 +38,11 @@ public:
 			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
 				return "01_DROPITEM_Picaxe";
+
+			case CItemObject::ITEM_TYPE::ITEM_Coal:
+				return "01_DROPITEM_Coal";
+			case CItemObject::ITEM_TYPE::ITEM_Stick:
+				return "01_DROPITEM_Stick";
 			}
 		}
 		return "01_DROPBLOCK_CUBE";
@@ -54,6 +59,10 @@ public:
 			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
 				return "WoodPickaxe";
+			case CItemObject::ITEM_TYPE::ITEM_Coal:
+				return "Coal";
+			case CItemObject::ITEM_TYPE::ITEM_Stick:
+				return "Stick";
 			}
 		}
 		return "CubeItemDirt";

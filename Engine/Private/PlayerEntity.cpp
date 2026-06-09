@@ -296,7 +296,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
 
     ProcessThrowItem(fTimeDelta);
-    ProcessBlockSet(fTimeDelta);
+    ProcessRightClick(fTimeDelta);
 
     ProcessDestroyStage(fTimeDelta);
 
@@ -445,42 +445,41 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             newBlock.SetType(CBlock3::TYPE::AIR);
             CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, newBlock);
         
-        
+
             CItemObject::ItemInfo ItemInfo{};
             ItemInfo.block = res.block;
             ItemInfo.iCnt = 1;
 
-
-            E::CDropBlock::DESC Desc{};
-            Desc.sObjectTag = "CDropBlock_Cube";
-            Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
-            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(ItemInfo), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
-            {
-                if (!pLayer->empty())
+            auto conversion = [&ItemInfo]()
                 {
-                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                    switch (ItemInfo.block->GetType())
                     {
-                        //pObj->SetItemInfo(ItemInfo);
-
-
-                        auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
-                        pos.x += 0.5f;
-                        pos.y += 0.5f;
-                        pos.z += 0.5f;
-
-                        auto type = res.block->GetType();
-
-                        std::vector<uint32_t> texs{};
-                        for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
-                        {
-                            texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
-                        }
-
-                        pObj->AddDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f }, texs);
+                    case CBlock3::TYPE::GRASS:
+                        ItemInfo.block->SetType(CBlock3::TYPE::DIRT);
+                        return;
+                    case CBlock3::TYPE::STONE:
+                        ItemInfo.block->SetType(CBlock3::TYPE::COBBLESTONE);
+                        return;
+                    case CBlock3::TYPE::STONE_COAL_ORE:
+                        ItemInfo.block = std::nullopt;
+                        ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
+                        return;
                     }
-                }
-            }
+                };
+
+            conversion();
+
             
+
+        
+            
+
+            auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
+            pos.x += 0.5f;
+            pos.y += 0.5f;
+            pos.z += 0.5f;
+
+            SpawnDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f });
         }
     }
     else
@@ -495,11 +494,68 @@ CDestroyStage* CPlayerEntity::GetDestroyStage() const
     return CGameInstance::Get().GetGameObjectByHandleT<CDestroyStage>(m_hDestroyStage);
 }
 
-void CPlayerEntity::ProcessBlockSet(float fTimeDelta)
+void CPlayerEntity::ProcessRightClick(float fTimeDelta)
 {
+    if (!m_pActivePlayerCamera) return;
+    
     if (m_bMouseDownRight)
     {
+        const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+        CVoxelManager3::BLOCK_RAY_RESULT res;
+        if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin2, rayDir2, 5.f, res))
+        {
+            auto worldBX = res.iWorldBlockX;
+            auto worldBY = res.iWorldBlockY;
+            auto worldBZ = res.iWorldBlockZ;
+            if (res.eHitFace == FACE_DIR::POS_X)
+            {
+                worldBX += 1;
+            }
+            else if (res.eHitFace == FACE_DIR::NEG_X)
+            {
+                worldBX -= 1;
+            }
+            else if (res.eHitFace == FACE_DIR::POS_Y)
+            {
+                worldBY += 1;
+            }
+            else if (res.eHitFace == FACE_DIR::NEG_Y)
+            {
+                worldBY -= 1;
+            }
+            else if (res.eHitFace == FACE_DIR::POS_Z)
+            {
+                worldBZ += 1;
+            }
+            else if (res.eHitFace == FACE_DIR::NEG_Z)
+            {
+                worldBZ -= 1;
+            }
 
+            auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+            if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
+            {
+                if (hotbarItemInfo->block)
+                {
+                    CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, hotbarItemInfo->block.value());
+
+                    if (hotbarItemInfo->iCnt <= 1)
+                    {
+                        hotbarItemInfo = std::nullopt;
+                    }
+                    else
+                    {
+                        hotbarItemInfo->iCnt -= 1;
+                    }
+                    
+                }
+                else
+                {
+                    //TODO NotBlock
+                }
+            }
+        }
+        
     }
 }
 
@@ -549,6 +605,9 @@ void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
     {
         pUIController->Getinventory()->SetInventoryHotbarItemData(m_ItemArrHotbar.data(), 9);
         pUIController->Getinventory()->SetInventoryItemData(m_ItemArrInventory.data(), 9 * 3);
+        pUIController->Getinventory()->SetInventoryArmorItemData(m_ItemArrArmor.data(), 4);
+        pUIController->Getinventory()->SetInventoryShieldItemData(&m_ItemShiled, 1);
+        pUIController->Getinventory()->SetInventoryCraftingItemData(m_ItemArrInvenCrafting.data(), 5);
     }
 }
 
