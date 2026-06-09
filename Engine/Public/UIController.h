@@ -11,6 +11,7 @@
 #include "UIEnchantingTable.h"
 #include "UIChest.h"
 #include "UIChest2.h"
+#include "UITextBg.h"
 
 NS_BEGIN(Engine)
 
@@ -60,6 +61,8 @@ public:
 
 		DELEGATE_UI_DESC Chest{};
 		DELEGATE_UI_DESC Chest2{};
+
+		DELEGATE_UI_DESC TextBg{};
 		
 	}DESC;
 public:
@@ -86,6 +89,7 @@ public:
 	CUIEnchantingTable* GetEnchantingTable() const;
 	CUIChest* GetChest() const;
 	CUIChest2* GetChest2() const;
+	CUITextBg* GetTextBg() const;
 
 private:
 	CHandle m_hHotBar{};
@@ -101,6 +105,7 @@ private:
 	CHandle m_hEnchantingTable{};
 	CHandle m_hChest{};
 	CHandle m_hChest2{};
+	CHandle m_hTextBg{};
 
 public:
 	HRESULT Initialize(void* pArg) override;

@@ -466,6 +466,9 @@
     <Filter Include="GameObject\Item\Item">
       <UniqueIdentifier>{92f0cd25-a9b9-481b-bfee-670091b545ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\UI\TextBg">
+      <UniqueIdentifier>{8bb133f3-8a5b-4712-84c6-e9a5326dbe6a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -915,6 +918,9 @@
     <ClInclude Include="..\public\Item.h">
       <Filter>GameObject\Item\Item</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\UITextBg.h">
+      <Filter>GameObject\UI\TextBg</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1351,6 +1357,9 @@
     </ClCompile>
     <ClCompile Include="..\private\Item.cpp">
       <Filter>GameObject\Item\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UITextBg.cpp">
+      <Filter>GameObject\UI\TextBg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

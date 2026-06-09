@@ -226,7 +226,7 @@ HRESULT CUIItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 		{
 			if (m_ItemInfo->iCnt >= 1)
 			{
-				E::CGameInstance::Get().FontAddLateDraw("NeoDGM_20px", std::to_wstring(m_ItemInfo->iCnt), { m_fX , m_fY });
+				E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_20px", std::to_wstring(m_ItemInfo->iCnt), { m_fX , m_fY });
 			}
 		}
 	}

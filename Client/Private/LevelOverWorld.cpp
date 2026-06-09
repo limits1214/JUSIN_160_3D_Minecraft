@@ -95,6 +95,8 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
+
+
 	if(false)
 	{
 		E::CDropItem::DESC Desc{};
@@ -274,6 +276,11 @@ HRESULT CLevelOverWorld::Initialize()
 
 					ControllerDesc.Chest2 = {
 						.ProtoPairID = {"UI", "Prototype_GameObject_UIChest2"},
+						.LayerID = "80_UI"
+					};
+
+					ControllerDesc.TextBg = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UITextBg"},
 						.LayerID = "80_UI"
 					};
 

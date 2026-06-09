@@ -180,6 +180,7 @@ void CLevelLoading::LoadingCheck()
 #include "UIEnchantingTable.h"
 #include "UIChest.h"
 #include "UIChest2.h"
+#include "UITextBg.h"
 
 #include "UIItem.h"
 
@@ -317,6 +318,11 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 		return E_FAIL;
 	}
 	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIChest2", E::CUIChest2::Create())))
+	{
+		return E_FAIL;
+	}
+	//UITextBg
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UITextBg", E::CUITextBg::Create())))
 	{
 		return E_FAIL;
 	}
