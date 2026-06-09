@@ -26,15 +26,6 @@ void CUIInventory::UpdateGUI()
 	{
 		m_bRender = !m_bRender;
 	}
-
-	if (ImGui::Button("IngameHotbar"))
-	{
-		SetIngameHotbar();
-	}
-	if (ImGui::Button("InvenHotbar"))
-	{
-		SetInventoryHotbar();
-	}
 }
 
 HRESULT CUIInventory::Initialize(void* pArg)
@@ -87,6 +78,7 @@ void CUIInventory::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIInventory::Update(E::_float fTimeDelta)
 {
+	return;
 	if (m_hOnCursorItem)
 	{
 		if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hOnCursorItem.value()))
@@ -96,10 +88,6 @@ void CUIInventory::Update(E::_float fTimeDelta)
 			ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
 
 			pItem->SetOrigin(_float2{ (float)mousePos.x, (float)mousePos.y });
-
-
-
-
 
 			if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB)
 				|| CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
@@ -321,6 +309,14 @@ void CUIInventory::LateUpdate(E::_float fTimeDelta)
 		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
 	}
 
+	for (auto& slot : m_vecInventorySlot)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
+		{
+			pObj->SetRender(m_bRender);
+		}
+	}
+
 	GetTransform().Update();
 }
 
@@ -384,166 +380,166 @@ HRESULT CUIInventory::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 	return S_OK;
 }
 
-HRESULT CUIInventory::AddItemToInventory(const CItemObject::ItemInfo& info)
-{
-	auto optIdx = IsCanAddItem(info);
-	if (!optIdx)
-	{
-		return E_FAIL;
-	}
-	
-	if (m_vecInventorySlot[optIdx.value()].hItem)
-	{
-		if (auto pUIObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[optIdx.value()].hItem.value()))
-		{
-			auto currCnt = pUIObj->GetCnt();
-			pUIObj->SetCnt(currCnt + 1);
-		}
-	}
-	else
-	{
-		{
-			E::CUIItem::DESC Desc{};
-			Desc.fX = m_vecInventorySlot[optIdx.value()].vOriginPos.x;
-			Desc.fY = m_vecInventorySlot[optIdx.value()].vOriginPos.y;
-			//Desc.eType = info.eItemType;
-			Desc.itemInfo = info;
-			Desc.sObjectTag = "UIItem";
-			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-				"80_UI", &Desc))
-			{
-				if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-				{
-					//pItem->SetItemInfo(info);
-					if (CUIItem::IsCountableItem(info.eItemType))
-					{
-						pItem->SetCnt(1);
-					}
-					else
-					{
-						pItem->SetCnt(0);
-					}
-				}
-				m_vecInventorySlot[optIdx.value()].hItem = handle;
-			}
-		}
-	}
-
-	return S_OK;
-}
-
-std::optional<size_t> CUIInventory::IsCanAddItem(const CItemObject::ItemInfo& info)
-{
-	//std::vector<size_t> vecHotbarSameType{};
-
-	for (uint32_t i = 0; i < 9; ++i)
-	{
-		if (!m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem)
-		{
-			return m_InventoryHotbarIdxs[i];
-		}
-		else
-		{
-			if (auto pUIObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem.value()))
-			{
-				auto optUIObjBlock = pUIObj->GetItemInfo().block;
-				if (info.block && optUIObjBlock)
-				{
-					if (pUIObj->GetItemInfo().block.value().GetType() == info.block.value().GetType())
-					{
-						auto cnt = pUIObj->GetCnt();
-						if (cnt != 0 && cnt < 64)
-						{
-							return m_InventoryHotbarIdxs[i];
-						}
-					}
-				}
-				else if (info.block && !optUIObjBlock || !info.block && optUIObjBlock)
-				{
-
-				}
-				else
-				{
-					if (pUIObj->GetItemInfo().eItemType == info.eItemType)
-					{
-						if (CUIItem::IsCountableItem(info.eItemType))
-						{
-							auto cnt = pUIObj->GetCnt();
-							if (cnt != 0 && cnt < 64)
-							{
-								return m_InventoryHotbarIdxs[i];
-							}
-						}
-					}
-				}
-				
-			}
-			else
-			{
-				m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem = std::nullopt;
-				return m_InventoryHotbarIdxs[i];
-			}
-		}
-	}
-
-	//std::vector<size_t> vecInvenSameType{};
-
-	for (uint32_t i = 0; i < 9 * 3; ++i)
-	{
-		if (!m_vecInventorySlot[m_InventoryIdxs[i]].hItem)
-		{
-			return m_InventoryIdxs[i];
-		}
-		else
-		{
-			if (auto pUIObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryIdxs[i]].hItem.value()))
-			{
-				auto optUIObjBlock = pUIObj->GetItemInfo().block;
-				if (info.block && optUIObjBlock)
-				{
-					if (pUIObj->GetItemInfo().block.value().GetType() == info.block.value().GetType())
-					{
-						auto cnt = pUIObj->GetCnt();
-						
-						if (cnt != 0 && cnt < 64)
-						{
-							return m_InventoryIdxs[i];
-						}
-					}
-				}
-				else if (info.block && !optUIObjBlock || !info.block && optUIObjBlock)
-				{
-
-				}
-				else
-				{
-					if (pUIObj->GetItemInfo().eItemType == info.eItemType)
-					{
-						if (CUIItem::IsCountableItem(info.eItemType))
-						{
-							auto cnt = pUIObj->GetCnt();
-							if (cnt != 0 && cnt < 64)
-							{
-								return m_InventoryIdxs[i];
-							}
-						}
-					}
-				}
-				
-			}
-			else
-			{
-				m_vecInventorySlot[m_InventoryIdxs[i]].hItem = std::nullopt;
-				return m_InventoryIdxs[i];
-			}
-		}
-	}
-
-	return std::nullopt;
-}
+//HRESULT CUIInventory::AddItemToInventory(const CItemObject::ItemInfo& info)
+//{
+//	auto optIdx = IsCanAddItem(info);
+//	if (!optIdx)
+//	{
+//		return E_FAIL;
+//	}
+//	
+//	if (m_vecInventorySlot[optIdx.value()].hItem)
+//	{
+//		if (auto pUIObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[optIdx.value()].hItem.value()))
+//		{
+//			auto currCnt = pUIObj->GetCnt();
+//			pUIObj->SetCnt(currCnt + 1);
+//		}
+//	}
+//	else
+//	{
+//		{
+//			E::CUIItem::DESC Desc{};
+//			Desc.fX = m_vecInventorySlot[optIdx.value()].vOriginPos.x;
+//			Desc.fY = m_vecInventorySlot[optIdx.value()].vOriginPos.y;
+//			//Desc.eType = info.eItemType;
+//			Desc.itemInfo = info;
+//			Desc.sObjectTag = "UIItem";
+//			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+//				"80_UI", &Desc))
+//			{
+//				if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+//				{
+//					//pItem->SetItemInfo(info);
+//					if (CItemObject::IsCountableItem(info.eItemType))
+//					{
+//						pItem->SetCnt(1);
+//					}
+//					else
+//					{
+//						pItem->SetCnt(0);
+//					}
+//				}
+//				m_vecInventorySlot[optIdx.value()].hItem = handle;
+//			}
+//		}
+//	}
+//
+//	return S_OK;
+//}
+//
+//std::optional<size_t> CUIInventory::IsCanAddItem(const CItemObject::ItemInfo& info)
+//{
+//	
+//	for (uint32_t i = 0; i < 9; ++i)
+//	{
+//		if (!m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem)
+//		{
+//			return m_InventoryHotbarIdxs[i];
+//		}
+//		else
+//		{
+//			if (auto pUIObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem.value()))
+//			{
+//				auto optUIObjBlock = pUIObj->GetItemInfo().block;
+//				if (info.block && optUIObjBlock)
+//				{
+//					if (pUIObj->GetItemInfo().block.value().GetType() == info.block.value().GetType())
+//					{
+//						auto cnt = pUIObj->GetCnt();
+//						if (cnt != 0 && cnt < 64)
+//						{
+//							return m_InventoryHotbarIdxs[i];
+//						}
+//					}
+//				}
+//				else if (info.block && !optUIObjBlock || !info.block && optUIObjBlock)
+//				{
+//
+//				}
+//				else
+//				{
+//					if (pUIObj->GetItemInfo().eItemType == info.eItemType)
+//					{
+//						if (CItemObject::IsCountableItem(info.eItemType))
+//						{
+//							auto cnt = pUIObj->GetCnt();
+//							if (cnt != 0 && cnt < 64)
+//							{
+//								return m_InventoryHotbarIdxs[i];
+//							}
+//						}
+//					}
+//				}
+//				
+//			}
+//			else
+//			{
+//				m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem = std::nullopt;
+//				return m_InventoryHotbarIdxs[i];
+//			}
+//		}
+//	}
+//
+//	//std::vector<size_t> vecInvenSameType{};
+//
+//	for (uint32_t i = 0; i < 9 * 3; ++i)
+//	{
+//		if (!m_vecInventorySlot[m_InventoryIdxs[i]].hItem)
+//		{
+//			return m_InventoryIdxs[i];
+//		}
+//		else
+//		{
+//			if (auto pUIObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryIdxs[i]].hItem.value()))
+//			{
+//				auto optUIObjBlock = pUIObj->GetItemInfo().block;
+//				if (info.block && optUIObjBlock)
+//				{
+//					if (pUIObj->GetItemInfo().block.value().GetType() == info.block.value().GetType())
+//					{
+//						auto cnt = pUIObj->GetCnt();
+//						
+//						if (cnt != 0 && cnt < 64)
+//						{
+//							return m_InventoryIdxs[i];
+//						}
+//					}
+//				}
+//				else if (info.block && !optUIObjBlock || !info.block && optUIObjBlock)
+//				{
+//
+//				}
+//				else
+//				{
+//					if (pUIObj->GetItemInfo().eItemType == info.eItemType)
+//					{
+//						if (CItemObject::IsCountableItem(info.eItemType))
+//						{
+//							auto cnt = pUIObj->GetCnt();
+//							if (cnt != 0 && cnt < 64)
+//							{
+//								return m_InventoryIdxs[i];
+//							}
+//						}
+//					}
+//				}
+//				
+//			}
+//			else
+//			{
+//				m_vecInventorySlot[m_InventoryIdxs[i]].hItem = std::nullopt;
+//				return m_InventoryIdxs[i];
+//			}
+//		}
+//	}
+//
+//	return std::nullopt;
+//}
 
 void CUIInventory::InitializeSlot()
 {
+	size_t typeIdx{};
 	{
 		auto posX = 16.f;
 		auto posY = 16.f;
@@ -551,8 +547,21 @@ void CUIInventory::InitializeSlot()
 		armorHelmet.eType = SlotType::ARMOR_HELMET;
 		armorHelmet.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		armorHelmet.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = armorHelmet.vOriginPos.x;
+			Desc.fY = armorHelmet.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				armorHelmet.hItem = handle;
+			}
+		}
+		armorHelmet.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(armorHelmet);
 	}
+	typeIdx = 0;
 
 	{
 		auto posX = 16.f;
@@ -561,8 +570,21 @@ void CUIInventory::InitializeSlot()
 		armorChestplate.eType = SlotType::ARMOR_CHESTPLATE;
 		armorChestplate.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		armorChestplate.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = armorChestplate.vOriginPos.x;
+			Desc.fY = armorChestplate.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				armorChestplate.hItem = handle;
+			}
+		}
+		armorChestplate.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(armorChestplate);
 	}
+	typeIdx = 0;
 
 	{
 		auto posX = 16.f;
@@ -571,8 +593,21 @@ void CUIInventory::InitializeSlot()
 		armorLeggins.eType = SlotType::ARMOR_LEGGINGS;
 		armorLeggins.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		armorLeggins.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = armorLeggins.vOriginPos.x;
+			Desc.fY = armorLeggins.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				armorLeggins.hItem = handle;
+			}
+		}
+		armorLeggins.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(armorLeggins);
 	}
+	typeIdx = 0;
 
 	{
 		auto posX = 16.f;
@@ -581,8 +616,21 @@ void CUIInventory::InitializeSlot()
 		armorBoots.eType = SlotType::ARMOR_BOOTS;
 		armorBoots.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		armorBoots.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = armorBoots.vOriginPos.x;
+			Desc.fY = armorBoots.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				armorBoots.hItem = handle;
+			}
+		}
+		armorBoots.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(armorBoots);
 	}
+	typeIdx = 0;
 
 	{
 		auto posX = 85.f;
@@ -591,8 +639,21 @@ void CUIInventory::InitializeSlot()
 		shiled.eType = SlotType::SHIELD;
 		shiled.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		shiled.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = shiled.vOriginPos.x;
+			Desc.fY = shiled.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				shiled.hItem = handle;
+			}
+		}
+		shiled.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(shiled);
 	}
+	typeIdx = 0;
 
 	{
 		m_CraftLTIdx = m_vecInventorySlot.size();
@@ -602,8 +663,21 @@ void CUIInventory::InitializeSlot()
 		craftLt.eType = SlotType::CRAFT_LT;
 		craftLt.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		craftLt.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftLt.vOriginPos.x;
+			Desc.fY = craftLt.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftLt.hItem = handle;
+			}
+		}
+		craftLt.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(craftLt);
 	}
+	typeIdx = 0;
 
 	{
 		m_CraftRTIdx = m_vecInventorySlot.size();
@@ -613,8 +687,21 @@ void CUIInventory::InitializeSlot()
 		craftRt.eType = SlotType::CRAFT_RT;
 		craftRt.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		craftRt.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftRt.vOriginPos.x;
+			Desc.fY = craftRt.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftRt.hItem = handle;
+			}
+		}
+		craftRt.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(craftRt);
 	}
+	typeIdx = 0;
 
 	{
 		m_CraftLBIdx = m_vecInventorySlot.size();
@@ -624,8 +711,21 @@ void CUIInventory::InitializeSlot()
 		craftLb.eType = SlotType::CRAFT_LB;
 		craftLb.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		craftLb.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftLb.vOriginPos.x;
+			Desc.fY = craftLb.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftLb.hItem = handle;
+			}
+		}
+		craftLb.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(craftLb);
 	}
+	typeIdx = 0;
 
 	{
 		m_CraftRBIdx = m_vecInventorySlot.size();
@@ -635,8 +735,21 @@ void CUIInventory::InitializeSlot()
 		craftRb.eType = SlotType::CRAFT_RB;
 		craftRb.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		craftRb.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftRb.vOriginPos.x;
+			Desc.fY = craftRb.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftRb.hItem = handle;
+			}
+		}
+		craftRb.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(craftRb);
 	}
+	typeIdx = 0;
 
 	{
 		m_CraftResultIdx = m_vecInventorySlot.size();
@@ -646,25 +759,51 @@ void CUIInventory::InitializeSlot()
 		craftResult.eType = SlotType::CRAFT_RESULT;
 		craftResult.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		craftResult.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftResult.vOriginPos.x;
+			Desc.fY = craftResult.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftResult.hItem = handle;
+			}
+		}
+		craftResult.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(craftResult);
 	}
+	typeIdx = 0;
 
-	for (uint32_t i = 0; i < 9; ++i)
+	for (uint32_t i = 0; i < 3; ++i)
 	{
-		for (uint32_t j = 0; j < 3; ++j)
+		for (uint32_t j = 0; j < 9; ++j)
 		{
-			m_InventoryIdxs[9 * j + i] = m_vecInventorySlot.size();
+			m_InventoryIdxs[9 * i + j] = m_vecInventorySlot.size();
 
-			auto posX = 16.f + (i * 18.f);
-			auto posY = 92.f + (j * 18.f);
+			auto posX = 16.f + (j * 18.f);
+			auto posY = 92.f + (i * 18.f);
 
 			InventorySlot InvenSlot{};
 			InvenSlot.eType = SlotType::INVENTORY;
 			InvenSlot.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 			InvenSlot.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+			{
+				E::CUIItem::DESC Desc{};
+				Desc.fX = InvenSlot.vOriginPos.x;
+				Desc.fY = InvenSlot.vOriginPos.y;
+				Desc.sObjectTag = "UIItem";
+				if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+					"80_UI", &Desc))
+				{
+					InvenSlot.hItem = handle;
+				}
+			}
+			InvenSlot.typeIdx = typeIdx++;
 			m_vecInventorySlot.push_back(InvenSlot);
 		}
 	}
+	typeIdx = 0;
 
 	
 	for (uint32_t i = 0; i < 9; ++i)
@@ -677,188 +816,55 @@ void CUIInventory::InitializeSlot()
 		hotbarSlot.eType = SlotType::INVENTORY_HOTBAR;
 		hotbarSlot.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
 		hotbarSlot.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = hotbarSlot.vOriginPos.x;
+			Desc.fY = hotbarSlot.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				hotbarSlot.hItem = handle;
+			}
+		}
+		hotbarSlot.typeIdx = typeIdx++;
 		m_vecInventorySlot.push_back(hotbarSlot);
 	}
+	typeIdx = 0;
 
-	//INGAME_HOTBAR
-	for (uint32_t i = 0; i < 9; ++i)
-	{
-		m_IngameHotbarIdxs[i] = m_vecInventorySlot.size();
-		auto posX = 11.f + (i * 20.f);
-		auto posY = 11.f;
-
-		InventorySlot hotbarSlot{};
-		hotbarSlot.eType = SlotType::INGAME_HOTBAR;
-		hotbarSlot.vOriginPos.x = (m_fX - 182.f * MC_UI_SCALE * 0.5f) + posX * MC_UI_SCALE;
-		hotbarSlot.vOriginPos.y = (720.f - 22.f * MC_UI_SCALE) + posY * MC_UI_SCALE;
-		m_vecInventorySlot.push_back(hotbarSlot);
-	}
-
-	if (false)
-	{
-		{
-			CBlock3 block{};
-			block.SetType(CBlock3::TYPE::TNT);
-			CItemObject::ItemInfo info{};
-			info.block = block;
-			E::CUIItem::DESC Desc{};
-			Desc.fX = m_vecInventorySlot[m_InventoryHotbarIdxs[0]].vOriginPos.x;
-			Desc.fY = m_vecInventorySlot[m_InventoryHotbarIdxs[0]].vOriginPos.y;
-			Desc.itemInfo = info;
-			Desc.sObjectTag = "UIItem";
-
-			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-				"80_UI", &Desc))
-			{
-				if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-				{
-					pItem->SetCnt(18);
-				}
-				m_vecInventorySlot[m_InventoryHotbarIdxs[0]].hItem = handle;
-				//m_hOnCursorItem = handle;
-			}
-		}
-
-		{
-			CBlock3 block{};
-			block.SetType(CBlock3::TYPE::DIRT);
-			CItemObject::ItemInfo info{};
-			info.block = block;
-
-			E::CUIItem::DESC Desc{};
-			Desc.fX = m_vecInventorySlot[m_InventoryHotbarIdxs[1]].vOriginPos.x;
-			Desc.fY = m_vecInventorySlot[m_InventoryHotbarIdxs[1]].vOriginPos.y;
-			Desc.itemInfo = info;
-			Desc.sObjectTag = "UIItem";
-			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-				"80_UI", &Desc))
-			{
-				if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-				{
-					pItem->SetCnt(18);
-				}
-				m_vecInventorySlot[m_InventoryHotbarIdxs[1]].hItem = handle;
-				//m_hOnCursorItem = handle;
-			}
-		}
-
-		{
-			CBlock3 block{};
-			block.SetType(CBlock3::TYPE::COBBLESTONE);
-			CItemObject::ItemInfo info{};
-			info.block = block;
-
-			E::CUIItem::DESC Desc{};
-			Desc.fX = m_vecInventorySlot[m_InventoryHotbarIdxs[2]].vOriginPos.x;
-			Desc.fY = m_vecInventorySlot[m_InventoryHotbarIdxs[2]].vOriginPos.y;
-			Desc.itemInfo = info;
-			Desc.sObjectTag = "UIItem";
-			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-				"80_UI", &Desc))
-			{
-				if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-				{
-					pItem->SetCnt(60);
-				}
-				m_vecInventorySlot[m_InventoryHotbarIdxs[2]].hItem = handle;
-				//m_hOnCursorItem = handle;
-			}
-		}
-
-		{
-			CBlock3 block{};
-			block.SetType(CBlock3::TYPE::COBBLESTONE);
-			CItemObject::ItemInfo info{};
-			info.block = block;
-
-			E::CUIItem::DESC Desc{};
-			Desc.fX = m_vecInventorySlot[m_InventoryHotbarIdxs[3]].vOriginPos.x;
-			Desc.fY = m_vecInventorySlot[m_InventoryHotbarIdxs[3]].vOriginPos.y;
-			Desc.itemInfo = info;
-			Desc.sObjectTag = "UIItem";
-			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-				"80_UI", &Desc))
-			{
-				if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-				{
-					pItem->SetCnt(31);
-				}
-				m_vecInventorySlot[m_InventoryHotbarIdxs[3]].hItem = handle;
-				//m_hOnCursorItem = handle;
-			}
-		}
-
-		{
-			
-			CItemObject::ItemInfo info{};
-			info.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
-
-
-			E::CUIItem::DESC Desc{};
-			Desc.fX = m_vecInventorySlot[m_InventoryHotbarIdxs[4]].vOriginPos.x;
-			Desc.fY = m_vecInventorySlot[m_InventoryHotbarIdxs[4]].vOriginPos.y;
-			Desc.itemInfo = info;
-			Desc.sObjectTag = "UIItem";
-			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-				"80_UI", &Desc))
-			{
-				if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-				{
-					pItem->SetCnt(0);
-				}
-				m_vecInventorySlot[m_InventoryHotbarIdxs[4]].hItem = handle;
-				//m_hOnCursorItem = handle;
-			}
-		}
-		{
-			CItemObject::ItemInfo info{};
-			info.eItemType = CItemObject::ITEM_TYPE::ITEM_CooperHelmet;
-
-
-			E::CUIItem::DESC Desc{};
-			Desc.fX = m_vecInventorySlot[m_InventoryHotbarIdxs[5]].vOriginPos.x;
-			Desc.fY = m_vecInventorySlot[m_InventoryHotbarIdxs[5]].vOriginPos.y;
-			Desc.itemInfo = info;
-			Desc.sObjectTag = "UIItem";
-			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
-				"80_UI", &Desc))
-			{
-				if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-				{
-					pItem->SetCnt(0);
-				}
-				m_vecInventorySlot[m_InventoryHotbarIdxs[5]].hItem = handle;
-				//m_hOnCursorItem = handle;
-			}
-		}
-	}
-	
-	
 }
 
-void CUIInventory::SetIngameHotbar()
+void CUIInventory::SetInventoryHotbarItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
 {
-	for (uint32_t i = 0; i < 9; ++i)
+	for (uint32_t i = 0; i < size; ++i)
 	{
-		if (m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem)
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem.value()))
 		{
-			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem.value()))
+			if (pArr[i])
 			{
-				pObj->SetOrigin({ m_vecInventorySlot[m_IngameHotbarIdxs[i]].vOriginPos });
+				pObj->SetItemInfo(pArr[i]);
+			}
+			else
+			{
+				pObj->SetItemInfo(std::nullopt);
 			}
 		}
 	}
 }
 
-void CUIInventory::SetInventoryHotbar()
+void CUIInventory::SetInventoryItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
 {
-	for (uint32_t i = 0; i < 9; ++i)
+	for (uint32_t i = 0; i < size; ++i)
 	{
-		if (m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem)
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryIdxs[i]].hItem.value()))
 		{
-			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem.value()))
+			if (pArr[i])
 			{
-				pObj->SetOrigin({ m_vecInventorySlot[m_InventoryHotbarIdxs[i]].vOriginPos });
+				pObj->SetItemInfo(pArr[i]);
+			}
+			else
+			{
+				pObj->SetItemInfo(std::nullopt);
 			}
 		}
 	}

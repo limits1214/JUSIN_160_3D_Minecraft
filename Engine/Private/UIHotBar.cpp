@@ -4,6 +4,7 @@
 #include "CameraObject.h"
 #include "Resources.h"
 #include "UIHotbarSelect.h"
+#include "UIItem.h"
 NS_USING(Engine)
 
 CUIHotBar::CUIHotBar()
@@ -35,6 +36,8 @@ HRESULT CUIHotBar::Initialize(void* pArg)
 	pDesc->fY = 720.f - pDesc->fSizeY * 0.5f - MC_UI_SCALE;
 	if (FAILED(CUIObject::Initialize(pArg)))
 		return E_FAIL;
+
+	InitializeSlot();
 
 	return S_OK;
 }
@@ -132,6 +135,50 @@ HRESULT CUIHotBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 CUIHotBarSelect* CUIHotBar::GetHotBarSelect() const
 {
 	return CGameInstance::Get().GetGameObjectByHandleT<CUIHotBarSelect>(m_hHotbarSelect);
+}
+
+void CUIHotBar::SetHotbarItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
+{
+	for (uint32_t i = 0; i < size; ++i)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecSlot[i].hItem.value()))
+		{
+			if (pArr[i])
+			{
+				pObj->SetItemInfo(pArr[i]);
+			}
+			else
+			{
+				pObj->SetItemInfo(std::nullopt);
+			}
+		}
+	}
+}
+
+void CUIHotBar::InitializeSlot()
+{
+	//INGAME_HOTBAR
+	for (uint32_t i = 0; i < 9; ++i)
+	{
+		auto posX = 11.f + (i * 20.f);
+		auto posY = 11.f;
+
+		Slot hotbarSlot{};
+		hotbarSlot.vOriginPos.x = (m_fX - 182.f * MC_UI_SCALE * 0.5f) + posX * MC_UI_SCALE;
+		hotbarSlot.vOriginPos.y = (720.f - 22.f * MC_UI_SCALE) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = hotbarSlot.vOriginPos.x;
+			Desc.fY = hotbarSlot.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				hotbarSlot.hItem = handle;
+			}
+		}
+		m_vecSlot.push_back(hotbarSlot);
+	}
 }
 
 E::UPtr<CUIHotBar> CUIHotBar::Create()

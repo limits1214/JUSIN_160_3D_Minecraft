@@ -228,6 +228,7 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
     //m_pCenterCollider = CCollSphere::Create({0.f, 0.3f, 0.f}, 0.3f);
     m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.25f, 0.9f, 0.25f });
 
+    ReadyPlayerItem();
     return S_OK;
 }
 
@@ -263,6 +264,7 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
 
         m_bKeyDownE = CGameInstance::Get().KeyDown(DIK_E);
         m_bKeyDownQ = CGameInstance::Get().KeyDown(DIK_Q);
+        m_bMouseDownLeft = CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB);
         m_bMouseDownRight = CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB);
     }
     else
@@ -283,9 +285,508 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         memset(&m_bNumKeyPressing, 0, sizeof(m_bNumKeyPressing));
         m_bKeyDownE = false;
         m_bKeyDownQ = false;
+        m_bMouseDownLeft = false;
         m_bMouseDownRight = false;
     }
 }
+
+void CPlayerEntity::Update(E::_float fTimeDelta)
+{
+    ProcessActionUpdate(fTimeDelta);
+
+
+    ProcessThrowItem(fTimeDelta);
+    ProcessBlockSet(fTimeDelta);
+
+    ProcessDestroyStage(fTimeDelta);
+
+    ProcessUI(fTimeDelta);
+
+    ProcessUIItemOnCursor(fTimeDelta);
+
+}
+
+
+
+void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
+{
+    CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
+    
+    GetTransform().Update();
+
+    m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
+
+    E::CGameInstance::Get().AddColliderGroup("Coll_PlayerCenter", m_pCenterCollider.get());
+    m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
+
+    //if (auto item = m_pComEntityArmModel->GetBone("rightItem"))
+    //{
+    //    for (auto& child : GetChildrenNode())
+    //    {
+    //        if (child->GetObjectTag() == "DropItem_WoodPickaxe")
+    //        {
+    //            _float4x4 mat;
+    //            auto tmp = XMLoadFloat4x4(item->GetCombinedTransformationMatrix()) * GetTransform().GetLoadedCombinedWorldMatrix();
+    //            XMStoreFloat4x4(&mat, tmp);
+    //            child->GetTransform().SetParentWorldMatrix(mat);
+    //        }
+    //    }
+    //}
+    ProcessItemColliding(fTimeDelta);
+}
+
+HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+{
+    if (m_eCameraType == CAMERA_TYPE::FPS)
+    {
+        
+    }
+    else
+    {
+        {
+            auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
+            D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+            if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+            {
+
+                E::CB_PER_OBJECT cbPerObject{};
+                cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
+                XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
+
+                memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
+                pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
+            }
+            pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
+            pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
+        }
+
+        m_pComEntityModel->BindBoneMatrix();
+
+        m_pComEntityModel->Render(pContext, ctx);
+    }
+    
+    return S_OK;
+}
+
+void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pDestroyStage = GetDestroyStage();
+    if (!pDestroyStage) return;
+
+    static float fElapsed = 0;
+    
+
+    //
+    
+    //CGameInstance::Get().VoxelBlockRaycast()
+
+    const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+    std::optional<std::pair<XMINT3, uint8_t>> currDestoryTarget{};
+    CVoxelManager3::BLOCK_RAY_RESULT res;
+    if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin2, rayDir2, 5.f, res))
+    {
+        if (res.block)
+        {
+            currDestoryTarget = { XMINT3{res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ}, static_cast<uint8_t>(res.block.value().GetType())};
+            pDestroyStage->GetTransform().SetPosition(_float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY, (float)res.iWorldBlockZ });
+        }
+        else
+        {
+            currDestoryTarget = std::nullopt;
+        }
+    }
+    else
+    {
+        currDestoryTarget = std::nullopt;
+    }
+    auto eq = [](const std::optional<std::pair<XMINT3, uint8_t>>& a,
+        const std::optional<std::pair<XMINT3, uint8_t>>& b) {
+            if (a.has_value() != b.has_value()) return false;
+            if (!a.has_value()) return true;
+            const auto& [pa, pb] = *a;
+            const auto& [qa, qb] = *b;
+            return pa.x == qa.x && pa.y == qa.y && pa.z == qa.z && pb == qb;
+        };
+
+    if (!eq(currDestoryTarget, m_DestoryStageRaycastTarget)) 
+    { 
+        m_DestoryStageRaycastTarget = currDestoryTarget;
+        m_bDestoryStageStart = false;
+    }
+   
+    if (!m_DestoryStageRaycastTarget)
+    {
+        pDestroyStage->SetRender(false);
+        m_bDestoryStageStart = false;
+        return;
+    }
+
+    m_pActivePlayerCamera->GetRay();
+    if (m_bMousePressingLeft)
+    {
+        if (!m_bDestoryStageStart)
+        {
+            m_bDestoryStageStart = true;
+
+            pDestroyStage->SetRender(true);
+            fElapsed = 0;
+        }
+
+        fElapsed += fTimeDelta;
+
+        float blockDestroyRate = 1.f;
+        float blockDestroyTime = 0.5f;
+        float goal = blockDestroyTime * blockDestroyRate;
+
+        pDestroyStage->SetFrameIndex(fElapsed / (goal / 9));
+        if (pDestroyStage->GetFrameIndex() == 9)
+        {
+            CBlock3 newBlock{};
+            newBlock.SetType(CBlock3::TYPE::AIR);
+            CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, newBlock);
+        
+        
+            CItemObject::ItemInfo ItemInfo{};
+            ItemInfo.block = res.block;
+            ItemInfo.iCnt = 1;
+
+
+            E::CDropBlock::DESC Desc{};
+            Desc.sObjectTag = "CDropBlock_Cube";
+            Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
+            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(ItemInfo), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
+            {
+                if (!pLayer->empty())
+                {
+                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                    {
+                        //pObj->SetItemInfo(ItemInfo);
+
+
+                        auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
+                        pos.x += 0.5f;
+                        pos.y += 0.5f;
+                        pos.z += 0.5f;
+
+                        auto type = res.block->GetType();
+
+                        std::vector<uint32_t> texs{};
+                        for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
+                        {
+                            texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
+                        }
+
+                        pObj->AddDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f }, texs);
+                    }
+                }
+            }
+            
+        }
+    }
+    else
+    {
+        pDestroyStage->SetRender(false);
+        m_bDestoryStageStart = false;
+    }
+}
+
+CDestroyStage* CPlayerEntity::GetDestroyStage() const
+{
+    return CGameInstance::Get().GetGameObjectByHandleT<CDestroyStage>(m_hDestroyStage);
+}
+
+void CPlayerEntity::ProcessBlockSet(float fTimeDelta)
+{
+    if (m_bMouseDownRight)
+    {
+
+    }
+}
+
+CUIController* CPlayerEntity::GetUIController() const
+{
+    return CGameInstance::Get().GetGameObjectByHandleT<CUIController>(m_hUIController);
+}
+
+void CPlayerEntity::ProcessUI(float fTimeDelta)
+{
+    ProcessUIInventory(fTimeDelta);
+    ProcessUIHotbar(fTimeDelta);
+}
+
+void CPlayerEntity::ProcessUIHotbar(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pUIController = GetUIController();
+    if (!pUIController) return;
+
+    if (m_iMouseMoveZ > 0)
+    {
+        auto idx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+        pUIController->GetHotBar()->GetHotBarSelect()->SetSelectIdx(++idx);
+    }
+    else if (m_iMouseMoveZ < 0)
+    {
+        auto idx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+        pUIController->GetHotBar()->GetHotBarSelect()->SetSelectIdx(--idx);
+    }
+
+    pUIController->GetHotBar()->SetHotbarItemData(m_ItemArrHotbar.data(), 9);
+}
+
+void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pUIController = GetUIController();
+    if (m_bKeyDownE)
+    {
+        pUIController->Getinventory()->SetRender(!pUIController->Getinventory()->GetRender());
+    }
+
+    pUIController->Getinventory()->SetInventoryHotbarItemData(m_ItemArrHotbar.data(), 9);
+    pUIController->Getinventory()->SetInventoryItemData(m_ItemArrInventory.data(), 9 * 3);
+}
+
+void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pUIController = GetUIController();
+    if (m_bKeyDownQ)
+    {
+        auto selectIdx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+        if (auto& hotbarItemInfo = m_ItemArrHotbar[selectIdx])
+        {
+            if (hotbarItemInfo->block)
+            {
+                CItemObject::ItemInfo newInfo{ hotbarItemInfo.value()};
+                newInfo.iCnt = 1;
+
+                auto cnt = hotbarItemInfo->iCnt;
+                if (cnt == 1)
+                {
+                    hotbarItemInfo = std::nullopt;
+                }
+                else
+                {
+                    hotbarItemInfo->iCnt -= 1;
+                }
+
+                {
+                    _float3 startPos{};
+                    XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                    startPos.y += 1.f;
+
+                    {
+                        E::CDropItemObject::DESC Desc{};
+                        Desc.sObjectTag = "CDropBlock_Cube";
+                        Desc.viBufferId = { "MC_ITEM_VIBuffer", CDropItemObject::GetVIBufferName(newInfo) };
+
+                        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(newInfo), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
+                        {
+                            if (!pLayer->empty())
+                            {
+                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
+                                {
+                                    auto pos = startPos;
+
+                                    auto type = newInfo.block->GetType();
+
+                                    std::vector<uint32_t> texs{};
+                                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
+                                    {
+                                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
+                                    }
+
+                                    pObj->AddDropItemObject(newInfo, pos, { 0.f, 2.f, 0.f }, texs);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else // not block
+            {
+                CItemObject::ItemInfo newInfo{ hotbarItemInfo.value()};
+               
+
+                if (CItemObject::IsCountableItem(hotbarItemInfo->eItemType))
+                {
+                    auto cnt = hotbarItemInfo->iCnt;
+                    if (cnt == 1)
+                    {
+                        hotbarItemInfo = std::nullopt;
+                    }
+                    else
+                    {
+                        hotbarItemInfo->iCnt -= 1;
+                    }
+
+                    newInfo.iCnt = 1;
+                }
+                else
+                {
+                    newInfo.iCnt = 0;
+                    hotbarItemInfo = std::nullopt;
+                }
+
+
+                {
+                    _float3 startPos{};
+                    XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                    startPos.y += 1.f;
+
+                    {
+                        E::CDropItemObject::DESC Desc{};
+                        Desc.sObjectTag = "CDropItem";
+                        Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(newInfo) };
+
+                        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(newInfo), "ITEM", "Prototype_GameObject_DropItem", &Desc))
+                        {
+                            if (!pLayer->empty())
+                            {
+                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                                {
+                                    auto pos = startPos;
+                                    pObj->AddDropItemObject(newInfo, pos, {}, { CItemObject::GetPackedTexIdByType(newInfo.eItemType) });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+           
+            
+        }
+
+        if (false)
+        {
+            if (auto handle = pUIController->Getinventory()->GetHotbarSlotHandle(selectIdx))
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+                {
+                    auto itemInfo = pObj->GetItemInfo();
+                    if (itemInfo.block)
+                    {
+                        auto cnt = pObj->GetCnt();
+                        if (cnt == 1)
+                        {
+                            pObj->SetPendingDestroyCascade();
+                        }
+                        else
+                        {
+                            pObj->SetCnt(cnt - 1);
+                        }
+
+
+
+                        {
+                            _float3 startPos{};
+                            XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                            startPos.y += 1.f;
+
+                            {
+                                E::CDropItemObject::DESC Desc{};
+                                Desc.sObjectTag = "CDropBlock_Cube";
+                                Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
+
+                                if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
+                                {
+                                    if (!pLayer->empty())
+                                    {
+                                        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
+                                        {
+                                            auto pos = startPos;
+
+                                            auto type = itemInfo.block->GetType();
+
+                                            std::vector<uint32_t> texs{};
+                                            for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
+                                            {
+                                                texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
+                                            }
+
+                                            pObj->AddDropItemObject(itemInfo, pos, { 0.f, 2.f, 0.f }, texs);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (CItemObject::IsCountableItem(itemInfo.eItemType))
+                        {
+                            auto cnt = pObj->GetCnt();
+                            if (cnt == 1)
+                            {
+                                pObj->SetPendingDestroyCascade();
+                            }
+                            else
+                            {
+                                pObj->SetCnt(cnt - 1);
+                            }
+
+
+                            {
+                                _float3 startPos{};
+                                XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                                startPos.y += 1.f;
+
+                                {
+                                    E::CDropItemObject::DESC Desc{};
+                                    Desc.sObjectTag = "CDropItem";
+                                    Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(itemInfo) };
+
+                                    if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo), "ITEM", "Prototype_GameObject_DropItem", &Desc))
+                                    {
+                                        if (!pLayer->empty())
+                                        {
+                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                                            {
+                                                auto pos = startPos;
+                                                pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            pObj->SetPendingDestroyCascade();
+
+                            {
+                                _float3 startPos{};
+                                XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                                startPos.y += 1.f;
+
+
+                                {
+                                    E::CDropItemObject::DESC Desc{};
+                                    Desc.sObjectTag = "CDropItem";
+                                    Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(itemInfo) };
+                                    if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo), "ITEM", "Prototype_GameObject_DropItem", &Desc))
+                                    {
+                                        if (!pLayer->empty())
+                                        {
+                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                                            {
+                                                auto pos = startPos;
+                                                pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 /*
 root
@@ -306,9 +807,8 @@ root
 └─ leftLeg (parent="root")
    └─ leftPants
 */
-void CPlayerEntity::Update(E::_float fTimeDelta)
+void CPlayerEntity::ProcessActionUpdate(_float fTimeDelta)
 {
-
     m_pComEntityModel->ResetBonesChannel();
     if (m_eCameraType == CAMERA_TYPE::FPS)
     {
@@ -334,7 +834,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
                     XMMATRIX matAnim = XMMatrixRotationX(rotX);
                     tmpCamera->GetTransform().Update();
-                    auto tmp =  tmpCamera->GetTransform().GetLoadedCombinedWorldMatrix();
+                    auto tmp = tmpCamera->GetTransform().GetLoadedCombinedWorldMatrix();
                     _float4x4 mat;
                     XMStoreFloat4x4(&mat, tmp);
                     item->GetTransform().SetParentWorldMatrix(mat);
@@ -639,7 +1139,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
             }
         }
 
-        
+
 
         PlayerMove(fTimeDelta);
 
@@ -737,40 +1237,10 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
             PlayerCameraTrace(fTimeDelta);
         }
     }
-    ProcessThrowItem(fTimeDelta);
-    ProcessBlockSet(fTimeDelta);
-    ProcessUI(fTimeDelta);
-
-    ProcessDestroyStage(fTimeDelta);
 }
 
-
-
-void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
+void CPlayerEntity::ProcessItemColliding(_float fTimeDelta)
 {
-    CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
-    
-    GetTransform().Update();
-
-    m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
-
-    E::CGameInstance::Get().AddColliderGroup("Coll_PlayerCenter", m_pCenterCollider.get());
-    m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
-
-    //if (auto item = m_pComEntityArmModel->GetBone("rightItem"))
-    //{
-    //    for (auto& child : GetChildrenNode())
-    //    {
-    //        if (child->GetObjectTag() == "DropItem_WoodPickaxe")
-    //        {
-    //            _float4x4 mat;
-    //            auto tmp = XMLoadFloat4x4(item->GetCombinedTransformationMatrix()) * GetTransform().GetLoadedCombinedWorldMatrix();
-    //            XMStoreFloat4x4(&mat, tmp);
-    //            child->GetTransform().SetParentWorldMatrix(mat);
-    //        }
-    //    }
-    //}
-
     //Coll_DropBlockCenter
 
     if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_DropItemObject"))
@@ -785,420 +1255,14 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
                     const auto& itemInfo = pHint->iter->itemInfo;
                     auto* pUIController = GetUIController();
 
-                    if (auto block = itemInfo.block)
-                    {
-                        //pUIController->Getinventory().
-                    }
-                    else
-                    {
+                    //if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
+                    //{
+                    //    pObj->GetDropItemObjects().erase(pHint->iter);
+                    //}
 
-                    }
-                    
-                    if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
+                    if (SUCCEEDED(ProcessItemGain(itemInfo)))
                     {
                         pObj->GetDropItemObjects().erase(pHint->iter);
-                    }
-
-                }
-            }
-        }
-    }
-}
-
-HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
-{
-    if (m_eCameraType == CAMERA_TYPE::FPS)
-    {
-        
-    }
-    else
-    {
-        {
-            auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
-            D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-            if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-            {
-
-                E::CB_PER_OBJECT cbPerObject{};
-                cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
-                XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
-
-                memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
-                pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
-            }
-            pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-            pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-        }
-
-        m_pComEntityModel->BindBoneMatrix();
-
-        m_pComEntityModel->Render(pContext, ctx);
-    }
-    
-    return S_OK;
-}
-
-void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
-{
-    if (!m_pActivePlayerCamera) return;
-    auto* pDestroyStage = GetDestroyStage();
-    if (!pDestroyStage) return;
-
-    static float fElapsed = 0;
-    
-
-    //
-    
-    //CGameInstance::Get().VoxelBlockRaycast()
-
-    const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
-    std::optional<std::pair<XMINT3, uint8_t>> currDestoryTarget{};
-    CVoxelManager3::BLOCK_RAY_RESULT res;
-    if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin2, rayDir2, 5.f, res))
-    {
-        if (res.block)
-        {
-            currDestoryTarget = { XMINT3{res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ}, static_cast<uint8_t>(res.block.value().GetType())};
-            pDestroyStage->GetTransform().SetPosition(_float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY, (float)res.iWorldBlockZ });
-        }
-        else
-        {
-            currDestoryTarget = std::nullopt;
-        }
-    }
-    else
-    {
-        currDestoryTarget = std::nullopt;
-    }
-    auto eq = [](const std::optional<std::pair<XMINT3, uint8_t>>& a,
-        const std::optional<std::pair<XMINT3, uint8_t>>& b) {
-            if (a.has_value() != b.has_value()) return false;
-            if (!a.has_value()) return true;
-            const auto& [pa, pb] = *a;
-            const auto& [qa, qb] = *b;
-            return pa.x == qa.x && pa.y == qa.y && pa.z == qa.z && pb == qb;
-        };
-
-    if (!eq(currDestoryTarget, m_DestoryStageRaycastTarget)) 
-    { 
-        m_DestoryStageRaycastTarget = currDestoryTarget;
-        m_bDestoryStageStart = false;
-    }
-   
-    if (!m_DestoryStageRaycastTarget)
-    {
-        pDestroyStage->SetRender(false);
-        m_bDestoryStageStart = false;
-        return;
-    }
-
-    m_pActivePlayerCamera->GetRay();
-    if (m_bMousePressingLeft)
-    {
-        if (!m_bDestoryStageStart)
-        {
-            m_bDestoryStageStart = true;
-
-            pDestroyStage->SetRender(true);
-            fElapsed = 0;
-        }
-
-        fElapsed += fTimeDelta;
-
-        float blockDestroyRate = 1.f;
-        float blockDestroyTime = 0.5f;
-        float goal = blockDestroyTime * blockDestroyRate;
-
-        pDestroyStage->SetFrameIndex(fElapsed / (goal / 9));
-        if (pDestroyStage->GetFrameIndex() == 9)
-        {
-            CBlock3 newBlock{};
-            newBlock.SetType(CBlock3::TYPE::AIR);
-            CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, newBlock);
-        
-        
-            CItemObject::ItemInfo ItemInfo{};
-            ItemInfo.block = res.block;
-            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(ItemInfo)))
-            {
-                if (!pLayer->empty())
-                {
-                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
-                    {
-                        auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
-                        pos.x += 0.5f;
-                        pos.y += 0.5f;
-                        pos.z += 0.5f;
-
-                        auto type = res.block->GetType();
-
-                        std::vector<uint32_t> texs{};
-                        for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
-                        {
-                            texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
-                        }
-
-                        // std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
-                        
-                        
-                        pObj->AddDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f }, texs);
-                    }
-                }
-            }
-            else
-            {
-                E::CDropBlock::DESC Desc{};
-                Desc.sObjectTag = "CDropBlock_Cube";
-                Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
-                if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropBlock",
-                    CDropItemObject::GetDropItemLayer(ItemInfo), &Desc))
-                {
-                    if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(handle.value()))
-                    {
-                        auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
-                        pos.x += 0.5f;
-                        pos.y += 0.5f;
-                        pos.z += 0.5f;
-
-                        auto type = res.block->GetType();
-
-                        std::vector<uint32_t> texs{};
-                        for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
-                        {
-                            texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
-                        }
-
-                       
-                        // std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
-                        pObj->AddDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f }, texs);
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        pDestroyStage->SetRender(false);
-        m_bDestoryStageStart = false;
-    }
-}
-
-CDestroyStage* CPlayerEntity::GetDestroyStage() const
-{
-    return CGameInstance::Get().GetGameObjectByHandleT<CDestroyStage>(m_hDestroyStage);
-}
-
-void CPlayerEntity::ProcessBlockSet(float fTimeDelta)
-{
-    if (m_bMouseDownRight)
-    {
-
-    }
-}
-
-CUIController* CPlayerEntity::GetUIController() const
-{
-    return CGameInstance::Get().GetGameObjectByHandleT<CUIController>(m_hUIController);
-}
-
-void CPlayerEntity::ProcessUI(float fTimeDelta)
-{
-    ProcessUIInventory(fTimeDelta);
-    ProcessUIHotbar(fTimeDelta);
-}
-
-void CPlayerEntity::ProcessUIHotbar(float fTimeDelta)
-{
-    if (!m_pActivePlayerCamera) return;
-    auto* pUIController = GetUIController();
-    if (!pUIController) return;
-
-    if (m_iMouseMoveZ > 0)
-    {
-        auto idx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
-        pUIController->GetHotBar()->GetHotBarSelect()->SetSelectIdx(++idx);
-    }
-    else if (m_iMouseMoveZ < 0)
-    {
-        auto idx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
-        pUIController->GetHotBar()->GetHotBarSelect()->SetSelectIdx(--idx);
-    }
-}
-
-void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
-{
-    if (!m_pActivePlayerCamera) return;
-    auto* pUIController = GetUIController();
-    if (m_bKeyDownE)
-    {
-        pUIController->Getinventory()->SetRender(!pUIController->Getinventory()->GetRender());
-    }
-}
-
-void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
-{
-    if (!m_pActivePlayerCamera) return;
-    auto* pUIController = GetUIController();
-    if (m_bKeyDownQ)
-    {
-        auto selectIdx = pUIController->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
-        if (auto handle = pUIController->Getinventory()->GetHotbarSlotHandle(selectIdx))
-        {
-            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
-            {
-                auto itemInfo = pObj->GetItemInfo();
-                if (itemInfo.block)
-                {
-                    auto cnt = pObj->GetCnt();
-                    if (cnt == 1)
-                    {
-                        pObj->SetPendingDestroyCascade();
-                    }
-                    else
-                    {
-                        pObj->SetCnt(cnt - 1);
-                    }
-
-
-
-                    {
-                        _float3 startPos{};
-                        XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
-                        startPos.y += 1.f;
-
-                        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo)))
-                        {
-                            if (!pLayer->empty())
-                            {
-                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
-                                {
-                                    auto pos = startPos;
-
-                                    auto type = itemInfo.block->GetType();
-
-                                    std::vector<uint32_t> texs{};
-                                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
-                                    {
-                                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
-                                    }
-
-                                    // std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
-
-                                    pObj->AddDropItemObject(itemInfo, pos, { 0.f, 2.f, 0.f }, texs);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            E::CDropBlock::DESC Desc{};
-                            Desc.sObjectTag = "CDropBlock_Cube";
-                            Desc.viBufferId = { "MC_ITEM_VIBuffer", "CubeItemDirt" };
-                            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropBlock",
-                                CDropItemObject::GetDropItemLayer(itemInfo), &Desc))
-                            {
-                                if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(handle.value()))
-                                {
-                                    auto pos = startPos;
-
-                                    auto type = itemInfo.block->GetType();
-
-                                    std::vector<uint32_t> texs{};
-                                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
-                                    {
-                                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
-                                    }
-
-                                    // std::vector a{ PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
-                                    pObj->AddDropItemObject(itemInfo, pos, { 0.f, 2.f, 0.f }, texs);
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (CUIItem::IsCountableItem(itemInfo.eItemType))
-                    {
-                        auto cnt = pObj->GetCnt();
-                        if (cnt == 1)
-                        {
-                            pObj->SetPendingDestroyCascade();
-                        }
-                        else
-                        {
-                            pObj->SetCnt(cnt - 1);
-                        }
-
-
-                        {
-                            _float3 startPos{};
-                            XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
-                            startPos.y += 1.f;
-
-                            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo)))
-                            {
-                                if (!pLayer->empty())
-                                {
-                                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
-                                    {
-                                        auto pos = startPos;
-                                        pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                E::CDropBlock::DESC Desc{};
-                                Desc.sObjectTag = "CDropBlock_Cube";
-                                Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(itemInfo) };
-                                if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-                                    CDropItemObject::GetDropItemLayer(itemInfo), &Desc))
-                                {
-                                    if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(handle.value()))
-                                    {
-                                        auto pos = startPos;
-                                        pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        pObj->SetPendingDestroyCascade();
-
-                        {
-                            _float3 startPos{};
-                            XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
-                            startPos.y += 1.f;
-
-                            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(itemInfo)))
-                            {
-                                if (!pLayer->empty())
-                                {
-                                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
-                                    {
-                                        auto pos = startPos;
-                                        pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                E::CDropBlock::DESC Desc{};
-                                Desc.sObjectTag = "CDropBlock_Cube";
-                                Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(itemInfo) };
-                                if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_DropItem",
-                                    CDropItemObject::GetDropItemLayer(itemInfo), &Desc))
-                                {
-                                    if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(handle.value()))
-                                    {
-                                        auto pos = startPos;
-                                        pObj->AddDropItemObject(itemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(itemInfo.eItemType) });
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -1394,6 +1458,932 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
     XMStoreFloat3(&m_vVelocity, vVel);
 }
 
+
+void CPlayerEntity::ReadyPlayerItem()
+{
+    CItemObject::ItemInfo info{};
+    info.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
+    m_ItemArrHotbar[0] = info;
+}
+
+HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
+{
+    auto checkRoutine = [&](std::optional<CItemObject::ItemInfo>* pArr, size_t size)->HRESULT
+        {
+            // hotbar check
+            for (uint32_t i = 0; i < size; ++i)
+            {
+                auto& currHotbar = pArr[i];
+                if (!currHotbar)
+                {
+                    currHotbar = newItemInfo;
+                    return S_OK;
+                }
+                else
+                {
+                    if (newItemInfo.block && currHotbar->block)
+                    {
+                        if (newItemInfo.block->GetType() == currHotbar->block->GetType())
+                        {
+                            auto currCnt = currHotbar->iCnt;
+                            auto newCnt = newItemInfo.iCnt;
+
+                            if (currCnt + newCnt <= 64)
+                            {
+                                currHotbar->iCnt += newCnt;
+                                return S_OK;
+                            }
+                        }
+                    }
+                    else if (newItemInfo.block && !currHotbar->block || !newItemInfo.block && currHotbar->block)
+                    {
+
+                    }
+                    else
+                    {
+                        if (newItemInfo.eItemType == currHotbar->eItemType)
+                        {
+                            if (CItemObject::IsCountableItem(newItemInfo.eItemType))
+                            {
+                                auto currCnt = currHotbar->iCnt;
+                                auto newCnt = newItemInfo.iCnt;
+
+                                if (currCnt + newCnt <= 64)
+                                {
+                                    currHotbar->iCnt += newCnt;
+                                    return S_OK;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return E_FAIL;
+        };
+
+
+    if (SUCCEEDED(checkRoutine(m_ItemArrHotbar.data(), 9)))
+    {
+        return S_OK;
+    }
+
+    if (SUCCEEDED(checkRoutine(m_ItemArrInventory.data(), 9 * 3)))
+    {
+        return S_OK;
+    }
+
+
+    //// hotbar check
+    //for (uint32_t i = 0; i < 9; ++i)
+    //{
+    //    auto& currHotbar = m_ItemArrHotbar[i];
+    //    if (!currHotbar)
+    //    {
+    //        currHotbar = newItemInfo;
+    //        return S_OK;
+    //    }
+    //    else
+    //    {
+    //        if (newItemInfo.block && currHotbar->block)
+    //        {
+    //            if (newItemInfo.block->GetType() == currHotbar->block->GetType())
+    //            {
+    //                auto currCnt = currHotbar->iCnt;
+    //                auto newCnt = newItemInfo.iCnt;
+
+    //                if (currCnt + newCnt < 64)
+    //                {
+    //                    currHotbar->iCnt += newCnt;
+    //                    return S_OK;
+    //                }
+    //            }
+    //        }
+    //        else if (newItemInfo.block && !currHotbar->block || !newItemInfo.block && currHotbar->block)
+    //        {
+
+    //        }
+    //        else
+    //        {
+    //            if (newItemInfo.eItemType == currHotbar->eItemType)
+    //            {
+    //                if (CItemObject::IsCountableItem(newItemInfo.eItemType) )
+    //                {
+    //                    auto currCnt = currHotbar->iCnt;
+    //                    auto newCnt = newItemInfo.iCnt;
+
+    //                    if (currCnt + newCnt < 64)
+    //                    {
+    //                        currHotbar->iCnt += newCnt;
+    //                        return S_OK;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
+
+
+
+
+    return E_FAIL;
+}
+
+void CPlayerEntity::ProcessUIItemOnCursor(_float fTimeDelta)
+{
+    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+    {
+        POINT mousePos;
+        GetCursorPos(&mousePos);
+        ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+
+        pObj->SetOrigin(_float2{ (float)mousePos.x, (float)mousePos.y });
+
+
+        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB)
+            || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+        {
+            for (const auto& slot : GetUIController()->Getinventory()->GetInvenSlots())
+            {
+                //if (slot.hItem.has_value()) continue;
+
+                auto itemOrigin = pObj->GetOrigin();
+                auto slotOrigin = slot.vOriginPos;
+
+                auto slotMinX = slotOrigin.x - 8 * MC_UI_SCALE;
+                auto slotMinY = slotOrigin.y - 8 * MC_UI_SCALE;
+                auto slotMaxX = slotOrigin.x + 8 * MC_UI_SCALE;
+                auto slotMaxY = slotOrigin.y + 8 * MC_UI_SCALE;
+
+
+                if (itemOrigin.x > slotMinX
+                    && itemOrigin.x < slotMaxX
+                    && itemOrigin.y > slotMinY
+                    && itemOrigin.y < slotMaxY)
+                {
+                    std::optional<CItemObject::ItemInfo>* pTargetInfo{};
+
+                    //INVENTORY_HOTBAR,
+                       //    INVENTORY,
+                       //    ARMOR_HELMET,
+                       //    ARMOR_CHESTPLATE,
+                       //    ARMOR_LEGGINGS,
+                       //    ARMOR_BOOTS,
+                       //    SHIELD,
+                       //    CRAFT_LT,
+                       //    CRAFT_RT,
+                       //    CRAFT_LB,
+                       //    CRAFT_RB,
+                       //    CRAFT_RESULT,
+                    switch (slot.eType)
+                    {
+                    case CUIInventory::SlotType::INVENTORY_HOTBAR:
+                        pTargetInfo = &m_ItemArrHotbar[slot.typeIdx];
+                        break;
+                    case CUIInventory::SlotType::INVENTORY:
+                        pTargetInfo = &m_ItemArrInventory[slot.typeIdx];
+                        break;
+                    case CUIInventory::SlotType::ARMOR_HELMET:
+                        pTargetInfo = &m_ItemArrArmor[0];
+                        break;
+                    case CUIInventory::SlotType::ARMOR_CHESTPLATE:
+                        pTargetInfo = &m_ItemArrArmor[1];
+                        break;
+                    case CUIInventory::SlotType::ARMOR_LEGGINGS:
+                        pTargetInfo = &m_ItemArrArmor[2];
+                        break;
+                    case CUIInventory::SlotType::ARMOR_BOOTS:
+                        pTargetInfo = &m_ItemArrArmor[3];
+                        break;
+                    case CUIInventory::SlotType::SHIELD:
+                        pTargetInfo = &m_ItemShiled;
+                        break;
+                    case CUIInventory::SlotType::CRAFT_LT:
+                        pTargetInfo = &m_ItemArrInvenCrafting[0];
+                        break;
+                    case CUIInventory::SlotType::CRAFT_RT:
+                        pTargetInfo = &m_ItemArrInvenCrafting[1];
+                        break;
+                    case CUIInventory::SlotType::CRAFT_LB:
+                        pTargetInfo = &m_ItemArrInvenCrafting[2];
+                        break;
+                    case CUIInventory::SlotType::CRAFT_RB:
+                        pTargetInfo = &m_ItemArrInvenCrafting[3];
+                        break;
+                    case CUIInventory::SlotType::CRAFT_RESULT:
+                        pTargetInfo = &m_ItemArrInvenCrafting[4];
+                        break;
+                    }
+
+
+                    if (pTargetInfo && pTargetInfo->has_value())
+                    {
+                        if (auto pItemInfo = pObj->GetItemInfoPtr())
+                        {
+                            if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                            {
+                                if (pTargetInfo->value().block && pItemInfo->block)
+                                {
+                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                    {
+                                        auto isMaxOver = pItemInfo->iCnt + pTargetInfo->value().iCnt >= 64;
+                                        if (isMaxOver)
+                                        {
+                                            auto swapcopy = pTargetInfo->value();
+                                            auto swapcopy2 = *pItemInfo;
+
+                                            *pItemInfo = swapcopy;
+                                            *pTargetInfo = swapcopy2;
+
+                                            pObj->RePerUI();
+                                        }
+                                        else
+                                        {
+                                            pTargetInfo->value().iCnt += pItemInfo->iCnt;
+                                            pObj->SetPendingDestroy();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        auto swapcopy = pTargetInfo->value();
+                                        auto swapcopy2 = *pItemInfo;
+
+                                        *pItemInfo = swapcopy;
+                                        *pTargetInfo = swapcopy2;
+
+                                        pObj->RePerUI();
+                                    }
+                                    
+                                }
+                                else if (!pTargetInfo->value().block && pItemInfo->block || pTargetInfo->value().block && !pItemInfo->block)
+                                {
+                                    auto swapcopy = pTargetInfo->value();
+                                    auto swapcopy2 = *pItemInfo;
+
+                                    *pItemInfo = swapcopy;
+                                    *pTargetInfo = swapcopy2;
+
+                                    pObj->RePerUI();
+                                }
+                                else
+                                {
+                                    if (CItemObject::IsCountableItem(pItemInfo->eItemType))
+                                    {
+                                        if (pItemInfo->eItemType == pTargetInfo->value().eItemType)
+                                        {
+                                            auto isMaxOver = pItemInfo->iCnt + pTargetInfo->value().iCnt >= 64;
+                                            if (isMaxOver)
+                                            {
+                                                auto swapcopy = pTargetInfo->value();
+                                                auto swapcopy2 = *pItemInfo;
+
+                                                *pItemInfo = swapcopy;
+                                                *pTargetInfo = swapcopy2;
+
+                                                pObj->RePerUI();
+                                            }
+                                            else
+                                            {
+                                                pTargetInfo->value().iCnt += pItemInfo->iCnt;
+                                                pObj->SetPendingDestroy();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            auto swapcopy = pTargetInfo->value();
+                                            auto swapcopy2 = *pItemInfo;
+
+                                            *pItemInfo = swapcopy;
+                                            *pTargetInfo = swapcopy2;
+
+                                            pObj->RePerUI();
+                                        }
+                                        
+                                    }
+                                    else
+                                    {
+                                        auto swapcopy = pTargetInfo->value();
+                                        auto swapcopy2 = *pItemInfo;
+
+                                        *pItemInfo = swapcopy;
+                                        *pTargetInfo = swapcopy2;
+
+                                        pObj->RePerUI();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (pTargetInfo->value().block && pItemInfo->block)
+                                {
+                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                    {
+                                        auto isCanAdd = pTargetInfo->value().iCnt < 64;
+                                        if (isCanAdd)
+                                        {
+                                            pTargetInfo->value().iCnt += 1;
+
+                                            if (pItemInfo->iCnt > 1)
+                                            {
+                                                pItemInfo->iCnt -= 1;
+                                            }
+                                            else
+                                            {
+                                                pObj->SetPendingDestroyCascade();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            auto swapcopy = pTargetInfo->value();
+                                            auto swapcopy2 = *pItemInfo;
+
+                                            *pItemInfo = swapcopy;
+                                            *pTargetInfo = swapcopy2;
+
+                                            pObj->RePerUI();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        auto swapcopy = pTargetInfo->value();
+                                        auto swapcopy2 = *pItemInfo;
+
+                                        *pItemInfo = swapcopy;
+                                        *pTargetInfo = swapcopy2;
+
+                                        pObj->RePerUI();
+                                    }
+                                    
+                                }
+                                else if (!pTargetInfo->value().block && pItemInfo->block || pTargetInfo->value().block && !pItemInfo->block)
+                                {
+                                    auto swapcopy = pTargetInfo->value();
+                                    auto swapcopy2 = *pItemInfo;
+
+                                    *pItemInfo = swapcopy;
+                                    *pTargetInfo = swapcopy2;
+
+                                    pObj->RePerUI();
+                                }
+                                else
+                                {
+                                    if (CItemObject::IsCountableItem(pItemInfo->eItemType))
+                                    {
+                                        if (pItemInfo->eItemType == pTargetInfo->value().eItemType)
+                                        {
+                                            auto isCanAdd = pTargetInfo->value().iCnt < 64;
+                                            if (isCanAdd)
+                                            {
+                                                pTargetInfo->value().iCnt += 1;
+
+                                                if (pItemInfo->iCnt > 1)
+                                                {
+                                                    pItemInfo->iCnt -= 1;
+                                                }
+                                                else
+                                                {
+                                                    pObj->SetPendingDestroyCascade();
+                                                }
+                                            }
+                                            else
+                                            {
+                                                auto swapcopy = pTargetInfo->value();
+                                                auto swapcopy2 = *pItemInfo;
+
+                                                *pItemInfo = swapcopy;
+                                                *pTargetInfo = swapcopy2;
+
+                                                pObj->RePerUI();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            auto swapcopy = pTargetInfo->value();
+                                            auto swapcopy2 = *pItemInfo;
+
+                                            *pItemInfo = swapcopy;
+                                            *pTargetInfo = swapcopy2;
+
+                                            pObj->RePerUI();
+                                        }
+                                        
+                                    }
+                                    else
+                                    {
+                                        auto swapcopy = pTargetInfo->value();
+                                        auto swapcopy2 = *pItemInfo;
+
+                                        *pItemInfo = swapcopy;
+                                        *pTargetInfo = swapcopy2;
+
+                                        pObj->RePerUI();
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            pObj->SetPendingDestroyCascade();
+                        }
+                    }
+                    else
+                    {
+                        if (auto pItemInfo = pObj->GetItemInfoPtr())
+                        {
+                            if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                            {
+                                *pTargetInfo = *pItemInfo;
+                                pObj->SetPendingDestroyCascade();
+
+                                
+                            }
+                            else
+                            {
+                                if (pItemInfo->block || CItemObject::IsCountableItem(pItemInfo->eItemType))
+                                {
+                                    if (pItemInfo->iCnt <= 1)
+                                    {
+                                        *pTargetInfo = *pItemInfo;
+                                        pObj->SetPendingDestroyCascade();
+                                    }
+                                    else
+                                    {
+                                        CItemObject::ItemInfo copy{ *pItemInfo };
+                                        copy.iCnt = 1;
+
+                                        pItemInfo->iCnt -= 1;
+
+                                        *pTargetInfo = copy;
+
+
+                                    }
+                                }
+                                else
+                                {
+                                    *pTargetInfo = *pItemInfo;
+                                    pObj->SetPendingDestroyCascade();
+                                }
+                            }
+
+
+
+
+
+
+                            
+                        }
+                        else
+                        {
+                            pObj->SetPendingDestroyCascade();
+                        }
+                        
+
+                        //if (pItem->GetCnt() <= 1)
+                        //{
+                        //    slot.hItem = m_hOnCursorItem;
+                        //    m_hOnCursorItem = std::nullopt;
+                        //}
+                        //else
+                        //{
+                        //    if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                        //    {
+                        //        slot.hItem = m_hOnCursorItem;
+                        //        m_hOnCursorItem = std::nullopt;
+                        //    }
+                        //    else
+                        //    {
+                        //        pItem->SetCnt(pItem->GetCnt() - 1);
+
+                        //        {
+                        //            E::CUIItem::DESC Desc{};
+                        //            Desc.fX = itemOrigin.x;
+                        //            Desc.fY = itemOrigin.y;
+                        //            Desc.sObjectTag = "UIItem";
+                        //            Desc.itemInfo = pItem->GetItemInfo();
+                        //            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                        //                "80_UI", &Desc))
+                        //            {
+                        //                slot.hItem = handle;
+                        //                if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+                        //                {
+                        //                    pItem->SetOrigin(slotOrigin);
+                        //                    pItem->SetCnt(1);
+                        //                }
+                        //            }
+                        //        }
+                        //    }
+                        //}
+                    }
+
+
+                    pObj->SetOrigin(slotOrigin);
+                    break;
+      
+                    /*
+                    
+                    
+                    if (slot.hItem.has_value())
+                    {
+                        if (auto pSlotItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
+                        {
+                            if (pSlotItem->GetItemInfo().eItemType == pItem->GetItemInfo().eItemType)
+                            {
+                                if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                                {
+                                    auto isUnCountable = pSlotItem->GetCnt() == 0;
+                                    if (isUnCountable)
+                                    {
+                                        std::swap(m_hOnCursorItem, slot.hItem);
+                                    }
+                                    else
+                                    {
+                                        auto isMaxOver = pItem->GetCnt() + pSlotItem->GetCnt() >= 64;
+                                        if (isMaxOver)
+                                        {
+                                            std::swap(m_hOnCursorItem, slot.hItem);
+                                        }
+                                        else
+                                        {
+                                            pSlotItem->SetCnt(pItem->GetCnt() + pSlotItem->GetCnt());
+                                            pItem->SetPendingDestroyCascade();
+                                            m_hOnCursorItem = std::nullopt;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    auto isUnCountable = pSlotItem->GetCnt() == 0;
+                                    if (isUnCountable)
+                                    {
+                                        std::swap(m_hOnCursorItem, slot.hItem);
+                                    }
+                                    else
+                                    {
+                                        auto isCanAdd = pSlotItem->GetCnt() < 64;
+                                        if (isCanAdd)
+                                        {
+                                            pSlotItem->SetCnt(pSlotItem->GetCnt() + 1);
+
+                                            if (pItem->GetCnt() > 1)
+                                            {
+                                                pItem->SetCnt(pItem->GetCnt() - 1);
+                                            }
+                                            else
+                                            {
+                                                pItem->SetPendingDestroyCascade();
+                                                m_hOnCursorItem = std::nullopt;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            std::swap(m_hOnCursorItem, slot.hItem);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                std::swap(m_hOnCursorItem, slot.hItem);
+                                int x = 0;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (pItem->GetCnt() <= 1)
+                        {
+                            slot.hItem = m_hOnCursorItem;
+                            m_hOnCursorItem = std::nullopt;
+                        }
+                        else
+                        {
+                            if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                            {
+                                slot.hItem = m_hOnCursorItem;
+                                m_hOnCursorItem = std::nullopt;
+                            }
+                            else
+                            {
+                                pItem->SetCnt(pItem->GetCnt() - 1);
+
+                                {
+                                    E::CUIItem::DESC Desc{};
+                                    Desc.fX = itemOrigin.x;
+                                    Desc.fY = itemOrigin.y;
+                                    Desc.sObjectTag = "UIItem";
+                                    Desc.itemInfo = pItem->GetItemInfo();
+                                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                        "80_UI", &Desc))
+                                    {
+                                        slot.hItem = handle;
+                                        if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+                                        {
+                                            pItem->SetOrigin(slotOrigin);
+                                            pItem->SetCnt(1);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    pItem->SetOrigin(slotOrigin);
+                    break;
+                    */
+                }
+            }
+        }
+    }
+    else
+    {
+        
+        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB) || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+        {
+            POINT mousePos;
+            GetCursorPos(&mousePos);
+            ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+
+            for (const auto& slot : GetUIController()->Getinventory()->GetInvenSlots())
+            {
+                auto itemOrigin = _float2{ (float)mousePos.x, (float)mousePos.y };
+                auto slotOrigin = slot.vOriginPos;
+
+                auto slotMinX = slotOrigin.x - 8 * MC_UI_SCALE;
+                auto slotMinY = slotOrigin.y - 8 * MC_UI_SCALE;
+                auto slotMaxX = slotOrigin.x + 8 * MC_UI_SCALE;
+                auto slotMaxY = slotOrigin.y + 8 * MC_UI_SCALE;
+
+
+                if (itemOrigin.x > slotMinX
+                    && itemOrigin.x < slotMaxX
+                    && itemOrigin.y > slotMinY
+                    && itemOrigin.y < slotMaxY)
+                {
+
+                    std::optional<CItemObject::ItemInfo>* pTargetInfo{};
+
+                    //INVENTORY_HOTBAR,
+                       //    INVENTORY,
+                       //    ARMOR_HELMET,
+                       //    ARMOR_CHESTPLATE,
+                       //    ARMOR_LEGGINGS,
+                       //    ARMOR_BOOTS,
+                       //    SHIELD,
+                       //    CRAFT_LT,
+                       //    CRAFT_RT,
+                       //    CRAFT_LB,
+                       //    CRAFT_RB,
+                       //    CRAFT_RESULT,
+                    switch (slot.eType)
+                    {
+                    case CUIInventory::SlotType::INVENTORY_HOTBAR:
+                        pTargetInfo = &m_ItemArrHotbar[slot.typeIdx];
+                        break;
+                    case CUIInventory::SlotType::INVENTORY:
+                        pTargetInfo = &m_ItemArrInventory[slot.typeIdx];
+                        break;
+                    case CUIInventory::SlotType::ARMOR_HELMET:
+                        pTargetInfo = &m_ItemArrArmor[0];
+                        break;
+                    case CUIInventory::SlotType::ARMOR_CHESTPLATE:
+                        pTargetInfo = &m_ItemArrArmor[1];
+                        break;
+                    case CUIInventory::SlotType::ARMOR_LEGGINGS:
+                        pTargetInfo = &m_ItemArrArmor[2];
+                        break;
+                    case CUIInventory::SlotType::ARMOR_BOOTS:
+                        pTargetInfo = &m_ItemArrArmor[3];
+                        break;
+                    case CUIInventory::SlotType::SHIELD:
+                        pTargetInfo = &m_ItemShiled;
+                        break;
+                    case CUIInventory::SlotType::CRAFT_LT:
+                        pTargetInfo = &m_ItemArrInvenCrafting[0];
+                        break;
+                    case CUIInventory::SlotType::CRAFT_RT:
+                        pTargetInfo = &m_ItemArrInvenCrafting[1];
+                        break;
+                    case CUIInventory::SlotType::CRAFT_LB:
+                        pTargetInfo = &m_ItemArrInvenCrafting[2];
+                        break;
+                    case CUIInventory::SlotType::CRAFT_RB:
+                        pTargetInfo = &m_ItemArrInvenCrafting[3];
+                        break;
+                    case CUIInventory::SlotType::CRAFT_RESULT:
+                        pTargetInfo = &m_ItemArrInvenCrafting[4];
+                        break;
+                    }
+
+                    if (pTargetInfo && pTargetInfo->has_value())
+                    {
+                        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                        {
+                            {
+                                E::CUIItem::DESC Desc{};
+                                Desc.fX = itemOrigin.x;
+                                Desc.fY = itemOrigin.y;
+                                Desc.sObjectTag = "UIItem";
+                                if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                    "80_UI", &Desc))
+                                {
+                                    m_hUIItemOnCursor = handle.value();
+                                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+                                    {
+                                        pObj->SetItemInfo(pTargetInfo->value());
+                                    }
+                                }
+                            }
+
+                            if (pTargetInfo->value().block)
+                            {
+                                *pTargetInfo = std::nullopt;
+                            }
+                            else
+                            {
+                                if (CItemObject::IsCountableItem(pTargetInfo->value().eItemType))
+                                {
+                                    *pTargetInfo = std::nullopt;
+                                }
+                                else
+                                {
+                                    *pTargetInfo = std::nullopt;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            auto currItemCnt = pTargetInfo->value().iCnt;
+                            if (pTargetInfo->value().block)
+                            {
+                                if (currItemCnt > 1)
+                                {
+                                    auto dvd2 = currItemCnt / 2;
+                                    auto remain = currItemCnt - dvd2;
+
+                                    pTargetInfo->value().iCnt = remain;
+
+                                    {
+                                        CItemObject::ItemInfo newInfo{ pTargetInfo->value() };
+                                        newInfo.iCnt = dvd2;
+
+                                        E::CUIItem::DESC Desc{};
+                                        Desc.fX = itemOrigin.x;
+                                        Desc.fY = itemOrigin.y;
+                                        Desc.sObjectTag = "UIItem";
+                                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                            "80_UI", &Desc))
+                                        {
+                                            m_hUIItemOnCursor = handle.value();
+                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+                                            {
+                                                pObj->SetItemInfo(newInfo);
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    {
+                                        E::CUIItem::DESC Desc{};
+                                        Desc.fX = itemOrigin.x;
+                                        Desc.fY = itemOrigin.y;
+                                        Desc.sObjectTag = "UIItem";
+                                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                            "80_UI", &Desc))
+                                        {
+                                            m_hUIItemOnCursor = handle.value();
+                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+                                            {
+                                                pObj->SetItemInfo(pTargetInfo->value());
+                                            }
+                                        }
+                                    }
+
+
+                                    *pTargetInfo = std::nullopt;
+                                }
+                                
+                            }
+                            else
+                            {
+                                if (CItemObject::IsCountableItem(pTargetInfo->value().eItemType))
+                                {
+                                    if (currItemCnt > 1)
+                                    {
+                                        auto dvd2 = currItemCnt / 2;
+                                        auto remain = currItemCnt - dvd2;
+
+                                        pTargetInfo->value().iCnt = remain;
+
+                                        {
+                                            CItemObject::ItemInfo newInfo{ pTargetInfo->value() };
+                                            newInfo.iCnt = dvd2;
+
+                                            E::CUIItem::DESC Desc{};
+                                            Desc.fX = itemOrigin.x;
+                                            Desc.fY = itemOrigin.y;
+                                            Desc.sObjectTag = "UIItem";
+                                            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                                "80_UI", &Desc))
+                                            {
+                                                m_hUIItemOnCursor = handle.value();
+                                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+                                                {
+                                                    pObj->SetItemInfo(newInfo);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        {
+                                            E::CUIItem::DESC Desc{};
+                                            Desc.fX = itemOrigin.x;
+                                            Desc.fY = itemOrigin.y;
+                                            Desc.sObjectTag = "UIItem";
+                                            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                                "80_UI", &Desc))
+                                            {
+                                                m_hUIItemOnCursor = handle.value();
+                                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+                                                {
+                                                    pObj->SetItemInfo(pTargetInfo->value());
+                                                }
+                                            }
+                                        }
+
+
+                                        *pTargetInfo = std::nullopt;
+                                    }
+                                }
+                                else
+                                {
+                                    {
+                                        E::CUIItem::DESC Desc{};
+                                        Desc.fX = itemOrigin.x;
+                                        Desc.fY = itemOrigin.y;
+                                        Desc.sObjectTag = "UIItem";
+                                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                            "80_UI", &Desc))
+                                        {
+                                            m_hUIItemOnCursor = handle.value();
+                                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hUIItemOnCursor))
+                                            {
+                                                pObj->SetItemInfo(pTargetInfo->value());
+                                            }
+                                        }
+                                    }
+
+
+                                    *pTargetInfo = std::nullopt;
+
+                                }
+                            }
+
+                            /*
+                            
+                            if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
+                            {
+                                auto currItemCnt = pItem->GetCnt();
+                                if (currItemCnt <= 1)
+                                {
+                                    m_hOnCursorItem = slot.hItem;
+                                    slot.hItem = std::nullopt;
+                                }
+                                else
+                                {
+                                    auto dvd2 = currItemCnt / 2;
+                                    auto remain = currItemCnt - dvd2;
+                                    pItem->SetCnt(remain);
+
+                                    {
+                                        E::CUIItem::DESC Desc{};
+                                        Desc.fX = itemOrigin.x;
+                                        Desc.fY = itemOrigin.y;
+                                        Desc.sObjectTag = "UIItem";
+                                        Desc.itemInfo = pItem->GetItemInfo();
+                                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                            "80_UI", &Desc))
+                                        {
+                                            if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(handle.value()))
+                                            {
+                                                pItem->SetCnt(dvd2);
+                                            }
+                                            m_hOnCursorItem = handle;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            */
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
 
 UPtr<CPlayerEntity> CPlayerEntity::Create()
 {

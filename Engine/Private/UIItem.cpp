@@ -26,10 +26,14 @@ void CUIItem::UpdateGUI()
 		m_bRender = !m_bRender;
 	}
 	
-	if (ImGui::DragFloat("Durability", &m_ItemInfo.fDurability, 0.01, 0.f, 1.f))
+	if (m_ItemInfo)
 	{
+		if (ImGui::DragFloat("Durability", &m_ItemInfo->fDurability, 0.01, 0.f, 1.f))
+		{
 
+		}
 	}
+	
 }
 
 HRESULT CUIItem::Initialize(void* pArg)
@@ -39,7 +43,7 @@ HRESULT CUIItem::Initialize(void* pArg)
 	pDesc->fSizeY = 16.f * MC_UI_SCALE;
 
 	//m_eType = pDesc->eType;
-	m_ItemInfo = pDesc->itemInfo;
+	//m_ItemInfo = pDesc->itemInfo;
 	//m_PerUI = GetPerUIByType(m_eType);
 
 	//pDesc->fX = (1280.f * 0.5f);
@@ -86,19 +90,23 @@ HRESULT CUIItem::Initialize(void* pArg)
 		tmp.z -= 0.02f;
 
 		m_pComDurabilityGageTransform->SetPosition(tmp);
-		auto x = 16.f * MC_UI_SCALE * m_ItemInfo.fDurability;
+		auto x = 16.f * MC_UI_SCALE * 1.f;
 		auto y = 1.f * MC_UI_SCALE;
 		m_pComDurabilityGageTransform->SetScale(_float3{ x,y, 1.f });
 	}
 
-	if (m_ItemInfo.block)
-	{
-		 m_PerUI = GetPerUIByType(m_ItemInfo.block.value().GetType());
-	}
-	else
-	{
-		m_PerUI = GetPerUIByType(m_ItemInfo.eItemType);
-	}
+	//if (m_ItemInfo)
+	//{
+	//	if (m_ItemInfo->block)
+	//	{
+	//		m_PerUI = GetPerUIByType(m_ItemInfo->block.value().GetType());
+	//	}
+	//	else
+	//	{
+	//		m_PerUI = GetPerUIByType(m_ItemInfo->eItemType);
+	//	}
+	//}
+	
 	
 
 	return S_OK;
@@ -110,20 +118,22 @@ void CUIItem::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIItem::Update(E::_float fTimeDelta)
 {
-	if (m_bOnCursor)
-	{
-		POINT mousePos;
-		GetCursorPos(&mousePos);
-		ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+	//if (m_bOnCursor)
+	//{
+	//	POINT mousePos;
+	//	GetCursorPos(&mousePos);
+	//	ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
 
-		m_fX = mousePos.x;
-		m_fY = mousePos.y;
-		CalcUICoord();
-	}
+	//	m_fX = mousePos.x;
+	//	m_fY = mousePos.y;
+	//	CalcUICoord();
+	//}
 }
 
 void CUIItem::LateUpdate(E::_float fTimeDelta)
 {
+	if (!m_ItemInfo)return;
+
 	if (m_bRender)
 	{
 		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
@@ -140,11 +150,11 @@ void CUIItem::LateUpdate(E::_float fTimeDelta)
 	//m_pComDurabilityGageTransform->SetPosition(itemPos);
 
 	auto gageScale = m_pComDurabilityBgTransform->GetScale();
-	gageScale.x = 16.f * MC_UI_SCALE * m_ItemInfo.fDurability;
+	gageScale.x = 16.f * MC_UI_SCALE * m_ItemInfo->fDurability;
 	m_pComDurabilityGageTransform->SetScale(gageScale);
 
 	float fullWidth = 16.f * MC_UI_SCALE;
-	gageScale.x = fullWidth * m_ItemInfo.fDurability;
+	gageScale.x = fullWidth * m_ItemInfo->fDurability;
 	m_pComDurabilityGageTransform->SetScale(gageScale);
 
 	float offsetX = (fullWidth - gageScale.x) * 0.5f;
@@ -212,75 +222,81 @@ HRESULT CUIItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 
 	// cnt
 	{
-		if (m_iCnt > 1)
+		if (m_ItemInfo)
 		{
-			E::CGameInstance::Get().FontAddLateDraw("NeoDGM_20px", std::to_wstring(m_iCnt), { m_fX , m_fY });
+			if (m_ItemInfo->iCnt >= 1)
+			{
+				E::CGameInstance::Get().FontAddLateDraw("NeoDGM_20px", std::to_wstring(m_ItemInfo->iCnt), { m_fX , m_fY });
+			}
 		}
-		
 	}
 
 	// durability
 	{
-		if (m_ItemInfo.fDurability < 1.f)
+		if(m_ItemInfo)
 		{
+			if (m_ItemInfo->fDurability < 1.f)
 			{
 				{
-					E::CB_PER_UI perUI{};
-					perUI.texIndex = PackTexId(12, 0);
-					perUI.texCoord = { 1.f / 256.f, 144.f / 256.f };
-					perUI.uvSize = { 1.f / 256.f, 1.f / 256.f };
-
-					if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
 					{
-						return E_FAIL;
+						E::CB_PER_UI perUI{};
+						perUI.texIndex = PackTexId(12, 0);
+						perUI.texCoord = { 1.f / 256.f, 144.f / 256.f };
+						perUI.uvSize = { 1.f / 256.f, 1.f / 256.f };
+
+						if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
+						{
+							return E_FAIL;
+						}
+						pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+						pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
 					}
-					pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
-					pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+					{
+						E::CB_PER_OBJECT cbPerObject{};
+						cbPerObject.matWorld = *m_pComDurabilityBgTransform->GetCombinedWorldMatrix();
+						XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityBgTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+						if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+						{
+							return E_FAIL;
+						}
+						pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+						pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+					}
+
+					pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
 				}
+
 				{
-					E::CB_PER_OBJECT cbPerObject{};
-					cbPerObject.matWorld = *m_pComDurabilityBgTransform->GetCombinedWorldMatrix();
-					XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityBgTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
-					if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
 					{
-						return E_FAIL;
+						E::CB_PER_UI perUI{};
+						perUI.texIndex = PackTexId(12, 0);
+						perUI.texCoord = { 0.f / 256.f, 144.f / 256.f };
+						perUI.uvSize = { 1.f / 256.f, 1.f / 256.f };
+
+						if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
+						{
+							return E_FAIL;
+						}
+						pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+						pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
 					}
-					pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
-					pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
-				}
-
-				pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
-			}
-
-			{
-				{
-					E::CB_PER_UI perUI{};
-					perUI.texIndex = PackTexId(12, 0);
-					perUI.texCoord = { 0.f / 256.f, 144.f / 256.f };
-					perUI.uvSize = { 1.f / 256.f, 1.f / 256.f };
-
-					if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
 					{
-						return E_FAIL;
+						E::CB_PER_OBJECT cbPerObject{};
+						cbPerObject.matWorld = *m_pComDurabilityGageTransform->GetCombinedWorldMatrix();
+						XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityGageTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+						if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+						{
+							return E_FAIL;
+						}
+						pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+						pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
 					}
-					pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
-					pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
-				}
-				{
-					E::CB_PER_OBJECT cbPerObject{};
-					cbPerObject.matWorld = *m_pComDurabilityGageTransform->GetCombinedWorldMatrix();
-					XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityGageTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
-					if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
-					{
-						return E_FAIL;
-					}
-					pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
-					pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
-				}
 
-				pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+					pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+				}
 			}
 		}
+		
 		
 
 	}

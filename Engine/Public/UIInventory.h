@@ -5,7 +5,7 @@ NS_BEGIN(Engine)
 class CComConstantBuffer;
 class ENGINE_DLL CUIInventory final : public E::CUIObject
 {
-private:
+public:
 	enum class SlotType
 	{
 		INVENTORY_HOTBAR,
@@ -21,16 +21,15 @@ private:
 		CRAFT_RB,
 		CRAFT_RESULT,
 
-		INGAME_HOTBAR,
+		//INGAME_HOTBAR,
 
 	};
-
-
 	struct InventorySlot
 	{
 		_float2 vOriginPos{};
 		SlotType eType{};
 		std::optional<CHandle> hItem{};
+		size_t typeIdx{};
 	};
 public:
 	DECLARE_DERIVED_TYPE(CUIInventory, CUIObject)
@@ -56,11 +55,11 @@ public:
 private:
 	_bool m_bRender{ false };
 
-public:
-	HRESULT AddItemToInventory(const CItemObject::ItemInfo& info);
-
-private:
-	std::optional<size_t> IsCanAddItem(const CItemObject::ItemInfo& info);
+//public:
+//	HRESULT AddItemToInventory(const CItemObject::ItemInfo& info);
+//
+//private:
+//	std::optional<size_t> IsCanAddItem(const CItemObject::ItemInfo& info);
 
 private:
 	CComConstantBuffer* m_pComCBufferPerObject{};
@@ -68,6 +67,9 @@ private:
 
 private:
 	void InitializeSlot();
+
+public:
+	const std::vector<InventorySlot>& GetInvenSlots()const { return m_vecInventorySlot; }
 private:
 	std::vector<InventorySlot> m_vecInventorySlot{};
 	//std::unordered_map<uint64_t, InventorySlot> m_mapInventorySlots{};
@@ -82,12 +84,16 @@ private:
 	size_t m_CraftLBIdx{};
 	size_t m_CraftRBIdx{};
 	size_t m_CraftResultIdx{};
-	//onlyview
-	size_t m_IngameHotbarIdxs[9]{};
+
 
 public:
-	void SetIngameHotbar();
-	void SetInventoryHotbar();
+	void SetPlayerHandle(CHandle h) { m_hPlayerHandle = h; }
+private:
+	CHandle m_hPlayerHandle{};
+
+public:
+	void SetInventoryHotbarItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size);
+	void SetInventoryItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size);
 
 public:
 	std::optional<CHandle> GetHotbarSlotHandle(size_t hotbarIdx) { return m_vecInventorySlot[m_InventoryHotbarIdxs[std::clamp(hotbarIdx, (size_t)0, (size_t)9)]].hItem; };

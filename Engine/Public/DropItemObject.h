@@ -36,6 +36,7 @@ public:
 			case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
 				return "01_DROPITEM_Helmet";
 			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
 				return "01_DROPITEM_Picaxe";
 			}
 		}

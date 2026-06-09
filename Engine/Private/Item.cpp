@@ -33,10 +33,29 @@ void CItem::LateUpdate(E::_float fTimeDelta)
 
 HRESULT CItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
-    return E_NOTIMPL;
+    return S_OK;
+}
+
+UPtr<CItem> CItem::Create()
+{
+    auto pInstance = ToUPtr(new CItem{});
+    if (FAILED(pInstance->InitializePrototype()))
+    {
+        MSG_BOX("Failed to Create: CDropItem");
+        return nullptr;
+    }
+
+    return pInstance;
 }
 
 UPtr<CPrototype> CItem::Clone(void* pArg)
 {
-    return UPtr<CPrototype>();
+    auto pInstance = ToUPtr(new CItem{ *this });
+    if (FAILED(pInstance->Initialize(pArg)))
+    {
+        MSG_BOX("Failed to Cloned: CItem");
+        return nullptr;
+    }
+
+    return pInstance;
 }

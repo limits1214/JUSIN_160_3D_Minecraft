@@ -2,6 +2,8 @@
 #include "PlayerEntityObject.h"
 #include "PlayerCamera.h"
 
+#include "Item.h"
+
 NS_BEGIN(Engine)
 class CComEntityModel;
 class CDestroyStage;
@@ -73,7 +75,7 @@ public:
 	void ProcessBlockSet(float fTimeDelta);
 
 public:
-	void SetUIController(CHandle h) { m_hUIController = h; }
+	void SetUIController(CHandle h){m_hUIController = h; }
 private:
 	CUIController* GetUIController() const;
 	void ProcessUI(float fTimeDelta);
@@ -87,6 +89,13 @@ public:
 	void SetRightItemHandle(std::optional<CHandle> h) { m_hRightItem = h; }
 private:
 	std::optional<CHandle> m_hRightItem{};
+
+
+private:
+	void ProcessActionUpdate(_float fTimeDelta);
+
+private:
+	void ProcessItemColliding(_float fTimeDelta);
 
 private:
 	void PlayerCameraTrace(_float fTimeDelta);
@@ -135,6 +144,7 @@ private:
 	int32_t m_iMouseMoveZ{ 0 };
 	_bool m_bMousePressingLeft{ false };
 	_bool m_bMousePressingRight{ false };
+	_bool m_bMouseDownLeft{ false };
 	_bool m_bMouseDownRight{ false };
 
 private:
@@ -148,6 +158,22 @@ private:
 private:
 	_float3 m_vVelocity{};
 	bool     m_bOnGround{ false };
+
+private:
+	void ReadyPlayerItem();
+
+	HRESULT ProcessItemGain(const CItemObject::ItemInfo& info);
+	
+	std::array<std::optional<CItemObject::ItemInfo>, 4> m_ItemArrArmor{};
+	std::optional<CItemObject::ItemInfo> m_ItemShiled{};
+	std::array<std::optional<CItemObject::ItemInfo>, 9*3> m_ItemArrInventory{};
+	std::array<std::optional<CItemObject::ItemInfo>, 9> m_ItemArrHotbar{};
+	std::array<std::optional<CItemObject::ItemInfo>, 5> m_ItemArrInvenCrafting{};
+
+
+	CHandle m_hUIItemOnCursor{};
+	void ProcessUIItemOnCursor(_float fTimeDelta);
+
 
 public:
 	static UPtr<CPlayerEntity> Create();

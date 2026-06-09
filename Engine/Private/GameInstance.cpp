@@ -1954,6 +1954,10 @@ const std::vector<CHandle>* CGameInstance::GetGameObjectLayer(std::string_view s
 {
 	return m_pGameObjectManager->GetLayer(sLayerName);
 }
+const std::vector<CHandle>* CGameInstance::GetGameObjectLayer(std::string_view sLayerName, const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, void* pArg)
+{
+	return m_pGameObjectManager->GetLayer(sLayerName, iPrototypeLevelIndex, svPrototypeTag, pArg);
+}
 void CGameInstance::DelGameObjectLayer(std::string_view sLayerName)
 {
 	return m_pGameObjectManager->DelLayer(sLayerName);
