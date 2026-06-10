@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "UITextBg.h"
 #include "GameInstance.h"
 #include "CameraObject.h"
@@ -128,7 +128,7 @@ HRESULT CUITextBg::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 
 		perUI.texCoord = { 0.f / 256.f, 112.f / 256.f };
 		perUI.uvSize = { 24.f / 256.f, 24.f / 256.f };
-		perUI.borderUV = { 4.f / 256.f,  4.f / 256.f };  // atlas¿¡¼­ border 4px
+		perUI.borderUV = { 4.f / 256.f,  4.f / 256.f };  // atlasì—ì„œ border 4px
 		perUI.borderPx = { 4.f * MC_UI_SCALE, 4.f * MC_UI_SCALE };
 		perUI.rectSizePx = { m_fSizeX, m_fSizeY };
 		
@@ -140,7 +140,7 @@ HRESULT CUITextBg::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 
 			//perUI.rectSizePx = { m_fSizeX, m_fSizeY };
 
-			//// ÅØ½ºÆ®¸¦ ¹Ú½º ÁÂ»ó´Ü ±âÁØ ÆĞµù¸¸Å­ ¿ÀÇÁ¼Â
+			//// í…ìŠ¤íŠ¸ë¥¼ ë°•ìŠ¤ ì¢Œìƒë‹¨ ê¸°ì¤€ íŒ¨ë”©ë§Œí¼ ì˜¤í”„ì…‹
 			//float textX = m_fX - m_fSizeX * 0.5f + m_paddingX;
 			//float textY = m_fY - m_fSizeY * 0.5f + m_paddingY;
 			//E::CGameInstance::Get().FontAddLateDraw("NeoDGM_20px", m_text.c_str(), { textX, textY });

@@ -1,4 +1,4 @@
-#include "DropItem.h"
+ï»¿#include "DropItem.h"
 #include "GameInstance.h"
 #include "Resources.h"
 #include "CollBox.h"
@@ -67,7 +67,7 @@ void CDropItem::Update(E::_float fTimeDelta)
         if (m_bGravity)    VelocityUpdate(item, fTimeDelta);
         if (m_bAnimation)  AnimateTransformUpdate(item, fTimeDelta);
 
-        // ÃÖÁ¾ ¿ùµåÇà·Ä
+        // ìµœì¢… ì›”ë“œí–‰ë ¬
        // _matrix matRot = XMMatrixRotationY(XMConvertToDegrees(item.fBobYRot));
         _matrix matRot = XMMatrixRotationY(item.fBobYRot);
         _matrix matBob = XMMatrixTranslation(0.f, item.fBobYOffset, 0.f);

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "ItemObject.h"
 
 NS_BEGIN(Engine)
@@ -111,9 +111,9 @@ protected:
 	void AnimateTransformUpdate(InstancedDropItemObjectDesc& item, E::_float fTimeDelta);
 
 
-	static constexpr float BOB_SPEED = 2.0f;   // À§¾Æ·¡ ¼Óµµ
-	static constexpr float BOB_AMPLITUDE = 0.1f;   // À§¾Æ·¡ Æø (ÇÈ¼¿ ´ÜÀ§)
-	static constexpr float ROT_SPEED = 90.0f;   // È¸Àü ¼Óµµ (¶óµğ¾È/ÃÊ)
+	static constexpr float BOB_SPEED = 2.0f;   // ìœ„ì•„ë˜ ì†ë„
+	static constexpr float BOB_AMPLITUDE = 0.1f;   // ìœ„ì•„ë˜ í­ (í”½ì…€ ë‹¨ìœ„)
+	static constexpr float ROT_SPEED = 90.0f;   // íšŒì „ ì†ë„ (ë¼ë””ì•ˆ/ì´ˆ)
 
 protected:
 	void VelocityUpdate(InstancedDropItemObjectDesc& item, E::_float fTimeDelta);

@@ -172,7 +172,7 @@ void CFallingVoxel::Update(E::_float fTimeDelta)
 				b.SetType(CBlock3::TYPE::SAND);
 				CGameInstance::Get().SetVoxelBlock(iX, targetY, iZ, b);
 
-				// 💡 [수정] 바로 소멸시키지 않고 "정착 대기 캐시 리스트"로 토스!
+				// 바로 소멸시키지 않고 "정착 대기 캐시 리스트"로 토스
 				TSettledBlockData settledBlock{};
 				settledBlock.iTargetPos = { iX, targetY, iZ };
 				// 소수점 밀림 없는 완벽한 정수 그리드 좌표에 이쁘게 고정하여 그리도록 세팅
@@ -254,7 +254,7 @@ void CFallingVoxel::LateUpdate(E::_float fTimeDelta)
 		m_vecInstancedBlockTransform.push_back({ tmp });
 	}
 
-	// 2. 💡 [추가] 정착해서 대기 중인 고정 블록들의 정수 위치 행렬 추가 수집
+	// 2. [추가] 정착해서 대기 중인 고정 블록들의 정수 위치 행렬 추가 수집
 	for (auto& settledBlock : m_vecSettledBlocks)
 	{
 		_float4x4 tmp{};

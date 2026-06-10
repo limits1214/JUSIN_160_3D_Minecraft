@@ -1,4 +1,4 @@
-
+ï»¿
 #pragma once
 #include "UIObject.h"
 NS_BEGIN(Engine)
@@ -62,7 +62,7 @@ public:
 	//	m_fSizeX = textWidth + m_paddingX * 2.f;
 	//	m_fSizeY = textHeight + m_paddingY * 2.f;
 
-	//	// Æ®·£½ºÆû ½ºÄÉÀÏ °»½Å
+	//	// íŠ¸ëœìŠ¤í¼ ìŠ¤ì¼€ì¼ ê°±ì‹ 
 	//	//GetTransform().SetScale(XMVectorSet(m_fSizeX, m_fSizeY, 1.f, 0.f));
 	//	CalcUICoord();
 	//}
