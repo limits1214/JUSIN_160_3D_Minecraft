@@ -442,6 +442,10 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
         float goal = blockDestroyTime * blockDestroyRate;
 
         pDestroyStage->SetFrameIndex(fElapsed / (goal / 9));
+
+
+        CGameInstance::Get().AddParticleRenderDestruct(res.block.value(), { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f });
+
         if (pDestroyStage->GetFrameIndex() == 9)
         {
             CBlock3 newBlock{};
@@ -466,6 +470,10 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
                     case CBlock3::TYPE::STONE_COAL_ORE:
                         ItemInfo.block = std::nullopt;
                         ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
+                        return;
+                    case CBlock3::TYPE::TORCH_ON:
+                        ItemInfo.block = std::nullopt;
+                        ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
                         return;
                     }
                 };
@@ -555,6 +563,29 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                 else
                 {
                     //TODO NotBlock
+
+                    switch (hotbarItemInfo->eItemType)
+                    {
+                    case CItemObject::ITEM_TYPE::ITEM_Torch:
+                    {
+
+                        auto newBlock = CBlock3(CBlock3::TYPE::TORCH_ON);
+                        newBlock.SetBlockLight(CBlock3::GetBlockLightByType(newBlock.GetType()));
+
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, newBlock);
+
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                        break;
+                    
+                    }
                 }
             }
         }
@@ -1409,6 +1440,16 @@ void CPlayerEntity::ReadyPlayerItem()
     CItemObject::ItemInfo info{};
     info.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
     m_ItemArrHotbar[0] = info;
+
+    CItemObject::ItemInfo stick{};
+    stick.eItemType = CItemObject::ITEM_TYPE::ITEM_Stick;
+    stick.iCnt = 1;
+    m_ItemArrHotbar[1] = stick;
+
+    CItemObject::ItemInfo coal{};
+    coal.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
+    coal.iCnt = 1;
+    m_ItemArrHotbar[2] = coal;
 
 
 }

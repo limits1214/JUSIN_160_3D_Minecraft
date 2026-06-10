@@ -15,6 +15,7 @@ public:
 		ITEM_CooperHelmet,
 		ITEM_Coal,
 		ITEM_Stick,
+		ITEM_Torch,
 		END
 	};
 	struct ItemInfo
@@ -199,6 +200,8 @@ public:
 			return  PackTexId(6, 8);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Stick:
 			return  PackTexId(6, 9);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Torch:
+			return  PackTexId(6, 10);
 		}
 		return 0;
 	}

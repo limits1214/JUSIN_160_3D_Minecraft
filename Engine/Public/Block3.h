@@ -541,6 +541,18 @@ inline CBlock3::TEX_TYPE CBlock3::GetTexType(CBlock3::TYPE blockType, FACE_DIR f
 			return TEX_TYPE::FURNACE_SIDE;
 		}
 
+	case TYPE::CRAFTING_TABLE:
+		switch (faceDir)
+		{
+		case FACE_DIR::POS_Y:
+		case FACE_DIR::NEG_Y:
+			return TEX_TYPE::CRAFTING_TABLE_TOP;
+		case FACE_DIR::NEG_Z:
+			return TEX_TYPE::CRAFTING_TABLE_SIDE;
+		default:
+			return TEX_TYPE::CRAFTING_TABLE_FRONT;
+		}
+
 	case TYPE::TNT:
 		switch (faceDir)
 		{

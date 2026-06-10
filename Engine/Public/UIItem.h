@@ -51,6 +51,7 @@ private:
 		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
 		case CItemObject::ITEM_TYPE::ITEM_Coal:
 		case CItemObject::ITEM_TYPE::ITEM_Stick:
+		case CItemObject::ITEM_TYPE::ITEM_Torch:
 			perUI.texIndex = CItemObject::GetPackedTexIdByType(eType);
 			perUI.texCoord = { 0 / 16.f, 0 / 16.f };
 			perUI.uvSize = { 16.f / 16.f, 16.f / 16.f };

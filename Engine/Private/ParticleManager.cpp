@@ -7,6 +7,50 @@
 
 NS_USING(Engine)
 
+float Randf(float min, float max)
+{
+    return min +
+        (max - min) *
+        (rand() / (float)RAND_MAX);
+}
+
+void CParticleManager::AddParticleRenderDestruct(CBlock3 block, _float3 pos)
+{
+    auto texId = CBlock3::GetTexType(block.GetType(), FACE_DIR::POS_X);
+    for (int i = 0; i < 1; ++i)
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 2.f;
+        att.iTexId = PackTexId(9, static_cast<uint32_t>(texId));
+        att.vPos = { pos };
+        att.vAcceleration = { 0.f, -9.8f, 0.f };
+        //att.vAcceleration = { 0.f, 0.f, 0.f };
+
+        auto tmp = rand() % 10 / 10.f;
+        auto tmp2 = rand() % 10 / 10.f;
+        att.vUv = { tmp, tmp2 };
+        att.vUvSize = { 0.1f, 0.1f };
+        att.vSize = { 0.1f, 0.1f };
+        att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(0.5f, 1.5f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(1.f, 4.f);
+
+        dir *= speed;
+
+        XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::BLOCK_DESTRUCT, att);
+    }
+}
+
 CParticleManager::CParticleManager(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
     : m_pDevice {pDevice}
     , m_pContext {pContext}
@@ -16,12 +60,7 @@ CParticleManager::CParticleManager(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11De
 CParticleManager::~CParticleManager()
 {
 }
-float Randf(float min, float max)
-{
-    return min +
-        (max - min) *
-        (rand() / (float)RAND_MAX);
-}
+
 void CParticleManager::UpdateGUI()
 {
     ImGui::Begin("ParticleManager");

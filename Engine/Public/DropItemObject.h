@@ -43,6 +43,8 @@ public:
 				return "01_DROPITEM_Coal";
 			case CItemObject::ITEM_TYPE::ITEM_Stick:
 				return "01_DROPITEM_Stick";
+			case CItemObject::ITEM_TYPE::ITEM_Torch:
+				return "01_DROPITEM_Torch";
 			}
 		}
 		return "01_DROPBLOCK_CUBE";
@@ -63,6 +65,8 @@ public:
 				return "Coal";
 			case CItemObject::ITEM_TYPE::ITEM_Stick:
 				return "Stick";
+			case CItemObject::ITEM_TYPE::ITEM_Torch:
+				return "Torch";
 			}
 		}
 		return "CubeItemDirt";

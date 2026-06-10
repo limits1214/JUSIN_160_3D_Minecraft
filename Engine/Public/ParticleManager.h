@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine_Defines.h"
 #include "IRenderable.h"
+#include "Block3.h"
 NS_BEGIN(Engine)
 class CResDynamicVIBuffer;
 class ENGINE_DLL CParticleManager final : public CEngineBase, public IRenderable
@@ -12,6 +13,9 @@ public:
 		PARTICLES_ATLAS,
 		END
 	};
+
+public:
+	void AddParticleRenderDestruct(CBlock3 block, _float3 pos);
 
 
 	//enum class PARTICLE_TEX_TYPE
