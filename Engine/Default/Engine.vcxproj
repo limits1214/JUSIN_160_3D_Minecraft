@@ -235,6 +235,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\BlockOutline.h" />
     <ClInclude Include="..\public\CameraManager.h" />
     <ClInclude Include="..\public\CameraObject.h" />
+    <ClInclude Include="..\public\ChestStorage.h" />
     <ClInclude Include="..\public\ChickenEntity.h" />
     <ClInclude Include="..\public\Chunk3.h" />
     <ClInclude Include="..\Public\CollBox.h" />
@@ -268,6 +269,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\FallingVoxel.h" />
     <ClInclude Include="..\public\FlyCamera.h" />
     <ClInclude Include="..\public\FontManager.h" />
+    <ClInclude Include="..\public\FurnaceStorage.h" />
     <ClInclude Include="..\public\GameInstance.h" />
     <ClInclude Include="..\public\GameManager.h" />
     <ClInclude Include="..\public\GameObject.h" />
@@ -483,6 +485,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\BlockOutline.cpp" />
     <ClCompile Include="..\private\CameraManager.cpp" />
     <ClCompile Include="..\private\CameraObject.cpp" />
+    <ClCompile Include="..\private\ChestStorage.cpp" />
     <ClCompile Include="..\private\ChickenEntity.cpp" />
     <ClCompile Include="..\private\Chunk3.cpp" />
     <ClCompile Include="..\Private\CollBox.cpp" />
@@ -498,6 +501,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\DropBlock.cpp" />
     <ClCompile Include="..\private\DropItemObject.cpp" />
     <ClCompile Include="..\private\FallingVoxel.cpp" />
+    <ClCompile Include="..\private\FurnaceStorage.cpp" />
     <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
     <ClCompile Include="..\private\UIArmorBar.cpp" />

@@ -32,6 +32,7 @@
 #include "UIController.h"
 
 #include "FallingVoxel.h"
+#include "ChestStorage.h"
 
 #include "UIItem.h"
 
@@ -356,6 +357,27 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
+	// chest storage
+	{
+		E::CGameObject::GAMEOBJECT_DESC Desc{};
+		Desc.sObjectTag = "ChestStorage";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("CHEST_STORAGE", "Prototype_GameObject_ChestStorage",
+			"56_ChestStorage", &Desc))
+		{
+
+		}
+	}
+
+	// furnace storage
+	{
+		E::CGameObject::GAMEOBJECT_DESC Desc{};
+		Desc.sObjectTag = "FurnaceStorage";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("FURNACE_STORAGE", "Prototype_GameObject_FurnaceStorage",
+			"56_FurnaceStorage", &Desc))
+		{
+
+		}
+	}
 	
 
 

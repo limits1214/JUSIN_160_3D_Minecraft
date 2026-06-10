@@ -1,4 +1,4 @@
-#include "DropItemObject.h"
+Ôªø#include "DropItemObject.h"
 #include "GameInstance.h"
 #include "Resources.h"
 #include "CollBox.h"
@@ -63,7 +63,7 @@ void CDropItemObject::VelocityUpdate(InstancedDropItemObjectDesc& item, E::_floa
     XMVECTOR vVel = XMLoadFloat3(&item.vVelocity);
     XMVECTOR vWishDir = XMVectorZero();
 
-    // ∞°º”
+    // Í∞ÄÏÜç
     float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
     float fAddSpeed = m_fSpeed - fCurrSpeed;
     if (fAddSpeed > 0.f)
@@ -72,7 +72,7 @@ void CDropItemObject::VelocityUpdate(InstancedDropItemObjectDesc& item, E::_floa
         vVel += vWishDir * fAccelSpeed;
     }
 
-    // ºˆ∆Ú º”µµ ¡¶«—
+    // ÏàòÌèâ ÏÜçÎèÑ Ï†úÌïú
     XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
     float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
     if (fHorizSpeed > m_fSpeed)
@@ -81,7 +81,7 @@ void CDropItemObject::VelocityUpdate(InstancedDropItemObjectDesc& item, E::_floa
         vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
     }
 
-    // ∏∂¬˚
+    // ÎßàÏ∞∞
     if (item.bOnGround)
     {
         float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
@@ -93,11 +93,11 @@ void CDropItemObject::VelocityUpdate(InstancedDropItemObjectDesc& item, E::_floa
         }
     }
 
-    // ¡ﬂ∑¬
+    // Ï§ëÎ†•
     if (!item.bOnGround)
         vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
 
-    // AABB √Êµπ
+    // AABB Ï∂©Îèå
     const XMFLOAT3 halfExtents = { 0.25f, 0.49f, 0.25f };
     XMFLOAT3 c = item.vPos;
 

@@ -261,3 +261,23 @@ namespace std
 		}
 	};
 }
+
+
+namespace std {
+	template<>
+	struct hash<XMINT3> {
+		size_t operator()(const XMINT3& v) const {
+			size_t h = 0;
+			h ^= hash<int>{}(v.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
+			h ^= hash<int>{}(v.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
+			h ^= hash<int>{}(v.z) + 0x9e3779b9 + (h << 6) + (h >> 2);
+			return h;
+		}
+	};
+}
+
+namespace DirectX {
+	inline bool operator==(const XMINT3& a, const XMINT3& b) {
+		return a.x == b.x && a.y == b.y && a.z == b.z;
+	}
+}
