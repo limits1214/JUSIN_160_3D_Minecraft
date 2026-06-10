@@ -527,7 +527,10 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                 case CBlock3::TYPE::FURNACE:
                     GetUIController()->Getinventory()->SetRender(false);
                     GetUIController()->GetBlastFurnace()->SetRender(true);
-
+                    return;
+                case CBlock3::TYPE::CHEST:
+                    GetUIController()->Getinventory()->SetRender(false);
+                    GetUIController()->GetChest()->SetRender(true);
                     return;
                 }
             }
@@ -644,8 +647,12 @@ void CPlayerEntity::ProcessUI(float fTimeDelta)
         
     }
     ProcessUIInventory(fTimeDelta);
-    ProcessInventoryUIItemOnCursor(fTimeDelta);
+    ProcessUIInventoryItemOnCursor(fTimeDelta);
     ProcessUIInventoryCrafting(fTimeDelta);
+
+    ProcessUICraftingTable(fTimeDelta);
+    ProcessUICraftingItemOnCursor(fTimeDelta);
+    ProcessUICraftingTableCrafting(fTimeDelta);
 
     ProcessUIHotbar(fTimeDelta);
 }
@@ -675,7 +682,6 @@ void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
     if (!m_pActivePlayerCamera) return;
     auto* pUIController = GetUIController();
    
-
     if (pUIController->Getinventory()->GetRender())
     {
         pUIController->Getinventory()->SetInventoryHotbarItemData(m_ItemArrHotbar.data(), 9);
@@ -729,6 +735,63 @@ void CPlayerEntity::ProcessUIInventoryCrafting(float fTimeDelta)
         m_ItemInvenCraftingOriginRecipe = std::nullopt;
     }
     
+}
+
+void CPlayerEntity::ProcessUICraftingTable(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pUIController = GetUIController();
+
+    if (pUIController->GetCraftingTable()->GetRender())
+    {
+        pUIController->GetCraftingTable()->SetInventoryHotbarItemData(m_ItemArrHotbar.data(), 9);
+        pUIController->GetCraftingTable()->SetInventoryItemData(m_ItemArrInventory.data(), 9 * 3);
+        pUIController->GetCraftingTable()->SetCraftingTableCraftingItemData(m_ItemArrCraftingTableCrafting.data(), 10);
+    }
+}
+
+void CPlayerEntity::ProcessUICraftingTableCrafting(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto* pCraftingTable = GetUIController()->GetCraftingTable();
+
+    // 0   CRAFT_LT,
+    // 1   CRAFT_RT,
+    // 2   CRAFT_LB,
+    // 3   CRAFT_RB,
+    // 4   CRAFT_RESULT,
+
+    ;
+    std::vector<std::pair<std::optional<CItemObject::ItemInfo>, void*>> craftingInfo{};
+    craftingInfo.resize(9);
+
+    for (int i = 0; i < 9; ++i)
+        craftingInfo[i].first = m_ItemArrCraftingTableCrafting[i];
+
+    auto craftingTrimmedGrid = CItemObject::GetTrimmedGrid(craftingInfo, 3, 3);
+
+    std::optional<CItemObject::SRecipe> optMatchRecipe{};
+
+    for (const auto& recipe : CItemObject::s_vecRecipies)
+    {
+        auto recipeTrimmedGrid = CItemObject::GetTrimmedGrid(recipe.pattern, 3, 3);
+        if (CItemObject::MatchTrimmedGrid(craftingTrimmedGrid, recipeTrimmedGrid))
+        {
+            optMatchRecipe = recipe;
+            break;
+        }
+    }
+
+    if (optMatchRecipe.has_value())
+    {
+        m_ItemArrCraftingTableCrafting[9] = optMatchRecipe->result;
+        m_ItemCraftingTableCraftingOriginRecipe = optMatchRecipe;
+    }
+    else
+    {
+        m_ItemArrCraftingTableCrafting[9] = std::nullopt;
+        m_ItemCraftingTableCraftingOriginRecipe = std::nullopt;
+    }
 }
 
 void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
@@ -1492,6 +1555,20 @@ void CPlayerEntity::ReadyPlayerItem()
     m_ItemArrHotbar[2] = coal;
 
 
+    CItemObject::ItemInfo craftingtable{};
+    craftingtable.block = CBlock3(CBlock3::TYPE::CRAFTING_TABLE);
+    craftingtable.iCnt = 1;
+    m_ItemArrHotbar[3] = craftingtable;
+
+    CItemObject::ItemInfo chest{};
+    chest.block = CBlock3(CBlock3::TYPE::CHEST);
+    chest.iCnt = 1;
+    m_ItemArrHotbar[4] = chest;
+
+    CItemObject::ItemInfo furnace{};
+    furnace.block = CBlock3(CBlock3::TYPE::FURNACE);
+    furnace.iCnt = 1;
+    m_ItemArrHotbar[5] = furnace;
 }
 
 HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
@@ -1617,7 +1694,7 @@ HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
     return E_FAIL;
 }
 
-void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
+void CPlayerEntity::ProcessUIInventoryItemOnCursor(_float fTimeDelta)
 {
     auto* pUIController = GetUIController();
     if (!pUIController) return;
@@ -1700,9 +1777,6 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
         {
             for (const auto& slot : GetUIController()->Getinventory()->GetInvenSlots())
             {
-                
-
-
                 auto itemOrigin = pObj->GetOrigin();
                 auto slotOrigin = slot.vOriginPos;
 
@@ -1740,7 +1814,10 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                                                 for (int i = 0; i < 4; ++i)
                                                 {
                                                     craftingInfo[i].first = m_ItemArrInvenCrafting[i];
-                                                    craftingInfo[i].second = &m_ItemArrInvenCrafting[i];
+                                                    if (craftingInfo[i].first)
+                                                    {
+                                                        craftingInfo[i].second = &m_ItemArrInvenCrafting[i];
+                                                    }
                                                 }
 
                                                 auto craftingTrimmedGrid = CItemObject::GetTrimmedGrid(craftingInfo, 2, 2);
@@ -1749,14 +1826,18 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                                                 {
                                                     auto pCraft = static_cast<std::optional<CItemObject::ItemInfo>*>(craftingTrimmedGrid.grid[i].second);
 
-                                                    if (pCraft->value().iCnt >= trimmedGrid.grid[i].first->iCnt)
+                                                    if (pCraft)
                                                     {
-                                                        pCraft->value().iCnt -= trimmedGrid.grid[i].first->iCnt;
-                                                        if (pCraft->value().iCnt <= 0)
+                                                        if (pCraft->value().iCnt >= trimmedGrid.grid[i].first->iCnt)
                                                         {
-                                                            *pCraft = std::nullopt;
+                                                            pCraft->value().iCnt -= trimmedGrid.grid[i].first->iCnt;
+                                                            if (pCraft->value().iCnt <= 0)
+                                                            {
+                                                                *pCraft = std::nullopt;
+                                                            }
                                                         }
                                                     }
+                                                    
                                                 }
                                             }
                                         }
@@ -1997,7 +2078,6 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                     // 해당 아이템 슬롯이 잇는경우에만
                     if (pTargetInfo && pTargetInfo->has_value())
                     {
-                        
                         auto funcSpawnOnCursorItem = [&](const CItemObject::ItemInfo& movedItemInfo)
                             {
                                 {
@@ -2059,7 +2139,10 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                                     for (int i = 0; i < 4; ++i)
                                     {
                                         craftingInfo[i].first = m_ItemArrInvenCrafting[i];
-                                        craftingInfo[i].second = &m_ItemArrInvenCrafting[i];
+                                        if (craftingInfo[i].first)
+                                        {
+                                            craftingInfo[i].second = &m_ItemArrInvenCrafting[i];
+                                        }
                                     }
 
                                     auto craftingTrimmedGrid = CItemObject::GetTrimmedGrid(craftingInfo, 2, 2);
@@ -2068,16 +2151,534 @@ void CPlayerEntity::ProcessInventoryUIItemOnCursor(_float fTimeDelta)
                                     {
                                         auto pCraft = static_cast<std::optional<CItemObject::ItemInfo>*>(craftingTrimmedGrid.grid[i].second);
                                         
-                                        if (pCraft->value().iCnt >= trimmedGrid.grid[i].first->iCnt)
+                                        if (pCraft)
                                         {
-                                            pCraft->value().iCnt -= trimmedGrid.grid[i].first->iCnt;
-                                            if (pCraft->value().iCnt <= 0)
+                                            if (pCraft->value().iCnt >= trimmedGrid.grid[i].first->iCnt)
                                             {
-                                                *pCraft = std::nullopt;
+                                                pCraft->value().iCnt -= trimmedGrid.grid[i].first->iCnt;
+                                                if (pCraft->value().iCnt <= 0)
+                                                {
+                                                    *pCraft = std::nullopt;
+                                                }
                                             }
                                         }
+                                        
                                     }
                                     
+                                }
+                            }
+
+                            continue;
+                        }
+
+
+                        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                        {
+                            funcSpawnOnCursorItem(pTargetInfo->value());
+
+                            *pTargetInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            auto currItemCnt = pTargetInfo->value().iCnt;
+                            if (pTargetInfo->value().block)
+                            {
+                                funcItemDivideToOnCurosr(*pTargetInfo);
+                            }
+                            else
+                            {
+                                if (CItemObject::IsCountableItem(pTargetInfo->value().eItemType))
+                                {
+                                    funcItemDivideToOnCurosr(*pTargetInfo);
+                                }
+                                else
+                                {
+                                    funcSpawnOnCursorItem(pTargetInfo->value());
+
+                                    *pTargetInfo = std::nullopt;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void CPlayerEntity::ProcessUICraftingItemOnCursor(_float fTimeDelta)
+{
+    auto* pUIController = GetUIController();
+    if (!pUIController) return;
+    if (!pUIController->GetCraftingTable()->GetRender())
+    {
+        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hCraftingTableUIItemOnCursor))
+        {
+            // todo: countable item 하나씩 뿌리기
+            if (auto pInfo = pObj->GetItemInfoPtr())
+            {
+                _float3 startPos{};
+                XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+                startPos.y += 1.f;
+                SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+            }
+            pObj->SetPendingDestroyCascade();
+        }
+        return;
+    }
+
+    auto invenSlotToMemberItem = [&](CUICraftingTable::CraftingTableSlot slot)->std::optional<CItemObject::ItemInfo>*
+        {
+            std::optional<CItemObject::ItemInfo>* pTargetInfo{};
+
+            //INVENTORY_HOTBAR,
+            //    INVENTORY,
+
+            //    CRAFT_LT,
+            //    CRAFT_MT,
+            //    CRAFT_RT,
+            //    CRAFT_LM,
+            //    CRAFT_MM,
+            //    CRAFT_RM,
+            //    CRAFT_LB,
+            //    CRAFT_MB,
+            //    CRAFT_RB,
+
+            //    CRAFT_RESULT,
+            switch (slot.eType)
+            {
+            case CUICraftingTable::SlotType::INVENTORY_HOTBAR:
+                return  &m_ItemArrHotbar[slot.typeIdx];
+            case CUICraftingTable::SlotType::INVENTORY:
+                return  &m_ItemArrInventory[slot.typeIdx];
+            case CUICraftingTable::SlotType::CRAFT_LT:
+                return  &m_ItemArrCraftingTableCrafting[0];
+            case CUICraftingTable::SlotType::CRAFT_MT:
+                return  &m_ItemArrCraftingTableCrafting[1];
+            case CUICraftingTable::SlotType::CRAFT_RT:
+                return  &m_ItemArrCraftingTableCrafting[2];
+            case CUICraftingTable::SlotType::CRAFT_LM:
+                return  &m_ItemArrCraftingTableCrafting[3];
+            case CUICraftingTable::SlotType::CRAFT_MM:
+                return  &m_ItemArrCraftingTableCrafting[4];
+            case CUICraftingTable::SlotType::CRAFT_RM:
+                return  &m_ItemArrCraftingTableCrafting[5];
+            case CUICraftingTable::SlotType::CRAFT_LB:
+                return  &m_ItemArrCraftingTableCrafting[6];
+            case CUICraftingTable::SlotType::CRAFT_MB:
+                return  &m_ItemArrCraftingTableCrafting[7];
+            case CUICraftingTable::SlotType::CRAFT_RB:
+                return  &m_ItemArrCraftingTableCrafting[8];
+            case CUICraftingTable::SlotType::CRAFT_RESULT:
+                return  &m_ItemArrCraftingTableCrafting[9];
+            }
+
+            return nullptr;
+        };
+
+
+    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hCraftingTableUIItemOnCursor))
+    {
+        POINT mousePos;
+        GetCursorPos(&mousePos);
+        ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+
+        pObj->SetOrigin(_float2{ (float)mousePos.x, (float)mousePos.y });
+
+
+        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB)
+            || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+        {
+            for (const auto& slot : GetUIController()->GetCraftingTable()->GetCraftingTableSlots())
+            {
+                auto itemOrigin = pObj->GetOrigin();
+                auto slotOrigin = slot.vOriginPos;
+
+                auto slotMinX = slotOrigin.x - 8 * MC_UI_SCALE;
+                auto slotMinY = slotOrigin.y - 8 * MC_UI_SCALE;
+                auto slotMaxX = slotOrigin.x + 8 * MC_UI_SCALE;
+                auto slotMaxY = slotOrigin.y + 8 * MC_UI_SCALE;
+
+
+                if (itemOrigin.x > slotMinX
+                    && itemOrigin.x < slotMaxX
+                    && itemOrigin.y > slotMinY
+                    && itemOrigin.y < slotMaxY)
+                {
+                    std::optional<CItemObject::ItemInfo>* pTargetInfo{ invenSlotToMemberItem(slot) };
+
+                    if (pTargetInfo && pTargetInfo->has_value())
+                    {
+                        if (auto pItemInfo = pObj->GetItemInfoPtr())
+                        {
+
+                            // 크래프팅결과
+                            if (slot.eType == CUICraftingTable::SlotType::CRAFT_RESULT)
+                            {
+                                auto funcGetCraftRes = [&]()
+                                    {
+                                        if (m_ItemCraftingTableCraftingOriginRecipe)
+                                        {
+                                            if (pItemInfo->iCnt + m_ItemCraftingTableCraftingOriginRecipe->result.iCnt <= 64)
+                                            {
+                                                pItemInfo->iCnt += m_ItemCraftingTableCraftingOriginRecipe->result.iCnt;
+
+                                                std::vector<std::pair<std::optional<CItemObject::ItemInfo>, void*>> craftingInfo{};
+                                                craftingInfo.resize(9);
+                                                for (int i = 0; i < 9; ++i)
+                                                {
+                                                    craftingInfo[i].first = m_ItemArrCraftingTableCrafting[i];
+                                                    if (craftingInfo[i].first)
+                                                    {
+                                                        craftingInfo[i].second = &m_ItemArrCraftingTableCrafting[i];
+                                                    }
+                                                }
+
+                                                auto craftingTrimmedGrid = CItemObject::GetTrimmedGrid(craftingInfo, 3, 3);
+                                                auto trimmedGrid = CItemObject::GetTrimmedGrid(m_ItemCraftingTableCraftingOriginRecipe->pattern, 3, 3);
+                                                for (uint32_t i = 0; i < trimmedGrid.grid.size(); ++i)
+                                                {
+                                                    auto pCraft = static_cast<std::optional<CItemObject::ItemInfo>*>(craftingTrimmedGrid.grid[i].second);
+
+                                                    if (pCraft)
+                                                    {
+                                                        if (pCraft->value().iCnt >= trimmedGrid.grid[i].first->iCnt)
+                                                        {
+                                                            pCraft->value().iCnt -= trimmedGrid.grid[i].first->iCnt;
+                                                            if (pCraft->value().iCnt <= 0)
+                                                            {
+                                                                *pCraft = std::nullopt;
+                                                            }
+                                                        }
+                                                    }
+                                                    
+                                                }
+                                            }
+                                        }
+                                    };
+                                if (pTargetInfo->value().block && pItemInfo->block)
+                                {
+                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                    {
+                                        funcGetCraftRes();
+                                    }
+
+                                }
+                                else if (!pTargetInfo->value().block && pItemInfo->block || pTargetInfo->value().block && !pItemInfo->block)
+                                {
+                                }
+                                else
+                                {
+                                    if (CItemObject::IsCountableItem(pItemInfo->eItemType))
+                                    {
+                                        if (pItemInfo->eItemType == pTargetInfo->value().eItemType)
+                                        {
+                                            funcGetCraftRes();
+                                        }
+                                    }
+                                }
+
+                                continue;
+                            }
+
+                            if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                            {
+                                auto funcIfMaxSwapElseCntUp = [&]()
+                                    {
+                                        auto isMaxOver = pItemInfo->iCnt + pTargetInfo->value().iCnt >= 64;
+                                        if (isMaxOver)
+                                        {
+                                            std::swap(pTargetInfo->value(), *pItemInfo);
+                                            pObj->RePerUI();
+                                        }
+                                        else
+                                        {
+                                            pTargetInfo->value().iCnt += pItemInfo->iCnt;
+                                            pObj->SetPendingDestroy();
+                                        }
+                                    };
+                                if (pTargetInfo->value().block && pItemInfo->block)
+                                {
+                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                    {
+                                        funcIfMaxSwapElseCntUp();
+                                    }
+                                    else
+                                    {
+                                        std::swap(pTargetInfo->value(), *pItemInfo);
+                                        pObj->RePerUI();
+                                    }
+
+                                }
+                                else if (!pTargetInfo->value().block && pItemInfo->block || pTargetInfo->value().block && !pItemInfo->block)
+                                {
+                                    std::swap(pTargetInfo->value(), *pItemInfo);
+                                    pObj->RePerUI();
+                                }
+                                else
+                                {
+                                    if (CItemObject::IsCountableItem(pItemInfo->eItemType))
+                                    {
+                                        if (pItemInfo->eItemType == pTargetInfo->value().eItemType)
+                                        {
+                                            funcIfMaxSwapElseCntUp();
+                                        }
+                                        else
+                                        {
+                                            std::swap(pTargetInfo->value(), *pItemInfo);
+                                            pObj->RePerUI();
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        std::swap(pTargetInfo->value(), *pItemInfo);
+                                        pObj->RePerUI();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                auto funcItemCntAdd = [&]()
+                                    {
+                                        auto isCanAdd = pTargetInfo->value().iCnt < 64;
+                                        if (isCanAdd)
+                                        {
+                                            pTargetInfo->value().iCnt += 1;
+
+                                            if (pItemInfo->iCnt > 1)
+                                            {
+                                                pItemInfo->iCnt -= 1;
+                                            }
+                                            else
+                                            {
+                                                pObj->SetPendingDestroyCascade();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            std::swap(pTargetInfo->value(), *pItemInfo);
+                                            pObj->RePerUI();
+                                        }
+                                    };
+                                if (pTargetInfo->value().block && pItemInfo->block)
+                                {
+                                    if (pTargetInfo->value().block->GetType() == pItemInfo->block->GetType())
+                                    {
+                                        funcItemCntAdd();
+                                    }
+                                    else
+                                    {
+                                        std::swap(pTargetInfo->value(), *pItemInfo);
+                                        pObj->RePerUI();
+                                    }
+
+                                }
+                                else if (!pTargetInfo->value().block && pItemInfo->block || pTargetInfo->value().block && !pItemInfo->block)
+                                {
+                                    std::swap(pTargetInfo->value(), *pItemInfo);
+                                    pObj->RePerUI();
+                                }
+                                else
+                                {
+                                    if (CItemObject::IsCountableItem(pItemInfo->eItemType))
+                                    {
+                                        if (pItemInfo->eItemType == pTargetInfo->value().eItemType)
+                                        {
+                                            funcItemCntAdd();
+                                        }
+                                        else
+                                        {
+                                            std::swap(pTargetInfo->value(), *pItemInfo);
+                                            pObj->RePerUI();
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        std::swap(pTargetInfo->value(), *pItemInfo);
+                                        pObj->RePerUI();
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            pObj->SetPendingDestroyCascade();
+                        }
+                    }
+                    // 타겟이 없는경우 온커서에 있는거 그대로 넘기기
+                    else
+                    {
+                        if (auto pItemInfo = pObj->GetItemInfoPtr())
+                        {
+                            if (slot.eType == CUICraftingTable::SlotType::CRAFT_RESULT)
+                            {
+                                continue;
+                            }
+                            if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+                            {
+                                *pTargetInfo = *pItemInfo;
+                                pObj->SetPendingDestroyCascade();
+
+                            }
+                            else
+                            {
+                                if (pItemInfo->block || CItemObject::IsCountableItem(pItemInfo->eItemType))
+                                {
+                                    if (pItemInfo->iCnt <= 1)
+                                    {
+                                        *pTargetInfo = *pItemInfo;
+                                        pObj->SetPendingDestroyCascade();
+                                    }
+                                    else
+                                    {
+                                        CItemObject::ItemInfo copy{ *pItemInfo };
+                                        copy.iCnt = 1;
+
+                                        pItemInfo->iCnt -= 1;
+
+                                        *pTargetInfo = copy;
+                                    }
+                                }
+                                else
+                                {
+                                    *pTargetInfo = *pItemInfo;
+                                    pObj->SetPendingDestroyCascade();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            pObj->SetPendingDestroyCascade();
+                        }
+                    }
+
+
+                    pObj->SetOrigin(slotOrigin);
+                    break;
+                }
+            }
+        }
+    }
+    // onCursor에 아이템이 없는경우
+    else
+    {
+        if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB) || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+        {
+            POINT mousePos;
+            GetCursorPos(&mousePos);
+            ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+
+            for (const auto& slot : GetUIController()->GetCraftingTable()->GetCraftingTableSlots())
+            {
+                auto itemOrigin = _float2{ (float)mousePos.x, (float)mousePos.y };
+                auto slotOrigin = slot.vOriginPos;
+
+                auto slotMinX = slotOrigin.x - 8 * MC_UI_SCALE;
+                auto slotMinY = slotOrigin.y - 8 * MC_UI_SCALE;
+                auto slotMaxX = slotOrigin.x + 8 * MC_UI_SCALE;
+                auto slotMaxY = slotOrigin.y + 8 * MC_UI_SCALE;
+
+
+                if (itemOrigin.x > slotMinX
+                    && itemOrigin.x < slotMaxX
+                    && itemOrigin.y > slotMinY
+                    && itemOrigin.y < slotMaxY)
+                {
+
+                    std::optional<CItemObject::ItemInfo>* pTargetInfo{ invenSlotToMemberItem(slot) };
+
+                    // 해당 아이템 슬롯이 잇는경우에만
+                    if (pTargetInfo && pTargetInfo->has_value())
+                    {
+                        auto funcSpawnOnCursorItem = [&](const CItemObject::ItemInfo& movedItemInfo)
+                            {
+                                {
+                                    E::CUIItem::DESC Desc{};
+                                    Desc.fX = itemOrigin.x;
+                                    Desc.fY = itemOrigin.y;
+                                    Desc.sObjectTag = "UIItem";
+                                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+                                        "80_UI", &Desc))
+                                    {
+                                        m_hCraftingTableUIItemOnCursor = handle.value();
+                                        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hCraftingTableUIItemOnCursor))
+                                        {
+                                            pObj->SetItemInfo(movedItemInfo);
+                                        }
+                                    }
+                                }
+                            };
+
+
+                        auto funcItemDivideToOnCurosr = [&](std::optional<CItemObject::ItemInfo>& targetInfo)
+                            {
+                                auto currItemCnt = targetInfo.value().iCnt;
+                                if (currItemCnt > 1)
+                                {
+                                    auto dvd2 = currItemCnt / 2;
+                                    auto remain = currItemCnt - dvd2;
+
+                                    targetInfo.value().iCnt = remain;
+
+                                    {
+                                        CItemObject::ItemInfo newInfo{ targetInfo.value() };
+                                        newInfo.iCnt = dvd2;
+
+                                        funcSpawnOnCursorItem(newInfo);
+                                    }
+                                }
+                                else
+                                {
+                                    {
+                                        funcSpawnOnCursorItem(targetInfo.value());
+                                    }
+
+
+                                    *pTargetInfo = std::nullopt;
+                                }
+                            };
+
+                        if (slot.eType == CUICraftingTable::SlotType::CRAFT_RESULT)
+                        {
+                            {
+                                if (m_ItemCraftingTableCraftingOriginRecipe)
+                                {
+                                    funcSpawnOnCursorItem(pTargetInfo->value());
+                                    *pTargetInfo = std::nullopt;
+
+                                    std::vector<std::pair<std::optional<CItemObject::ItemInfo>, void*>> craftingInfo{};
+                                    craftingInfo.resize(9);
+                                    for (int i = 0; i < 9; ++i)
+                                    {
+                                        craftingInfo[i].first = m_ItemArrCraftingTableCrafting[i];
+                                        if (craftingInfo[i].first)
+                                        {
+                                            craftingInfo[i].second = &m_ItemArrCraftingTableCrafting[i];
+                                        }
+                                    }
+
+                                    auto craftingTrimmedGrid = CItemObject::GetTrimmedGrid(craftingInfo, 3, 3);
+                                    auto trimmedGrid = CItemObject::GetTrimmedGrid(m_ItemCraftingTableCraftingOriginRecipe->pattern, 3, 3);
+                                    for (uint32_t i = 0; i < trimmedGrid.grid.size(); ++i)
+                                    {
+                                        auto pCraft = static_cast<std::optional<CItemObject::ItemInfo>*>(craftingTrimmedGrid.grid[i].second);
+                                        if (pCraft)
+                                        {
+                                            if (pCraft->value().iCnt >= trimmedGrid.grid[i].first->iCnt)
+                                            {
+                                                pCraft->value().iCnt -= trimmedGrid.grid[i].first->iCnt;
+                                                if (pCraft->value().iCnt <= 0)
+                                                {
+                                                    *pCraft = std::nullopt;
+                                                }
+                                            }
+                                        }
+                                        
+                                    }
+
                                 }
                             }
 

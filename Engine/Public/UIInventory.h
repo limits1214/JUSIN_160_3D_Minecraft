@@ -72,7 +72,7 @@ private:
 	std::vector<InventorySlot> m_vecInventorySlot{};
 	//std::unordered_map<uint64_t, InventorySlot> m_mapInventorySlots{};
 private:
-	std::optional<CHandle> m_hOnCursorItem{};
+	//std::optional<CHandle> m_hOnCursorItem{};
 
 	size_t m_InventoryIdxs[9*3]{};
 	size_t m_InventoryHotbarIdxs[9]{};

@@ -83,6 +83,8 @@ private:
 	void ProcessUIHotbar(float fTimeDelta);
 	void ProcessUIInventory(float fTimeDelta);
 	void ProcessUIInventoryCrafting(float fTimeDelta);
+	void ProcessUICraftingTable(float fTimeDelta);
+	void ProcessUICraftingTableCrafting(float fTimeDelta);
 	void ProcessThrowItem(float fTimeDelta);
 private:
 	CHandle m_hUIController{};
@@ -172,11 +174,18 @@ private:
 	std::array<std::optional<CItemObject::ItemInfo>, 9> m_ItemArrHotbar{};
 	std::array<std::optional<CItemObject::ItemInfo>, 5> m_ItemArrInvenCrafting{};
 
-	std::optional < CItemObject::SRecipe > m_ItemInvenCraftingOriginRecipe{};
+	std::optional <CItemObject::SRecipe > m_ItemInvenCraftingOriginRecipe{};
+
+	std::array<std::optional<CItemObject::ItemInfo>, 10> m_ItemArrCraftingTableCrafting{};
+
+	std::optional <CItemObject::SRecipe > m_ItemCraftingTableCraftingOriginRecipe{};
 
 
 	CHandle m_hInventoryUIItemOnCursor{};
-	void ProcessInventoryUIItemOnCursor(_float fTimeDelta);
+	void ProcessUIInventoryItemOnCursor(_float fTimeDelta);
+
+	CHandle m_hCraftingTableUIItemOnCursor{};
+	void ProcessUICraftingItemOnCursor(_float fTimeDelta);
 
 private:
 	void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
