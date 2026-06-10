@@ -24,6 +24,17 @@ public:
 		std::optional<CBlock3> block{};
 		_float fDurability{ 1.f };
 		uint8_t iCnt{};
+		ItemInfo() = default;
+		ItemInfo(ITEM_TYPE _itemType, uint8_t _iCnt = 0)
+			: eItemType{ _itemType }
+			, iCnt{ _iCnt }
+		{
+		}
+		ItemInfo(CBlock3 _block, uint8_t _iCnt = 0)
+			:block{_block}
+			, iCnt{_iCnt}
+		{
+		}
 	};
 
 public:

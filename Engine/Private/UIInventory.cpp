@@ -104,7 +104,7 @@ void CUIInventory::Update(E::_float fTimeDelta)
 			&& itemOrigin.y < slotMaxY)
 		{
 			bIntersected = true;
-			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
+			if (auto pItem = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem))
 			{
 				if (auto pInfo = pItem->GetItemInfoPtr())
 				{
@@ -372,7 +372,7 @@ void CUIInventory::LateUpdate(E::_float fTimeDelta)
 
 	for (auto& slot : m_vecInventorySlot)
 	{
-		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem.value()))
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem))
 		{
 			pObj->SetRender(m_bRender);
 		}
@@ -617,7 +617,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				armorHelmet.hItem = handle;
+				armorHelmet.hItem = handle.value();
 			}
 		}
 		armorHelmet.typeIdx = typeIdx++;
@@ -641,7 +641,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				armorChestplate.hItem = handle;
+				armorChestplate.hItem = handle.value();
 			}
 		}
 		armorChestplate.typeIdx = typeIdx++;
@@ -665,7 +665,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				armorLeggins.hItem = handle;
+				armorLeggins.hItem = handle.value();
 			}
 		}
 		armorLeggins.typeIdx = typeIdx++;
@@ -689,7 +689,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				armorBoots.hItem = handle;
+				armorBoots.hItem = handle.value();
 			}
 		}
 		armorBoots.typeIdx = typeIdx++;
@@ -713,7 +713,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				shiled.hItem = handle;
+				shiled.hItem = handle.value();
 			}
 		}
 		shiled.typeIdx = typeIdx++;
@@ -737,7 +737,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				craftLt.hItem = handle;
+				craftLt.hItem = handle.value();
 			}
 		}
 		craftLt.typeIdx = typeIdx++;
@@ -761,7 +761,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				craftRt.hItem = handle;
+				craftRt.hItem = handle.value();
 			}
 		}
 		craftRt.typeIdx = typeIdx++;
@@ -785,7 +785,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				craftLb.hItem = handle;
+				craftLb.hItem = handle.value();
 			}
 		}
 		craftLb.typeIdx = typeIdx++;
@@ -809,7 +809,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				craftRb.hItem = handle;
+				craftRb.hItem = handle.value();
 			}
 		}
 		craftRb.typeIdx = typeIdx++;
@@ -833,7 +833,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				craftResult.hItem = handle;
+				craftResult.hItem = handle.value();
 			}
 		}
 		craftResult.typeIdx = typeIdx++;
@@ -862,7 +862,7 @@ void CUIInventory::InitializeSlot()
 				if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 					"80_UI", &Desc))
 				{
-					InvenSlot.hItem = handle;
+					InvenSlot.hItem = handle.value();
 				}
 			}
 			InvenSlot.typeIdx = typeIdx++;
@@ -890,7 +890,7 @@ void CUIInventory::InitializeSlot()
 			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
 				"80_UI", &Desc))
 			{
-				hotbarSlot.hItem = handle;
+				hotbarSlot.hItem = handle.value();
 			}
 		}
 		hotbarSlot.typeIdx = typeIdx++;
@@ -904,7 +904,7 @@ void CUIInventory::SetInventoryHotbarItemData(std::optional<CItemObject::ItemInf
 {
 	for (uint32_t i = 0; i < size; ++i)
 	{
-		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem.value()))
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryHotbarIdxs[i]].hItem))
 		{
 			if (pArr[i])
 			{
@@ -922,7 +922,7 @@ void CUIInventory::SetInventoryItemData(std::optional<CItemObject::ItemInfo>* pA
 {
 	for (uint32_t i = 0; i < size; ++i)
 	{
-		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryIdxs[i]].hItem.value()))
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_InventoryIdxs[i]].hItem))
 		{
 			if (pArr[i])
 			{
@@ -938,7 +938,7 @@ void CUIInventory::SetInventoryItemData(std::optional<CItemObject::ItemInfo>* pA
 
 void CUIInventory::SetInventoryArmorItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
 {
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ArmorHelmetIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ArmorHelmetIdx].hItem))
 	{
 		if (pArr[0])
 		{
@@ -950,7 +950,7 @@ void CUIInventory::SetInventoryArmorItemData(std::optional<CItemObject::ItemInfo
 		}
 	}
 
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ArmorChestplateIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ArmorChestplateIdx].hItem))
 	{
 		if (pArr[1])
 		{
@@ -962,7 +962,7 @@ void CUIInventory::SetInventoryArmorItemData(std::optional<CItemObject::ItemInfo
 		}
 	}
 
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ArmorLeggingsIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ArmorLeggingsIdx].hItem))
 	{
 		if (pArr[2])
 		{
@@ -974,7 +974,7 @@ void CUIInventory::SetInventoryArmorItemData(std::optional<CItemObject::ItemInfo
 		}
 	}
 
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ArmorBootsIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ArmorBootsIdx].hItem))
 	{
 		if (pArr[3])
 		{
@@ -990,7 +990,7 @@ void CUIInventory::SetInventoryArmorItemData(std::optional<CItemObject::ItemInfo
 
 void CUIInventory::SetInventoryShieldItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
 {
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ShiledIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_ShiledIdx].hItem))
 	{
 		if (pArr[0])
 		{
@@ -1005,7 +1005,7 @@ void CUIInventory::SetInventoryShieldItemData(std::optional<CItemObject::ItemInf
 
 void CUIInventory::SetInventoryCraftingItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
 {
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftLTIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftLTIdx].hItem))
 	{
 		if (pArr[0])
 		{
@@ -1017,7 +1017,7 @@ void CUIInventory::SetInventoryCraftingItemData(std::optional<CItemObject::ItemI
 		}
 	}
 
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftRTIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftRTIdx].hItem))
 	{
 		if (pArr[1])
 		{
@@ -1029,7 +1029,7 @@ void CUIInventory::SetInventoryCraftingItemData(std::optional<CItemObject::ItemI
 		}
 	}
 
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftLBIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftLBIdx].hItem))
 	{
 		if (pArr[2])
 		{
@@ -1041,7 +1041,7 @@ void CUIInventory::SetInventoryCraftingItemData(std::optional<CItemObject::ItemI
 		}
 	}
 
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftRBIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftRBIdx].hItem))
 	{
 		if (pArr[3])
 		{
@@ -1053,7 +1053,7 @@ void CUIInventory::SetInventoryCraftingItemData(std::optional<CItemObject::ItemI
 		}
 	}
 
-	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftResultIdx].hItem.value()))
+	if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecInventorySlot[m_CraftResultIdx].hItem))
 	{
 		if (pArr[4])
 		{

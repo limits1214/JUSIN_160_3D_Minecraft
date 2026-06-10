@@ -457,29 +457,9 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             ItemInfo.block = res.block;
             ItemInfo.iCnt = 1;
 
-            auto conversion = [&ItemInfo]()
-                {
-                    switch (ItemInfo.block->GetType())
-                    {
-                    case CBlock3::TYPE::GRASS:
-                        ItemInfo.block->SetType(CBlock3::TYPE::DIRT);
-                        return;
-                    case CBlock3::TYPE::STONE:
-                        ItemInfo.block->SetType(CBlock3::TYPE::COBBLESTONE);
-                        return;
-                    case CBlock3::TYPE::STONE_COAL_ORE:
-                        ItemInfo.block = std::nullopt;
-                        ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
-                        return;
-                    case CBlock3::TYPE::TORCH_ON:
-                        ItemInfo.block = std::nullopt;
-                        ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
-                        return;
-                    }
-                };
+          
 
-            conversion();
-
+            DestroyStageEndItemConverter(ItemInfo);
             
 
         
@@ -500,6 +480,27 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
     }
 }
 
+void CPlayerEntity::DestroyStageEndItemConverter(CItemObject::ItemInfo& info)
+{
+    switch (info.block->GetType())
+    {
+    case CBlock3::TYPE::GRASS:
+        info.block->SetType(CBlock3::TYPE::DIRT);
+        return;
+    case CBlock3::TYPE::STONE:
+        info.block->SetType(CBlock3::TYPE::COBBLESTONE);
+        return;
+    case CBlock3::TYPE::STONE_COAL_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
+        return;
+    case CBlock3::TYPE::TORCH_ON:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
+        return;
+    }
+}
+
 CDestroyStage* CPlayerEntity::GetDestroyStage() const
 {
     return CGameInstance::Get().GetGameObjectByHandleT<CDestroyStage>(m_hDestroyStage);
@@ -515,33 +516,31 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
         CVoxelManager3::BLOCK_RAY_RESULT res;
         if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin2, rayDir2, 5.f, res))
         {
+            if (res.block)
+            {
+                switch (res.block->GetType())
+                {
+                case CBlock3::TYPE::CRAFTING_TABLE:
+                    GetUIController()->Getinventory()->SetRender(false);
+                    GetUIController()->GetCraftingTable()->SetRender(true);
+                    return;
+                case CBlock3::TYPE::FURNACE:
+                    GetUIController()->Getinventory()->SetRender(false);
+                    GetUIController()->GetBlastFurnace()->SetRender(true);
+
+                    return;
+                }
+            }
+
             auto worldBX = res.iWorldBlockX;
             auto worldBY = res.iWorldBlockY;
             auto worldBZ = res.iWorldBlockZ;
-            if (res.eHitFace == FACE_DIR::POS_X)
-            {
-                worldBX += 1;
-            }
-            else if (res.eHitFace == FACE_DIR::NEG_X)
-            {
-                worldBX -= 1;
-            }
-            else if (res.eHitFace == FACE_DIR::POS_Y)
-            {
-                worldBY += 1;
-            }
-            else if (res.eHitFace == FACE_DIR::NEG_Y)
-            {
-                worldBY -= 1;
-            }
-            else if (res.eHitFace == FACE_DIR::POS_Z)
-            {
-                worldBZ += 1;
-            }
-            else if (res.eHitFace == FACE_DIR::NEG_Z)
-            {
-                worldBZ -= 1;
-            }
+            if (res.eHitFace == FACE_DIR::POS_X) worldBX += 1;
+            else if (res.eHitFace == FACE_DIR::NEG_X) worldBX -= 1;
+            else if (res.eHitFace == FACE_DIR::POS_Y) worldBY += 1;
+            else if (res.eHitFace == FACE_DIR::NEG_Y) worldBY -= 1;
+            else if (res.eHitFace == FACE_DIR::POS_Z) worldBZ += 1;
+            else if (res.eHitFace == FACE_DIR::NEG_Z) worldBZ -= 1;
 
             auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
             if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
@@ -563,7 +562,6 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                 else
                 {
                     //TODO NotBlock
-
                     switch (hotbarItemInfo->eItemType)
                     {
                     case CItemObject::ITEM_TYPE::ITEM_Torch:
@@ -600,6 +598,51 @@ CUIController* CPlayerEntity::GetUIController() const
 
 void CPlayerEntity::ProcessUI(float fTimeDelta)
 {
+    if (m_bKeyDownE)
+    {
+        _bool bInvenRender = GetUIController()->Getinventory()->GetRender();
+        _bool bCraftingTable = GetUIController()->GetCraftingTable()->GetRender();
+        _bool bFurnaceRender = GetUIController()->GetBlastFurnace()->GetRender();
+        _bool bChestRender = GetUIController()->GetChest()->GetRender();
+        _bool bChest2Render = GetUIController()->GetChest2()->GetRender();
+
+        if (bFurnaceRender || bCraftingTable || bChestRender || bChest2Render)
+        {
+            if (bInvenRender)
+                GetUIController()->Getinventory()->SetRender(false);
+
+            if(bFurnaceRender)
+                GetUIController()->GetBlastFurnace()->SetRender(false);
+
+            if (bCraftingTable)
+                GetUIController()->GetCraftingTable()->SetRender(false);
+
+            if(bChestRender)
+                GetUIController()->GetChest()->SetRender(false);
+
+            if (bChest2Render)
+                GetUIController()->GetChest2()->SetRender(false);
+        }
+        else
+        {
+            if (bInvenRender)
+                GetUIController()->Getinventory()->SetRender(false);
+            else
+                GetUIController()->Getinventory()->SetRender(true);
+        }
+
+
+        //if (GetUIController()->Getinventory()->GetRender())
+        //{
+        //    GetUIController()->Getinventory()->SetRender(false);
+        //}
+        //else
+        //{
+        //    GetUIController()->Getinventory()->SetRender(true);
+        //}
+       
+        
+    }
     ProcessUIInventory(fTimeDelta);
     ProcessInventoryUIItemOnCursor(fTimeDelta);
     ProcessUIInventoryCrafting(fTimeDelta);
@@ -631,10 +674,7 @@ void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
 {
     if (!m_pActivePlayerCamera) return;
     auto* pUIController = GetUIController();
-    if (m_bKeyDownE)
-    {
-        pUIController->Getinventory()->SetRender(!pUIController->Getinventory()->GetRender());
-    }
+   
 
     if (pUIController->Getinventory()->GetRender())
     {

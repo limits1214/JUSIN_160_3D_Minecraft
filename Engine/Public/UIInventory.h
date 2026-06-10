@@ -21,14 +21,12 @@ public:
 		CRAFT_RB,
 		CRAFT_RESULT,
 
-		//INGAME_HOTBAR,
-
 	};
 	struct InventorySlot
 	{
 		_float2 vOriginPos{};
 		SlotType eType{};
-		std::optional<CHandle> hItem{};
+		CHandle hItem{};
 		size_t typeIdx{};
 	};
 public:
