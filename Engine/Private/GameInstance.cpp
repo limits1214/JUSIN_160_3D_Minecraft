@@ -1709,6 +1709,18 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 10: torch_on.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/torch_on.png")))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "Torch", CResExtrudedItemVIBuffer::Create()))
+				{
+					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 10 });
+				}
+			}
+		}
+
 
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
@@ -2169,6 +2181,13 @@ void CGameInstance::FontLateDraw(RENDERGROUP eRenderGroup)
 }
 #pragma endregion
 
+
+#pragma region PARTICLE_MANAGER
+void CGameInstance::AddParticleRenderDestruct(CBlock3 block, _float3 pos)
+{
+	m_pParticleManager->AddParticleRenderDestruct(block, pos);
+}
+#pragma
 
 
 void CGameInstance::MouseFix() const

@@ -70,6 +70,174 @@ void CItemObject::RecipeInitialize()
 
         CItemObject::s_vecRecipies.push_back(recipe);
     }
+
+    {
+        ItemInfo plank{};
+        plank.block = CBlock3(CBlock3::TYPE::PLANK_OAK);
+        plank.iCnt = 1;
+
+        ItemInfo stick{};
+        stick.eItemType = CItemObject::ITEM_TYPE::ITEM_Stick;
+        stick.iCnt = 4;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = plank;
+        recipe.pattern[3].first = plank;
+        recipe.result = stick;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    {
+        ItemInfo plank{};
+        plank.block = CBlock3(CBlock3::TYPE::PLANK_ACACIA);
+        plank.iCnt = 1;
+
+        ItemInfo stick{};
+        stick.eItemType = CItemObject::ITEM_TYPE::ITEM_Stick;
+        stick.iCnt = 4;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = plank;
+        recipe.pattern[3].first = plank;
+        recipe.result = stick;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    {
+        ItemInfo plank{};
+        plank.block = CBlock3(CBlock3::TYPE::PLANK_BIRCH);
+        plank.iCnt = 1;
+
+        ItemInfo stick{};
+        stick.eItemType = CItemObject::ITEM_TYPE::ITEM_Stick;
+        stick.iCnt = 4;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = plank;
+        recipe.pattern[3].first = plank;
+        recipe.result = stick;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    {
+        ItemInfo plank{};
+        plank.block = CBlock3(CBlock3::TYPE::PLANK_CHERRY);
+        plank.iCnt = 1;
+
+        ItemInfo stick{};
+        stick.eItemType = CItemObject::ITEM_TYPE::ITEM_Stick;
+        stick.iCnt = 4;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = plank;
+        recipe.pattern[3].first = plank;
+        recipe.result = stick;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+
+    {
+        ItemInfo plank{};
+        plank.block = CBlock3(CBlock3::TYPE::PLANK_ACACIA);
+        plank.iCnt = 1;
+
+        ItemInfo craftTable{};
+        craftTable.block = CBlock3(CBlock3::TYPE::CRAFTING_TABLE);
+        craftTable.iCnt = 1;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = plank;
+        recipe.pattern[1].first = plank;
+        recipe.pattern[3].first = plank;
+        recipe.pattern[4].first = plank;
+        recipe.result = craftTable;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    {
+        ItemInfo plank{};
+        plank.block = CBlock3(CBlock3::TYPE::PLANK_BIRCH);
+        plank.iCnt = 1;
+
+        ItemInfo craftTable{};
+        craftTable.block = CBlock3(CBlock3::TYPE::CRAFTING_TABLE);
+        craftTable.iCnt = 1;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = plank;
+        recipe.pattern[1].first = plank;
+        recipe.pattern[3].first = plank;
+        recipe.pattern[4].first = plank;
+        recipe.result = craftTable;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    {
+        ItemInfo plank{};
+        plank.block = CBlock3(CBlock3::TYPE::PLANK_CHERRY);
+        plank.iCnt = 1;
+
+        ItemInfo craftTable{};
+        craftTable.block = CBlock3(CBlock3::TYPE::CRAFTING_TABLE);
+        craftTable.iCnt = 1;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = plank;
+        recipe.pattern[1].first = plank;
+        recipe.pattern[3].first = plank;
+        recipe.pattern[4].first = plank;
+        recipe.result = craftTable;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    {
+        ItemInfo plank{};
+        plank.block = CBlock3(CBlock3::TYPE::PLANK_OAK);
+        plank.iCnt = 1;
+
+        ItemInfo craftTable{};
+        craftTable.block = CBlock3(CBlock3::TYPE::CRAFTING_TABLE);
+        craftTable.iCnt = 1;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = plank;
+        recipe.pattern[1].first = plank;
+        recipe.pattern[3].first = plank;
+        recipe.pattern[4].first = plank;
+        recipe.result = craftTable;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+
+    {
+        ItemInfo stick{};
+        stick.eItemType = CItemObject::ITEM_TYPE::ITEM_Stick;
+        stick.iCnt = 1;
+
+        ItemInfo coal{};
+        coal.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
+        coal.iCnt = 1;
+
+        ItemInfo torch{};
+        torch.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
+        torch.iCnt = 1;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = coal;
+        recipe.pattern[3].first = stick;
+        recipe.result = torch;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
 }
 
 CItemObject::CItemObject()

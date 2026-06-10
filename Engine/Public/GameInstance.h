@@ -265,6 +265,11 @@ public:
 	_float2 FontMeasureString(const StringID& fontName, const wchar_t* txt, float scale = 1.f) const;
 	void FontLateDraw(RENDERGROUP eRenderGroup);
 #pragma
+
+
+#pragma region PARTICLE_MANAGER
+	void AddParticleRenderDestruct(CBlock3 block, _float3 pos);
+#pragma
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};
 	UPtr<CImguiManager> m_pImguiManager{};
