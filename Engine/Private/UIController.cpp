@@ -86,7 +86,7 @@ CUIChest* CUIController::GetChest() const
 
 CUIChest2* CUIController::GetChest2() const
 {
-	return CGameInstance::Get().GetGameObjectByHandleT<CUIChest2>(m_hChest);
+	return CGameInstance::Get().GetGameObjectByHandleT<CUIChest2>(m_hChest2);
 }
 
 CUITextBg* CUIController::GetTextBg() const
