@@ -5,6 +5,8 @@
 #include "Resources.h"
 #include "ComConstantBuffer.h"
 
+#include "UIItem.h"
+
 NS_USING(Engine)
 
 CUICraftingTable::CUICraftingTable()
@@ -65,6 +67,8 @@ HRESULT CUICraftingTable::Initialize(void* pArg)
 		//m_pComOverlayTransform->SetScale(GetTransform().GetScale());
 	}
 
+	InitializeSlot();
+
 	return S_OK;
 }
 
@@ -83,7 +87,322 @@ void CUICraftingTable::LateUpdate(E::_float fTimeDelta)
 		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
 	}
 
+	for (auto& slot : m_vecSlot)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(slot.hItem))
+		{
+			pObj->SetRender(m_bRender);
+		}
+	}
+
 	GetTransform().Update();
+}
+
+void CUICraftingTable::InitializeSlot()
+{
+	size_t typeIdx{};
+	
+
+
+	{
+		m_CraftLTIdx = m_vecSlot.size();
+		auto posX = 38.f;
+		auto posY = 25.f;
+		CraftingTableSlot craftLt{};
+		craftLt.eType = SlotType::CRAFT_LT;
+		craftLt.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftLt.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftLt.vOriginPos.x;
+			Desc.fY = craftLt.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftLt.hItem = handle.value();
+			}
+		}
+		craftLt.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftLt);
+	}
+	typeIdx = 0;
+
+	{
+		m_CraftMTIdx = m_vecSlot.size();
+		auto posX = 56.f;
+		auto posY = 25.f;
+		CraftingTableSlot craftMt{};
+		craftMt.eType = SlotType::CRAFT_MT;
+		craftMt.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftMt.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftMt.vOriginPos.x;
+			Desc.fY = craftMt.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftMt.hItem = handle.value();
+			}
+		}
+		craftMt.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftMt);
+	}
+	typeIdx = 0;
+
+	{
+		m_CraftRTIdx = m_vecSlot.size();
+		auto posX = 74.f;
+		auto posY = 25.f;
+		CraftingTableSlot craftRt{};
+		craftRt.eType = SlotType::CRAFT_RT;
+		craftRt.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftRt.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftRt.vOriginPos.x;
+			Desc.fY = craftRt.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftRt.hItem = handle.value();
+			}
+		}
+		craftRt.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftRt);
+	}
+	typeIdx = 0;
+
+
+	{
+		m_CraftLMIdx = m_vecSlot.size();
+		auto posX = 38.f;
+		auto posY = 43.f;
+		CraftingTableSlot craftLm{};
+		craftLm.eType = SlotType::CRAFT_LM;
+		craftLm.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftLm.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftLm.vOriginPos.x;
+			Desc.fY = craftLm.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftLm.hItem = handle.value();
+			}
+		}
+		craftLm.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftLm);
+	}
+	typeIdx = 0;
+
+	{
+		m_CraftMMIdx = m_vecSlot.size();
+		auto posX = 56.f;
+		auto posY = 43.f;
+		CraftingTableSlot craftMm{};
+		craftMm.eType = SlotType::CRAFT_MM;
+		craftMm.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftMm.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftMm.vOriginPos.x;
+			Desc.fY = craftMm.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftMm.hItem = handle.value();
+			}
+		}
+		craftMm.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftMm);
+	}
+	typeIdx = 0;
+
+
+	{
+		m_CraftRMIdx = m_vecSlot.size();
+		auto posX = 74.f;
+		auto posY = 43.f;
+		CraftingTableSlot craftRm{};
+		craftRm.eType = SlotType::CRAFT_RM;
+		craftRm.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftRm.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftRm.vOriginPos.x;
+			Desc.fY = craftRm.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftRm.hItem = handle.value();
+			}
+		}
+		craftRm.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftRm);
+	}
+	typeIdx = 0;
+
+	{
+		m_CraftLBIdx = m_vecSlot.size();
+		auto posX = 38.f;
+		auto posY = 61.f;
+		CraftingTableSlot craftLb{};
+		craftLb.eType = SlotType::CRAFT_LB;
+		craftLb.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftLb.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftLb.vOriginPos.x;
+			Desc.fY = craftLb.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftLb.hItem = handle.value();
+			}
+		}
+		craftLb.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftLb);
+	}
+	typeIdx = 0;
+
+	{
+		m_CraftMBIdx = m_vecSlot.size();
+		auto posX = 56.f;
+		auto posY = 61.f;
+		CraftingTableSlot craftMb{};
+		craftMb.eType = SlotType::CRAFT_MB;
+		craftMb.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftMb.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftMb.vOriginPos.x;
+			Desc.fY = craftMb.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftMb.hItem = handle.value();
+			}
+		}
+		craftMb.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftMb);
+	}
+	typeIdx = 0;
+
+	{
+		m_CraftRBIdx = m_vecSlot.size();
+		auto posX = 74.f;
+		auto posY = 61.f;
+		CraftingTableSlot craftRb{};
+		craftRb.eType = SlotType::CRAFT_RB;
+		craftRb.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftRb.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftRb.vOriginPos.x;
+			Desc.fY = craftRb.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftRb.hItem = handle.value();
+			}
+		}
+		craftRb.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftRb);
+	}
+	typeIdx = 0;
+
+	{
+		m_CraftResultIdx = m_vecSlot.size();
+		auto posX = 133.f;
+		auto posY = 44.f;
+		CraftingTableSlot craftResult{};
+		craftResult.eType = SlotType::CRAFT_RESULT;
+		craftResult.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		craftResult.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = craftResult.vOriginPos.x;
+			Desc.fY = craftResult.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				craftResult.hItem = handle.value();
+			}
+		}
+		craftResult.typeIdx = typeIdx++;
+		m_vecSlot.push_back(craftResult);
+	}
+	typeIdx = 0;
+
+	for (uint32_t i = 0; i < 3; ++i)
+	{
+		for (uint32_t j = 0; j < 9; ++j)
+		{
+			m_InventoryIdxs[9 * i + j] = m_vecSlot.size();
+
+			auto posX = 16.f + (j * 18.f);
+			auto posY = 92.f + (i * 18.f);
+
+			CraftingTableSlot InvenSlot{};
+			InvenSlot.eType = SlotType::INVENTORY;
+			InvenSlot.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+			InvenSlot.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+			{
+				E::CUIItem::DESC Desc{};
+				Desc.fX = InvenSlot.vOriginPos.x;
+				Desc.fY = InvenSlot.vOriginPos.y;
+				Desc.sObjectTag = "UIItem";
+				if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+					"80_UI", &Desc))
+				{
+					InvenSlot.hItem = handle.value();
+				}
+			}
+			InvenSlot.typeIdx = typeIdx++;
+			m_vecSlot.push_back(InvenSlot);
+		}
+	}
+	typeIdx = 0;
+
+
+	for (uint32_t i = 0; i < 9; ++i)
+	{
+		m_InventoryHotbarIdxs[i] = m_vecSlot.size();
+		auto posX = 16.f + (i * 18.f);
+		auto posY = 150.f;
+
+		CraftingTableSlot hotbarSlot{};
+		hotbarSlot.eType = SlotType::INVENTORY_HOTBAR;
+		hotbarSlot.vOriginPos.x = (m_fX - m_fSizeX * 0.5f) + posX * MC_UI_SCALE;
+		hotbarSlot.vOriginPos.y = (m_fY - m_fSizeY * 0.5f) + posY * MC_UI_SCALE;
+		{
+			E::CUIItem::DESC Desc{};
+			Desc.fX = hotbarSlot.vOriginPos.x;
+			Desc.fY = hotbarSlot.vOriginPos.y;
+			Desc.sObjectTag = "UIItem";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIItem",
+				"80_UI", &Desc))
+			{
+				hotbarSlot.hItem = handle.value();
+			}
+		}
+		hotbarSlot.typeIdx = typeIdx++;
+		m_vecSlot.push_back(hotbarSlot);
+	}
+	typeIdx = 0;
+
 }
 
 HRESULT CUICraftingTable::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
@@ -144,6 +463,68 @@ HRESULT CUICraftingTable::Render(ID3D11DeviceContext* pContext, const E::RENDER_
 
 
 	return S_OK;
+}
+
+void CUICraftingTable::SetInventoryHotbarItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
+{
+	for (uint32_t i = 0; i < size; ++i)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecSlot[m_InventoryHotbarIdxs[i]].hItem))
+		{
+			if (pArr[i])
+			{
+				pObj->SetItemInfo(pArr[i]);
+			}
+			else
+			{
+				pObj->SetItemInfo(std::nullopt);
+			}
+		}
+	}
+}
+
+void CUICraftingTable::SetInventoryItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
+{
+	for (uint32_t i = 0; i < size; ++i)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecSlot[m_InventoryIdxs[i]].hItem))
+		{
+			if (pArr[i])
+			{
+				pObj->SetItemInfo(pArr[i]);
+			}
+			else
+			{
+				pObj->SetItemInfo(std::nullopt);
+			}
+		}
+	}
+}
+
+void CUICraftingTable::SetCraftingTableCraftingItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size)
+{
+	std::vector<size_t> memberIdx{
+		m_CraftLTIdx, m_CraftMTIdx, m_CraftRTIdx,
+		m_CraftLMIdx, m_CraftMMIdx, m_CraftRMIdx,
+		m_CraftLBIdx, m_CraftMBIdx, m_CraftRBIdx,
+		m_CraftResultIdx
+	
+	};
+	for (uint32_t i = 0; i < 10; ++i)
+	{
+		if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_vecSlot[memberIdx[i]].hItem))
+		{
+			if (pArr[i])
+			{
+				pObj->SetItemInfo(pArr[i]);
+			}
+			else
+			{
+				pObj->SetItemInfo(std::nullopt);
+			}
+		}
+	}
+	
 }
 
 E::UPtr<CUICraftingTable> CUICraftingTable::Create()
