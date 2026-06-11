@@ -375,6 +375,10 @@ HRESULT CUIController::Initialize(void* pArg)
 			layerID, &Desc))
 		{
 			m_hChest = handle.value();
+			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIChest>(m_hChest))
+			{
+				pObj->SetUIController(GetHandle());
+			}
 		}
 	}
 

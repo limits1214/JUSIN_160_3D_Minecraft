@@ -42,6 +42,14 @@ public:
 
 		return &(*iter).second;
 	}
+	void DelStorage(const XMINT3& location)
+	{
+		auto iter = m_mapLocation.find(location);
+		if (iter != m_mapLocation.end())
+		{
+			m_mapLocation.erase(iter);
+		}
+	}
 private:
 	std::unordered_map<XMINT3, SFurnaceStorage> m_mapLocation{};
 

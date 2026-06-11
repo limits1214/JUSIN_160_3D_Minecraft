@@ -65,6 +65,7 @@ public:
 	void SetDestroyState(CHandle h) { m_hDestroyStage = h; }
 private:
 	void ProcessDestroyStage(float fTimeDelta);
+	void DestroyStageEndAfterProcess(const CItemObject::ItemInfo& info, const XMINT3& wbLocatoin);
 	void DestroyStageEndItemConverter(CItemObject::ItemInfo& info);
 	CDestroyStage* GetDestroyStage() const;
 private:
@@ -86,6 +87,7 @@ private:
 	void ProcessUICraftingTable(float fTimeDelta);
 	void ProcessUICraftingTableCrafting(float fTimeDelta);
 	void ProcessUIFurnace(float fTimeDelta);
+	void ProcessUIChest(float fTimeDelta);
 	void ProcessThrowItem(float fTimeDelta);
 private:
 	CHandle m_hUIController{};
@@ -193,9 +195,14 @@ private:
 	CHandle m_hFurnaceUIItemOnCursor{};
 	void ProcessUIFurnaceOnCursor(_float fTimeDelta);
 
+	CHandle m_hChestUIItemOnCursor{};
+	void ProcessUIChestOnCursor(_float fTimeDelta);
+
 private:
 	//CHandle m_hFurnaceStorage{};
 	std::optional<XMINT3> m_openFurnaceLocation{};
+
+	std::optional<XMINT3> m_openChestLocation{};
 
 private:
 	void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
