@@ -225,7 +225,6 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
         }
         m_pComEntityModel = AddComponent("Com_EntityModel", static_uptr_cast<CComEntityModel>(std::move(pProto)));
     }
-    m_hFurnaceStorage = pDesc->hFurnaceStorage;
    
     //m_pCenterCollider = CCollSphere::Create({0.f, 0.3f, 0.f}, 0.3f);
     m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.25f, 0.9f, 0.25f });
@@ -820,7 +819,8 @@ void CPlayerEntity::ProcessUIFurnace(float fTimeDelta)
         pUIController->GetBlastFurnace()->SetInventoryItemData(m_ItemArrInventory.data(), 9 * 3);
         if (m_openFurnaceLocation)
         {
-            auto pFurnaceStorage = CGameInstance::Get().GetGameObjectByHandleT<CFurnaceStorage>(m_hFurnaceStorage);
+           
+            auto pFurnaceStorage = CGameInstance::Get().GetWorldFurnaceStorage();
             auto pStorage = pFurnaceStorage->GetStorage(m_openFurnaceLocation.value());
             pUIController->GetBlastFurnace()->SetIngredientItemData(&pStorage->ingredient, 1);
             pUIController->GetBlastFurnace()->SetFuelItemData(&pStorage->fuel, 1);
@@ -2783,7 +2783,7 @@ void CPlayerEntity::ProcessUIFurnaceOnCursor(_float fTimeDelta)
     auto invenSlotToMemberItem = [&](CUIBlastFurnace::FurnaceSlot slot)->std::optional<CItemObject::ItemInfo>*
         {
 
-            auto pFurnaceStorage = CGameInstance::Get().GetGameObjectByHandleT<CFurnaceStorage>(m_hFurnaceStorage);
+            auto pFurnaceStorage = CGameInstance::Get().GetWorldFurnaceStorage();
             auto pStorage = pFurnaceStorage->GetStorage(m_openFurnaceLocation.value());
 
             std::optional<CItemObject::ItemInfo>* pTargetInfo{};

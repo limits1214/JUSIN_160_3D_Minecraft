@@ -32,7 +32,7 @@ public:
 public:
 	typedef struct tagDesc : CPlayerEntityObject::DESC
 	{
-		CHandle hFurnaceStorage{};
+		//CHandle hFurnaceStorage{};
 	}DESC;
 
 public:
@@ -194,7 +194,7 @@ private:
 	void ProcessUIFurnaceOnCursor(_float fTimeDelta);
 
 private:
-	CHandle m_hFurnaceStorage{};
+	//CHandle m_hFurnaceStorage{};
 	std::optional<XMINT3> m_openFurnaceLocation{};
 
 private:

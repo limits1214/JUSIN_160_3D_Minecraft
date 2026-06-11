@@ -21,12 +21,17 @@ class CColliderManager;
 class CCollider;
 class CRenderer;
 class CLightManager;
-class CVoxelManager;
-class CVoxelManager2;
+//class CVoxelManager;
+//class CVoxelManager2;
 class CFontManager;
 //class CVoxelManager3;
+class CWorldManager;
+
 class CChunk3;
 class CCameraObject;
+
+class CFurnaceStorage;
+class CChestStorage;
 
 class CParticleManager;
 class ENGINE_DLL CGameInstance final : public Singleton<CGameInstance>
@@ -270,6 +275,15 @@ public:
 #pragma region PARTICLE_MANAGER
 	void AddParticleRenderDestruct(CBlock3 block, _float3 pos);
 #pragma
+
+
+#pragma region WORLD_MANAGER
+	CFurnaceStorage* GetWorldFurnaceStorage();
+	CChestStorage* GetWorldChestStorage();
+#pragma
+
+
+
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};
 	UPtr<CImguiManager> m_pImguiManager{};
@@ -286,11 +300,12 @@ private:
 	UPtr<CColliderManager> m_pColliderManager{};
 	UPtr<CRenderer> m_pRenderer{};
 	UPtr<CLightManager> m_pLightManager{};
-	UPtr<CVoxelManager> m_pVoxelManager{};
-	UPtr<CVoxelManager2> m_pVoxelManager2{};
+	//UPtr<CVoxelManager> m_pVoxelManager{};
+	//UPtr<CVoxelManager2> m_pVoxelManager2{};
 	UPtr<CVoxelManager3> m_pVoxelManager3{};
 	UPtr<CParticleManager> m_pParticleManager{};
 	UPtr<CFontManager> m_pFontManager{};
+	UPtr<CWorldManager> m_pWorldManager{};
 
 
 public:

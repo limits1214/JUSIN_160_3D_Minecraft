@@ -188,8 +188,6 @@ void CLevelLoading::LoadingCheck()
 #include "PlayerFPSArm.h"
 #include "DestroyStage.h"
 #include "FallingVoxel.h"
-#include "ChestStorage.h"
-#include "FurnaceStorage.h"
 
 HRESULT CLevelLoading::LoadingOverWorldLevel()
 {
@@ -356,17 +354,6 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 		return E_FAIL;
 	}
 
-	//CChestStorage
-	if (FAILED(E::CGameInstance::Get().AddPrototype("CHEST_STORAGE", "Prototype_GameObject_ChestStorage", E::CChestStorage::Create())))
-	{
-		return E_FAIL;
-	}
-
-	//FurnaceStorage
-	if (FAILED(E::CGameInstance::Get().AddPrototype("FURNACE_STORAGE", "Prototype_GameObject_FurnaceStorage", E::CFurnaceStorage::Create())))
-	{
-		return E_FAIL;
-	}
 
 
 	return S_OK;
