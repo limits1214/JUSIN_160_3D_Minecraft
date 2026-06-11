@@ -1,4 +1,4 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "UIBlastFurnace.h"
 #include "GameInstance.h"
 #include "CameraObject.h"
@@ -196,7 +196,7 @@ void CUIBlastFurnace::LateUpdate(E::_float fTimeDelta)
 		float fullHeight = 14.f * MC_UI_SCALE;
 		float scaledHeight = fullHeight * m_fFuel;  
 		auto basePos = GetTransform().GetPosition();
-		basePos.y += -fullHeight * 0.5f + scaledHeight * 0.5f;  // æ∆∑°¬  ≥° ∞Ì¡§
+		basePos.y += -fullHeight * 0.5f + scaledHeight * 0.5f;  // ÏïÑÎûòÏ™Ω ÎÅù Í≥†Ï†ï
 		basePos.z -= 0.01f;
 
 		basePos.x -= 48.f;
@@ -437,7 +437,7 @@ HRESULT CUIBlastFurnace::Render(ID3D11DeviceContext* pContext, const E::RENDER_C
 			E::CB_PER_UI perUI{};
 			perUI.texIndex = PackTexId(12, 0);
 			float fullUVH = 14.f / 256.f;
-			perUI.texCoord = { 48.f / 256.f, 144.f / 256.f + fullUVH * (1.f - m_fFuel) };  // æ∆∑°¬  ≥° ∞Ì¡§
+			perUI.texCoord = { 48.f / 256.f, 144.f / 256.f + fullUVH * (1.f - m_fFuel) };  // ÏïÑÎûòÏ™Ω ÎÅù Í≥†Ï†ï
 			perUI.uvSize = { 14.f / 256.f, fullUVH * m_fFuel };
 			//perUI.texCoord = { 48.f / 256.f, 144.f / 256.f };
 			//perUI.uvSize = { 14.f / 256.f , 14.f / 256.f * m_fProcess };

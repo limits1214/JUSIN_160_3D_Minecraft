@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 
 #include "FurnaceStorage.h"
 
@@ -12,20 +12,6 @@ CFurnaceStorage::~CFurnaceStorage()
 {
 }
 
-HRESULT CFurnaceStorage::Initialize(void* pArg)
-{
-
-    if (FAILED(CVoxelObject::Initialize(pArg)))
-    {
-        return E_FAIL;
-    }
-
-    return S_OK;
-}
-
-void CFurnaceStorage::PriorityUpdate(E::_float fTimeDelta)
-{
-}
 
 void CFurnaceStorage::Update(E::_float fTimeDelta)
 {
@@ -57,7 +43,7 @@ void CFurnaceStorage::Update(E::_float fTimeDelta)
             }
         }
 
-        // ¿¬·á ¼ÒÁø ½Ã »õ ¿¬·á ¼Ò¸ğ
+        // ì—°ë£Œ ì†Œì§„ ì‹œ ìƒˆ ì—°ë£Œ ì†Œëª¨
         if (storage.fuelProgress <= 0.f)
         {
             if (!storage.fuel.has_value())
@@ -102,42 +88,19 @@ void CFurnaceStorage::Update(E::_float fTimeDelta)
     }
 }
 
-void CFurnaceStorage::LateUpdate(E::_float fTimeDelta)
-{
-}
 
-HRESULT CFurnaceStorage::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
-{
-    return S_OK;
-}
 
 UPtr<CFurnaceStorage> CFurnaceStorage::Create()
 {
     auto pInstance = ToUPtr(new CFurnaceStorage{});
-    if (FAILED(pInstance->InitializePrototype()))
-    {
-        MSG_BOX("Failed to Create: CFurnaceStorage");
-        return nullptr;
-    }
 
-    return pInstance;
-}
-
-UPtr<CPrototype> CFurnaceStorage::Clone(void* pArg)
-{
-    auto pInstance = ToUPtr(new CFurnaceStorage{ *this });
-    if (FAILED(pInstance->Initialize(pArg)))
-    {
-        MSG_BOX("Failed to Cloned: CFurnaceStorage");
-        return nullptr;
-    }
 
     return pInstance;
 }
 
 std::optional<CItemObject::ItemInfo> CFurnaceStorage::GetSmeltResult(const CItemObject::ItemInfo& ingredient)
 {
-    // ºí·Ï Àç·á
+    // ë¸”ë¡ ì¬ë£Œ
     if (ingredient.block.has_value())
     {
         switch (ingredient.block->GetType())
@@ -165,10 +128,10 @@ std::optional<CItemObject::ItemInfo> CFurnaceStorage::GetSmeltResult(const CItem
         }
     }
 
-    // ¾ÆÀÌÅÛ Àç·á
+    // ì•„ì´í…œ ì¬ë£Œ
     switch (ingredient.eItemType)
     {
-    case CItemObject::ITEM_TYPE::ITEM_Coal: // ¿¹½Ã: ±× ¿Ü ¾ÆÀÌÅÛ Á¦·Ã
+    case CItemObject::ITEM_TYPE::ITEM_Coal: // ì˜ˆì‹œ: ê·¸ ì™¸ ì•„ì´í…œ ì œë ¨
         return std::nullopt;
     default:
         return std::nullopt;

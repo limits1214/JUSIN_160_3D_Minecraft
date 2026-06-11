@@ -9,11 +9,12 @@
 #include "TimeProvider.h"
 #include "PrototypeManager.h"
 #include "LightManager.h"
-#include "VoxelManager.h"
-#include "VoxelManager2.h"
+//#include "VoxelManager.h"
+//#include "VoxelManager2.h"
 #include "VoxelManager3.h"
 #include "ParticleManager.h"
 #include "FontManager.h"
+#include "WorldManager.h"
 
 #include "GameObject.h"
 #include "CameraManager.h"
@@ -183,6 +184,11 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
+	m_pWorldManager = CWorldManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pWorldManager == nullptr)
+	{
+		return E_FAIL;
+	}
 
 
 
@@ -214,6 +220,8 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 	m_pVoxelManager3->Update(fTimeDelta);
 
 	m_pParticleManager->Update(fTimeDelta);
+
+	m_pWorldManager->Update(fTimeDelta);
 
 	m_pGameObjectManager->PriorityUpdate(fTimeDelta);
 	m_pGameObjectManager->Update(fTimeDelta);
@@ -305,6 +313,7 @@ void CGameInstance::Release_Engine()
 	m_pSoundManager.reset();
 	m_pImguiManager.reset();
 	m_pDInputManager.reset();
+	m_pWorldManager.reset();
 	m_pGameObjectManager->AllReset();
 	m_pGameObjectManager.reset();
 	m_pLevelManager.reset();
@@ -314,7 +323,7 @@ void CGameInstance::Release_Engine()
 	m_pChunkLoadWorkerManager.reset();
 	m_pPrototypeManager.reset();
 	m_pLightManager.reset();
-	m_pVoxelManager.reset();
+	//m_pVoxelManager.reset();
 	m_pVoxelManager3.reset();
 	m_pRenderer.reset();
 	m_pFontManager.reset();
@@ -2187,8 +2196,18 @@ void CGameInstance::AddParticleRenderDestruct(CBlock3 block, _float3 pos)
 {
 	m_pParticleManager->AddParticleRenderDestruct(block, pos);
 }
-#pragma
+#pragma endregion
 
+#pragma region WORLD_MANAGER
+CFurnaceStorage* CGameInstance::GetWorldFurnaceStorage()
+{
+	return m_pWorldManager->GetFurnaceStorage();
+}
+CChestStorage* CGameInstance::GetWorldChestStorage()
+{
+	return m_pWorldManager->GetChestStorage();
+}
+#pragma endregion
 
 void CGameInstance::MouseFix() const
 {

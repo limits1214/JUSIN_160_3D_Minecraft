@@ -469,11 +469,14 @@
     <Filter Include="GameObject\UI\TextBg">
       <UniqueIdentifier>{8bb133f3-8a5b-4712-84c6-e9a5326dbe6a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObject\Voxel\ChestStorage">
-      <UniqueIdentifier>{055a1d3d-a7d3-4223-8891-4d7617de2e7e}</UniqueIdentifier>
+    <Filter Include="World">
+      <UniqueIdentifier>{9075403e-5dd1-4908-bae5-70feb8d86956}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObject\Voxel\FurnaceStorage">
-      <UniqueIdentifier>{ebf5a475-a8d6-42ed-9d77-3749ab625c12}</UniqueIdentifier>
+    <Filter Include="World\FurnaceStorage">
+      <UniqueIdentifier>{322c1db9-01c2-4f95-8212-6243d336dc58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World\ChestStorage">
+      <UniqueIdentifier>{38d28e25-0b92-4ae4-8c90-06b20949151a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -927,11 +930,14 @@
     <ClInclude Include="..\public\UITextBg.h">
       <Filter>GameObject\UI\TextBg</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\ChestStorage.h">
-      <Filter>GameObject\Voxel\ChestStorage</Filter>
+    <ClInclude Include="..\public\WorldManager.h">
+      <Filter>World</Filter>
     </ClInclude>
     <ClInclude Include="..\public\FurnaceStorage.h">
-      <Filter>GameObject\Voxel\FurnaceStorage</Filter>
+      <Filter>World\FurnaceStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ChestStorage.h">
+      <Filter>World\ChestStorage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1373,11 +1379,14 @@
     <ClCompile Include="..\private\UITextBg.cpp">
       <Filter>GameObject\UI\TextBg</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\ChestStorage.cpp">
-      <Filter>GameObject\Voxel\ChestStorage</Filter>
+    <ClCompile Include="..\private\WorldManager.cpp">
+      <Filter>World</Filter>
     </ClCompile>
     <ClCompile Include="..\private\FurnaceStorage.cpp">
-      <Filter>GameObject\Voxel\FurnaceStorage</Filter>
+      <Filter>World\FurnaceStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ChestStorage.cpp">
+      <Filter>World\ChestStorage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

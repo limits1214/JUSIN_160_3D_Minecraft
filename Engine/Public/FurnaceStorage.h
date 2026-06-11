@@ -1,33 +1,23 @@
-
+ï»¿
 #pragma once
-#include "VoxelObject.h"
+#include "Engine_Defines.h"
 
 #include "ItemObject.h"
 #include "Block3.h"
 
 NS_BEGIN(Engine)
-class ENGINE_DLL CFurnaceStorage : public CVoxelObject
+class ENGINE_DLL CFurnaceStorage final: public CEngineBase
 {
 public:
-	typedef struct tagDesc : CVoxelObject::DESC
-	{
-		//std::pair<StringID, StringID> viBufferId{};
-	}DESC;
-
-public:
-	DECLARE_DERIVED_TYPE(CFurnaceStorage, CVoxelObject)
+	DECLARE_DERIVED_TYPE(CFurnaceStorage, CEngineBase)
 
 private:
 	explicit CFurnaceStorage();
 	~CFurnaceStorage() override;
 
 public:
-	HRESULT Initialize(void* pArg) override;
-	void PriorityUpdate(E::_float fTimeDelta) override;
-	void Update(E::_float fTimeDelta) override;
-	void LateUpdate(E::_float fTimeDelta) override;
+	void Update(_float fTimeDelta);
 
-	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 public:
 	struct SFurnaceStorage
@@ -58,15 +48,14 @@ private:
 
 
 	static std::optional<CItemObject::ItemInfo> GetSmeltResult(const CItemObject::ItemInfo& ingredient);
-	// ¿¬·á À¯È¿¼º + ¿¬¼Ò ½Ã°£(ÃÊ) ¹ÝÈ¯
+	// ì—°ë£Œ ìœ íš¨ì„± + ì—°ì†Œ ì‹œê°„(ì´ˆ) ë°˜í™˜
 	static std::optional<float> GetFuelDuration(const CItemObject::ItemInfo& fuel);
 
-	static constexpr float SMELT_TIME = 10.f;   // Á¦·Ã ¿Ï·á±îÁö °É¸®´Â ½Ã°£(ÃÊ)
+	static constexpr float SMELT_TIME = 10.f;   // ì œë ¨ ì™„ë£Œê¹Œì§€ ê±¸ë¦¬ëŠ” ì‹œê°„(ì´ˆ)
 	static constexpr uint8_t MAX_STACK = 64;
 
 public:
 	static UPtr<CFurnaceStorage> Create();
-	UPtr<CPrototype> Clone(void* pArg) override;
 };
 
 NS_END
