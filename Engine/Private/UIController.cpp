@@ -328,6 +328,10 @@ HRESULT CUIController::Initialize(void* pArg)
 			layerID, &Desc))
 		{
 			m_hCraftingTable = handle.value();
+			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUICraftingTable>(m_hCraftingTable))
+			{
+				pObj->SetUIController(GetHandle());
+			}
 		}
 	}
 
@@ -341,6 +345,10 @@ HRESULT CUIController::Initialize(void* pArg)
 			layerID, &Desc))
 		{
 			m_hBlastFurnace = handle.value();
+			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIBlastFurnace>(m_hBlastFurnace))
+			{
+				pObj->SetUIController(GetHandle());
+			}
 		}
 	}
 

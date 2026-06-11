@@ -32,7 +32,7 @@ public:
 public:
 	typedef struct tagDesc : CPlayerEntityObject::DESC
 	{
-
+		CHandle hFurnaceStorage{};
 	}DESC;
 
 public:
@@ -85,6 +85,7 @@ private:
 	void ProcessUIInventoryCrafting(float fTimeDelta);
 	void ProcessUICraftingTable(float fTimeDelta);
 	void ProcessUICraftingTableCrafting(float fTimeDelta);
+	void ProcessUIFurnace(float fTimeDelta);
 	void ProcessThrowItem(float fTimeDelta);
 private:
 	CHandle m_hUIController{};
@@ -181,11 +182,20 @@ private:
 	std::optional <CItemObject::SRecipe > m_ItemCraftingTableCraftingOriginRecipe{};
 
 
+
+
 	CHandle m_hInventoryUIItemOnCursor{};
 	void ProcessUIInventoryItemOnCursor(_float fTimeDelta);
 
 	CHandle m_hCraftingTableUIItemOnCursor{};
 	void ProcessUICraftingItemOnCursor(_float fTimeDelta);
+
+	CHandle m_hFurnaceUIItemOnCursor{};
+	void ProcessUIFurnaceOnCursor(_float fTimeDelta);
+
+private:
+	CHandle m_hFurnaceStorage{};
+	std::optional<XMINT3> m_openFurnaceLocation{};
 
 private:
 	void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
