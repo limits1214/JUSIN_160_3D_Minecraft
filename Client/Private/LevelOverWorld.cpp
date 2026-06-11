@@ -135,8 +135,20 @@ HRESULT CLevelOverWorld::Initialize()
 	}
 
 	{
+		E::CHandle hFurnaceStorage{};
+		{
+			E::CGameObject::GAMEOBJECT_DESC Desc{};
+			Desc.sObjectTag = "FurnaceStorage";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("FURNACE_STORAGE", "Prototype_GameObject_FurnaceStorage",
+				"56_FurnaceStorage", &Desc))
+			{
+				hFurnaceStorage = handle.value();
+			}
+		}
+
 		E::CPlayerEntity::DESC Desc{};
 		Desc.sObjectTag = "Player";
+		Desc.hFurnaceStorage = hFurnaceStorage;
 		if (auto playerHandle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
 			"00_ENTITY", &Desc))
 		{
@@ -369,15 +381,7 @@ HRESULT CLevelOverWorld::Initialize()
 	}
 
 	// furnace storage
-	{
-		E::CGameObject::GAMEOBJECT_DESC Desc{};
-		Desc.sObjectTag = "FurnaceStorage";
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("FURNACE_STORAGE", "Prototype_GameObject_FurnaceStorage",
-			"56_FurnaceStorage", &Desc))
-		{
-
-		}
-	}
+	
 	
 
 

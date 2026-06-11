@@ -77,6 +77,11 @@ private:
 	size_t m_CraftRBIdx{};
 	size_t m_CraftResultIdx{};
 
+public:
+	void SetUIController(CHandle h) { m_hUIController = h; }
+private:
+	CHandle m_hUIController{};
+
 private:
 	CComConstantBuffer* m_pComCBufferPerObject{};
 	CComConstantBuffer* m_pComCBufferPerUI{};
