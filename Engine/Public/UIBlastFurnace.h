@@ -67,7 +67,6 @@ private:
 	void InitializeSlot();
 	std::vector<FurnaceSlot> m_vecSlot{};
 private:
-
 	size_t m_InventoryIdxs[9 * 3]{};
 	size_t m_InventoryHotbarIdxs[9]{};
 	size_t m_FuelIdx{};
