@@ -115,7 +115,7 @@ HRESULT CBlockOutline::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 							cbPerBlockOutline.vExtents = { val.second.x, val.second.y, val.second.z };
 							cbPerBlockOutline.fThickness = 0.015f;
 							cbPerBlockOutline.vColor = { 0.f, 0.f, 0.f, 1.f };
-							
+							//cbPerBlockOutline.light = res.block->GetLight();
 							
 							
 

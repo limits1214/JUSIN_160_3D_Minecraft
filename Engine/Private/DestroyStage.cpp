@@ -110,6 +110,7 @@ HRESULT CDestroyStage::Initialize(void* pArg)
 
 void CDestroyStage::PriorityUpdate(E::_float fTimeDelta)
 {
+	m_iLight = 0xFF;
 }
 
 void CDestroyStage::Update(E::_float fTimeDelta)
@@ -130,7 +131,7 @@ void CDestroyStage::LateUpdate(E::_float fTimeDelta)
 {
 	if (m_bRender)
 	{
-		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
+		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::BLEND, this);
 	}
 	//GetTransform().SetScale(XMVectorSet(1.01f, 1.11f, 1.01f, 0.f));
 	GetTransform().Update();
@@ -184,6 +185,7 @@ HRESULT CDestroyStage::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 		{
 			E::CB_PER_DESTROYSTAGE destryStage{};
 			destryStage.destroyStage = m_iFrameIndex;
+			destryStage.light = m_iLight;
 			
 			memcpy(mappedSubResource.pData, &destryStage, sizeof(destryStage));
 			pContext->Unmap(pCbPerDestroyStage->GetCBuffer().Get(), 0);
@@ -201,7 +203,14 @@ HRESULT CDestroyStage::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 		pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
 	}
 
+	const auto& alphaBlend = E::CGameInstance::GetConst().GetResourceFirst<E::CResBlendState>(TAG_RES_GRP_PERMANENT_STATE, "BS_ALPHA_BLEND");
+	//const auto& alphaDepth = E::CGameInstance::GetConst().GetResourceFirst<E::CResDepthStencilState>(TAG_RES_GRP_PERMANENT_STATE, "DS_NO_DEPTHWRITE");
+	_float fBlendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+	pContext->OMSetBlendState(alphaBlend->GetBlendState().Get(), fBlendFactor, 0xffffffff);
+
 	pContext->DrawIndexed(viBuffer->GetNumIndices(),0, 0);
+
+	pContext->OMSetBlendState(nullptr, fBlendFactor, 0xffffffff);
     return S_OK;
 }
 

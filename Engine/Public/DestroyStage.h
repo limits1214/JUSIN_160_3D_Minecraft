@@ -40,6 +40,7 @@ private:
 
 public:
 	void SetRender(_bool b) { m_bRender = b; }
+	void SetLight(uint32_t light) { m_iLight = light; };
 	void SetFrameIndex(uint32_t i) { m_iFrameIndex = std::clamp(i, (uint32_t)0, (uint32_t)9); }
 	uint32_t GetFrameIndex() const { return m_iFrameIndex; }
 
@@ -51,7 +52,7 @@ private:
 	std::vector<DestroyQuad> m_quads{};
 	_float m_fElapsed{ 0 };
 	uint32_t m_iFrameIndex{ 0 };
-
+	uint32_t m_iLight{ 0xFF };
 public:
 	static UPtr<CDestroyStage> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

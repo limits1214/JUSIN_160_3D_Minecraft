@@ -176,8 +176,8 @@ namespace Engine
 		_float4 color{};
 		uint32_t texIndex{};  //  4 bytes
 		uint32_t frameIndex{};
-		uint32_t flag{};
-		uint32_t _pad;
+		uint32_t light{0xFF};
+		uint32_t flag;
 	} VTX_POINT_PARTICLE;
 
 	typedef struct tagVertexDestroyStage
@@ -230,14 +230,15 @@ namespace Engine
 		_float fThickness{};
 		_float4 vColor{};
 		_float3 vExtents{};
-		_float _pad{};
+		uint32_t light{};
 	} CB_PER_BLOCKOUTLINE;
 
 	typedef struct tagConstantBufferPerDestroyStage
 	{
 		uint32_t   destroyStage;  // 0~9
+		uint32_t light{0xFF};
 		//_float crackTiling;   // 블록 크기에 맞게 조절 (보통 1.0)
-		_float3 _pad;
+		_float2 _pad;
 	}CB_PER_DESTROYSTAGE;
 
 
