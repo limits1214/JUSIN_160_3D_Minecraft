@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include "Timer.h"
 
 NS_BEGIN(Engine)
 class CResDynamicBuffer;
@@ -10,6 +11,7 @@ public:
 
 private:
 	explicit CCloud();
+	CCloud(const CCloud& rhs) ;
 	~CCloud() override;
 
 public:
@@ -43,6 +45,10 @@ private:
 	_float m_fCloudOffset{ 0.0f };
 	_float m_fCloudSpeed{ 2.0f };
 	std::vector<InstanceData> m_InstanceData;
+
+private:
+	std::future<std::vector<CCloud::InstanceData>> m_futCloudCalc{};
+	CTimer m_TimerForCloudCalc{};
 
 public:
 	static UPtr<CCloud> Create();

@@ -145,7 +145,7 @@ public:
 	auto WorkerEnqueueWithFuture(_string_view svTaskName, Func&& f, Args&&... args)
 		-> std::future<std::invoke_result_t<Func, Args...>>
 	{
-		return m_pChunkLoadWorkerManager->WorkerEnqueueWithFuture(
+		return m_pWorkerManager->WorkerEnqueueWithFuture(
 			svTaskName,
 			std::forward<Func>(f),
 			std::forward<Args>(args)...
