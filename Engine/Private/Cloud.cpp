@@ -64,8 +64,14 @@ void CCloud::LateUpdate(E::_float fTimeDelta)
 {
    
     m_TimerForCloudCalc.AppendCurrTime(fTimeDelta);
-    if (!m_futCloudCalc.valid() && m_TimerForCloudCalc.Get_Finished())
+    if (m_TimerForCloudCalc.Get_Finished())
     {
+        m_TimerForCloudCalc.Reset();
+        if (m_futCloudCalc.valid())
+        {
+            return;
+        }
+       
         auto vCamPos = CGameInstance::Get().GetActiveGameCamera()->GetTransform().GetPosition();
         m_futCloudCalc = CGameInstance::Get().WorkerEnqueueWithFuture("CLOUD", [=]()->std::vector<CCloud::InstanceData>
             {
