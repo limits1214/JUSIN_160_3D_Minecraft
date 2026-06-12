@@ -484,6 +484,15 @@
     <Filter Include="100.Shaders\Skybox">
       <UniqueIdentifier>{e90ba3c6-cb3d-4138-b1ad-9300ea095dbb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Cloud">
+      <UniqueIdentifier>{80590765-a5d9-419d-89f2-e2673c2844cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\CloudVIBuffer">
+      <UniqueIdentifier>{c562ff8d-1b37-4524-8ee3-f561f6de468f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Cloud">
+      <UniqueIdentifier>{c3c723b2-f60d-4628-b9e6-9fb6018abf68}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -948,6 +957,12 @@
     <ClInclude Include="..\public\Skybox.h">
       <Filter>GameObject\Skybox</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\Cloud.h">
+      <Filter>GameObject\Cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResCloudVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\CloudVIBuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1400,6 +1415,12 @@
     <ClCompile Include="..\private\Skybox.cpp">
       <Filter>GameObject\Skybox</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\Cloud.cpp">
+      <Filter>GameObject\Cloud</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResCloudVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\CloudVIBuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1446,6 +1467,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Skybox\Skybox.hlsl">
       <Filter>100.Shaders\Skybox</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Cloud\Cloud.hlsl">
+      <Filter>100.Shaders\Cloud</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -12,6 +12,7 @@
 #include "ResQuadItemVIBuffer.h"
 #include "ResCubeItemVIBuffer.h"
 #include "ResFallingVoxelVIBuffer.h"
+#include "ResCloudVIBuffer.h"
 
 #include "ResFmodSound.h"
 
