@@ -32,7 +32,19 @@ void CParticleManager::AddParticleRenderDestruct(CBlock3 block, _float3 pos)
         att.vUv = { tmp, tmp2 };
         att.vUvSize = { 0.1f, 0.1f };
         att.vSize = { 0.1f, 0.1f };
+
         att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        uint32_t baseColorABGR = CBlock3::GetBaseColor(block.GetType());
+        if (baseColorABGR != 0xFF)
+        {
+            _float4 blockTint;
+            blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
+            blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
+            blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
+            blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
+            //att.vColor = blockTint;
+        }
+        
         XMVECTOR dir =
             XMVectorSet(
                 Randf(-1.f, 1.f),
@@ -142,6 +154,17 @@ void CParticleManager::Update(_float fTimeDelta)
             vtx.size = att.vSize;
             vtx.uvSize = att.vUvSize;
             vtx.texCoord = att.vUv;
+
+            
+            int32_t blockX = static_cast<int32_t>(std::floor(att.vPos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(att.vPos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(att.vPos.z));
+
+            auto optblock = CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ);
+            if (optblock)
+            {
+                vtx.light = optblock.value().GetLight();
+            }
             vertices.push_back(vtx);
 
             ++i;
@@ -297,6 +320,7 @@ HRESULT CParticleManager::AddParticle(PARTICLE_TYPE eType, const ATTRIBUTE& part
     {
         return S_OK;
     }
+   
     m_arrParticles[ETOUI(eType)].push_back(particle);
     return S_OK;
 }

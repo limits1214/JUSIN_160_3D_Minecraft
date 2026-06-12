@@ -90,7 +90,7 @@ HRESULT CResEnttGeoPig::Load(const std::any& arg)
 
         RightToLeft();
 
-
+        Scaling();
     }
     m_eState = STATE::LOADED;
     return S_OK;

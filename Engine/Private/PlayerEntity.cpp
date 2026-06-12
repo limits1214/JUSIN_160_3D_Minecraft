@@ -463,6 +463,29 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
 
         pDestroyStage->SetFrameIndex(fElapsed / (goal / 9));
 
+        if (res.block)
+        {
+            auto currX = res.iWorldBlockX;
+            auto currY = res.iWorldBlockY;
+            auto currZ = res.iWorldBlockZ;
+            switch (res.eHitFace)
+            {
+            case FACE_DIR::POS_X:  currX += 1; break; // +X 면을 쳤으니 오른쪽 공기 칸
+            case FACE_DIR::NEG_X:  currX -= 1; break; // -X 면을 쳤으니 왼쪽 공기 칸
+            case FACE_DIR::POS_Y:  currY += 1; break; // +Y 면(윗면)을 쳤으니 위쪽 공기 칸
+            case FACE_DIR::NEG_Y:  currY -= 1; break; // -Y 면(밑면)을 쳤으니 아래쪽 공기 칸
+            case FACE_DIR::POS_Z:  currZ += 1; break; // +Z 면(앞면)을 쳤으니 앞쪽 공기 칸
+            case FACE_DIR::NEG_Z:  currZ -= 1; break; // -Z 면(뒷면)을 쳤으니 뒤쪽 공기 칸
+            default: break;
+            }
+
+            if (auto optLightBlock = CGameInstance::Get().GetVoxelBlock(currX, currY, currZ))
+            {
+                pDestroyStage->SetLight(optLightBlock->GetLight());
+            }
+        }
+        
+        
 
         CGameInstance::Get().AddParticleRenderDestruct(res.block.value(), { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f });
 
