@@ -338,6 +338,7 @@ HRESULT CLevelOverWorld::Initialize()
 	}
 
 	// cloud
+	//if(false)
 	{
 		E::CGameObject::GAMEOBJECT_DESC Desc{};
 		Desc.sObjectTag = "Cloud";

@@ -20,6 +20,9 @@
 
 #include "FurnaceStorage.h"
 #include "ChestStorage.h"
+
+#include "PigEntity.h"
+
 NS_USING(Engine)
 
 
@@ -72,6 +75,22 @@ void CPlayerEntity::UpdateGUI()
         ImGui::Text("NumKeyPressing_9: %i", m_bNumKeyPressing[9]);
 
         ImGui::TreePop();
+    }
+
+    if (ImGui::Button("spawnPig"))
+    {
+        {
+        	E::CPigEntity::DESC Desc{};
+        	Desc.sObjectTag = "Pig";
+        	if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity",
+        		"02_TEST_ENTITY", &Desc))
+        	{
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CPigEntity>(handle.value()))
+                {
+                    pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+                }
+        	}
+        }
     }
 
     if (ImGui::Button("Test Drop Item"))
