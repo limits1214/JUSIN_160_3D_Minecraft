@@ -40,6 +40,7 @@ private:
 	HRESULT RenderPriority(const RENDER_CTX& ctx);
 	HRESULT RenderNonBlend(const RENDER_CTX& ctx);
 	HRESULT RenderBlend(const RENDER_CTX& ctx);
+	HRESULT RenderSkybox(const RENDER_CTX& ctx);
 	HRESULT RenderCollider(const RENDER_CTX& ctx);
 	HRESULT RenderUI(const RENDER_CTX& ctx);
 	HRESULT RenderUIToolTip(const RENDER_CTX& ctx);

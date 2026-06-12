@@ -548,6 +548,15 @@ HRESULT CGameInstance::InitializeResources()
 		depthDesc.DepthFunc = D3D11_COMPARISON_LESS;
 		res->Load(depthDesc);
 	}
+
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "DS_Skybox", E::CResDepthStencilState::Create()))
+	{
+		D3D11_DEPTH_STENCIL_DESC depthDesc{};
+		depthDesc.DepthEnable = TRUE;
+		depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // 무력화 (기록 안함)
+		depthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		res->Load(depthDesc);
+	}
 	return S_OK;
 }
 
@@ -677,6 +686,18 @@ HRESULT CGameInstance::InitializeMCResource()
 			res->Load();
 		}
 		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_FallingVoxel", "./Resources/Shader/FallingVoxel/FallingVoxel.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
+	// initialize skybox Shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Skybox", "./Resources/Shader/Skybox/Skybox.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Skybox", "./Resources/Shader/Skybox/Skybox.hlsl"))
 		{
 			res->Load();
 		}
@@ -1511,6 +1532,39 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	{
+		// 0: Sun
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_32_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Env/sun.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 1: Moon
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_32_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Env/Moon/full_moon.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 32_32_texArray
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_TEX_32_32", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_32_32", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(5, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+	}
+
 
 
 
@@ -2206,6 +2260,14 @@ CFurnaceStorage* CGameInstance::GetWorldFurnaceStorage()
 CChestStorage* CGameInstance::GetWorldChestStorage()
 {
 	return m_pWorldManager->GetChestStorage();
+}
+_float CGameInstance::GetWorldDayFactor() const
+{
+	return m_pWorldManager->GetDayFactor();
+}
+_float CGameInstance::GetWorldSkyRotation() const
+{
+	return m_pWorldManager->GetSkyRotation();
 }
 #pragma endregion
 
