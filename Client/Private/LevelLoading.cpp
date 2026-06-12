@@ -190,6 +190,7 @@ void CLevelLoading::LoadingCheck()
 #include "FallingVoxel.h"
 
 #include "Skybox.h"
+#include "Cloud.h"
 
 HRESULT CLevelLoading::LoadingOverWorldLevel()
 {
@@ -357,6 +358,11 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 	}
 
 	if (FAILED(E::CGameInstance::Get().AddPrototype("SKYBOX", "Prototype_GameObject_Skybox", E::CSkybox::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("CLOUD", "Prototype_GameObject_Cloud", E::CCloud::Create())))
 	{
 		return E_FAIL;
 	}

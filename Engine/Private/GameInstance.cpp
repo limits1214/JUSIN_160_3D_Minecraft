@@ -703,6 +703,18 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// initialize cloud shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Cloud", "./Resources/Shader/Cloud/Cloud.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Cloud", "./Resources/Shader/Cloud/Cloud.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
 
 	// initialize destroy stage texture
 	{
@@ -1408,11 +1420,29 @@ HRESULT CGameInstance::InitializeMCResource()
 			//uint32_t tmp[ETOUI(FACE_DIR::END)]{PackTexId(9, 0),PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
 
 			CResCubeItemVIBuffer::DESC desc{};
-			desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
+			//desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
 			//desc.resourceIdx = 0;
 			//memcpy(desc.texIndices, tmp, sizeof(tmp));
 
 			res->Load(desc);
+		}
+	}
+
+	{
+		if (auto res = AddResource("MC_VIBuffer", "Cloud", CResCloudVIBuffer::Create()))
+		{
+			//uint32_t tmp[ETOUI(FACE_DIR::END)]{PackTexId(9, 0),PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
+
+			CResCloudVIBuffer::DESC desc{};
+			//desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
+			//desc.resourceIdx = 0;
+			//memcpy(desc.texIndices, tmp, sizeof(tmp));
+
+			if (FAILED(res->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			;
 		}
 	}
 

@@ -56,6 +56,7 @@ namespace Engine
 		HUMIDITY,
 		PLANT_DECO_FIJI_SHORT_GRASS,
 		TREE_DENSITY,
+		CLOUD,
 		END
 	};
 

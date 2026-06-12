@@ -160,6 +160,11 @@ namespace Engine
 		uint32_t texIndex{};  //  4 bytes
 	} VTX_FALLING_VOXEL;
 
+	typedef struct tagVertexCloud
+	{
+		_float3 pos{};   // 12 bytes
+	} VTX_CLOUD;
+
 
 	typedef struct tagVertexPointParticle
 	{

@@ -3824,6 +3824,15 @@ HRESULT CVoxelManager3::Initialize()
     m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetFractalType(FastNoiseLite::FractalType_FBm);
     m_Noises[ETOUI(NOISE_TYPE::TREE_DENSITY)].SetFractalOctaves(3);
 
+
+
+
+    m_Noises[ETOUI(NOISE_TYPE::CLOUD)].SetSeed(m_iNoiseSeed + 35);
+    m_Noises[ETOUI(NOISE_TYPE::CLOUD)].SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    m_Noises[ETOUI(NOISE_TYPE::CLOUD)].SetFrequency(0.05f);
+    m_Noises[ETOUI(NOISE_TYPE::CLOUD)].SetFractalType(FastNoiseLite::FractalType_FBm);
+    m_Noises[ETOUI(NOISE_TYPE::CLOUD)].SetFractalOctaves(3);
+
     //
     {
         m_pResSolidBlockVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block");

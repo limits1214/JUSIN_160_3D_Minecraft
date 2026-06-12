@@ -4,10 +4,10 @@
 
 NS_BEGIN(Engine)
 
-class ENGINE_DLL CResCubeItemVIBuffer final : public CResVIBuffer
+class ENGINE_DLL CResCloudVIBuffer final : public CResVIBuffer
 {
 public:
-	DECLARE_DERIVED_TYPE(CResCubeItemVIBuffer, CResVIBuffer)
+	DECLARE_DERIVED_TYPE(CResCloudVIBuffer, CResVIBuffer)
 
 public:
 	typedef struct tagDesc
@@ -18,8 +18,8 @@ public:
 	} DESC;
 
 private:
-	explicit CResCubeItemVIBuffer(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
-	~CResCubeItemVIBuffer() override;
+	explicit CResCloudVIBuffer(const _string& sPath, ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);
+	~CResCloudVIBuffer() override;
 
 public:
 
@@ -28,7 +28,7 @@ public:
 	HRESULT Unload(const std::any& arg = {})  override;
 
 public:
-	static SPtr<CResCubeItemVIBuffer> Create();
+	static SPtr<CResCloudVIBuffer> Create();
 };
 
 NS_END

@@ -337,6 +337,18 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
+	// cloud
+	{
+		E::CGameObject::GAMEOBJECT_DESC Desc{};
+		Desc.sObjectTag = "Cloud";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("CLOUD", "Prototype_GameObject_Cloud",
+			"00_Cloud", &Desc))
+		{
+			int x = 0;
+		}
+	}
+
+
 
 	{
 		E::CCameraObject::CAMERA_DESC Desc{};

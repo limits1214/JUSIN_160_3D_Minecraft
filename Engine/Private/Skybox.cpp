@@ -7,15 +7,8 @@ CSkybox::CSkybox()
 {
 }
 
-
 CSkybox::~CSkybox()
 {
-}
-
-HRESULT CSkybox::InitializePrototype(void* pArg)
-{
-
-    return S_OK;
 }
 
 HRESULT CSkybox::Initialize(void* pArg)
