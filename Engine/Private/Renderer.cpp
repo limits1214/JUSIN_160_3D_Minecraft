@@ -79,7 +79,7 @@ HRESULT CRenderer::Draw()
                 XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pGameCam->GetView()));
                 XMStoreFloat4x4(&cbPerFrame.matInvViewProj, XMMatrixInverse(nullptr, XMLoadFloat4x4(&cbPerFrame.matViewProj)));
                 XMStoreFloat4x4(&cbPerFrame.matSkyRotation, XMMatrixRotationX(CGameInstance::Get().GetWorldSkyRotation()));
-                float starAngle = CGameInstance::Get().GetWorldSkyRotation() * 0.1f;
+                float starAngle = CGameInstance::Get().GetWorldSkyRotation() * -0.1f;
                 XMStoreFloat4x4(&cbPerFrame.matStarRotation, XMMatrixRotationX(starAngle));
                 cbPerFrame.fDayFactor = CGameInstance::Get().GetWorldDayFactor();
                 cbPerFrame.vCamPos = pGameCam->GetTransform().GetPosition();

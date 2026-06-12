@@ -82,14 +82,14 @@ void CCloud::LateUpdate(E::_float fTimeDelta)
             if (m_InstanceData.size() >= m_iNumElements)
                 goto EXIT_LOOP;
 
-            _float fNoiseX = (_float)x * 0.35f + (m_fCloudOffset * 0.03f);
+            _float fNoiseX = (_float)x * 0.35f + (m_fCloudOffset * 0.001f);
             _float fNoiseZ = (_float)z * 0.35f;
 
             _float fNoiseVal = noise.GetNoise(fNoiseX, 0.0f, fNoiseZ);
 
             //  [밀도 조건 수식] 
             // 0.0f ~ 0.1f 사이로 잡으면 구름들이 듬성듬성 끊기지 않고 이쁘게 군집을 이룹니다.
-            if (fNoiseVal > 0.08f)
+            if (fNoiseVal > 0.1f)
             {
                 XMFLOAT3 worldPos;
                 worldPos.x = (_float)x * fTileSize;
