@@ -77,6 +77,11 @@ HRESULT CRenderer::Draw()
                 XMStoreFloat4x4(&cbPerFrame.matView, pGameCam->GetView());
                 XMStoreFloat4x4(&cbPerFrame.matViewProj, pGameCam->GetView() * pGameCam->GetProj());
                 XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pGameCam->GetView()));
+                XMStoreFloat4x4(&cbPerFrame.matInvViewProj, XMMatrixInverse(nullptr, XMLoadFloat4x4(&cbPerFrame.matViewProj)));
+                XMStoreFloat4x4(&cbPerFrame.matSkyRotation, XMMatrixRotationX(CGameInstance::Get().GetWorldSkyRotation()));
+                float starAngle = CGameInstance::Get().GetWorldSkyRotation() * 0.1f;
+                XMStoreFloat4x4(&cbPerFrame.matStarRotation, XMMatrixRotationX(starAngle));
+                cbPerFrame.fDayFactor = CGameInstance::Get().GetWorldDayFactor();
                 cbPerFrame.vCamPos = pGameCam->GetTransform().GetPosition();
                 if (dirLight.has_value())
                 {
@@ -110,6 +115,11 @@ HRESULT CRenderer::Draw()
         return E_FAIL;
     }
 
+    if (FAILED(RenderSkybox(ctx)))
+    {
+        return E_FAIL;
+    }
+
     if (FAILED(RenderCollider(ctx)))
     {
         return E_FAIL;
@@ -137,8 +147,9 @@ HRESULT CRenderer::Draw()
                 XMStoreFloat4x4(&cbPerFrame.matView, pUICame->GetView());
                 XMStoreFloat4x4(&cbPerFrame.matViewProj, pUICame->GetView() * pUICame->GetProj());
                 XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pUICame->GetView()));
+                //XMStoreFloat4x4(&cbPerFrame.matInvViewProj, XMMatrixInverse(nullptr, XMLoadFloat4x4(&cbPerFrame.matViewProj)));
                 cbPerFrame.vCamPos = pUICame->GetTransform().GetPosition();
-
+                cbPerFrame.fDayFactor = CGameInstance::Get().GetWorldDayFactor();
                 memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
                 m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
             }
@@ -224,6 +235,19 @@ HRESULT CRenderer::RenderNonBlend(const RENDER_CTX& ctx)
 HRESULT CRenderer::RenderBlend(const RENDER_CTX& ctx)
 {
     for (auto& pRenderObject : m_RenderObject[ETOUI(RENDERGROUP::BLEND)])
+    {
+        if (pRenderObject->HasRenderPass(ctx.pass))
+        {
+            pRenderObject->Render(m_pContext.Get(), ctx);
+        }
+    }
+
+    return S_OK;
+}
+
+HRESULT CRenderer::RenderSkybox(const RENDER_CTX& ctx)
+{
+    for (auto& pRenderObject : m_RenderObject[ETOUI(RENDERGROUP::SKYBOX)])
     {
         if (pRenderObject->HasRenderPass(ctx.pass))
         {

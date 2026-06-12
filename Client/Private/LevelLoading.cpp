@@ -189,6 +189,8 @@ void CLevelLoading::LoadingCheck()
 #include "DestroyStage.h"
 #include "FallingVoxel.h"
 
+#include "Skybox.h"
+
 HRESULT CLevelLoading::LoadingOverWorldLevel()
 {
 	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_CowEntity", E::CCowEntity::Create())))
@@ -354,6 +356,10 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 		return E_FAIL;
 	}
 
+	if (FAILED(E::CGameInstance::Get().AddPrototype("SKYBOX", "Prototype_GameObject_Skybox", E::CSkybox::Create())))
+	{
+		return E_FAIL;
+	}
 
 
 	return S_OK;

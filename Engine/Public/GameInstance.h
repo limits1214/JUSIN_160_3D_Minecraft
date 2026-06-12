@@ -280,6 +280,8 @@ public:
 #pragma region WORLD_MANAGER
 	CFurnaceStorage* GetWorldFurnaceStorage();
 	CChestStorage* GetWorldChestStorage();
+	_float GetWorldDayFactor() const;
+	_float GetWorldSkyRotation() const;
 #pragma
 
 

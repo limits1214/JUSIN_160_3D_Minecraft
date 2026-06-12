@@ -478,6 +478,12 @@
     <Filter Include="World\ChestStorage">
       <UniqueIdentifier>{38d28e25-0b92-4ae4-8c90-06b20949151a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Skybox">
+      <UniqueIdentifier>{bc848797-f1b2-4fff-ae71-c9424b116ccf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Skybox">
+      <UniqueIdentifier>{e90ba3c6-cb3d-4138-b1ad-9300ea095dbb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -939,6 +945,9 @@
     <ClInclude Include="..\public\ChestStorage.h">
       <Filter>World\ChestStorage</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\Skybox.h">
+      <Filter>GameObject\Skybox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1388,6 +1397,9 @@
     <ClCompile Include="..\private\ChestStorage.cpp">
       <Filter>World\ChestStorage</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\Skybox.cpp">
+      <Filter>GameObject\Skybox</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1431,6 +1443,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\DropBlock.hlsl">
       <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Skybox\Skybox.hlsl">
+      <Filter>100.Shaders\Skybox</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

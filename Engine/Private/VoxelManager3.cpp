@@ -2813,6 +2813,7 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
     CGameInstance::Get().ChunkLoadWorkerEnqueue("TMP", [=]() {
         
         
+
         int32_t minX = createDesc.iCenterX - m_iRenderDistance;
         int32_t maxX = createDesc.iCenterX + m_iRenderDistance;
         int32_t minZ = createDesc.iCenterZ - m_iRenderDistance;
@@ -2834,20 +2835,40 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
             for (int32_t y = minY; y <= maxY; ++y)
                 for (int32_t z = minZ; z <= maxZ; ++z)
                 {
-                    uint64_t chunkCoord = encodeChunkCoord(x, y, z);
-                    if (m_mapChunks.find(chunkCoord) != m_mapChunks.end())
-                    {
-                        continue;
-                    }
-
                     int dx = x - createDesc.iCenterX;
-                    int dy = y - createDesc.iCenterY;
                     int dz = z - createDesc.iCenterZ;
 
-                    int dist = dx * dx + dy * dy + dz * dz; // 제곱 거리 (빠름)
+                    // XZ 평면 원 밖이면 스킵
+                    if (dx * dx + dz * dz > m_iRenderDistance * m_iRenderDistance)
+                        continue;
 
+                    uint64_t chunkCoord = encodeChunkCoord(x, y, z);
+                    if (m_mapChunks.find(chunkCoord) != m_mapChunks.end())
+                        continue;
+
+                    int dy = y - createDesc.iCenterY;
+                    int dist = dx * dx + dy * dy + dz * dz;
                     list.push_back({ x, y, z, dist });
                 }
+
+        //for (int32_t x = minX; x <= maxX; ++x)
+        //    for (int32_t y = minY; y <= maxY; ++y)
+        //        for (int32_t z = minZ; z <= maxZ; ++z)
+        //        {
+        //            uint64_t chunkCoord = encodeChunkCoord(x, y, z);
+        //            if (m_mapChunks.find(chunkCoord) != m_mapChunks.end())
+        //            {
+        //                continue;
+        //            }
+
+        //            int dx = x - createDesc.iCenterX;
+        //            int dy = y - createDesc.iCenterY;
+        //            int dz = z - createDesc.iCenterZ;
+
+        //            int dist = dx * dx + dy * dy + dz * dz; // 제곱 거리 (빠름)
+
+        //            list.push_back({ x, y, z, dist });
+        //        }
 
         // 중심부터 가까운 순으로 정렬
         //std::sort(list.begin(), list.end(), [](const ChunkPos& a, const ChunkPos& b) {

@@ -89,6 +89,9 @@ HRESULT CResGeoShaderStreamOut::Load(const std::any& arg)
 
 
 	m_eState = STATE::LOADED;
+
+	m_pBlob.Reset();
+	m_pErrorBlob.Reset();
 	return S_OK;
 }
 

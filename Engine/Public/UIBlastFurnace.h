@@ -1,6 +1,7 @@
 
 #pragma once
 #include "UIObject.h"
+#include "ItemObject.h"
 NS_BEGIN(Engine)
 class CComConstantBuffer;
 class ENGINE_DLL CUIBlastFurnace final : public E::CUIObject
