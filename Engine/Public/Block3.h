@@ -342,6 +342,7 @@ inline uint8_t CBlock3::GetBlockLightByType(TYPE e)
 	return 0;
 }
 
+// origin, extents
 inline std::pair<_float3, _float3> CBlock3::GetOutlineExtents(TYPE e)
 {
 	switch (e)

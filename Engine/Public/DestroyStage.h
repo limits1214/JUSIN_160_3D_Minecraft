@@ -44,6 +44,10 @@ public:
 	void SetFrameIndex(uint32_t i) { m_iFrameIndex = std::clamp(i, (uint32_t)0, (uint32_t)9); }
 	uint32_t GetFrameIndex() const { return m_iFrameIndex; }
 
+	void MakeCubeQuads(_float3 vOri, _float3 vExt);
+private:
+	_float3 m_LastOri{};
+	_float3 m_LastExt{};
 private:
 	_bool m_bRender{ false };
 	_bool m_bDirty{ true };
