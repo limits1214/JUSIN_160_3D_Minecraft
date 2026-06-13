@@ -42,7 +42,7 @@ void CParticleManager::AddParticleRenderDestruct(CBlock3 block, _float3 pos)
             blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
             blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
             blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
-            //att.vColor = blockTint;
+            att.vColor = blockTint;
         }
         
         XMVECTOR dir =

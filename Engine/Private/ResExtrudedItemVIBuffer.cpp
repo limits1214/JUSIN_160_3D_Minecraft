@@ -189,6 +189,14 @@ HRESULT CResExtrudedItemVIBuffer::Load(const std::any& arg)
             v.pos.y -= pixelSize * texHeight * 0.5f;
         }
 
+        constexpr float DROP_SCALE = 0.5f;
+
+        for (auto& v : vertices)
+        {
+            v.pos.x *= DROP_SCALE;
+            v.pos.y *= DROP_SCALE;
+            v.pos.z *= DROP_SCALE;
+        }
 
         
         m_iNumVertices = (uint32_t)vertices.size();
