@@ -77,7 +77,22 @@ void CDropItem::Update(E::_float fTimeDelta)
         item.boxCollider->Transform(matWorld);
         E::CGameInstance::Get().AddColliderGroup("Coll_DropItemObject", item.boxCollider.get());
 
+
+       
+        
+       
+
         VTX_DROP_ITEM_INSTANCED_DATA inst{};
+
+        int32_t blockX = static_cast<int32_t>(std::floor(item.vPos.x));
+        int32_t blockY = static_cast<int32_t>(std::floor(item.vPos.y));
+        int32_t blockZ = static_cast<int32_t>(std::floor(item.vPos.z));
+        if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+        {
+            inst.light = optCurrBlock->GetLight();
+        }
+        
+
         inst.matWorld = item.matWorld;
         inst.texIndex = item.texIndexs.front();
         m_vecInstancedData.push_back(inst);
