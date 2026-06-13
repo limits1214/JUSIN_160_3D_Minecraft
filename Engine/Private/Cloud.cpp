@@ -102,7 +102,7 @@ void CCloud::LateUpdate(E::_float fTimeDelta)
                         if (instancedData.size() >= m_iNumElements)
                             goto EXIT_LOOP;
 
-                        _float fNoiseX = (_float)x * 0.35f + (m_fCloudOffset * 0.001f);
+                        _float fNoiseX = (_float)x * 0.35f + (m_fCloudOffset * 0.005f);
                         _float fNoiseZ = (_float)z * 0.35f;
 
                         _float fNoiseVal = noise.GetNoise(fNoiseX, 0.0f, fNoiseZ);
