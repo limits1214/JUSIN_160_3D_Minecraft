@@ -72,7 +72,7 @@ HRESULT CCowEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& c
         pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
     }
 
-    m_pComEntityModel->BindBoneMatrix();
+    m_pComEntityModel->BindBoneMatrix(pContext);
 
     m_pComEntityModel->Render(pContext, ctx);
 

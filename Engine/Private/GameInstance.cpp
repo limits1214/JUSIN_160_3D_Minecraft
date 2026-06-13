@@ -31,7 +31,7 @@
 
 #include "ComEntityModel.h"
 #include "ComConstantBuffer.h"
-
+#include "ComAnimator.h"
 
 
 NS_USING(Engine)
@@ -1843,6 +1843,10 @@ HRESULT CGameInstance::InitializePrototype()
 	}
 
 	if (AddPrototype("PERMANENT", "Prototype_Component_EntityModel", CComEntityModel::Create()))
+	{
+		return E_FAIL;
+	}
+	if (AddPrototype("PERMANENT", "Prototype_Component_Animator", CComAnimator::Create()))
 	{
 		return E_FAIL;
 	}
