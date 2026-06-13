@@ -27,7 +27,7 @@ public:
     void UpdateTransformationMatrix(_fmatrix localTransform)   // 키프레임에서 온 Local TRS
     {
         // LocalPivot = Bind Pose에서의 부모 기준 Local Position
-        
+        m_bTransformForcedSetted = true;
         XMStoreFloat4x4(&m_TransformationMatrix, localTransform );
     }
     void UpdateCombinedMatrix(const _float4x4* pParentCombined)
@@ -71,6 +71,11 @@ public:
 
     void BuildTransformMatrix()
     {
+        if (m_bTransformForcedSetted)
+        {
+            m_bTransformForcedSetted = false;
+            return;
+        }
         auto t = XMMatrixTranslation(m_Translation.x, m_Translation.y, m_Translation.z);
         auto r = XMMatrixRotationX(m_Rotation.x) * XMMatrixRotationY(m_Rotation.y) * XMMatrixRotationZ(m_Rotation.z);
         auto s = XMMatrixScaling(m_Scale.x, m_Scale.y, m_Scale.z);
@@ -89,6 +94,9 @@ private:
     _float3 m_Translation{};
     _float3 m_Rotation{};
     _float3 m_Scale{ 1.f, 1.f, 1.f };
+
+private:
+    _bool m_bTransformForcedSetted{ false };
 
 private:
     std::string m_sName{};

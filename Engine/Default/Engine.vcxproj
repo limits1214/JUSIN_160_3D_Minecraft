@@ -245,6 +245,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\ColliderManager.h" />
     <ClInclude Include="..\Public\CollOrientedBox.h" />
     <ClInclude Include="..\Public\CollSphere.h" />
+    <ClInclude Include="..\public\ComAnimator.h" />
     <ClInclude Include="..\public\ComConstantBuffer.h" />
     <ClInclude Include="..\public\ComEntityModel.h" />
     <ClInclude Include="..\public\Component.h" />
@@ -499,6 +500,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\ColliderManager.cpp" />
     <ClCompile Include="..\Private\CollOrientedBox.cpp" />
     <ClCompile Include="..\Private\CollSphere.cpp" />
+    <ClCompile Include="..\private\ComAnimator.cpp" />
     <ClCompile Include="..\private\ComConstantBuffer.cpp" />
     <ClCompile Include="..\private\ComEntityModel.cpp" />
     <ClCompile Include="..\private\Component.cpp" />

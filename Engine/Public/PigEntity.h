@@ -3,6 +3,8 @@
 
 NS_BEGIN(Engine)
 class CComEntityModel;
+class CComAnimator;
+class CComConstantBuffer;
 class ENGINE_DLL CPigEntity : public CAnimalEntityObject
 {
 public:
@@ -27,8 +29,17 @@ public:
 
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
+public:
+	void SetPlayer(CHandle h) { m_hPlayer = h; }
+
+private:
+	CHandle m_hPlayer{};
+
 private:
 	CComEntityModel* m_pComEntityModel{};
+	CComAnimator* m_pComAnimator{ };
+	CComConstantBuffer* m_pComCBufferPerObject{};
+
 public:
 	static UPtr<CPigEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

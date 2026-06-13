@@ -30,47 +30,14 @@ HRESULT CComEntityModel::Initialize(void* pArg)
     auto resources = CGameInstance::Get().GetResourceFirst<CResEnttGeo>(pDesc->geometryId.first, pDesc->geometryId.second);
     const auto& geometry = resources->GetGeometry();
 
-    // 1. 이름 → 인덱스 임시 맵
-    std::unordered_map<std::string, size_t> tempLookup;
-    for (size_t i = 0; i < geometry.bones.size(); ++i)
-        tempLookup.emplace(geometry.bones[i].name, i);
-
-    // 2. 위상 정렬
-    std::vector<size_t> sorted;
-    std::vector<bool> visited(geometry.bones.size(), false);
-
-    std::function<void(size_t)> visit = [&](size_t idx)
-        {
-            if (visited[idx]) return;
-            visited[idx] = true;
-
-            // 부모 먼저
-            const auto& parentName = geometry.bones[idx].parent;
-            if (!parentName.empty())
-            {
-                auto it = tempLookup.find(parentName);
-                if (it != tempLookup.end())
-                    visit(it->second);
-            }
-
-            sorted.push_back(idx);
-        };
-
-    for (size_t i = 0; i < geometry.bones.size(); ++i)
-        visit(i);
-
-    // 3. 정렬된 순서로 bones 구성
-    for (size_t i = 0; i < sorted.size(); ++i)
+    for (const auto& bone : geometry.bones)
     {
-        const auto& bone = geometry.bones[sorted[i]];
         auto b = CEntityModelBone{ bone.name };
         b.SetPivot(bone.pivot);
         b.SetParentName(bone.parent);
         m_BonesLookup.emplace(bone.name, m_Bones.size());
         m_Bones.push_back(b);
     }
-
-    assert(m_BonesLookup.size() == m_Bones.size());
 
     for (uint32_t i = 0; i < m_Bones.size(); ++i)
     {
@@ -95,10 +62,6 @@ HRESULT CComEntityModel::Initialize(void* pArg)
             _float3 localPivot;
             XMStoreFloat3(&localPivot, XMLoadFloat3(&bone.GetPivot()) - XMLoadFloat3(&m_Bones[parentIdx].GetPivot()));
             bone.SetLocalPivot(localPivot);
-            if (bone.GetName() == "waist")
-            {
-                int x = 0;
-            }
         }
         else
         {
@@ -143,21 +106,7 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
 
     // TODO 애니메이션 으로 뺄 예정
     
-        //for (auto& bone : m_Bones)
-        //{
-        //    XMMATRIX local = XMMatrixIdentity();
-        //    if (bone.GetName() == "leg0" || bone.GetName() == "leg3")
-        //    {
-        //        float rotX = XMConvertToRadians(cosf(m_fElapsed * 38.17f) * 80.f);
-        //        local = XMMatrixRotationX(rotX);
-        //    }
-        //    else if (bone.GetName() == "leg1" || bone.GetName() == "leg2")
-        //    {
-        //        float rotX = XMConvertToRadians(cosf(m_fElapsed * 38.17f) * -80.f);
-        //        local = XMMatrixRotationX(rotX);
-        //    }
-        //    bone.UpdateTransformationMatrix(local);
-        //}
+
 
 
     if (false)
@@ -281,14 +230,13 @@ void CComEntityModel::UpdateBoneMatrix(_float fTimeDelta)
     }
 }
 
-void CComEntityModel::BindBoneMatrix() const
+void CComEntityModel::BindBoneMatrix(ID3D11DeviceContext* pContext) const
 {
-    auto pContext = CGameInstance::Get().GetGraphicDeviceContext();
     auto pCbPerBone = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerBone");
     D3D11_MAPPED_SUBRESOURCE mappedSubResource;
     if (SUCCEEDED(pContext->Map(pCbPerBone->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
     {
-        memcpy(mappedSubResource.pData, &m_cbPerBone, sizeof(m_cbPerBone));
+        memcpy(mappedSubResource.pData, &m_cbPerBone.matBone[0], sizeof(_float4x4) * m_Bones.size());
         pContext->Unmap(pCbPerBone->GetCBuffer().Get(), 0);
     }
     pContext->VSSetConstantBuffers(4, 1, pCbPerBone->GetCBuffer().GetAddressOf());

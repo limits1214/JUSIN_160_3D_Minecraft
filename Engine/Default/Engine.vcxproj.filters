@@ -493,6 +493,9 @@
     <Filter Include="100.Shaders\Cloud">
       <UniqueIdentifier>{c3c723b2-f60d-4628-b9e6-9fb6018abf68}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\Animator">
+      <UniqueIdentifier>{c830eda9-86b5-43c4-8787-9d0c4df943c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -963,6 +966,9 @@
     <ClInclude Include="..\public\ResCloudVIBuffer.h">
       <Filter>Resource\Buffer\VIBuffer\CloudVIBuffer</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ComAnimator.h">
+      <Filter>Component\Animator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1420,6 +1426,9 @@
     </ClCompile>
     <ClCompile Include="..\private\ResCloudVIBuffer.cpp">
       <Filter>Resource\Buffer\VIBuffer\CloudVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ComAnimator.cpp">
+      <Filter>Component\Animator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

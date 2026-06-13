@@ -73,7 +73,7 @@ HRESULT CPlayerFPSArm::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 		pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
 	}
 
-	m_pComEntityArmModel->BindBoneMatrix();
+	m_pComEntityArmModel->BindBoneMatrix(pContext);
 
 	m_pComEntityArmModel->Render(pContext, ctx);
 	return S_OK;
