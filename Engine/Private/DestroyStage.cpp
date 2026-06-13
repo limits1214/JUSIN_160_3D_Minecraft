@@ -226,7 +226,9 @@ void CDestroyStage::UpdateVertexBuffer(ID3D11DeviceContext* pContext)
 	{
 		int base = i * 4;
 		for (int v = 0; v < 4; ++v)
+		{
 			vertices.push_back(m_quads[i].v[v]);
+		}
 
 		// 쿼드 → 삼각형 2개
 		indices.push_back(base + 0);
@@ -256,6 +258,89 @@ void CDestroyStage::UpdateVertexBuffer(ID3D11DeviceContext* pContext)
 	}
 	m_currentIndexCount = (uint32_t)indices.size();
 	m_bDirty = false;
+}
+
+void CDestroyStage::MakeCubeQuads(_float3 vOri, _float3 vExt)
+{
+	if (
+		m_LastOri.x == vOri.x
+		&& m_LastOri.y == vOri.y
+		&& m_LastOri.z == vOri.z
+		&& m_LastExt.x == vExt.x
+		&& m_LastExt.y == vExt.y
+		&& m_LastExt.z == vExt.z
+		)
+	{
+		return;
+	}
+	m_LastOri = vOri;
+	m_LastExt = vExt;
+	
+
+	m_quads.clear();
+	// +X
+	m_quads.push_back({ {
+		{ {1,0,0}, {1,0,0}, {0,1} },
+		{ {1,1,0}, {1,0,0}, {0,0} },
+		{ {1,1,1}, {1,0,0}, {1,0} },
+		{ {1,0,1}, {1,0,0}, {1,1} },
+	} });
+	// -X
+	m_quads.push_back({ {
+		{ {0,0,1}, {-1,0,0}, {0,1} },
+		{ {0,1,1}, {-1,0,0}, {0,0} },
+		{ {0,1,0}, {-1,0,0}, {1,0} },
+		{ {0,0,0}, {-1,0,0}, {1,1} },
+	} });
+	// +Y
+	m_quads.push_back({ {
+		{ {0,1,0}, {0,1,0}, {0,1} },
+		{ {0,1,1}, {0,1,0}, {0,0} },
+		{ {1,1,1}, {0,1,0}, {1,0} },
+		{ {1,1,0}, {0,1,0}, {1,1} },
+	} });
+	// -Y
+	m_quads.push_back({ {
+		{ {0,0,1}, {0,-1,0}, {0,1} },
+		{ {0,0,0}, {0,-1,0}, {0,0} },
+		{ {1,0,0}, {0,-1,0}, {1,0} },
+		{ {1,0,1}, {0,-1,0}, {1,1} },
+	} });
+	// +Z
+	m_quads.push_back({ {
+		{ {1,0,1}, {0,0,1}, {0,1} },
+		{ {1,1,1}, {0,0,1}, {0,0} },
+		{ {0,1,1}, {0,0,1}, {1,0} },
+		{ {0,0,1}, {0,0,1}, {1,1} },
+	} });
+	// -Z
+	m_quads.push_back({ {
+		{ {0,0,0}, {0,0,-1}, {0,1} },
+		{ {0,1,0}, {0,0,-1}, {0,0} },
+		{ {1,1,0}, {0,0,-1}, {1,0} },
+		{ {1,0,0}, {0,0,-1}, {1,1} },
+	} });
+
+	for (auto& quad : m_quads)
+	{
+		const auto& n = quad.v[0].normal;
+		float uScale, vScale;
+		if (n.x != 0.f) { uScale = vExt.z; vScale = vExt.y; }
+		else if (n.y != 0.f) { uScale = vExt.x; vScale = vExt.z; }
+		else { uScale = vExt.x; vScale = vExt.y; }
+
+		for (auto& v : quad.v)
+		{
+			v.pos.x = vOri.x + v.pos.x * vExt.x;
+			v.pos.y = vOri.y + v.pos.y * vExt.y;
+			v.pos.z = vOri.z + v.pos.z * vExt.z;
+
+			v.texCoord.x = 0.5f + (v.texCoord.x - 0.5f) * uScale;
+			v.texCoord.y = 0.5f + (v.texCoord.y - 0.5f) * vScale;
+		}
+	}
+
+	m_bDirty = true;
 }
 
 UPtr<CDestroyStage> CDestroyStage::Create()

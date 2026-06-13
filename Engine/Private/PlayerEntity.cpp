@@ -484,6 +484,22 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             {
                 pDestroyStage->SetLight(optLightBlock->GetLight());
             }
+
+            const auto&[off, halfExt] = CBlock3::GetOutlineExtents(res.block->GetType());
+
+            _float3 vOri = {
+                0.5f + off.x - halfExt.x,
+                0.5f + off.y - halfExt.y,
+                0.5f + off.z - halfExt.z,
+            };
+            _float3 vExt = {
+                halfExt.x * 2.f,
+                halfExt.y * 2.f,
+                halfExt.z * 2.f,
+            };
+
+            //MakeCubeQuads(vOri, vExt);
+            pDestroyStage->MakeCubeQuads(vOri, vExt);
         }
         
         

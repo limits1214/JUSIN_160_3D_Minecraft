@@ -152,6 +152,7 @@ namespace Engine
 		_float4x4 matWorld{};
 		uint32_t   texIndexs[6]{};
 		uint32_t	light{ 0xFF };
+		_float4 vColor{1.f, 1.f, 1.f, 1.f};
 	}VTX_DROP_BLOCK_INSTANCED_DATA;
 
 	typedef struct tagVertexFallingVoxel

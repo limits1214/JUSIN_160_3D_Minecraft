@@ -90,6 +90,20 @@ void CDropBlock::Update(E::_float fTimeDelta)
             inst.light = optCurrBlock->GetLight();
         }
 
+        if (item.itemInfo.block)
+        {
+            uint32_t baseColorABGR = CBlock3::GetBaseColor(item.itemInfo.block->GetType());
+            if (baseColorABGR != 0xFF)
+            {
+                _float4 blockTint;
+                blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
+                blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
+                blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
+                blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
+                inst.vColor = blockTint;
+            }
+        }
+        
         inst.matWorld = item.matWorld;
         //memcpy(&inst.texIndexs, item.texIndexs.data(), item.texIndexs.size());
         memcpy(&inst.texIndexs, item.texIndexs.data(), sizeof(uint32_t) * item.texIndexs.size());

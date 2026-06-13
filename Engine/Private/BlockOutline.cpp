@@ -94,41 +94,73 @@ HRESULT CBlockOutline::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 
 		if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin, rayDir, 5, res))
 		{
-			if (res.block)
+			if (auto pChunk = CGameInstance::Get().GetVoxelChunk(res.iChunkX, res.iChunkY, res.iChunkZ))
 			{
-				if (CBlock3::TYPE::AIR != res.block.value().GetType())
+				if (pChunk->GetMessingQueued())
 				{
-					int32_t wbx, wby, wbz;
-					wbx = res.iWorldBlockX;
-					wby = res.iWorldBlockY;
-					wbz = res.iWorldBlockZ;
+					return S_OK;
+				}
+				if (pChunk->GetBufferState() == CChunk3::BUFFER_STATE::ING)
+				{
+					return S_OK;
+				}
+				if (pChunk->GetMessingState() == CChunk3::MESSING_STATE::ING)
+				{
+					return S_OK;
+				}
+				const auto& editShadow = CGameInstance::Get().GetVoxelEditShadow();
+				auto chunkIdx = CVoxelManager3::encodeChunkCoord(res.iChunkX, res.iChunkY, res.iChunkZ);
+				if (editShadow.find(chunkIdx) != editShadow.end())
+				{
+					return S_OK;
+				}
 
+				
+				if (pChunk->GetBufferState() == CChunk3::BUFFER_STATE::DONE
+					&& pChunk->GetMessingState() == CChunk3::MESSING_STATE::NON
+					&& !pChunk->GetMessingQueued()
+					)
+					
+				{
+					if (res.block)
 					{
-						auto pResCBuf = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerBlockOutline");
-						D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-						if (SUCCEEDED(pContext->Map(pResCBuf->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+
+						if (CBlock3::TYPE::AIR != res.block.value().GetType())
 						{
-							E::CB_PER_BLOCKOUTLINE cbPerBlockOutline{};
+							int32_t wbx, wby, wbz;
+							wbx = res.iWorldBlockX;
+							wby = res.iWorldBlockY;
+							wbz = res.iWorldBlockZ;
 
-							auto val = CBlock3::GetOutlineExtents(res.block.value().GetType());
-							cbPerBlockOutline.vBlockPos = { wbx + 0.5f + val.first.x, wby + 0.5f + val.first.y, wbz + 0.5f + val.first.z };
-							cbPerBlockOutline.vExtents = { val.second.x, val.second.y, val.second.z };
-							cbPerBlockOutline.fThickness = 0.015f;
-							cbPerBlockOutline.vColor = { 0.f, 0.f, 0.f, 1.f };
-							//cbPerBlockOutline.light = res.block->GetLight();
-							
-							
+							{
+								auto pResCBuf = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerBlockOutline");
+								D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+								if (SUCCEEDED(pContext->Map(pResCBuf->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+								{
+									E::CB_PER_BLOCKOUTLINE cbPerBlockOutline{};
+
+									auto val = CBlock3::GetOutlineExtents(res.block.value().GetType());
+									cbPerBlockOutline.vBlockPos = { wbx + 0.5f + val.first.x, wby + 0.5f + val.first.y, wbz + 0.5f + val.first.z };
+									cbPerBlockOutline.vExtents = { val.second.x, val.second.y, val.second.z };
+									cbPerBlockOutline.fThickness = 0.015f;
+									cbPerBlockOutline.vColor = { 0.f, 0.f, 0.f, 1.f };
+									//cbPerBlockOutline.light = res.block->GetLight();
 
 
-							memcpy(mappedSubResource.pData, &cbPerBlockOutline, sizeof(cbPerBlockOutline));
-							pContext->Unmap(pResCBuf->GetCBuffer().Get(), 0);
+
+
+									memcpy(mappedSubResource.pData, &cbPerBlockOutline, sizeof(cbPerBlockOutline));
+									pContext->Unmap(pResCBuf->GetCBuffer().Get(), 0);
+								}
+								pContext->VSSetConstantBuffers(10, 1, pResCBuf->GetCBuffer().GetAddressOf());
+								pContext->PSSetConstantBuffers(10, 1, pResCBuf->GetCBuffer().GetAddressOf());
+								pContext->GSSetConstantBuffers(10, 1, pResCBuf->GetCBuffer().GetAddressOf());
+							}
 						}
-						pContext->VSSetConstantBuffers(10, 1, pResCBuf->GetCBuffer().GetAddressOf());
-						pContext->PSSetConstantBuffers(10, 1, pResCBuf->GetCBuffer().GetAddressOf());
-						pContext->GSSetConstantBuffers(10, 1, pResCBuf->GetCBuffer().GetAddressOf());
 					}
 				}
 			}
+			
 		}
 		else
 		{
