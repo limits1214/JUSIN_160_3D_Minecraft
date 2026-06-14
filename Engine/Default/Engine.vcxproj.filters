@@ -496,6 +496,15 @@
     <Filter Include="Component\Animator">
       <UniqueIdentifier>{c830eda9-86b5-43c4-8787-9d0c4df943c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Item\HandHeld">
+      <UniqueIdentifier>{4fda0257-c93c-4017-bc55-52a45fcb4c7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\HandHeld\Item">
+      <UniqueIdentifier>{365e1316-0cee-49d0-9a4f-1ced9e1b62db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\HandHeld\Block">
+      <UniqueIdentifier>{a7a15908-2afe-476d-8898-198a466aba20}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -969,6 +978,15 @@
     <ClInclude Include="..\public\ComAnimator.h">
       <Filter>Component\Animator</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\HandHeldItemObject.h">
+      <Filter>GameObject\Item\HandHeld</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\HandHeldBlock.h">
+      <Filter>GameObject\Item\HandHeld\Block</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\HandHeldItem.h">
+      <Filter>GameObject\Item\HandHeld\Item</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1430,6 +1448,15 @@
     <ClCompile Include="..\private\ComAnimator.cpp">
       <Filter>Component\Animator</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\HandHeldItemObject.cpp">
+      <Filter>GameObject\Item\HandHeld</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\HandHeldBlock.cpp">
+      <Filter>GameObject\Item\HandHeld\Block</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\HandHeldItem.cpp">
+      <Filter>GameObject\Item\HandHeld\Item</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1479,6 +1506,12 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Cloud\Cloud.hlsl">
       <Filter>100.Shaders\Cloud</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldBlock.hlsl">
+      <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldItem.hlsl">
+      <Filter>100.Shaders\Item</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

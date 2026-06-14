@@ -236,7 +236,7 @@ public:
 	}
 	void SetItemInfo(std::optional<ItemInfo> info) { m_ItemInfo = info; }
 
-private:
+protected:
 	std::optional<ItemInfo> m_ItemInfo{};
 
 protected:
