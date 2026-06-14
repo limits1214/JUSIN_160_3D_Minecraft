@@ -89,6 +89,7 @@ private:
 	void ProcessUIFurnace(float fTimeDelta);
 	void ProcessUIChest(float fTimeDelta);
 	void ProcessThrowItem(float fTimeDelta);
+	void ProcessHandHeldItem(float fTimeDelta);
 private:
 	CHandle m_hUIController{};
 
@@ -130,6 +131,9 @@ private:
 		m_fAttackDuration = 0.6f;  // 공격 지속 시간
 	}
 
+
+private:
+	CHandle m_hPlayerFPSArm{};
 
 private:
 	_bool m_bControl{ false };

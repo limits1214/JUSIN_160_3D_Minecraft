@@ -277,6 +277,9 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\GameObject.h" />
     <ClInclude Include="..\public\GameObjectManager.h" />
     <ClInclude Include="..\public\GraphicDevice.h" />
+    <ClInclude Include="..\public\HandHeldBlock.h" />
+    <ClInclude Include="..\public\HandHeldItem.h" />
+    <ClInclude Include="..\public\HandHeldItemObject.h" />
     <ClInclude Include="..\public\Item.h" />
     <ClInclude Include="..\public\ResCloudVIBuffer.h" />
     <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
@@ -509,6 +512,9 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\DropItemObject.cpp" />
     <ClCompile Include="..\private\FallingVoxel.cpp" />
     <ClCompile Include="..\private\FurnaceStorage.cpp" />
+    <ClCompile Include="..\private\HandHeldBlock.cpp" />
+    <ClCompile Include="..\private\HandHeldItem.cpp" />
+    <ClCompile Include="..\private\HandHeldItemObject.cpp" />
     <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\ResCloudVIBuffer.cpp" />
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
@@ -677,6 +683,14 @@ call CopyClient.bat</Command>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\DropItem.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldBlock.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldItem.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Particle\Particle.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

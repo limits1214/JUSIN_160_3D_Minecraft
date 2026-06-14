@@ -38,6 +38,9 @@
 
 #include "Skybox.h"
 
+//#include "HandHeldItemObject.h"
+#include "HandHeldItem.h"
+
 NS_USING(Client)
 
 CLevelOverWorld::CLevelOverWorld()
@@ -113,30 +116,7 @@ HRESULT CLevelOverWorld::Initialize()
 				
 
 
-				{
-					E::CPlayerFPSArm::DESC Desc{};
-					Desc.sObjectTag = "PlayerFPSArm";
-					if (auto fpsArmHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_PlayerFPSArm",
-						"10_PlayerArm", &Desc))
-					{
-						playerObj->SetRightItemHandle(fpsArmHandle);
-						if (auto fpsArmObj = E::CGameInstance::Get().GetGameObjectByHandle(fpsArmHandle.value()))
-						{
-							fpsArmObj->GetTransform().SetPosition(XMVectorSet(0.1f, -0.15f, 0.05f, 1.f));
-							//fpsArmObj->GetTransform().AddRotation(XMVectorSet(1.f, 0.f, 0.f, 0.f), -90.f);
-							//fpsArmObj->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 30.f);
-
-							fpsArmObj->GetTransform().AddQuaternion(XMQuaternionRotationRollPitchYaw(
-								XMConvertToRadians(-90.f),
-								XMConvertToRadians(30.f),
-								XMConvertToRadians(0.f)
-							));
-
-							fpsArmObj->GetTransform().SetScale(XMVectorSet(0.3f, 0.3f, 0.3f, 1.f));
-							//woodPixaxeObj->SetParentNode(playerObj);
-						}
-					}
-				}
+				
 
 
 				{
@@ -293,7 +273,25 @@ HRESULT CLevelOverWorld::Initialize()
 
 
 
-
+	// handheld
+	if(false)
+	{
+		E::CItemObject::ItemInfo info{};
+		info.eItemType = E::CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
+		E::CHandHeldItemObject::DESC Desc{};
+		Desc.sObjectTag = "HandHeldItem";
+		Desc.viBufferId = { "MC_ITEM_VIBuffer", E::CDropItemObject::GetVIBufferName(info) };
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_HandHeldItem",
+			"33_HandHeld", &Desc))
+		{
+			if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CHandHeldItem>(handle.value()))
+			{
+				
+				pObj->SetItemInfo(info);
+			}
+			int x = 0;
+		}
+	}
 
 
 	// falling voxel

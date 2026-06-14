@@ -23,6 +23,12 @@
 
 #include "PigEntity.h"
 
+#include "HandHeldBlock.h"
+#include "HandHeldItem.h"
+
+#include "PlayerFPSArm.h"
+
+
 NS_USING(Engine)
 
 
@@ -103,8 +109,6 @@ void CPlayerEntity::UpdateGUI()
             ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
 
             //CUIItem::GetPerUIByType(ItemInfo);
-           
-            ;
 
             E::CDropItem::DESC Desc{};
             Desc.sObjectTag = "DropItem_WoodPickaxe";
@@ -254,6 +258,32 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
 
     // TEST
     CItemObject::RecipeInitialize();
+
+
+    {
+        {
+            E::CPlayerFPSArm::DESC Desc{};
+            Desc.sObjectTag = "PlayerFPSArm";
+            if (auto fpsArmHandle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_PlayerFPSArm",
+                "10_PlayerArm", &Desc))
+            {
+                m_hPlayerFPSArm = fpsArmHandle.value();
+                //playerObj->SetRightItemHandle(fpsArmHandle);
+                if (auto fpsArmObj = E::CGameInstance::Get().GetGameObjectByHandle(fpsArmHandle.value()))
+                {
+                    fpsArmObj->GetTransform().SetPosition(XMVectorSet(0.1f, -0.25f, 0.05f, 1.f));
+
+                    fpsArmObj->GetTransform().AddQuaternion(XMQuaternionRotationRollPitchYaw(
+                        XMConvertToRadians(-90.f),
+                        XMConvertToRadians(30.f),
+                        XMConvertToRadians(0.f)
+                    ));
+
+                    //fpsArmObj->GetTransform().SetScale(XMVectorSet(0.3f, 0.3f, 0.3f, 1.f));
+                }
+            }
+        }
+    }
     return S_OK;
 }
 
@@ -321,6 +351,8 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
 
     ProcessThrowItem(fTimeDelta);
+    ProcessHandHeldItem(fTimeDelta);
+
     ProcessRightClick(fTimeDelta);
 
     ProcessDestroyStage(fTimeDelta);
@@ -1137,6 +1169,78 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
     }
 }
 
+void CPlayerEntity::ProcessHandHeldItem(float fTimeDelta)
+{
+    if (!m_pActivePlayerCamera) return;
+    auto selectIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+    CHandHeldItem* pHandHeldObj{};
+    {
+        E::CHandHeldItemObject::DESC Desc{};
+        Desc.sObjectTag = "CHandHeldItem";
+
+        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer("24_HandHeldItem", "ITEM", "Prototype_GameObject_HandHeldItem", &Desc))
+        {
+            if (!pLayer->empty())
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CHandHeldItem>(pLayer->front()))
+                {
+                    pHandHeldObj = pObj;
+                    //pObj->AddDropItemObject(info, pos, vel, { CItemObject::GetPackedTexIdByType(info.eItemType) });
+                }
+            }
+        }
+    }
+
+    CPlayerFPSArm* pPlayerArm{};
+    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT< CPlayerFPSArm>(m_hPlayerFPSArm))
+    {
+        pPlayerArm = pObj;
+    }
+
+    if (pHandHeldObj && pPlayerArm)
+    {
+        uint8_t iLight{ 0xFF };
+        auto pos = GetTransform().GetPosition();
+        int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+        int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
+        int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+        if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+        {
+            iLight = optCurrBlock->GetLight();
+        }
+        if (auto& hotbarItemInfo = m_ItemArrHotbar[selectIdx])
+        {
+            m_hRightItem = pHandHeldObj->GetHandle();
+            //pHandHeldObj->GetTransform().SetParentWorldMatrix(*GetTransform().GetWorldMatrix());
+            pHandHeldObj->SetRender(true);
+            pPlayerArm->SetRender(false);
+
+            pHandHeldObj->SetItemInfo(hotbarItemInfo.value());
+            pHandHeldObj->SetVIBufferID({ "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(hotbarItemInfo.value()) });
+           
+            pHandHeldObj->SetLight(iLight);
+            pHandHeldObj->SetPlayerHandle(GetHandle());
+           
+        }
+        else
+        {
+            auto pos = GetTransform().GetPosition();
+            int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
+            int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+            if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+            {
+                pPlayerArm->SetLight(optCurrBlock->GetLight());
+            }
+            pPlayerArm->SetRender(true);
+            pPlayerArm->SetLight(iLight);
+            pHandHeldObj->SetRender(false);
+            m_hRightItem = m_hPlayerFPSArm;
+        }
+    }
+    
+}
+
 
 /*
 root
@@ -1171,23 +1275,96 @@ void CPlayerEntity::ProcessActionUpdate(_float fTimeDelta)
 
         if (auto tmpCamera = CGameInstance::Get().GetGameCamera("Player"))
         {
-            //m_hRightItem
             if (m_hRightItem)
             {
-                if (auto item = CGameInstance::Get().GetGameObjectByHandle(m_hRightItem.value()))
+                if (auto pItem = CGameInstance::Get().GetGameObjectByHandle(m_hRightItem.value()))
                 {
-                    static float elapsedTmp = 0;
-                    elapsedTmp += fTimeDelta;
-                    float t = fmodf(elapsedTmp, 1.f);  // 0~1 반복
-
-                    float rotX = -sinf(t * XM_PI * 1.f) * XMConvertToRadians(25.f);
-
-                    XMMATRIX matAnim = XMMatrixRotationX(rotX);
                     tmpCamera->GetTransform().Update();
-                    auto tmp = tmpCamera->GetTransform().GetLoadedCombinedWorldMatrix();
-                    _float4x4 mat;
-                    XMStoreFloat4x4(&mat, tmp);
-                    item->GetTransform().SetParentWorldMatrix(mat);
+                    XMMATRIX matCameraWorld = tmpCamera->GetTransform().GetLoadedCombinedWorldMatrix();
+
+                    XMMATRIX matScale = XMMatrixScaling(1.f, 1.f, 1.f);
+                    XMMATRIX matTrans = XMMatrixTranslation(0.25f, -0.22f, 0.4f); 
+                    XMMATRIX matBaseOffset = matScale * matTrans;
+
+                    XMMATRIX matFinalRotation = XMMatrixIdentity();
+
+                    if (auto pArm = Cast<CPlayerFPSArm>(pItem))
+                    {
+                        
+                    }
+                    else if (auto pHandHeld = Cast<CHandHeldItem>(pItem))
+                    {
+                        if (auto pInfo = pHandHeld->GetItemInfo())
+                        {
+                            if (pInfo->block)
+                            {
+                                matFinalRotation = XMMatrixRotationRollPitchYaw(
+                                    XMConvertToRadians(-15.f),
+                                    XMConvertToRadians(35.f),
+                                    XMConvertToRadians(0.f)
+                                );
+                            }
+                            else
+                            {
+                                matFinalRotation = XMMatrixRotationRollPitchYaw(
+                                    XMConvertToRadians(0.f),
+                                    XMConvertToRadians(-90.f),
+                                    XMConvertToRadians(0.f)
+                                );
+                            }
+                        }
+                    }
+
+
+                   
+                    static bool  bIsSwinging = false;   
+                    static float fSwingProgress = 0.f;    
+
+                    if (
+                        (CGameInstance::Get().MousePressing(MOUSEKEYSTATE::LB) || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+                        && !bIsSwinging)
+                    {
+                        bIsSwinging = true;
+                        fSwingProgress = 0.f;
+                    }
+
+                  
+                    XMMATRIX matGlobalSwing = XMMatrixIdentity();
+
+                    if (bIsSwinging)
+                    {
+                        fSwingProgress += fTimeDelta * 5.f;
+
+                        if (fSwingProgress >= 1.f)
+                        {
+                            fSwingProgress = 1.f;
+                            bIsSwinging = false; //
+                        }
+
+    
+                        float fAngleFactor = sinf(fSwingProgress * XM_PI); // 0.0 -> 1.0 -> 0.0 
+
+                        matGlobalSwing = XMMatrixRotationRollPitchYaw(
+                            fAngleFactor * 0.4f, 
+                            0.f,
+                            0.f
+                        );
+                    }
+
+
+                    // -----------------------------------------------------------------
+                    // [행렬 최종 조립 ] 
+                    // -----------------------------------------------------------------
+                    //  아이템/팔을 원점에서 각자 기본 각도로 돌려놓고 (matFinalRotation)
+                    //  화면 우측 하단 오프셋 위치로 이동시킨 뒤 (matBaseOffset)
+                    //  배치 완료된 뷰모델 전체를 통째로 앞으로 까딱 흔들고 (matGlobalSwing)
+                    //  마지막으로 카메라 월드를 곱해 화면에 고정.
+                    // -----------------------------------------------------------------
+                    XMMATRIX matFinalParent = matFinalRotation * matBaseOffset * matGlobalSwing * matCameraWorld;
+
+                    _float4x4 matParent;
+                    XMStoreFloat4x4(&matParent, matFinalParent);
+                    pItem->GetTransform().SetParentWorldMatrix(matParent);
                 }
             }
         }
