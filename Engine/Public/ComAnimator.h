@@ -23,7 +23,6 @@ private:
 public:
 	void QuadrupedWalk(_float fTimeDelta);
 	void HeadLookAt(_float fTimeDelta, _float3 vPos);
-
 private:
 	HRESULT Initialize(void* pArg) override;
 

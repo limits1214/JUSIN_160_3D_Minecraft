@@ -155,6 +155,9 @@ private:
 	_bool m_bMouseDownRight{ false };
 
 private:
+	UPtr<CCollider> m_pMeleeAttackCollider{};
+
+private:
 	UPtr<CCollider> m_pCenterCollider{};
 
 private:

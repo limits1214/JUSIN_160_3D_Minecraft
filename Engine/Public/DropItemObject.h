@@ -97,7 +97,7 @@ protected:
 	std::pair<StringID, StringID> m_viBufferID{};
 
 protected:
-	UPtr<CCollider> m_pCenterCollider{};
+	//UPtr<CCollider> m_pCenterCollider{};
 
 protected:
 	void SetGravity(_bool b) { m_bGravity = b; }
