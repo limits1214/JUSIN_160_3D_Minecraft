@@ -248,6 +248,7 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
    
     //m_pCenterCollider = CCollSphere::Create({0.f, 0.3f, 0.f}, 0.3f);
     m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.25f, 0.9f, 0.25f });
+    m_pMeleeAttackCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.5f, 0.5f, 0.5f });
 
     ReadyPlayerItem();
 
@@ -342,6 +343,50 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     E::CGameInstance::Get().AddColliderGroup("Coll_PlayerCenter", m_pCenterCollider.get());
     m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
 
+    //if (E::CGameInstance::Get().MousePressing(MOUSEKEYSTATE::LB))
+    //{
+    //    if (m_pActivePlayerCamera)
+    //    {
+    //        E::CGameInstance::Get().AddColliderGroup("Coll_PlayerMeleeAttack", m_pMeleeAttackCollider.get());
+    //        //_float3 startPos{};
+    //        //XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
+    //        auto currPos = GetTransform().GetState(STATE::POSITION);
+    //        currPos = currPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f);
+    //        auto lookDir = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+    //        auto targetPos = currPos + lookDir;
+    //        auto mat = XMMatrixTranslationFromVector(targetPos);
+    //        m_pMeleeAttackCollider->Transform(mat);
+    //    }
+    //    
+    //}
+
+    if (E::CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
+    {
+        if (m_pActivePlayerCamera)
+        {
+            // 1. 이번 프레임에 플레이어 근접 공격 그룹 활성화
+            E::CGameInstance::Get().AddColliderGroup("Coll_PlayerMeleeAttack", m_pMeleeAttackCollider.get());
+
+            // 2. 플레이어 발바닥 기준 위치 가져오기
+            auto currPos = GetTransform().GetState(STATE::POSITION);
+
+            // 3. 눈높이(카메라 높이 약 1.62f ~ 1.8f) 보정
+            currPos = currPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f);
+
+            // 4. 카메라 시선 방향 및 공격 리치(거리) 계산
+            auto lookDir = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+            float fAttackReach = 2.0f; // 2.5블록 거리까지 리치 확장
+
+            // 5. 최종 월드 공격 중심점 계산 및 행렬 주입
+            auto targetPos = currPos + (lookDir * fAttackReach);
+            auto mat = XMMatrixTranslationFromVector(targetPos);
+
+            m_pMeleeAttackCollider->Transform(mat);
+        }
+    }
+
+   
+
     //if (auto item = m_pComEntityArmModel->GetBone("rightItem"))
     //{
     //    for (auto& child : GetChildrenNode())
@@ -356,6 +401,38 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     //    }
     //}
     ProcessItemColliding(fTimeDelta);
+
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
+    {
+        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
+        {
+            auto meleecoll = pMeleeCollGroup->front();
+            for (auto& pColl : *pCollGroup)
+            {
+                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
+                {
+                    if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
+                    {
+                        pObj->TakeDamage(1);
+                        //auto pHint = static_cast<CDropBlock::CollHint*>(pColl->GetInnerHint2());
+                        //const auto& itemInfo = pHint->iter->itemInfo;
+                        //auto* pUIController = GetUIController();
+
+                        ////if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
+                        ////{
+                        ////    pObj->GetDropItemObjects().erase(pHint->iter);
+                        ////}
+
+                        //if (SUCCEEDED(ProcessItemGain(itemInfo)))
+                        //{
+                        //    pObj->GetDropItemObjects().erase(pHint->iter);
+                        //}
+                    }
+                }
+            }
+        }
+        
+    }
 }
 
 HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)

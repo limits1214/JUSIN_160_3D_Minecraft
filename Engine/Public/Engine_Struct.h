@@ -209,6 +209,9 @@ namespace Engine
 	{
 		_float4x4 matWorld{};
 		_float4x4 matWVP{};
+		_float4   vBaseColor{1.f, 1.f, 1.f, 1.f};
+		uint32_t light{0xFF};
+		_float3 _pad{};
 	} CB_PER_OBJECT;
 
 	typedef struct tagConstantBufferPerMaterial

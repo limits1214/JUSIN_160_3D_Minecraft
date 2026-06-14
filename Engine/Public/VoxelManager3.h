@@ -205,7 +205,7 @@ private:
 
 	struct SWaterTickData
 	{
-		XMINT3 worldPos; // 구조체에 맞게 변수명 조절
+		XMINT3 worldPos;
 		bool bIsStill;
 		uint8_t level;
 		
@@ -223,7 +223,7 @@ private:
 private:
 	struct SLavaTickData
 	{
-		XMINT3 worldPos; // 구조체에 맞게 변수명 조절
+		XMINT3 worldPos;
 		bool bIsStill;
 		uint8_t level;
 

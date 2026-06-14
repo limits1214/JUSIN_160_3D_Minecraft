@@ -29,7 +29,7 @@ HRESULT CDropItemObject::Initialize(void* pArg)
         return E_FAIL;
     }
 
-    m_pCenterCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.49f, 0.25f });
+    //m_pCenterCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.49f, 0.25f });
 
     return S_OK;
 }
@@ -98,7 +98,7 @@ void CDropItemObject::VelocityUpdate(InstancedDropItemObjectDesc& item, E::_floa
         vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
 
     // AABB 충돌
-    const XMFLOAT3 halfExtents = { 0.25f, 0.49f, 0.25f };
+    const XMFLOAT3 halfExtents = { 0.25f, 0.25f, 0.25f };
     XMFLOAT3 c = item.vPos;
 
     // Y
@@ -146,7 +146,7 @@ void CDropItemObject::AddDropItemObject(const CItemObject::ItemInfo& itemInfo, _
     Desc.vPos = vPos;
     Desc.vVelocity = vVelocity;
     Desc.texIndexs = vecTexindex;
-    Desc.boxCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.49f, 0.25f });
+    Desc.boxCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.25f, 0.25f });
     Desc.boxCollider->SetInnerPointer(this);
     Desc.boxCollider->SetInnerHint("CDropBlock");
     m_vecDropItemObjects.push_back(Desc);
