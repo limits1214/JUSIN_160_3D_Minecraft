@@ -505,6 +505,9 @@
     <Filter Include="GameObject\Item\HandHeld\Block">
       <UniqueIdentifier>{a7a15908-2afe-476d-8898-198a466aba20}</UniqueIdentifier>
     </Filter>
+    <Filter Include="100.Shaders\Fullscreen">
+      <UniqueIdentifier>{d7083c34-4ae6-4203-ac42-3260e6015299}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1512,6 +1515,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldItem.hlsl">
       <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FullscreenQuad\FullscreenQuad.hlsl">
+      <Filter>100.Shaders\Fullscreen</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

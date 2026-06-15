@@ -14,6 +14,7 @@ public:
 	ComPtr<ID3D11Device> GetDevice() const { return m_pDevice; }
 	ComPtr<ID3D11DeviceContext> GetContext() const { return m_pDeviceContext; }
 	ComPtr<ID3D11RenderTargetView> GetBackBufferRTV() const { return m_pBackBufferRTV; }
+	ComPtr<ID3D11DepthStencilView> GetBackBufferDSV() const { return m_pDepthStencilView; }
 
 public:
 	HRESULT Initialize(ComPtr< ID3D11Device>& ppDevice, ComPtr< ID3D11DeviceContext>& ppContext);

@@ -477,6 +477,9 @@ HRESULT CGameInstance::InitializeResources()
 		res->Load();
 	}
 
+	
+	
+
 	//
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL, E::CResRasterizerState::Create()))
 	{
@@ -557,6 +560,12 @@ HRESULT CGameInstance::InitializeResources()
 		depthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 		res->Load(depthDesc);
 	}
+
+
+
+
+	// offscreenTextureVIBuffer
+
 	return S_OK;
 }
 
@@ -2003,6 +2012,11 @@ ComPtr<ID3D11RenderTargetView> CGameInstance::GetBackBufferRTV() const
 {
 	return m_pGraphicDevice->GetBackBufferRTV();
 }
+ComPtr<ID3D11DepthStencilView> CGameInstance::GetBackBufferDSV() const
+{
+	return m_pGraphicDevice->GetBackBufferDSV();
+}
+
 HRESULT CGameInstance::ClearBackBufferView(const _float4* pClearColor)
 {
 	return m_pGraphicDevice->ClearBackBufferView(pClearColor);

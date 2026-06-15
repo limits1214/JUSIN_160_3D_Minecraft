@@ -16,6 +16,7 @@ private:
 
 public:
 	HRESULT Initialize();
+	HRESULT InitializeOffscreen();
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
 	HRESULT Draw();
 	void FrameEnd();
@@ -25,9 +26,12 @@ private:
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 	std::array<std::vector<IRenderable*>, ETOUI(RENDERGROUP::END)> m_RenderObject{};
 
+
+
 private:
-	SPtr<CResOffscreenTexture> m_pOffScreenTexture{};
-	SPtr<CResDynamicTexture2D> m_pBackBufferDSV{};
+	SPtr<CResDynamicTexture2D> m_pOffScreenTex2D{};
+	ComPtr<ID3D11RenderTargetView> m_pBackBufferRTV{};
+	ComPtr<ID3D11DepthStencilView> m_pBackBufferDSV{};
 
 private:
 	//_float4 m_SSAOOffsets[14]{};
