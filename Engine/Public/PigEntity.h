@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "AnimalEntityObject.h"
 
 NS_BEGIN(Engine)
@@ -59,10 +59,10 @@ private:
 	_float m_fDeathTimer = 0.f;
 private:
 	PIG_STATE m_eCurrentState = PIG_STATE::IDLE;
-	_float    m_fStateTimer = 0.f;        // »óÅÂ À¯Áö ½Ã°£ Å¸ÀÌ¸Ó
-	_float    m_fTargetYaw = 0.f;         // ºÎµå·¯¿î È¸ÀüÀ» À§ÇÑ ¸ñÇ¥ °¢µµ
+	_float    m_fStateTimer = 0.f;        // ìƒíƒœ ìœ ì§€ ì‹œê°„ íƒ€ì´ë¨¸
+	_float    m_fTargetYaw = 0.f;         // ë¶€ë“œëŸ¬ìš´ íšŒì „ì„ ìœ„í•œ ëª©í‘œ ê°ë„
 
-	// ÇÇ°İ Ã³¸®¿ë º¯¼ö
+	// í”¼ê²© ì²˜ë¦¬ìš© ë³€ìˆ˜
 	_bool     m_bIsHit = false;
 	_float    m_fHitTimer = 0.f;
 

@@ -1,4 +1,4 @@
-#include "Skybox.h"
+ï»¿#include "Skybox.h"
 #include "GameInstance.h"
 #include "Resources.h"
 NS_USING(Engine)
@@ -63,8 +63,8 @@ HRESULT CSkybox::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 	}
 
 
-	// ¼ÎÀÌ´õ »ó¼ö ¹öÆÛ ¾÷µ¥ÀÌÆ® ÈÄ...
-	// 5. Á¤Á¡ ¹öÆÛ ¾øÀÌ µü 3°³ÀÇ Á¤Á¡¸¸ ±×¸®¶ó°í ¸í·ÉÇÕ´Ï´Ù. (¼ÎÀÌ´õ°¡ »ç°¢ÇüÀ» ¸¸µé¾î³¿)
+	// ì…°ì´ë” ìƒìˆ˜ ë²„í¼ ì—…ë°ì´íŠ¸ í›„...
+	// 5. ì •ì  ë²„í¼ ì—†ì´ ë”± 3ê°œì˜ ì •ì ë§Œ ê·¸ë¦¬ë¼ê³  ëª…ë ¹í•©ë‹ˆë‹¤. (ì…°ì´ë”ê°€ ì‚¬ê°í˜•ì„ ë§Œë“¤ì–´ëƒ„)
 	pContext->Draw(3, 0);
 	pContext->OMSetDepthStencilState(nullptr, 0);
     return S_OK;

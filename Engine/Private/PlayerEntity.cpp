@@ -571,7 +571,7 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
         float blockDestroyTime = 0.5f;
         float goal = blockDestroyTime * blockDestroyRate;
 
-        pDestroyStage->SetFrameIndex(fElapsed / (goal / 9));
+        pDestroyStage->SetFrameIndex(uint32_t(fElapsed / (goal / 9.f)));
 
         if (res.block)
         {

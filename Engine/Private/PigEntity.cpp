@@ -1,4 +1,4 @@
-#include "PigEntity.h"
+ï»¿#include "PigEntity.h"
 
 #include "Resources.h"
 #include "GameInstance.h"
@@ -72,7 +72,7 @@ void CPigEntity::PriorityUpdate(E::_float fTimeDelta)
 
 void CPigEntity::Update(E::_float fTimeDelta)
 {
-    // 1. ¸Å ÇÁ·¹ÀÓ ¾Ö´Ï¸ŞÀÌ¼Ç ¹× º» Ã¤³Î ÃÊ±âÈ­
+    // 1. ë§¤ í”„ë ˆì„ ì• ë‹ˆë©”ì´ì…˜ ë° ë³¸ ì±„ë„ ì´ˆê¸°í™”
     m_pComEntityModel->ResetBonesChannel();
 
     if(m_eCurrentState == PIG_STATE::DIE)
@@ -89,18 +89,18 @@ void CPigEntity::Update(E::_float fTimeDelta)
         float fEased = 1.f - (1.f - fFallT) * (1.f - fFallT);
         float fRoll = XMConvertToRadians(90.f) * fEased;
 
-        // 1. Yaw ÄõÅÍ´Ï¾ğ (¹Ù¶óº¸´Â ¹æÇâ °íÁ¤)
+        // 1. Yaw ì¿¼í„°ë‹ˆì–¸ (ë°”ë¼ë³´ëŠ” ë°©í–¥ ê³ ì •)
         _vector qYaw = XMQuaternionRotationAxis(
             XMVectorSet(0.f, 1.f, 0.f, 0.f), m_fRootRotY);
 
-        // 2. Yaw Àû¿ë ÈÄ ½ÇÁ¦ Look ¹æÇâ(¿ùµå Z¸¦ Yaw·Î È¸Àü)
+        // 2. Yaw ì ìš© í›„ ì‹¤ì œ Look ë°©í–¥(ì›”ë“œ Zë¥¼ Yawë¡œ íšŒì „)
         _vector vLook = XMVector3Rotate(
             XMVectorSet(0.f, 0.f, 1.f, 0.f), qYaw);
 
-        // 3. ±× LookÃàÀ» ±âÁØÀ¸·Î Roll
+        // 3. ê·¸ Lookì¶•ì„ ê¸°ì¤€ìœ¼ë¡œ Roll
         _vector qRoll = XMQuaternionRotationAxis(vLook, fRoll);
 
-        // 4. Roll * Yaw ¼ø¼­·Î °áÇÕ (RollÀÌ ¿ùµå °ø°£¿¡¼­ ¸ÕÀú)
+        // 4. Roll * Yaw ìˆœì„œë¡œ ê²°í•© (Rollì´ ì›”ë“œ ê³µê°„ì—ì„œ ë¨¼ì €)
         _vector qFinal = XMQuaternionMultiply(qYaw, qRoll);
 
         GetTransform().SetQuaternion(qFinal);
@@ -115,7 +115,7 @@ void CPigEntity::Update(E::_float fTimeDelta)
         return;
     }
 
-    // 2. ÇÇ°İ Å¸ÀÌ¸Ó ¾÷µ¥ÀÌÆ® (ÇÇ°İ ½Ã ºÓ¾îÁö´Â ÇÊÅÍ ÄÃ·¯ Ã³¸®)
+    // 2. í”¼ê²© íƒ€ì´ë¨¸ ì—…ë°ì´íŠ¸ (í”¼ê²© ì‹œ ë¶‰ì–´ì§€ëŠ” í•„í„° ì»¬ëŸ¬ ì²˜ë¦¬)
     if (m_bIsHit)
     {
         m_fHitTimer -= fTimeDelta;
@@ -126,7 +126,7 @@ void CPigEntity::Update(E::_float fTimeDelta)
         }
     }
 
-    // 3. AI »óÅÂ °áÁ¤ ¹× °¡°í ½ÍÀº ¹æÇâ(vWishDir) °è»ê º¯¼öµé
+    // 3. AI ìƒíƒœ ê²°ì • ë° ê°€ê³  ì‹¶ì€ ë°©í–¥(vWishDir) ê³„ì‚° ë³€ìˆ˜ë“¤
     XMVECTOR vWishDir = XMVectorZero();
     auto pPlayer = CGameInstance::Get().GetGameObjectByHandle(m_hPlayer);
 
@@ -136,44 +136,44 @@ void CPigEntity::Update(E::_float fTimeDelta)
 
     m_fStateTimer -= fTimeDelta;
 
-    // °­Á¦ »óÅÂ ÀüÈ¯: ÇÇ°İ´çÇÏ¸é ¹«Á¶°Ç µµ¸Á(FLEE) »óÅÂ·Î ÀüÈ¯
+    // ê°•ì œ ìƒíƒœ ì „í™˜: í”¼ê²©ë‹¹í•˜ë©´ ë¬´ì¡°ê±´ ë„ë§(FLEE) ìƒíƒœë¡œ ì „í™˜
     if (m_bIsHit && m_eCurrentState != PIG_STATE::FLEE)
     {
         m_eCurrentState = PIG_STATE::FLEE;
-        m_fStateTimer = 3.0f; // 3ÃÊ°£ ¹ÌÄ£ µíÀÌ µµ¸Á
+        m_fStateTimer = 3.0f; // 3ì´ˆê°„ ë¯¸ì¹œ ë“¯ì´ ë„ë§
     }
 
-    // 4. »óÅÂ ¸Ó½Å (FSM) ÆĞÅÏ ±¸µ¿
+    // 4. ìƒíƒœ ë¨¸ì‹  (FSM) íŒ¨í„´ êµ¬ë™
     switch (m_eCurrentState)
     {
     case PIG_STATE::IDLE:
-        m_fSpeed = 0.f; // Á¤Áö
-        // ÇÃ·¹ÀÌ¾î°¡ 4ºí·Ï ÀÌ³»·Î Á¢±ÙÇÏ¸é ÃÄ´Ùº½
+        m_fSpeed = 0.f; // ì •ì§€
+        // í”Œë ˆì´ì–´ê°€ 4ë¸”ë¡ ì´ë‚´ë¡œ ì ‘ê·¼í•˜ë©´ ì³ë‹¤ë´„
         if (fDistToPlayer < 4.0f) {
             m_eCurrentState = PIG_STATE::LOOK_AT_PLAYER;
             m_fStateTimer = 2.0f;
         }
-        // Å¸ÀÌ¸Ó ³¡³ª¸é ¹«ÀÛÀ§·Î °È±â ½ÃÀÛ
+        // íƒ€ì´ë¨¸ ëë‚˜ë©´ ë¬´ì‘ìœ„ë¡œ ê±·ê¸° ì‹œì‘
         else if (m_fStateTimer <= 0.f) {
             m_eCurrentState = PIG_STATE::WANDER;
-            m_fStateTimer = 2.f + (rand() % 40) * 0.1f; // 2~6ÃÊ ¹«ÀÛÀ§ °È±â
-            m_fTargetYaw = (rand() % 360) * (XM_PI / 180.f); // »õ·Î¿î ¹«ÀÛÀ§ ¹æÇâ
+            m_fStateTimer = 2.f + (rand() % 40) * 0.1f; // 2~6ì´ˆ ë¬´ì‘ìœ„ ê±·ê¸°
+            m_fTargetYaw = (rand() % 360) * (XM_PI / 180.f); // ìƒˆë¡œìš´ ë¬´ì‘ìœ„ ë°©í–¥
         }
         break;
 
     case PIG_STATE::WANDER:
-        m_fSpeed = 1.5f; // ÆòÈ­·Ó°Ô °È´Â ¼Óµµ
+        m_fSpeed = 1.5f; // í‰í™”ë¡­ê²Œ ê±·ëŠ” ì†ë„
 
-        // °¡°í ½ÍÀº ¹æÇâ º¤ÅÍ ÃßÃâ (TargetYaw ±âÁØ Á¤¸é)
+        // ê°€ê³  ì‹¶ì€ ë°©í–¥ ë²¡í„° ì¶”ì¶œ (TargetYaw ê¸°ì¤€ ì •ë©´)
         vWishDir = XMVectorSet(sinf(m_fTargetYaw), 0.f, cosf(m_fTargetYaw), 0.f);
-        m_pComAnimator->QuadrupedWalk(fTimeDelta * 0.1f); // °È±â ¾Ö´Ï¸ŞÀÌ¼Ç
+        m_pComAnimator->QuadrupedWalk(fTimeDelta * 0.1f); // ê±·ê¸° ì• ë‹ˆë©”ì´ì…˜
 
         if (fDistToPlayer < 4.0f) {
             m_eCurrentState = PIG_STATE::LOOK_AT_PLAYER;
         }
         else if (m_fStateTimer <= 0.f) {
             m_eCurrentState = PIG_STATE::IDLE;
-            m_fStateTimer = 1.f + (rand() % 30) * 0.1f; // 1~4ÃÊ ½¬±â
+            m_fStateTimer = 1.f + (rand() % 30) * 0.1f; // 1~4ì´ˆ ì‰¬ê¸°
         }
         break;
 
@@ -181,7 +181,7 @@ void CPigEntity::Update(E::_float fTimeDelta)
         m_fSpeed = 0.f;
         if (pPlayer)
         {
-            // ÇÃ·¹ÀÌ¾î¸¦ ¹Ù¶óº¸´Â TargetYaw ¿ª»ê
+            // í”Œë ˆì´ì–´ë¥¼ ë°”ë¼ë³´ëŠ” TargetYaw ì—­ì‚°
             XMVECTOR vToPlayer = XMVector3Normalize(XMVectorSetY(vPlayerPos - vPigPos, 0.f));
             m_fTargetYaw = atan2f(XMVectorGetX(vToPlayer), XMVectorGetZ(vToPlayer));
 
@@ -195,10 +195,10 @@ void CPigEntity::Update(E::_float fTimeDelta)
         break;
 
     case PIG_STATE::FLEE:
-        m_fSpeed = 4.5f; // °Ì¸Ô°í ¶Ù¾î°¡´Â ºü¸¥ ¼Óµµ (¸¶Å© °íÁõ)
+        m_fSpeed = 4.5f; // ê²ë¨¹ê³  ë›°ì–´ê°€ëŠ” ë¹ ë¥¸ ì†ë„ (ë§ˆí¬ ê³ ì¦)
         if (pPlayer)
         {
-            // ÇÃ·¹ÀÌ¾î ¹İ´ë ¹æÇâ(µµ¸Á ¹æÇâ) º¤ÅÍ ±¸ÇÏ±â
+            // í”Œë ˆì´ì–´ ë°˜ëŒ€ ë°©í–¥(ë„ë§ ë°©í–¥) ë²¡í„° êµ¬í•˜ê¸°
             XMVECTOR vFleeDir = XMVector3Normalize(XMVectorSetY(vPigPos - vPlayerPos, 0.f));
             m_fTargetYaw = atan2f(XMVectorGetX(vFleeDir), XMVectorGetZ(vFleeDir));
             vWishDir = vFleeDir;
@@ -207,7 +207,7 @@ void CPigEntity::Update(E::_float fTimeDelta)
             vWishDir = XMVectorSet(sinf(m_fTargetYaw), 0.f, cosf(m_fTargetYaw), 0.f);
         }
 
-        // °È±â ¾Ö´Ï¸ŞÀÌ¼Ç ¹è¼Ó Àç»ı (¶Ù´Â °ÍÃ³·³ º¸ÀÌ°Ô)
+        // ê±·ê¸° ì• ë‹ˆë©”ì´ì…˜ ë°°ì† ì¬ìƒ (ë›°ëŠ” ê²ƒì²˜ëŸ¼ ë³´ì´ê²Œ)
         m_pComAnimator->QuadrupedWalk(fTimeDelta * 0.3f);
 
         if (m_fStateTimer <= 0.f) {
@@ -217,10 +217,10 @@ void CPigEntity::Update(E::_float fTimeDelta)
         break;
     }
 
-    // 5.  ¸öÅë(Root) È¸Àü º¸°£ Ã³¸® (Å¹Å¹ ²÷±âÁö ¾Ê°í ºÎµå·´°Ô ½Ï µ¹°Ô ¸¸µë)
-    // ÇöÀç °¢µµ¿¡¼­ ¸ñÇ¥ °¢µµ·Î ¸Å ÇÁ·¹ÀÓ Á¶±İ¾¿ Lerp È¸Àü
+    // 5.  ëª¸í†µ(Root) íšŒì „ ë³´ê°„ ì²˜ë¦¬ (íƒíƒ ëŠê¸°ì§€ ì•Šê³  ë¶€ë“œëŸ½ê²Œ ì‹¹ ëŒê²Œ ë§Œë“¬)
+    // í˜„ì¬ ê°ë„ì—ì„œ ëª©í‘œ ê°ë„ë¡œ ë§¤ í”„ë ˆì„ ì¡°ê¸ˆì”© Lerp íšŒì „
     float fAngleDiff = m_fTargetYaw - m_fRootRotY;
-    // °í°¢ ¿ÀÂ÷ º¸Á¤ (-PI ~ PI »çÀÌ·Î °¢µµ ¹üÀ§ ·¡ÇÎ)
+    // ê³ ê° ì˜¤ì°¨ ë³´ì • (-PI ~ PI ì‚¬ì´ë¡œ ê°ë„ ë²”ìœ„ ë˜í•‘)
     while (fAngleDiff < -XM_PI) fAngleDiff += XM_2PI;
     while (fAngleDiff > XM_PI) fAngleDiff -= XM_2PI;
     m_fRootRotY += fAngleDiff * 8.f * fTimeDelta;
@@ -237,27 +237,27 @@ void CPigEntity::Update(E::_float fTimeDelta)
         vWishDir = XMVectorZero();
     }
 
-    // 7. °èÃş ±¸Á¶ º¯È¯ ¸ÅÆ®¸¯½º ºôµå
+    // 7. ê³„ì¸µ êµ¬ì¡° ë³€í™˜ ë§¤íŠ¸ë¦­ìŠ¤ ë¹Œë“œ
     m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
 
-    //  °è»êµÈ Á¤¹ĞÇÑ ÀÇÁö ¹æÇâ(vWishDir)À» ¹°¸® °¡¼Ó ¿¬»ê ÀåÄ¡·Î ÆĞ½º!
+    //  ê³„ì‚°ëœ ì •ë°€í•œ ì˜ì§€ ë°©í–¥(vWishDir)ì„ ë¬¼ë¦¬ ê°€ì† ì—°ì‚° ì¥ì¹˜ë¡œ íŒ¨ìŠ¤!
     VelocityUpdate(fTimeDelta, vWishDir);
 
-    // 8. Ãæµ¹ ±×·ì µî·Ï ¹× Æ®·£½ºÆû µ¿±âÈ­
+    // 8. ì¶©ëŒ ê·¸ë£¹ ë“±ë¡ ë° íŠ¸ëœìŠ¤í¼ ë™ê¸°í™”
     E::CGameInstance::Get().AddColliderGroup("Coll_PigCenter", m_pCenterCollider.get());
     m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
 }
 
 void CPigEntity::TakeDamage(uint32_t iDam)
 {
-    if (m_bIsHit || m_eCurrentState == PIG_STATE::DIE) return; // ÀÌ¹Ì Á×¾ú°Å³ª ÇÇ°İ ÄğÅ¸ÀÓ ÁßÀÌ¸é ¹«½Ã
+    if (m_bIsHit || m_eCurrentState == PIG_STATE::DIE) return; // ì´ë¯¸ ì£½ì—ˆê±°ë‚˜ í”¼ê²© ì¿¨íƒ€ì„ ì¤‘ì´ë©´ ë¬´ì‹œ
 
     m_bIsHit = true;
-    m_fHitTimer = 0.3f; // 0.3ÃÊ°£ »¡°²°Ô ¹°µê
+    m_fHitTimer = 0.3f; // 0.3ì´ˆê°„ ë¹¨ê°›ê²Œ ë¬¼ë“¦
 
-    // ¸¶Å© °íÁõ: ¸ÂÀ¸¸é »ìÂ¦ À§+¹Ù±ùÀ¸·Î ÆÃ°Ü³ª°¡´Â ³Ë¹é Ãß°¡
+    // ë§ˆí¬ ê³ ì¦: ë§ìœ¼ë©´ ì‚´ì§ ìœ„+ë°”ê¹¥ìœ¼ë¡œ íŒ…ê²¨ë‚˜ê°€ëŠ” ë„‰ë°± ì¶”ê°€
     XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
-    vVel = XMVectorSetY(vVel, 5.0f); // ¼öÁ÷ Á¡ÇÁ ³Ë¹é
+    vVel = XMVectorSetY(vVel, 5.0f); // ìˆ˜ì§ ì í”„ ë„‰ë°±
     XMStoreFloat3(&m_vVelocity, vVel);
 
     m_bOnGround = false;
@@ -279,8 +279,8 @@ void CPigEntity::TakeDamage(uint32_t iDam)
             pHeadBone->SetRotation({ 0.f, 0.f, 0.f });
         }
 
-        // ¸¸¾à CComAnimator ³»ºÎ¿¡ ¸Ó¸® È¸Àü¿ë ÄõÅÍ´Ï¾ğ º¯¼ö(m_vCurrentHeadRotQuat)¸¦ ¾²½Å´Ù¸é
-        // ¿©±â¼­ ÇÔ²² XMQuaternionIdentity() µîÀ¸·Î ÃÊ±âÈ­ÇØÁÖ¸é ´õ¿í ¾ÈÀüÇÕ´Ï´Ù.
+        // ë§Œì•½ CComAnimator ë‚´ë¶€ì— ë¨¸ë¦¬ íšŒì „ìš© ì¿¼í„°ë‹ˆì–¸ ë³€ìˆ˜(m_vCurrentHeadRotQuat)ë¥¼ ì“°ì‹ ë‹¤ë©´
+        // ì—¬ê¸°ì„œ í•¨ê»˜ XMQuaternionIdentity() ë“±ìœ¼ë¡œ ì´ˆê¸°í™”í•´ì£¼ë©´ ë”ìš± ì•ˆì „í•©ë‹ˆë‹¤.
     }
 }
 
@@ -295,7 +295,7 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
     XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
     //XMVECTOR vWishDir = XMVectorZero();
 
-    // °¡¼Ó
+    // ê°€ì†
     float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
     float fAddSpeed = m_fSpeed - fCurrSpeed;
     if (fAddSpeed > 0.f)
@@ -304,7 +304,7 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
         vVel += vWishDir * fAccelSpeed;
     }
 
-    // ¼öÆò ¼Óµµ Á¦ÇÑ
+    // ìˆ˜í‰ ì†ë„ ì œí•œ
     XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
     float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
     if (fHorizSpeed > m_fSpeed)
@@ -313,13 +313,13 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
         vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
     }
 
-    // ¸¶Âû
+    // ë§ˆì°°
     if (m_bOnGround)
     {
         float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
         if (fSpeed > 0.f)
         {
-            // ÀÇÁö ¹æÇâÀÌ ¾ø°Å³ª(IDLE µî), ÇöÀç ¼Óµµ°¡ °¡°í ½ÍÀº ¼Óµµº¸´Ù ºü¸£¸é ¸¶Âû Àû¿ë
+            // ì˜ì§€ ë°©í–¥ì´ ì—†ê±°ë‚˜(IDLE ë“±), í˜„ì¬ ì†ë„ê°€ ê°€ê³  ì‹¶ì€ ì†ë„ë³´ë‹¤ ë¹ ë¥´ë©´ ë§ˆì°° ì ìš©
             if (XMVectorGetX(XMVector3Length(vWishDir)) < 0.01f || fSpeed > m_fSpeed)
             {
                 float fNewSpeed = std::max(fSpeed - fSpeed * 15.f * fTimeDelta, 0.f);
@@ -329,11 +329,11 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
         }
     }
 
-    // Áß·Â
+    // ì¤‘ë ¥
     if (!m_bOnGround)
         vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
 
-    // AABB Ãæµ¹
+    // AABB ì¶©ëŒ
     const XMFLOAT3 halfExtents = { 0.49f, 0.49f, 0.49f };
     XMFLOAT3 pos = GetTransform().GetPosition();
 
@@ -357,9 +357,9 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
     }
     else m_bOnGround = false;
 
-    _bool bHitWall = false; // ÀÌ¹ø ÇÁ·¹ÀÓ¿¡ º®¿¡ ¸·Çû´Â°¡?
+    _bool bHitWall = false; // ì´ë²ˆ í”„ë ˆì„ì— ë²½ì— ë§‰í˜”ëŠ”ê°€?
 
-    // [X Ãà Ãæµ¹ °Ë»ç]
+    // [X ì¶• ì¶©ëŒ ê²€ì‚¬]
     float px = c.x;
     c.x += XMVectorGetX(vVel) * fTimeDelta;
     if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
@@ -367,12 +367,12 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
         c.x = px;
         vVel = XMVectorSetX(vVel, 0.f);
 
-        //  ¿òÁ÷ÀÌ·Á´Â ÀÇÁö(vWishDir)°¡ ÀÖ´Âµ¥ XÃàÀÌ ¸·Çû´Ù¸é º®¿¡ ¹ÚÀº °Í!
+        //  ì›€ì§ì´ë ¤ëŠ” ì˜ì§€(vWishDir)ê°€ ìˆëŠ”ë° Xì¶•ì´ ë§‰í˜”ë‹¤ë©´ ë²½ì— ë°•ì€ ê²ƒ!
         if (fabsf(XMVectorGetX(vWishDir)) > 0.01f)
             bHitWall = true;
     }
 
-    // [Z Ãà Ãæµ¹ °Ë»ç]
+    // [Z ì¶• ì¶©ëŒ ê²€ì‚¬]
     float pz = c.z;
     c.z += XMVectorGetZ(vVel) * fTimeDelta;
     if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
@@ -380,7 +380,7 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
         c.z = pz;
         vVel = XMVectorSetZ(vVel, 0.f);
 
-        //  ¿òÁ÷ÀÌ·Á´Â ÀÇÁö(vWishDir)°¡ ÀÖ´Âµ¥ ZÃàÀÌ ¸·Çû´Ù¸é º®¿¡ ¹ÚÀº °Í!
+        //  ì›€ì§ì´ë ¤ëŠ” ì˜ì§€(vWishDir)ê°€ ìˆëŠ”ë° Zì¶•ì´ ë§‰í˜”ë‹¤ë©´ ë²½ì— ë°•ì€ ê²ƒ!
         if (fabsf(XMVectorGetZ(vWishDir)) > 0.01f)
             bHitWall = true;
     }
@@ -388,12 +388,12 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
 
     if (m_bOnGround && bHitWall)
     {
-        // ¸¶ÀÎÅ©·¡ÇÁÆ® °íÁõ Á¡ÇÁ ¼Óµµ (»óÈ²¿¡ µû¶ó 5.0f ~ 6.0f »çÀÌ Á¶Àı)
+        // ë§ˆì¸í¬ë˜í”„íŠ¸ ê³ ì¦ ì í”„ ì†ë„ (ìƒí™©ì— ë”°ë¼ 5.0f ~ 6.0f ì‚¬ì´ ì¡°ì ˆ)
         vVel = XMVectorSetY(vVel, 6.5f);
-        m_bOnGround = false; // °øÁß¿¡ ¶¹À¸¹Ç·Î »óÅÂ º¯°æ
+        m_bOnGround = false; // ê³µì¤‘ì— ë–´ìœ¼ë¯€ë¡œ ìƒíƒœ ë³€ê²½
     }
 
-    // ÃÖÁ¾ ÁÂÇ¥ Àû¿ë ¹× ¼Óµµ ¹é¾÷
+    // ìµœì¢… ì¢Œí‘œ ì ìš© ë° ì†ë„ ë°±ì—…
     GetTransform().SetPosition(_float3{ c.x, c.y - fAddY, c.z });
     XMStoreFloat3(&m_vVelocity, vVel);
 }
@@ -405,24 +405,24 @@ HRESULT CPigEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& c
         cbPerObject.matWorld = *GetTransform().GetCombinedWorldMatrix();
         XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
 
-        //  ÇÇ°İ ÇÃ·¡±× ÄÃ·¯ÇÊÅÍ Á¶¸³
+        //  í”¼ê²© í”Œë˜ê·¸ ì»¬ëŸ¬í•„í„° ì¡°ë¦½
         if (m_eCurrentState == PIG_STATE::DIE)
         {
             _float fProgress = m_fDeathTimer / 1.0f; // 0.0f ~ 1.0f
 
-            // ½Ã°£ÀÌ Èå¸¦¼ö·Ï ¿ÏÀüÈ÷ ½Ã»¹°³Áöµµ·Ï RGB Á¦¾î (¾ËÆÄ Ã¤³ÎÀ» ±ğÀ¸¸é ½Ã°¢Àû µğ½ºÆù È¿°ú)
+            // ì‹œê°„ì´ íë¥¼ìˆ˜ë¡ ì™„ì „íˆ ì‹œë»˜ê°œì§€ë„ë¡ RGB ì œì–´ (ì•ŒíŒŒ ì±„ë„ì„ ê¹ìœ¼ë©´ ì‹œê°ì  ë””ìŠ¤í° íš¨ê³¼)
             cbPerObject.vBaseColor = _float4(1.0f, 0.05f, 0.05f, 1.0f - fProgress);
         }
         else if (m_bIsHit)
         {
-            cbPerObject.vBaseColor = _float4(1.f, 0.2f, 0.2f, 1.f); // ÇÇ°İ ±ôºıÀÓ
+            cbPerObject.vBaseColor = _float4(1.f, 0.2f, 0.2f, 1.f); // í”¼ê²© ê¹œë¹¡ì„
         }
         else
         {
             cbPerObject.vBaseColor = _float4(1.f, 1.f, 1.f, 1.f);
         }
 
-        // º¹¼¿ ¶óÀÌÆÃ °ª ¹ÙÀÎµù ·ÎÁ÷
+        // ë³µì…€ ë¼ì´íŒ… ê°’ ë°”ì¸ë”© ë¡œì§
         auto pos = GetTransform().GetPosition();
         int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
         int32_t blockY = static_cast<int32_t>(std::floor(pos.y));

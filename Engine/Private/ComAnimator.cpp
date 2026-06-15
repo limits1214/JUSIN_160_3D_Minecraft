@@ -1,4 +1,4 @@
-#include "ComAnimator.h"
+ï»¿#include "ComAnimator.h"
 #include "ComEntityModel.h"
 #include "GameObject.h"
 
@@ -39,89 +39,89 @@ void CComAnimator::HeadLookAt(_float fTimeDelta, _float3 vTarget)
     //if (!pHeadBone) return;
 
     //// =================================================================
-    //// 1. °ø°£ º¯È¯ (Space Transformation): ¿ùµå Å¸°Ù ¹æÇâ -> ¸Ó¸® ºÎ¸ğÀÇ ·ÎÄÃ °ø°£À¸·Î
+    //// 1. ê³µê°„ ë³€í™˜ (Space Transformation): ì›”ë“œ íƒ€ê²Ÿ ë°©í–¥ -> ë¨¸ë¦¬ ë¶€ëª¨ì˜ ë¡œì»¬ ê³µê°„ìœ¼ë¡œ
     //// =================================================================
     //int32_t iParentIdx = pHeadBone->GetParentIndex();
 
     //_matrix matEntityWorld = GetGameObject()->GetTransform().GetLoadedWorldMatrix();
-    //_matrix matParentWorld = matEntityWorld; // ºÎ¸ğ º»ÀÌ ¾ø´Ù¸é ¿ÀºêÁ§Æ® ¿ùµå°¡ °ğ ºÎ¸ğ °ø°£
+    //_matrix matParentWorld = matEntityWorld; // ë¶€ëª¨ ë³¸ì´ ì—†ë‹¤ë©´ ì˜¤ë¸Œì íŠ¸ ì›”ë“œê°€ ê³§ ë¶€ëª¨ ê³µê°„
 
     //if (iParentIdx >= 0)
     //{
-    //    // ºÎ¸ğ º»ÀÌ ÀÖ´Ù¸é: [ºÎ¸ğÀÇ Combined Çà·Ä] * [¿ÀºêÁ§Æ® ¿ùµå Çà·Ä] = ºÎ¸ğÀÇ ¿Ïº®ÇÑ ¿ùµå Çà·Ä
+    //    // ë¶€ëª¨ ë³¸ì´ ìˆë‹¤ë©´: [ë¶€ëª¨ì˜ Combined í–‰ë ¬] * [ì˜¤ë¸Œì íŠ¸ ì›”ë“œ í–‰ë ¬] = ë¶€ëª¨ì˜ ì™„ë²½í•œ ì›”ë“œ í–‰ë ¬
     //    auto& pParentBone = m_pComEntityModel->GetBones()[iParentIdx];
     //    matParentWorld = XMLoadFloat4x4(pParentBone.GetCombinedTransformationMatrix()) * matEntityWorld;
     //}
 
-    //// ¸Ó¸®ÀÇ ½ÇÁ¦ ¿ùµå À§Ä¡¿Í Å¸°Ù ¿ùµå À§Ä¡¸¦ ÀÌ¿ëÇØ ¿ùµå ¹æÇâ º¤ÅÍ °è»ê
+    //// ë¨¸ë¦¬ì˜ ì‹¤ì œ ì›”ë“œ ìœ„ì¹˜ì™€ íƒ€ê²Ÿ ì›”ë“œ ìœ„ì¹˜ë¥¼ ì´ìš©í•´ ì›”ë“œ ë°©í–¥ ë²¡í„° ê³„ì‚°
     //XMVECTOR vHeadWorldPos = XMVector3TransformCoord(XMLoadFloat3(&pHeadBone->GetPivot()), matEntityWorld);
     //XMVECTOR vDirWorld = XMVector3Normalize(XMLoadFloat3(&vTarget) - vHeadWorldPos);
 
-    //// ¿ùµå ¹æÇâ º¤ÅÍ¸¦ '¸Ó¸®ÀÇ ºÎ¸ğ ¿ùµå °ø°£'ÀÇ ¿ªÇà·Ä·Î º¯È¯ÇÏ¿© ¿Ïº®ÇÑ ·ÎÄÃ ¹æÇâ º¤ÅÍ ÃßÃâ
+    //// ì›”ë“œ ë°©í–¥ ë²¡í„°ë¥¼ 'ë¨¸ë¦¬ì˜ ë¶€ëª¨ ì›”ë“œ ê³µê°„'ì˜ ì—­í–‰ë ¬ë¡œ ë³€í™˜í•˜ì—¬ ì™„ë²½í•œ ë¡œì»¬ ë°©í–¥ ë²¡í„° ì¶”ì¶œ
     //_matrix matParentWorldInverse = XMMatrixInverse(nullptr, matParentWorld);
     //XMVECTOR vDirLocal = XMVector3Normalize(XMVector3TransformNormal(vDirWorld, matParentWorldInverse));
 
 
     //// =================================================================
-    //// 2. ±âÇÏÇĞÀû °¢µµ ÃßÃâ ¹× ¸ñ ²ªÀÓ Á¦ÇÑ (Clamp Angle via Pure Vector)
+    //// 2. ê¸°í•˜í•™ì  ê°ë„ ì¶”ì¶œ ë° ëª© êº¾ì„ ì œí•œ (Clamp Angle via Pure Vector)
     //// =================================================================
-    //// Å¸°Ù ·ÎÄÃ ¹æÇâ º¤ÅÍ(vDirLocal)¸¦ »ï°¢ÇÔ¼ö ¿¬»êÀ» À§ÇØ ±¸Á¶Ã¼·Î ºĞ¸®
+    //// íƒ€ê²Ÿ ë¡œì»¬ ë°©í–¥ ë²¡í„°(vDirLocal)ë¥¼ ì‚¼ê°í•¨ìˆ˜ ì—°ì‚°ì„ ìœ„í•´ êµ¬ì¡°ì²´ë¡œ ë¶„ë¦¬
     //_float3 vLocal;
     //XMStoreFloat3(&vLocal, vDirLocal);
 
-    ////  [À§¾Æ·¡ Pitch °¢µµ Á¦ÇÑ] 
-    //// ·ÎÄÃ Y(³ôÀÌ)¿Í Z(±íÀÌ)ÀÇ ºñÀ²·Î ÅºÁ¨Æ® °¢À» ±¸ÇÕ´Ï´Ù.
-    //// ¾Õ¿¡ ¸¶ÀÌ³Ê½º(-)¸¦ ºÙ¿© Á¤¸é/Ãø¸é ¸ğµç »óÅÂ¿¡¼­ »óÇÏ Ã»°³±¸¸® µÚÁıÈû ¹ö±×¸¦ ¿Ïº®ÇÏ°Ô ¹Ú¸êÇÕ´Ï´Ù.
+    ////  [ìœ„ì•„ë˜ Pitch ê°ë„ ì œí•œ] 
+    //// ë¡œì»¬ Y(ë†’ì´)ì™€ Z(ê¹Šì´)ì˜ ë¹„ìœ¨ë¡œ íƒ„ì  íŠ¸ ê°ì„ êµ¬í•©ë‹ˆë‹¤.
+    //// ì•ì— ë§ˆì´ë„ˆìŠ¤(-)ë¥¼ ë¶™ì—¬ ì •ë©´/ì¸¡ë©´ ëª¨ë“  ìƒíƒœì—ì„œ ìƒí•˜ ì²­ê°œêµ¬ë¦¬ ë’¤ì§‘í˜ ë²„ê·¸ë¥¼ ì™„ë²½í•˜ê²Œ ë°•ë©¸í•©ë‹ˆë‹¤.
     //float fPitchAngle = -atan2f(vLocal.y, vLocal.z);
-    //fPitchAngle = std::clamp(fPitchAngle, XMConvertToRadians(-30.f), XMConvertToRadians(30.f)); // À§¾Æ·¡ 30µµ Á¦ÇÑ
+    //fPitchAngle = std::clamp(fPitchAngle, XMConvertToRadians(-30.f), XMConvertToRadians(30.f)); // ìœ„ì•„ë˜ 30ë„ ì œí•œ
 
-    ////  [ÁÂ¿ì Yaw °¢µµ Á¦ÇÑ]
-    //// ·ÎÄÃ X(ÁÂ¿ì)¿Í Z(±íÀÌ)ÀÇ ºñÀ²·Î ÅºÁ¨Æ® °¢À» ±¸ÇÕ´Ï´Ù.
+    ////  [ì¢Œìš° Yaw ê°ë„ ì œí•œ]
+    //// ë¡œì»¬ X(ì¢Œìš°)ì™€ Z(ê¹Šì´)ì˜ ë¹„ìœ¨ë¡œ íƒ„ì  íŠ¸ ê°ì„ êµ¬í•©ë‹ˆë‹¤.
     //float fYawAngle = atan2f(vLocal.x, vLocal.z);
-    //fYawAngle = std::clamp(fYawAngle, XMConvertToRadians(-55.f), XMConvertToRadians(55.f)); // ÁÂ¿ì 55µµ Á¦ÇÑ
+    //fYawAngle = std::clamp(fYawAngle, XMConvertToRadians(-55.f), XMConvertToRadians(55.f)); // ì¢Œìš° 55ë„ ì œí•œ
 
-    //// Á¦ÇÑµÈ °¢µµ(¶óµğ¾È)µéÀ» °¡Áö°í ²¿ÀÓ ¾ø´Â ±ú²ıÇÑ ¸ñÇ¥ ÄõÅÍ´Ï¾ğ ºôµå
+    //// ì œí•œëœ ê°ë„(ë¼ë””ì•ˆ)ë“¤ì„ ê°€ì§€ê³  ê¼¬ì„ ì—†ëŠ” ê¹¨ë—í•œ ëª©í‘œ ì¿¼í„°ë‹ˆì–¸ ë¹Œë“œ
     //XMVECTOR qTargetRot = XMQuaternionRotationRollPitchYaw(fPitchAngle, fYawAngle, 0.f);
 
-    ////  [¾ÈÀüÀåÄ¡] Ã¹ ÇÁ·¹ÀÓÀÌ³ª ¼ø°£ÀûÀÎ NaN(À¯È¿ÇÏÁö ¾ÊÀº °ª) ¹æÃâ Â÷´Ü
+    ////  [ì•ˆì „ì¥ì¹˜] ì²« í”„ë ˆì„ì´ë‚˜ ìˆœê°„ì ì¸ NaN(ìœ íš¨í•˜ì§€ ì•Šì€ ê°’) ë°©ì¶œ ì°¨ë‹¨
     //if (XMVector4IsNaN(qTargetRot)) return;
 
 
     //// =================================================================
-    //// 3. È¸Àü ¼Óµµ º¸°£ (Slerp) ¹× ÃÖÁ¾ Çà·Ä Á¶¸³
+    //// 3. íšŒì „ ì†ë„ ë³´ê°„ (Slerp) ë° ìµœì¢… í–‰ë ¬ ì¡°ë¦½
     //// =================================================================
     //XMVECTOR qCurrentRot = XMLoadFloat4(&m_vCurrentHeadRotQuat);
 
-    //// Ã¹ ÇÁ·¹ÀÓ¿¡ ÇöÀç ÄõÅÍ´Ï¾ğÀÌ ¿ÏÀüÈ÷ ºñ¾îÀÖ´Ù¸é Identity(±âº»°ª)·Î ¸®¼Â
+    //// ì²« í”„ë ˆì„ì— í˜„ì¬ ì¿¼í„°ë‹ˆì–¸ì´ ì™„ì „íˆ ë¹„ì–´ìˆë‹¤ë©´ Identity(ê¸°ë³¸ê°’)ë¡œ ë¦¬ì…‹
     //if (XMVector4Equal(qCurrentRot, XMVectorZero()))
     //{
     //    qCurrentRot = XMQuaternionIdentity();
     //}
 
-    //// ÇöÀç È¸Àü¿¡¼­ ¸ñÇ¥ È¸ÀüÀ¸·Î ¼±Çü º¸°£ (m_fHeadTurnSpeed ¼Óµµ·Î ºÎµå·´°Ô °í°³ È¸Àü)
+    //// í˜„ì¬ íšŒì „ì—ì„œ ëª©í‘œ íšŒì „ìœ¼ë¡œ ì„ í˜• ë³´ê°„ (m_fHeadTurnSpeed ì†ë„ë¡œ ë¶€ë“œëŸ½ê²Œ ê³ ê°œ íšŒì „)
     //XMVECTOR qBlendedRot = XMQuaternionSlerp(qCurrentRot, qTargetRot, fTimeDelta * m_fHeadTurnSpeed);
 
-    //// ´ÙÀ½ ÇÁ·¹ÀÓÀ» À§ÇØ ´©ÀûµÈ È¸Àü »óÅÂ ÀúÀå
+    //// ë‹¤ìŒ í”„ë ˆì„ì„ ìœ„í•´ ëˆ„ì ëœ íšŒì „ ìƒíƒœ ì €ì¥
     //XMStoreFloat4(&m_vCurrentHeadRotQuat, qBlendedRot);
 
-    //// ÃÖÁ¾ º¸°£µÈ ÄõÅÍ´Ï¾ğÀ» È¸Àü Çà·Ä·Î º¯È¯
+    //// ìµœì¢… ë³´ê°„ëœ ì¿¼í„°ë‹ˆì–¸ì„ íšŒì „ í–‰ë ¬ë¡œ ë³€í™˜
     //_matrix matFinalRot = XMMatrixRotationQuaternion(qBlendedRot);
 
-    //// ¸Ó¸® º» °íÀ¯ÀÇ Å©±â(Scale)¿Í ¸ñ À§Ä¡(Translation) À¯½Ç ¹æÁö¸¦ À§ÇÑ ÃÖÁ¾ °áÇÕ
+    //// ë¨¸ë¦¬ ë³¸ ê³ ìœ ì˜ í¬ê¸°(Scale)ì™€ ëª© ìœ„ì¹˜(Translation) ìœ ì‹¤ ë°©ì§€ë¥¼ ìœ„í•œ ìµœì¢… ê²°í•©
     //XMMATRIX matScale = XMMatrixScaling(pHeadBone->GetScale()->x, pHeadBone->GetScale()->y, pHeadBone->GetScale()->z);
     //XMMATRIX matTrans = XMMatrixTranslation(pHeadBone->GetTranslatoin()->x, pHeadBone->GetTranslatoin()->y, pHeadBone->GetTranslatoin()->z);
 
-    //// [Å©±â * ºÎµå·¯¿î Á¦ÇÑ È¸Àü * À§Ä¡]
+    //// [í¬ê¸° * ë¶€ë“œëŸ¬ìš´ ì œí•œ íšŒì „ * ìœ„ì¹˜]
     //XMMATRIX matFinalLocal = matScale * matFinalRot * matTrans;
 
-    //// º»ÀÇ ·ÎÄÃ Æ®·£½ºÆû ¸ÅÆ®¸¯½º ¿À¹ö¶óÀÌµå ¾÷µ¥ÀÌÆ® ¿Ï·á!
+    //// ë³¸ì˜ ë¡œì»¬ íŠ¸ëœìŠ¤í¼ ë§¤íŠ¸ë¦­ìŠ¤ ì˜¤ë²„ë¼ì´ë“œ ì—…ë°ì´íŠ¸ ì™„ë£Œ!
     //pHeadBone->UpdateTransformationMatrix(matFinalLocal);
 
 
     //auto pHeadBone = m_pComEntityModel->GetBone("head");
     //if (!pHeadBone) return;
 
-    //// 1 ~ 4¹ø ´Ü°è´Â ±âÁ¸ °ø°£ º¯È¯ ·ÎÁ÷ ±×´ë·Î À¯Áö (vDirLocal ±¸ÇÏ±â)
+    //// 1 ~ 4ë²ˆ ë‹¨ê³„ëŠ” ê¸°ì¡´ ê³µê°„ ë³€í™˜ ë¡œì§ ê·¸ëŒ€ë¡œ ìœ ì§€ (vDirLocal êµ¬í•˜ê¸°)
     //int32_t iParentIdx = pHeadBone->GetParentIndex();
     //_matrix matEntityWorld = GetGameObject()->GetTransform().GetLoadedWorldMatrix();
     //_matrix matParentWorld = matEntityWorld;
@@ -135,7 +135,7 @@ void CComAnimator::HeadLookAt(_float fTimeDelta, _float3 vTarget)
     //XMVECTOR vDirLocal = XMVector3Normalize(XMVector3TransformNormal(vDirWorld, matParentWorldInverse));
 
     //// -------------------------------------------------------------
-    //// 5. ¿Ïº®ÇÑ ¸ñÇ¥ ·ÎÄÃ È¸Àü Çà·Ä °è»ê (LookTo ÇÔ¼ö È°¿ë)
+    //// 5. ì™„ë²½í•œ ëª©í‘œ ë¡œì»¬ íšŒì „ í–‰ë ¬ ê³„ì‚° (LookTo í•¨ìˆ˜ í™œìš©)
     //_matrix matTargetLookAt = XMMatrixLookToLH(XMVectorSet(0.f, 0.f, 0.f, 0.f), vDirLocal, XMVectorSet(0.f, 1.f, 0.f, 0.f));
     //_matrix matTargetRot = XMMatrixInverse(nullptr, matTargetLookAt);
     //XMVECTOR qTargetRot = XMQuaternionRotationMatrix(matTargetRot);
@@ -143,29 +143,29 @@ void CComAnimator::HeadLookAt(_float fTimeDelta, _float3 vTarget)
     //if (XMVector4IsNaN(qTargetRot)) return;
 
     //// =================================================================
-    ////  [»õ·Î¿î °¢µµ Á¦ÇÑ ¹æ½Ä] ¿ÀÀÏ·¯ °ø½Ä ¾øÀÌ ¿Ïº®ÇÏ°Ô Á¦ÇÑÇÏ±â
+    ////  [ìƒˆë¡œìš´ ê°ë„ ì œí•œ ë°©ì‹] ì˜¤ì¼ëŸ¬ ê³µì‹ ì—†ì´ ì™„ë²½í•˜ê²Œ ì œí•œí•˜ê¸°
     //// =================================================================
 
-    //// 1. Å¸°Ù ·ÎÄÃ ¹æÇâ º¤ÅÍ(vDirLocal)¸¦ Æò¸éº°·Î ºĞ¸®ÇÕ´Ï´Ù.
+    //// 1. íƒ€ê²Ÿ ë¡œì»¬ ë°©í–¥ ë²¡í„°(vDirLocal)ë¥¼ í‰ë©´ë³„ë¡œ ë¶„ë¦¬í•©ë‹ˆë‹¤.
     //_float3 vLocal;
     //XMStoreFloat3(&vLocal, vDirLocal);
 
-    //// 2. À§¾Æ·¡(Pitch) °¢µµ Á¦ÇÑ: ·ÎÄÃ Z¿Í Y Æò¸é ±âÁØ
-    //// Á¤¸é(0, 0, 1)À» ¹Ù¶óº¼ ¶§ À§¾Æ·¡ »çÀÕ°¢À» ±¸ÇÕ´Ï´Ù.
-    //float fPitchAngle = atan2f(vLocal.y, vLocal.z); // À§¸¦ º¸¸é +, ¾Æ·¡¸¦ º¸¸é - °¡ ¼öÇĞÀûÀ¸·Î Á¤È®È÷ ³ª¿É´Ï´Ù.
+    //// 2. ìœ„ì•„ë˜(Pitch) ê°ë„ ì œí•œ: ë¡œì»¬ Zì™€ Y í‰ë©´ ê¸°ì¤€
+    //// ì •ë©´(0, 0, 1)ì„ ë°”ë¼ë³¼ ë•Œ ìœ„ì•„ë˜ ì‚¬ì‡ê°ì„ êµ¬í•©ë‹ˆë‹¤.
+    //float fPitchAngle = atan2f(vLocal.y, vLocal.z); // ìœ„ë¥¼ ë³´ë©´ +, ì•„ë˜ë¥¼ ë³´ë©´ - ê°€ ìˆ˜í•™ì ìœ¼ë¡œ ì •í™•íˆ ë‚˜ì˜µë‹ˆë‹¤.
     //fPitchAngle = std::clamp(fPitchAngle, XMConvertToRadians(-30.f), XMConvertToRadians(30.f));
 
-    //// 3. ÁÂ¿ì(Yaw) °¢µµ Á¦ÇÑ: ·ÎÄÃ Z¿Í X Æò¸é ±âÁØ
+    //// 3. ì¢Œìš°(Yaw) ê°ë„ ì œí•œ: ë¡œì»¬ Zì™€ X í‰ë©´ ê¸°ì¤€
     //float fYawAngle = atan2f(vLocal.x, vLocal.z);
     //fYawAngle = std::clamp(fYawAngle, XMConvertToRadians(-55.f), XMConvertToRadians(55.f));
 
-    //// 4. Á¦ÇÑµÈ °¢µµ·Î ±ú²ıÇÑ ¸ñÇ¥ ÄõÅÍ´Ï¾ğ ºôµå (¿ÀÀÏ·¯ ¼ø¼­ ²¿ÀÓ ¹æÁö)
-    //// DirectXMathÀÇ Á¤¼® RollPitchYaw ÇÔ¼ö¸¦ »ç¿ëÇÏ¿© ´Ù½Ã Á¶¸³ÇÕ´Ï´Ù.
+    //// 4. ì œí•œëœ ê°ë„ë¡œ ê¹¨ë—í•œ ëª©í‘œ ì¿¼í„°ë‹ˆì–¸ ë¹Œë“œ (ì˜¤ì¼ëŸ¬ ìˆœì„œ ê¼¬ì„ ë°©ì§€)
+    //// DirectXMathì˜ ì •ì„ RollPitchYaw í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì—¬ ë‹¤ì‹œ ì¡°ë¦½í•©ë‹ˆë‹¤.
     //qTargetRot = XMQuaternionRotationRollPitchYaw(fPitchAngle, fYawAngle, 0.f);
 
     //// =================================================================
 
-    //// 7. ±âÁ¸ º¸°£(Slerp) ¿µ¿ª ¹× Çà·Ä Á¶¸³À¸·Î ÀÌ¾îÁü
+    //// 7. ê¸°ì¡´ ë³´ê°„(Slerp) ì˜ì—­ ë° í–‰ë ¬ ì¡°ë¦½ìœ¼ë¡œ ì´ì–´ì§
     //XMVECTOR qCurrentRot = XMLoadFloat4(&m_vCurrentHeadRotQuat);
     //if (XMVector4Equal(qCurrentRot, XMVectorZero()))
     //{
@@ -188,31 +188,31 @@ void CComAnimator::HeadLookAt(_float fTimeDelta, _float3 vTarget)
     //auto pHeadBone = m_pComEntityModel->GetBone("head");
     //if (!pHeadBone) return;
 
-    //// 1. ¸Ó¸® º»ÀÇ ºÎ¸ğ º» ÀÎµ¦½º¸¦ °¡Á®¿É´Ï´Ù.
+    //// 1. ë¨¸ë¦¬ ë³¸ì˜ ë¶€ëª¨ ë³¸ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
     //int32_t iParentIdx = pHeadBone->GetParentIndex();
 
-    //// 2. ¸Ó¸®°¡ ¼ÓÇÑ 'ÃÖÁ¾ ºÎ¸ğÀÇ ¿ùµå Çà·Ä'À» ±¸ÇÕ´Ï´Ù.
+    //// 2. ë¨¸ë¦¬ê°€ ì†í•œ 'ìµœì¢… ë¶€ëª¨ì˜ ì›”ë“œ í–‰ë ¬'ì„ êµ¬í•©ë‹ˆë‹¤.
     //_matrix matEntityWorld = GetGameObject()->GetTransform().GetLoadedWorldMatrix();
-    //_matrix matParentWorld = matEntityWorld; // ºÎ¸ğ º»ÀÌ ¾ø´Ù¸é ¿ÀºêÁ§Æ® ¿ùµå°¡ °ğ ºÎ¸ğ °ø°£
+    //_matrix matParentWorld = matEntityWorld; // ë¶€ëª¨ ë³¸ì´ ì—†ë‹¤ë©´ ì˜¤ë¸Œì íŠ¸ ì›”ë“œê°€ ê³§ ë¶€ëª¨ ê³µê°„
 
     //
     //if (iParentIdx >= 0)
     //{
-    //    // ºÎ¸ğ º»ÀÌ ÀÖ´Ù¸é: [ºÎ¸ğÀÇ Combined Çà·Ä] * [¿ÀºêÁ§Æ® ¿ùµå Çà·Ä] = ºÎ¸ğÀÇ ¿Ïº®ÇÑ ¿ùµå Çà·Ä
-    //    auto& pParentBone = m_pComEntityModel->GetBones()[iParentIdx]; // ÀÎµ¦½º·Î º» °¡Á®¿À´Â ÇÔ¼ö ÇÊ¿ä
+    //    // ë¶€ëª¨ ë³¸ì´ ìˆë‹¤ë©´: [ë¶€ëª¨ì˜ Combined í–‰ë ¬] * [ì˜¤ë¸Œì íŠ¸ ì›”ë“œ í–‰ë ¬] = ë¶€ëª¨ì˜ ì™„ë²½í•œ ì›”ë“œ í–‰ë ¬
+    //    auto& pParentBone = m_pComEntityModel->GetBones()[iParentIdx]; // ì¸ë±ìŠ¤ë¡œ ë³¸ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜ í•„ìš”
     //    matParentWorld = XMLoadFloat4x4(pParentBone.GetCombinedTransformationMatrix()) * matEntityWorld;
     //}
 
-    //// 3. ¸Ó¸®ÀÇ ½ÇÁ¦ ¿ùµå À§Ä¡ ±¸ÇÏ±â
+    //// 3. ë¨¸ë¦¬ì˜ ì‹¤ì œ ì›”ë“œ ìœ„ì¹˜ êµ¬í•˜ê¸°
     //XMVECTOR vHeadWorldPos = XMVector3TransformCoord(XMLoadFloat3(&pHeadBone->GetPivot()), matEntityWorld);
     //XMVECTOR vTargetWorldPos = XMLoadFloat3(&vTarget);
     //XMVECTOR vDirWorld = XMVector3Normalize(vTargetWorldPos - vHeadWorldPos);
 
-    //// 4.  [ÀÌ ¹®Á¦ÀÇ Á¤´ä] ¿ùµå ¹æÇâ º¤ÅÍ¸¦ '¸Ó¸®ÀÇ ºÎ¸ğ ¿ùµå °ø°£'ÀÇ ¿ªÇà·Ä·Î º¯È¯!!
+    //// 4.  [ì´ ë¬¸ì œì˜ ì •ë‹µ] ì›”ë“œ ë°©í–¥ ë²¡í„°ë¥¼ 'ë¨¸ë¦¬ì˜ ë¶€ëª¨ ì›”ë“œ ê³µê°„'ì˜ ì—­í–‰ë ¬ë¡œ ë³€í™˜!!
     //_matrix matParentWorldInverse = XMMatrixInverse(nullptr, matParentWorld);
     //XMVECTOR vDirLocal = XMVector3Normalize(XMVector3TransformNormal(vDirWorld, matParentWorldInverse));
 
-    //// 5. ÀÌÁ¦ ¾ÈÀüÇØÁø vDirLocal ±â¹İÀ¸·Î Right, Up, Look ºôµå
+    //// 5. ì´ì œ ì•ˆì „í•´ì§„ vDirLocal ê¸°ë°˜ìœ¼ë¡œ Right, Up, Look ë¹Œë“œ
     //_vector vLook = vDirLocal;
     //_vector worldUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
     //_vector vRight = XMVector3Normalize(XMVector3Cross(worldUp, vLook));
@@ -228,14 +228,14 @@ void CComAnimator::HeadLookAt(_float fTimeDelta, _float3 vTarget)
 
 
 
-    //// 6. ¿ÀÀÏ·¯ ÃßÃâ ¹× Àû¿ë (±âÁ¸°ú µ¿ÀÏ)
+    //// 6. ì˜¤ì¼ëŸ¬ ì¶”ì¶œ ë° ì ìš© (ê¸°ì¡´ê³¼ ë™ì¼)
     //_float3 vEuler{};
     //if (fabsf(m.m[0][2]) < 0.99999f) {
     //    vEuler.y = atan2f(m.m[0][2], m.m[2][2]);
     //    vEuler.x = asinf(-m.m[1][2]);
     //}
 
-    //// °¢µµ Á¦ÇÑ ÈÄ ÁÖÀÔ
+    //// ê°ë„ ì œí•œ í›„ ì£¼ì…
     //vEuler.x = std::clamp(vEuler.x, XMConvertToRadians(-30.f), XMConvertToRadians(30.f));
     //vEuler.y = std::clamp(vEuler.y, XMConvertToRadians(-60.f), XMConvertToRadians(60.f));
     //vEuler.z = 0.f;

@@ -1,4 +1,4 @@
-#include "Cloud.h"
+ï»¿#include "Cloud.h"
 #include "GameInstance.h"
 #include "Resources.h"
 #include "CameraObject.h"
@@ -56,7 +56,7 @@ void CCloud::PriorityUpdate(E::_float fTimeDelta)
 
 void CCloud::Update(E::_float fTimeDelta)
 {
-    // ¹Ù¶÷¿¡ ÀÇÇØ Èå¸£´Â ¿ÀÇÁ¼Â ¼Óµµ Á¶Àı
+    // ë°”ëŒì— ì˜í•´ íë¥´ëŠ” ì˜¤í”„ì…‹ ì†ë„ ì¡°ì ˆ
     m_fCloudOffset += m_fCloudSpeed * fTimeDelta;
 }
 
@@ -79,26 +79,26 @@ void CCloud::LateUpdate(E::_float fTimeDelta)
                 instancedData.reserve(m_InstanceData.size());
 
                 instancedData.clear();
-                //  ±¸¸§ÀÇ µÎ²²(Y½ºÄÉÀÏ) ¹× °¡·Î¼¼·Î Å©±â¸¦ 4.0f Á¤¹æÇüÀ¸·Î Àâ½À´Ï´Ù.
+                //  êµ¬ë¦„ì˜ ë‘ê»˜(YìŠ¤ì¼€ì¼) ë° ê°€ë¡œì„¸ë¡œ í¬ê¸°ë¥¼ 4.0f ì •ë°©í˜•ìœ¼ë¡œ ì¡ìŠµë‹ˆë‹¤.
                 XMMATRIX matScale = XMMatrixScaling(4.0f, 1.5f, 4.0f);
 
                 _float fTileSize = 4.0f;
                 _float fCloudHeight = 120.0f;
-                int iHalfGrid = 64; // Ä«¸Ş¶ó Áß½ÉÀ¸·Î ¾ÕµÚÁÂ¿ì 64Ä­ ½ºÄµ (ÃÑ 128x128 ¿µ¿ª)
+                int iHalfGrid = 64; // ì¹´ë©”ë¼ ì¤‘ì‹¬ìœ¼ë¡œ ì•ë’¤ì¢Œìš° 64ì¹¸ ìŠ¤ìº” (ì´ 128x128 ì˜ì—­)
 
-                // 1. Ä«¸Ş¶óÀÇ ½Ç½Ã°£ ¿ùµå ÁÂÇ¥ È¹µæ ¹× ±×¸®µå ÀÎµ¦½º ½º³À
+                // 1. ì¹´ë©”ë¼ì˜ ì‹¤ì‹œê°„ ì›”ë“œ ì¢Œí‘œ íšë“ ë° ê·¸ë¦¬ë“œ ì¸ë±ìŠ¤ ìŠ¤ëƒ…
                 //XMVECTOR vCamPos = CGameInstance::Get().GetActiveGameCamera()->GetTransform().GetLoadedPostion();
                 int iCamGridX = (int)floorf(vCamPos.x / fTileSize);
                 int iCamGridZ = (int)floorf(vCamPos.z / fTileSize);
 
                 auto& noise = CGameInstance::Get().GetVoxelNoiseByType(NOISE_TYPE::CLOUD);
 
-                // 2. Ä«¸Ş¶ó¸¦ Áß½ÉÃàÀ¸·Î ÇÏ´Â °¡»óÀÇ 128x128 ¹ÙµÏÆÇ ½Ç½Ã°£ °Ë»ö
+                // 2. ì¹´ë©”ë¼ë¥¼ ì¤‘ì‹¬ì¶•ìœ¼ë¡œ í•˜ëŠ” ê°€ìƒì˜ 128x128 ë°”ë‘‘íŒ ì‹¤ì‹œê°„ ê²€ìƒ‰
                 for (int z = iCamGridZ - iHalfGrid; z < iCamGridZ + iHalfGrid; ++z)
                 {
                     for (int x = iCamGridX - iHalfGrid; x < iCamGridX + iHalfGrid; ++x)
                     {
-                        //  ¸Ş¸ğ¸® ¿À¹öÇÃ·Î¿ì ¿øÃµ Â÷´Ü ¾ÈÀüÀåÄ¡ (¿ÜºÎ ·çÇÁ±îÁö ¿ÏÀüÈ÷ Å»ÃâÇÏµµ·Ï ¼öÁ¤)
+                        //  ë©”ëª¨ë¦¬ ì˜¤ë²„í”Œë¡œìš° ì›ì²œ ì°¨ë‹¨ ì•ˆì „ì¥ì¹˜ (ì™¸ë¶€ ë£¨í”„ê¹Œì§€ ì™„ì „íˆ íƒˆì¶œí•˜ë„ë¡ ìˆ˜ì •)
                         if (instancedData.size() >= m_iNumElements)
                             goto EXIT_LOOP;
 
@@ -107,8 +107,8 @@ void CCloud::LateUpdate(E::_float fTimeDelta)
 
                         _float fNoiseVal = noise.GetNoise(fNoiseX, 0.0f, fNoiseZ);
 
-                        //  [¹Ğµµ Á¶°Ç ¼ö½Ä] 
-                        // 0.0f ~ 0.1f »çÀÌ·Î ÀâÀ¸¸é ±¸¸§µéÀÌ µë¼ºµë¼º ²÷±âÁö ¾Ê°í ÀÌ»Ú°Ô ±ºÁıÀ» ÀÌ·ì´Ï´Ù.
+                        //  [ë°€ë„ ì¡°ê±´ ìˆ˜ì‹] 
+                        // 0.0f ~ 0.1f ì‚¬ì´ë¡œ ì¡ìœ¼ë©´ êµ¬ë¦„ë“¤ì´ ë“¬ì„±ë“¬ì„± ëŠê¸°ì§€ ì•Šê³  ì´ì˜ê²Œ êµ°ì§‘ì„ ì´ë£¹ë‹ˆë‹¤.
                         if (fNoiseVal > 0.1f)
                         {
                             XMFLOAT3 worldPos;
@@ -156,7 +156,7 @@ HRESULT CCloud::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
     const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Cloud");
     const auto& viBuffer = m_pResVIBuffer;
 
-    // µ¥ÀÌÅÍ °»½Å
+    // ë°ì´í„° ê°±ì‹ 
     {
         auto pCbPerObject = m_pResInstancedBuffer;
         D3D11_MAPPED_SUBRESOURCE mappedSubResource;
@@ -168,7 +168,7 @@ HRESULT CCloud::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
         }
     }
 
-    // ÆÄÀÌÇÁ¶óÀÎ ¹ÙÀÎµù ¹× ·»´õ¸µ
+    // íŒŒì´í”„ë¼ì¸ ë°”ì¸ë”© ë° ë Œë”ë§
     pContext->IASetInputLayout(vs->GetInputLayout().Get());
     pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
     pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
