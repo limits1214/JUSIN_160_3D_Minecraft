@@ -271,7 +271,7 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
                 //playerObj->SetRightItemHandle(fpsArmHandle);
                 if (auto fpsArmObj = E::CGameInstance::Get().GetGameObjectByHandle(fpsArmHandle.value()))
                 {
-                    fpsArmObj->GetTransform().SetPosition(XMVectorSet(0.1f, -0.25f, 0.05f, 1.f));
+                    fpsArmObj->GetTransform().SetPosition(XMVectorSet(0.1f, -0.15f, 0.05f, 1.f));
 
                     fpsArmObj->GetTransform().AddQuaternion(XMQuaternionRotationRollPitchYaw(
                         XMConvertToRadians(-90.f),
@@ -1306,11 +1306,17 @@ void CPlayerEntity::ProcessActionUpdate(_float fTimeDelta)
                             }
                             else
                             {
-                                matFinalRotation = XMMatrixRotationRollPitchYaw(
+                               
+
+                                XMMATRIX matToPivot = XMMatrixTranslation(0.f, 0.1f, 0.1f); 
+
+                                XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
                                     XMConvertToRadians(0.f),
                                     XMConvertToRadians(-90.f),
                                     XMConvertToRadians(0.f)
                                 );
+
+                                matFinalRotation = matRot * matToPivot;
                             }
                         }
                     }
@@ -1345,22 +1351,15 @@ void CPlayerEntity::ProcessActionUpdate(_float fTimeDelta)
                         float fAngleFactor = sinf(fSwingProgress * XM_PI); // 0.0 -> 1.0 -> 0.0 
 
                         matGlobalSwing = XMMatrixRotationRollPitchYaw(
-                            fAngleFactor * 0.4f, 
+                            fAngleFactor * XMConvertToRadians(90.f),
                             0.f,
                             0.f
                         );
                     }
 
 
-                    // -----------------------------------------------------------------
-                    // [행렬 최종 조립 ] 
-                    // -----------------------------------------------------------------
-                    //  아이템/팔을 원점에서 각자 기본 각도로 돌려놓고 (matFinalRotation)
-                    //  화면 우측 하단 오프셋 위치로 이동시킨 뒤 (matBaseOffset)
-                    //  배치 완료된 뷰모델 전체를 통째로 앞으로 까딱 흔들고 (matGlobalSwing)
-                    //  마지막으로 카메라 월드를 곱해 화면에 고정.
-                    // -----------------------------------------------------------------
-                    XMMATRIX matFinalParent = matFinalRotation * matBaseOffset * matGlobalSwing * matCameraWorld;
+                   
+                    XMMATRIX matFinalParent = matFinalRotation * matGlobalSwing * matBaseOffset  * matCameraWorld;
 
                     _float4x4 matParent;
                     XMStoreFloat4x4(&matParent, matFinalParent);
