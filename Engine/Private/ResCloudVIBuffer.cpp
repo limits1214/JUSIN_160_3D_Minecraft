@@ -1,4 +1,4 @@
-#include "ResCloudVIBuffer.h"
+ï»¿#include "ResCloudVIBuffer.h"
 
 #include "GameInstance.h"
 #include "ResTexture2D.h"
@@ -26,37 +26,37 @@ HRESULT CResCloudVIBuffer::Load(const std::any& arg)
     {
         std::vector<VTX_CLOUD> vertices =
         {
-            // ¾Õ¸é (Z+)
+            // ì•žë©´ (Z+)
             {_float3{-0.5f,  0.5f,  0.5f}},
             {_float3{-0.5f, -0.5f,  0.5f}},
             {_float3{ 0.5f, -0.5f,  0.5f}},
             {_float3{ 0.5f,  0.5f,  0.5f}},
 
-            // µÞ¸é (Z-)
+            // ë’·ë©´ (Z-)
             {_float3{-0.5f,  0.5f, -0.5f}},
             {_float3{ 0.5f,  0.5f, -0.5f}},
             {_float3{ 0.5f, -0.5f, -0.5f}},
             {_float3{-0.5f, -0.5f, -0.5f}},
 
-            // ¿À¸¥ÂÊ (X+)
+            // ì˜¤ë¥¸ìª½ (X+)
             {_float3{ 0.5f,  0.5f, -0.5f}},
             {_float3{ 0.5f,  0.5f,  0.5f}},
             {_float3{ 0.5f, -0.5f,  0.5f}},
             {_float3{ 0.5f, -0.5f, -0.5f}},
 
-            // ¿ÞÂÊ (X-)
+            // ì™¼ìª½ (X-)
             {_float3{-0.5f,  0.5f,  0.5f}},
             {_float3{-0.5f,  0.5f, -0.5f}},
             {_float3{-0.5f, -0.5f, -0.5f}},
             {_float3{-0.5f, -0.5f,  0.5f}},
 
-            // À§ÂÊ (Y+)
+            // ìœ„ìª½ (Y+)
             {_float3{-0.5f,  0.5f,  0.5f}},
             {_float3{ 0.5f,  0.5f,  0.5f}},
             {_float3{ 0.5f,  0.5f, -0.5f}},
             {_float3{-0.5f,  0.5f, -0.5f}},
 
-            // ¾Æ·¡ÂÊ (Y-)
+            // ì•„ëž˜ìª½ (Y-)
             {_float3{-0.5f, -0.5f, -0.5f}},
             {_float3{ 0.5f, -0.5f, -0.5f}},
             {_float3{ 0.5f, -0.5f,  0.5f}},
@@ -73,7 +73,7 @@ HRESULT CResCloudVIBuffer::Load(const std::any& arg)
         }
 
         std::vector<uint16_t> indices;
-        for (uint16_t i = 0; i < 6; i++)  // ¸é 6°³
+        for (uint16_t i = 0; i < 6; i++)  // ë©´ 6ê°œ
         {
             uint16_t base = i * 4;
             indices.push_back(base + 0);

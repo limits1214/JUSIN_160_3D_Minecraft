@@ -28,7 +28,7 @@ void CUIItem::UpdateGUI()
 	
 	if (m_ItemInfo)
 	{
-		if (ImGui::DragFloat("Durability", &m_ItemInfo->fDurability, 0.01, 0.f, 1.f))
+		if (ImGui::DragFloat("Durability", &m_ItemInfo->fDurability, 0.01f, 0.f, 1.f))
 		{
 
 		}

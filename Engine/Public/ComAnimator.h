@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Component.h"
 #include "EntityModelBone.h"
@@ -33,10 +33,10 @@ private:
 	CComEntityModel* m_pComEntityModel{};
 
 private:
-	// ¸Ó¸®ÀÇ ÇöÀç È¸Àü »óÅÂ¸¦ ±â¾ïÇÒ ÄõÅÍ´Ï¾ğ (Ã³À½¿¡´Â È¸Àü ¾øÀ½(Identity)À¸·Î ÃÊ±âÈ­)
+	// ë¨¸ë¦¬ì˜ í˜„ì¬ íšŒì „ ìƒíƒœë¥¼ ê¸°ì–µí•  ì¿¼í„°ë‹ˆì–¸ (ì²˜ìŒì—ëŠ” íšŒì „ ì—†ìŒ(Identity)ìœ¼ë¡œ ì´ˆê¸°í™”)
 	_float4 m_vCurrentHeadRotQuat{ 0.f, 0.f, 0.f, 1.f };
 
-	// ¸Ó¸®°¡ È¸ÀüÇÏ´Â ¼Óµµ »ó¼ö (¼ıÀÚ°¡ Å¬¼ö·Ï ºü¸£°í Àıµµ ÀÖ°Ô ¹İÀÀÇÕ´Ï´Ù)
+	// ë¨¸ë¦¬ê°€ íšŒì „í•˜ëŠ” ì†ë„ ìƒìˆ˜ (ìˆ«ìê°€ í´ìˆ˜ë¡ ë¹ ë¥´ê³  ì ˆë„ ìˆê²Œ ë°˜ì‘í•©ë‹ˆë‹¤)
 	_float  m_fHeadTurnSpeed{ 8.0f };
 
 public:

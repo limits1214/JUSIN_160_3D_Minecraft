@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 #include "Engine_Defines.h"
 
 #include "Timer.h"
@@ -51,15 +51,15 @@ public:
 	_float GetElapsedTime() const { return m_fElapsedTime; };
 	_float GetDayFactor() const
 	{
-		// 1. 0.0 -> 1.0¿∏∑Œ π´«— π›∫π«œ¥¬ ±‚√  ¡¯«‡µµ ∞ËªÍ
+		// 1. 0.0 -> 1.0ÏúºÎ°ú Î¨¥Ìïú Î∞òÎ≥µÌïòÎäî Í∏∞Ï¥à ÏßÑÌñâÎèÑ Í≥ÑÏÇ∞
 		_float fLinearFactor = fmodf(m_fElapsedTime, fDayDuration) / fDayDuration;
 
-		// 2. 0.0 -> 1.0 -> 0.0 ø’∫π «Œ∆˛ (0: ≥∑, 1: π„)
+		// 2. 0.0 -> 1.0 -> 0.0 ÏôïÎ≥µ ÌïëÌêÅ (0: ÎÇÆ, 1: Î∞§)
 		_float fPingPong = 1.0f - fabsf(fLinearFactor - 0.5f) * 2.0f;
 
-		// 3. ƒ⁄ªÁ¿Œ ∞Óº±¿ª ¿ÃøÎ«ÿ S¿⁄ ∞Óº±(Smooth Step »ø∞˙)¿∏∑Œ ∫Ø»Ø
-		// fPingPong¿Ã 0¿œ ∂ß(≥∑) cos ∞·∞˙¥¬ 1 -> √÷¡æ 1.0
-		// fPingPong¿Ã 1¿œ ∂ß(π„) cos ∞·∞˙¥¬ -1 -> √÷¡æ 0.0
+		// 3. ÏΩîÏÇ¨Ïù∏ Í≥°ÏÑ†ÏùÑ Ïù¥Ïö©Ìï¥ SÏûê Í≥°ÏÑ†(Smooth Step Ìö®Í≥º)ÏúºÎ°ú Î≥ÄÌôò
+		// fPingPongÏù¥ 0Ïùº Îïå(ÎÇÆ) cos Í≤∞Í≥ºÎäî 1 -> ÏµúÏ¢Ö 1.0
+		// fPingPongÏù¥ 1Ïùº Îïå(Î∞§) cos Í≤∞Í≥ºÎäî -1 -> ÏµúÏ¢Ö 0.0
 		_float fSmoothFactor = 0.5f * (1.0f + cosf(fPingPong * XM_PI));
 
 		return fSmoothFactor;
@@ -73,7 +73,7 @@ public:
 	
 	//float g_fTimeFactor = ; // 0.0f ~ 1.0f
 private:
-	float fDayDuration = 60.0f * 5.f; // «œ∑Á¿« ±Ê¿Ã (60√ )
+	float fDayDuration = 60.0f * 5.f; // ÌïòÎ£®Ïùò Í∏∏Ïù¥ (60Ï¥à)
 	_float m_fElapsedTime{};
 
 public:
