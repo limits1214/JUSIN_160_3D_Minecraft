@@ -40,6 +40,9 @@ public:
 	HRESULT Initialize();
 
 private:
+	void UpdateSunShadowCamera(_float fTimeDelta);
+
+private:
 	ComPtr<ID3D11Device> m_pDevice{};
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 
@@ -73,8 +76,8 @@ public:
 	
 	//float g_fTimeFactor = ; // 0.0f ~ 1.0f
 private:
-	float fDayDuration = 60.0f * 5.f; // 하루의 길이 (60초)
-	_float m_fElapsedTime{};
+	float fDayDuration = 60.0f * 1.f;
+	_float m_fElapsedTime{10.f};
 
 public:
 	static UPtr<CWorldManager> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);

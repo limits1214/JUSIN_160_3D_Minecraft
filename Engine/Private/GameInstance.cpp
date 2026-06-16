@@ -26,6 +26,7 @@
 #include "FlyCamera.h"
 #include "UICamera.h"
 #include "PlayerCamera.h"
+#include "ShadowCamera.h"
 
 #include "Resources.h"
 
@@ -259,6 +260,8 @@ void CGameInstance::UpdateGUI()
 
 	m_pResourceManager->UpdateGUI();
 
+	m_pWorldManager->UpdateGUI();
+
 	m_pCameraManager->UpdateGUI();
 
 	m_pLevelManager->UpdateGUI();
@@ -452,6 +455,27 @@ HRESULT CGameInstance::InitializeResources()
 			.MaxLOD = 0.0f,
 			});
 	}
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_SAHDOW, CResSamplerState::Create()))
+	{
+		D3D11_SAMPLER_DESC sampDesc{};
+		sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.BorderColor[0] = 1.f;
+		sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+
+		//sampDesc.MinLOD = -D3D11_FLOAT32_MAX;
+		//sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+		//sampDesc.MipLODBias = 0.f;
+		//sampDesc.MaxAnisotropy = 1;
+		if (FAILED(res->Load(sampDesc)))
+		{
+			return E_FAIL;
+		}
+
+		GetGraphicDeviceContext()->PSSetSamplers(4, 1, res->GetSamplerState().GetAddressOf());
+	}
 		
 	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_QuadTex", "./Resources/Shader/QuadTex/QuadTex.hlsl"))
 	{
@@ -619,20 +643,62 @@ HRESULT CGameInstance::InitializeMCResource()
 	{
 		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropItem", "./Resources/Shader/Item/DropItem.hlsl"))
 		{
-			res->Load();
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
 		}
 		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropItem", "./Resources/Shader/Item/DropItem.hlsl"))
 		{
-			res->Load();
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
 		}
 
 		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropBlock", "./Resources/Shader/Item/DropBlock.hlsl"))
 		{
-			res->Load();
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
 		}
 		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropBlock", "./Resources/Shader/Item/DropBlock.hlsl"))
 		{
-			res->Load();
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_DropItem", "./Resources/Shader/Item/Shadow_DropItem.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_DropItem", "./Resources/Shader/Item/Shadow_DropItem.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_DropBlock", "./Resources/Shader/Item/Shadow_DropBlock.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_DropBlock", "./Resources/Shader/Item/Shadow_DropBlock.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
 		}
 
 		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_HandHeldItem", "./Resources/Shader/Item/HandHeldItem.hlsl"))
@@ -1905,6 +1971,10 @@ HRESULT CGameInstance::InitializePrototype()
 	}
 
 	if (AddPrototype("CAMERAS", "Prototype_GameObject_PlayerCamera", CPlayerCamera::Create()))
+	{
+		return E_FAIL;
+	}
+	if (AddPrototype("CAMERAS", "Prototype_GameObject_ShadowCamera", CShadowCamera::Create()))
 	{
 		return E_FAIL;
 	}

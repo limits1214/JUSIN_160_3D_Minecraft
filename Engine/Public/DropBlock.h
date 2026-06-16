@@ -22,6 +22,7 @@ public:
 
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
+
 private:
 	std::vector<VTX_DROP_BLOCK_INSTANCED_DATA> m_vecInstancedData{};
 	uint32_t m_iNumElements{ 1000 };

@@ -203,6 +203,7 @@ namespace Engine
 		_float fDayFactor{};
 		_float4x4  matSkyRotation{};
 		_float4x4  matStarRotation{};
+		_float4x4  matShadowLightViewProj{};
 	} CB_PER_FRAME;
 
 	typedef struct tagConstantBufferPerObject

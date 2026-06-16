@@ -17,6 +17,8 @@ private:
 public:
 	HRESULT Initialize();
 	HRESULT InitializeOffscreen();
+	HRESULT InitializeShadow();
+	HRESULT InitializeFullscreen();
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
 	HRESULT Draw();
 	void FrameEnd();
@@ -26,12 +28,24 @@ private:
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 	std::array<std::vector<IRenderable*>, ETOUI(RENDERGROUP::END)> m_RenderObject{};
 
-
-
 private:
 	SPtr<CResDynamicTexture2D> m_pOffScreenTex2D{};
+
+private:
+	SPtr<CResDynamicTexture2D> m_pShadowTex2D{};
+	SPtr<CResViewPort> m_pShadowVP{};
+
+private:
 	ComPtr<ID3D11RenderTargetView> m_pBackBufferRTV{};
 	ComPtr<ID3D11DepthStencilView> m_pBackBufferDSV{};
+	SPtr<CResViewPort> m_pBackBufferVP{};
+
+private:
+	SPtr<CResVertexShader> m_pFullscreenVS{};
+	SPtr<CResPixelShader> m_pFullscreenPS{};
+	SPtr<CResVIBuffer> m_pFullscreenVIBuffer{};
+
+private:
 
 private:
 	//_float4 m_SSAOOffsets[14]{};
@@ -39,7 +53,6 @@ private:
 private:
 	HRESULT DrawFullscreen();
 
-private:
 private:
 	HRESULT RenderPriority(const RENDER_CTX& ctx);
 	HRESULT RenderNonBlend(const RENDER_CTX& ctx);

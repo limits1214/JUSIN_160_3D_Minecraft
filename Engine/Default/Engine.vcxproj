@@ -246,6 +246,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\Public\CollOrientedBox.h" />
     <ClInclude Include="..\Public\CollSphere.h" />
     <ClInclude Include="..\public\ComAnimator.h" />
+    <ClInclude Include="..\public\ComCollider.h" />
     <ClInclude Include="..\public\ComConstantBuffer.h" />
     <ClInclude Include="..\public\ComEntityModel.h" />
     <ClInclude Include="..\public\Component.h" />
@@ -283,6 +284,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\Item.h" />
     <ClInclude Include="..\public\ResCloudVIBuffer.h" />
     <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
+    <ClInclude Include="..\public\ShadowCamera.h" />
     <ClInclude Include="..\public\Skybox.h" />
     <ClInclude Include="..\public\UIArmorBar.h" />
     <ClInclude Include="..\public\UIArmorBarIcon.h" />
@@ -380,6 +382,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UIItem.h" />
     <ClInclude Include="..\public\UIObject.h" />
     <ClInclude Include="..\public\UITextBg.h" />
+    <ClInclude Include="..\public\VoxelEditMem.h" />
     <ClInclude Include="..\public\VoxelManager3.h" />
     <ClInclude Include="..\public\VoxelObject.h" />
     <ClInclude Include="..\public\WorkerManager.h" />
@@ -504,6 +507,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\Private\CollOrientedBox.cpp" />
     <ClCompile Include="..\Private\CollSphere.cpp" />
     <ClCompile Include="..\private\ComAnimator.cpp" />
+    <ClCompile Include="..\private\ComCollider.cpp" />
     <ClCompile Include="..\private\ComConstantBuffer.cpp" />
     <ClCompile Include="..\private\ComEntityModel.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
@@ -518,6 +522,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\ResCloudVIBuffer.cpp" />
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
+    <ClCompile Include="..\private\ShadowCamera.cpp" />
     <ClCompile Include="..\private\Skybox.cpp" />
     <ClCompile Include="..\private\UIArmorBar.cpp" />
     <ClCompile Include="..\private\UIArmorBarIcon.cpp" />
@@ -626,6 +631,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UIItem.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
     <ClCompile Include="..\private\UITextBg.cpp" />
+    <ClCompile Include="..\private\VoxelEditMem.cpp" />
     <ClCompile Include="..\private\VoxelManager3.cpp" />
     <ClCompile Include="..\private\VoxelObject.cpp" />
     <ClCompile Include="..\private\WorkerManager.cpp" />
@@ -688,11 +694,11 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldBlock.hlsl">
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropBlock.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldItem.hlsl">
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropItem.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

@@ -72,9 +72,13 @@ void CCloud::LateUpdate(E::_float fTimeDelta)
             return;
         }
        
+        CHandle cloudHandle = GetHandle();
         auto vCamPos = CGameInstance::Get().GetActiveGameCamera()->GetTransform().GetPosition();
         m_futCloudCalc = CGameInstance::Get().WorkerEnqueueWithFuture("CLOUD", [=]()->std::vector<CCloud::InstanceData>
             {
+                auto pExists = CGameInstance::Get().GetGameObjectByHandle(cloudHandle);
+                if (!pExists)
+                    return {};
                 std::vector<CCloud::InstanceData> instancedData;
                 instancedData.reserve(m_InstanceData.size());
 

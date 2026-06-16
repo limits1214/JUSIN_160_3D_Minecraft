@@ -508,6 +508,15 @@
     <Filter Include="100.Shaders\Fullscreen">
       <UniqueIdentifier>{d7083c34-4ae6-4203-ac42-3260e6015299}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Camera\ShadowCamera">
+      <UniqueIdentifier>{0a9ace27-8a6d-4b4f-a897-2d68bb9ad725}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\Collider">
+      <UniqueIdentifier>{800016da-bf26-44de-8ad0-b7e04f093c6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World\VoxelEditMem">
+      <UniqueIdentifier>{29b4d380-ed7a-48fe-ad70-c6855b1e996e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -990,6 +999,15 @@
     <ClInclude Include="..\public\HandHeldItem.h">
       <Filter>GameObject\Item\HandHeld\Item</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ShadowCamera.h">
+      <Filter>GameObject\Camera\ShadowCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ComCollider.h">
+      <Filter>Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\VoxelEditMem.h">
+      <Filter>World\VoxelEditMem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1460,6 +1478,15 @@
     <ClCompile Include="..\private\HandHeldItem.cpp">
       <Filter>GameObject\Item\HandHeld\Item</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\ShadowCamera.cpp">
+      <Filter>GameObject\Camera\ShadowCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ComCollider.cpp">
+      <Filter>Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\VoxelEditMem.cpp">
+      <Filter>World\VoxelEditMem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1510,14 +1537,14 @@
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Cloud\Cloud.hlsl">
       <Filter>100.Shaders\Cloud</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldBlock.hlsl">
-      <Filter>100.Shaders\Item</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\HandHeldItem.hlsl">
-      <Filter>100.Shaders\Item</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FullscreenQuad\FullscreenQuad.hlsl">
       <Filter>100.Shaders\Fullscreen</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropItem.hlsl">
+      <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropBlock.hlsl">
+      <Filter>100.Shaders\Item</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

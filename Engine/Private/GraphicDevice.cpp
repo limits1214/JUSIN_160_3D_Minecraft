@@ -75,7 +75,10 @@ HRESULT CGraphicDevice::ReadyDevice(HWND hWnd, WINMODE eWinMode, uint32_t iWinSi
 
 	if (auto res = CGameInstance::Get().AddResource(TAG_RES_GRP_PERMANENT_VP, "VP_BackBuffer", CResViewPort::Create()))
 	{
-		res->Load(ViewPortDesc);
+		if (FAILED(res->Load(ViewPortDesc)))
+		{
+			return E_FAIL;
+		}
 	}
 
 	m_pDeviceContext->RSSetViewports(1, &ViewPortDesc);

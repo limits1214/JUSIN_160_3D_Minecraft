@@ -47,8 +47,9 @@ CComTransform::~CComTransform()
 {
 }
 
-void CComTransform::Update()
+_bool CComTransform::Update()
 {
+    _bool bIsUpdated = false;
     if (m_bDirty)
     {
         _matrix matScale = XMMatrixScalingFromVector(XMLoadFloat3(&m_vScale));
@@ -96,7 +97,11 @@ void CComTransform::Update()
         UpdateEulerFromQuat();
 
         m_bDirty = false;
+
+        bIsUpdated = true;
     }
+
+    return bIsUpdated;
 }
 
 void CComTransform::GoStraight(_float fDist)

@@ -32,7 +32,7 @@ HRESULT CPlayerCamera::Initialize(void* pArg)
     }
 
     m_pCollider = CCollFrustum::Create(XMLoadFloat4x4(&m_matProj));
-
+    m_pCollider->SetOriginalColor({ 1.f, 0.f, 1.f, 1.f });
     return S_OK;
 }
 
