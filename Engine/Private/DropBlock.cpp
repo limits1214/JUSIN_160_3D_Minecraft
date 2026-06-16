@@ -21,7 +21,7 @@ CDropBlock::~CDropBlock()
 
 HRESULT CDropBlock::Initialize(void* pArg)
 {
-
+    m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::SHADOW);
     if (FAILED(CDropItemObject::Initialize(pArg)))
     {
         return E_FAIL;
@@ -118,9 +118,12 @@ void CDropBlock::LateUpdate(E::_float fTimeDelta)
 
 HRESULT CDropBlock::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
-    const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropBlock");
-    const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropBlock");
-    //const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>("MC_ITEM_VIBuffer", "CubeItemDirt");
+
+    StringID vsStrID = ctx.pass == RENDERPASS::SHADOW ? "VS_Shadow_DropBlock" : "VS_DropBlock";
+    StringID psStrID = ctx.pass == RENDERPASS::SHADOW ? "PS_Shadow_DropBlock" : "PS_DropBlock";
+
+    const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, vsStrID);
+    const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, psStrID);
     const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>(m_viBufferID.first, m_viBufferID.second);
 
     pContext->IASetInputLayout(vs->GetInputLayout().Get());
@@ -159,7 +162,6 @@ HRESULT CDropBlock::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& c
         pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
     }
 
-    //pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
     pContext->DrawIndexedInstanced((UINT)viBuffer->GetNumIndices(), (UINT)m_vecInstancedData.size(), 0, 0, 0);
 
     return S_OK;

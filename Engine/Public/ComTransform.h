@@ -16,7 +16,7 @@ private:
 	~CComTransform() override;
 
 public:
-	void Update();
+	_bool Update();
 
 public:
 	const _float3& GetPosition() const { return m_vPos; }

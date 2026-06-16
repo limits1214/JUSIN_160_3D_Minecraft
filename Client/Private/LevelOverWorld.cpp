@@ -101,6 +101,28 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
+	//	//ORTHOGRAPHIC: vEye, vAt, vUp, fNear, fFar, fWidth, fHeight
+	{
+		E::CCameraObject::CAMERA_DESC Desc{};
+		Desc.eProj = E::CCameraObject::PROJ::ORTHOGRAPHIC;
+		Desc.vAt = { 0.f, 0.f, 0.f };
+		Desc.vEye = { 0.f, 10.f, -10.f };
+		Desc.fWidth = 64.f;
+		Desc.fHeight = 64.f;
+		Desc.fNear = 0.1f;
+		Desc.fFar = 200.f;
+		Desc.sObjectTag = "ShadowCam";
+
+		if (auto shadowCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_ShadowCamera",
+			"99_CAMERA", &Desc))
+		{
+			if (FAILED(E::CGameInstance::Get().RegistGameCamera("Shadow", shadowCam.value())))
+			{
+				int x = 0;
+			}
+		}
+	}
+
 
 
 
