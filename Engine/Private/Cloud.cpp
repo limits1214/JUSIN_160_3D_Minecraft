@@ -74,13 +74,20 @@ void CCloud::LateUpdate(E::_float fTimeDelta)
        
         CHandle cloudHandle = GetHandle();
         auto vCamPos = CGameInstance::Get().GetActiveGameCamera()->GetTransform().GetPosition();
-        m_futCloudCalc = CGameInstance::Get().WorkerEnqueueWithFuture("CLOUD", [=]()->std::vector<CCloud::InstanceData>
+        auto instancedDataSize = m_InstanceData.size();
+        auto iNumElements = m_iNumElements;
+        auto fCloudOffset = m_fCloudOffset;
+        m_futCloudCalc = CGameInstance::Get().WorkerEnqueueWithFuture("CLOUD", [cloudHandle,
+            instancedDataSize,
+            vCamPos,
+            iNumElements,
+            fCloudOffset]()->std::vector<CCloud::InstanceData>
             {
                 auto pExists = CGameInstance::Get().GetGameObjectByHandle(cloudHandle);
                 if (!pExists)
                     return {};
                 std::vector<CCloud::InstanceData> instancedData;
-                instancedData.reserve(m_InstanceData.size());
+                instancedData.reserve(instancedDataSize);
 
                 instancedData.clear();
                 //  구름의 두께(Y스케일) 및 가로세로 크기를 4.0f 정방형으로 잡습니다.
@@ -103,10 +110,10 @@ void CCloud::LateUpdate(E::_float fTimeDelta)
                     for (int x = iCamGridX - iHalfGrid; x < iCamGridX + iHalfGrid; ++x)
                     {
                         //  메모리 오버플로우 원천 차단 안전장치 (외부 루프까지 완전히 탈출하도록 수정)
-                        if (instancedData.size() >= m_iNumElements)
+                        if (instancedData.size() >= iNumElements)
                             goto EXIT_LOOP;
 
-                        _float fNoiseX = (_float)x * 0.35f + (m_fCloudOffset * 0.005f);
+                        _float fNoiseX = (_float)x * 0.35f + (fCloudOffset * 0.005f);
                         _float fNoiseZ = (_float)z * 0.35f;
 
                         _float fNoiseVal = noise.GetNoise(fNoiseX, 0.0f, fNoiseZ);
