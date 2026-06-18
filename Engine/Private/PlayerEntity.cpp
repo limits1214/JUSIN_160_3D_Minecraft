@@ -22,6 +22,10 @@
 #include "ChestStorage.h"
 
 #include "PigEntity.h"
+#include "CowEntity.h"
+#include "ChickenEntity.h"
+#include "SkeletonEntity.h"
+#include "ZombieEntity.h"
 
 #include "HandHeldBlock.h"
 #include "HandHeldItem.h"
@@ -97,6 +101,73 @@ void CPlayerEntity::UpdateGUI()
                     pObj->SetPlayer(GetHandle());
                 }
         	}
+        }
+    }
+    if (ImGui::Button("spawnCow"))
+    {
+        {
+            E::CCowEntity::DESC Desc{};
+            Desc.sObjectTag = "Cow";
+            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity",
+                "02_TEST_ENTITY", &Desc))
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCowEntity>(handle.value()))
+                {
+                    pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+                    //pObj->SetPlayer(GetHandle());
+                }
+            }
+        }
+    }
+
+    if (ImGui::Button("spawnChicken"))
+    {
+        {
+            E::CChickenEntity::DESC Desc{};
+            Desc.sObjectTag = "Chicken";
+            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity",
+                "02_TEST_ENTITY", &Desc))
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CChickenEntity>(handle.value()))
+                {
+                    pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+                    //pObj->SetPlayer(GetHandle());
+                }
+            }
+        }
+    }
+
+    if (ImGui::Button("spawnSkeleton"))
+    {
+        {
+            E::CSkeletonEntity::DESC Desc{};
+            Desc.sObjectTag = "Skeleton";
+            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_SkeletonEntity",
+                "02_TEST_ENTITY", &Desc))
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CSkeletonEntity>(handle.value()))
+                {
+                    pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+                    //pObj->SetPlayer(GetHandle());
+                }
+            }
+        }
+    }
+
+    if (ImGui::Button("spawnZombie"))
+    {
+        {
+            E::CZombieEntity::DESC Desc{};
+            Desc.sObjectTag = "Skeleton";
+            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ZombieEntity",
+                "02_TEST_ENTITY", &Desc))
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CZombieEntity>(handle.value()))
+                {
+                    pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+                    //pObj->SetPlayer(GetHandle());
+                }
+            }
         }
     }
 

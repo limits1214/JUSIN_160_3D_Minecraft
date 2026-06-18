@@ -156,6 +156,7 @@ void CLevelLoading::LoadingCheck()
 #include "ChickenEntity.h"
 #include "PlayerEntity.h"
 #include "SkeletonEntity.h"
+#include "ZombieEntity.h"
 #include "DropItem.h"
 #include "DropBlock.h"
 #include "HandHeldItem.h"
@@ -216,6 +217,10 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 	}
 
 	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_SkeletonEntity", E::CSkeletonEntity::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_ZombieEntity", E::CZombieEntity::Create())))
 	{
 		return E_FAIL;
 	}

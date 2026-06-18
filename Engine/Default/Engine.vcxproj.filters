@@ -517,6 +517,18 @@
     <Filter Include="World\VoxelEditMem">
       <UniqueIdentifier>{29b4d380-ed7a-48fe-ad70-c6855b1e996e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\Zombie">
+      <UniqueIdentifier>{e04b4e9f-e839-4583-96a5-3fcf46ae3e6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\Zombie">
+      <UniqueIdentifier>{e1cf9bde-8241-4afe-9eea-8de26d7b1425}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Creeper">
+      <UniqueIdentifier>{4615624c-5efd-4e5c-9c61-642c1c6f55d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\Creeper">
+      <UniqueIdentifier>{cd25a691-3cec-43d2-b043-dee4536d50d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1008,6 +1020,12 @@
     <ClInclude Include="..\public\VoxelEditMem.h">
       <Filter>World\VoxelEditMem</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoZombie.h">
+      <Filter>Resource\Entity\Geometry\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ZombieEntity.h">
+      <Filter>GameObject\Entity\Monster\Zombie</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1486,6 +1504,12 @@
     </ClCompile>
     <ClCompile Include="..\private\VoxelEditMem.cpp">
       <Filter>World\VoxelEditMem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoZombie.cpp">
+      <Filter>Resource\Entity\Geometry\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ZombieEntity.cpp">
+      <Filter>GameObject\Entity\Monster\Zombie</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-#include "CowEntity.h"
+#include "ZombieEntity.h"
 
 #include "Resources.h"
 #include "GameInstance.h"
@@ -9,25 +9,29 @@
 
 NS_USING(Engine)
 
-CCowEntity::CCowEntity()
+
+
+
+
+CZombieEntity::CZombieEntity()
 {
 }
 
-CCowEntity::~CCowEntity()
+CZombieEntity::~CZombieEntity()
 {
 }
 
-HRESULT CCowEntity::Initialize(void* pArg)
+HRESULT CZombieEntity::Initialize(void* pArg)
 {
-    if (FAILED(CAnimalEntityObject::Initialize(pArg)))
+    if (FAILED(CMonsterEntityObject::Initialize(pArg)))
     {
         return E_FAIL;
     }
 
     {
         CComEntityModel::DESC Desc{};
-        Desc.viBufferId = { "MC_ENTITY_VIBuffer", "Cow" };
-        Desc.geometryId = { "MC_ENTITY_GEOMETRY", "Cow" };
+        Desc.viBufferId = { "MC_ENTITY_VIBuffer", "Zombie" };
+        Desc.geometryId = { "MC_ENTITY_GEOMETRY", "Zombie" };
         if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_EntityModel", "Com_EntityModel", &Desc, &m_pComEntityModel)))
         {
             return E_FAIL;
@@ -55,22 +59,22 @@ HRESULT CCowEntity::Initialize(void* pArg)
     return S_OK;
 }
 
-void CCowEntity::PriorityUpdate(E::_float fTimeDelta)
+void CZombieEntity::PriorityUpdate(E::_float fTimeDelta)
 {
 }
 
-void CCowEntity::Update(E::_float fTimeDelta)
+void CZombieEntity::Update(E::_float fTimeDelta)
 {
     m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
 }
 
-void CCowEntity::LateUpdate(E::_float fTimeDelta)
+void CZombieEntity::LateUpdate(E::_float fTimeDelta)
 {
     CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
     GetTransform().Update();
 }
 
-HRESULT CCowEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+HRESULT CZombieEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
     {
         auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
@@ -92,28 +96,27 @@ HRESULT CCowEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& c
     m_pComEntityModel->BindBoneMatrix(pContext);
 
     m_pComEntityModel->Render(pContext, ctx);
-
     return S_OK;
 }
 
-UPtr<CCowEntity> CCowEntity::Create()
+UPtr<CZombieEntity> CZombieEntity::Create()
 {
-    auto pInstance = ToUPtr(new CCowEntity{});
+    auto pInstance = ToUPtr(new CZombieEntity{});
     if (FAILED(pInstance->InitializePrototype()))
     {
-        MSG_BOX("Failed to Create: CCowEntity");
+        MSG_BOX("Failed to Create: CZombieEntity");
         return nullptr;
     }
 
     return pInstance;
 }
 
-UPtr<CPrototype> CCowEntity::Clone(void* pArg)
+UPtr<CPrototype> CZombieEntity::Clone(void* pArg)
 {
-    auto pInstance = ToUPtr(new CCowEntity{ *this });
+    auto pInstance = ToUPtr(new CZombieEntity{ *this });
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX("Failed to Cloned: CCowEntity");
+        MSG_BOX("Failed to Cloned: CZombieEntity");
         return nullptr;
     }
 
