@@ -23,6 +23,8 @@ private:
 public:
 	void QuadrupedWalk(_float fTimeDelta);
 	void HeadLookAt(_float fTimeDelta, _float3 vPos);
+
+	void SetSpiderDefaultLegPose(_float fTimeDelta);
 private:
 	HRESULT Initialize(void* pArg) override;
 
