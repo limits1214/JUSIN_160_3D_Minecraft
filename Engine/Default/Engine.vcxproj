@@ -50,14 +50,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <EnableUnitySupport>true</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <EnableUnitySupport>true</EnableUnitySupport>
@@ -251,6 +251,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\ComEntityModel.h" />
     <ClInclude Include="..\public\Component.h" />
     <ClInclude Include="..\public\CowEntity.h" />
+    <ClInclude Include="..\public\CreeperEntity.h" />
     <ClInclude Include="..\public\DestroyStage.h" />
     <ClInclude Include="..\public\DInputManager.h" />
     <ClInclude Include="..\public\DropBlock.h" />
@@ -283,6 +284,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\HandHeldItemObject.h" />
     <ClInclude Include="..\public\Item.h" />
     <ClInclude Include="..\public\ResCloudVIBuffer.h" />
+    <ClInclude Include="..\public\ResEnttGeoCreeper.h" />
     <ClInclude Include="..\public\ResEnttGeoZombie.h" />
     <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
     <ClInclude Include="..\public\ShadowCamera.h" />
@@ -514,6 +516,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ComEntityModel.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\CowEntity.cpp" />
+    <ClCompile Include="..\private\CreeperEntity.cpp" />
     <ClCompile Include="..\private\DropBlock.cpp" />
     <ClCompile Include="..\private\DropItemObject.cpp" />
     <ClCompile Include="..\private\FallingVoxel.cpp" />
@@ -523,6 +526,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\HandHeldItemObject.cpp" />
     <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\ResCloudVIBuffer.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoCreeper.cpp" />
     <ClCompile Include="..\private\ResEnttGeoZombie.cpp" />
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
     <ClCompile Include="..\private\ShadowCamera.cpp" />
