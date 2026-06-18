@@ -112,28 +112,8 @@ void CShadowCamera::LateUpdate(E::_float fTimeDelta)
 
     m_pCollider->Transform(m_pComTransform->GetLoadedWorldMatrix());
 
-    CCameraObject::UpdateViewMatrix();
-
-    //if (auto colliders = E::CGameInstance::Get().GetColliders())
-    //{
-    //    for (const auto& [key, value] : *colliders)
-    //    {
-    //        for (const auto& p : value)
-    //        {
-    //            if (m_pCollider.get() == p)
-    //            {
-    //                continue;
-    //            }
-
-    //            if (m_pCollider->Intersect(*p))
-    //            {
-    //                ++m_iColliderIntersect;
-    //            }
-    //        }
-    //    }
-    //}
+    //CCameraObject::UpdateViewMatrix();
 }
-
 
 Engine::UPtr<CShadowCamera> CShadowCamera::Create()
 {

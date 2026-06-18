@@ -116,8 +116,8 @@ HRESULT CRenderer::InitializeOffscreen()
 
 HRESULT CRenderer::InitializeShadow()
 {
-    UINT iShadowWidth = 2048;
-    UINT iShadowHeight = 2048;
+    UINT iShadowWidth = 2048 * 2;
+    UINT iShadowHeight = 2048 * 2;
 
     if (auto res = CGameInstance::Get().AddResourceT(TAG_RES_GRP_PERMANENT_TEXTURE, "DynTex2D_Shadow", E::CResDynamicTexture2D::Create()))
     {

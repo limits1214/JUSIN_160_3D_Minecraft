@@ -458,7 +458,7 @@ HRESULT CGameInstance::InitializeResources()
 	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_SAHDOW, CResSamplerState::Create()))
 	{
 		D3D11_SAMPLER_DESC sampDesc{};
-		sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
 		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
 		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
@@ -527,6 +527,9 @@ HRESULT CGameInstance::InitializeResources()
 		desc.FillMode = D3D11_FILL_SOLID;
 		desc.CullMode = D3D11_CULL_NONE;
 		desc.DepthClipEnable = TRUE;
+		desc.DepthBias = 10;
+		desc.SlopeScaledDepthBias = 0.5f;
+		desc.DepthBiasClamp = 0.0f;
 		res->Load(desc);
 	}
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_WIREFRAME_NOCULL, E::CResRasterizerState::Create()))
@@ -535,7 +538,7 @@ HRESULT CGameInstance::InitializeResources()
 		desc.FillMode = D3D11_FILL_WIREFRAME;
 		desc.CullMode = D3D11_CULL_NONE;
 		desc.DepthClipEnable = TRUE;
-
+		
 		res->Load(desc);
 	}
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "RS_SOLID_BACKCULL_DEPTHBIAS", E::CResRasterizerState::Create()))
@@ -546,6 +549,27 @@ HRESULT CGameInstance::InitializeResources()
 		desc.DepthClipEnable = TRUE;
 		desc.DepthBias = -100;
 		desc.SlopeScaledDepthBias = -1.0f;
+		desc.DepthBiasClamp = 0.0f;
+		res->Load(desc);
+	}
+
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "RS_SOLID_BLOCK_VOXEL_SHADOW", E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_FRONT;
+		desc.DepthClipEnable = TRUE;
+		res->Load(desc);
+	}
+	
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "RS_ALPHATEST_BLOCK_VOXEL_SHADOW", E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_NONE;
+		desc.DepthClipEnable = TRUE;
+		desc.DepthBias = 10;
+		desc.SlopeScaledDepthBias = 0.5f;
 		desc.DepthBiasClamp = 0.0f;
 		res->Load(desc);
 	}
@@ -612,6 +636,21 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_BlockAlphaTest", "./Resources/Shader/Block/BlockAlphaTest.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_BlockAlphaTest", "./Resources/Shader/Block/BlockAlphaTest.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
 		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Water", "./Resources/Shader/Block/Water.hlsl"))
 		{
 			if (FAILED(res->Load()))
@@ -620,6 +659,39 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Water", "./Resources/Shader/Block/Water.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+
+
+
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_Block", "./Resources/Shader/Block/Shadow_Block.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_Block", "./Resources/Shader/Block/Shadow_Block.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_BlockAlphaTest", "./Resources/Shader/Block/Shadow_BlockAlphaTest.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_BlockAlphaTest", "./Resources/Shader/Block/Shadow_BlockAlphaTest.hlsl"))
 		{
 			if (FAILED(res->Load()))
 			{

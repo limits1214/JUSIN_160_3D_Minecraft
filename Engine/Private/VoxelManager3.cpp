@@ -316,6 +316,76 @@ CVoxelManager3::~CVoxelManager3()
 
 HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 {
+    switch (ctx.pass)
+    {
+    case RENDERPASS::SHADOW:
+        return RenderShadow(pContext, ctx);
+    case RENDERPASS::DEFAULT:
+        return RenderDefault(pContext, ctx);
+    }
+}
+
+HRESULT CVoxelManager3::RenderShadow(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
+{
+    pContext->PSSetSamplers(9, 1, m_pResSamplerPointWrap->GetSamplerState().GetAddressOf());
+
+    const auto& solidBlockVS = m_pResSolidShadowBlockVertexShader;
+    const auto& solidBlockPS = m_pResSolidShadowBlockPixelShader;
+
+    pContext->IASetInputLayout(solidBlockVS->GetInputLayout().Get());
+    pContext->VSSetShader(solidBlockVS->GetVertexShader().Get(), nullptr, 0);
+    pContext->PSSetShader(solidBlockPS->GetPixelShader().Get(), nullptr, 0);
+
+    {
+        const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, "RS_SOLID_BLOCK_VOXEL_SHADOW");
+        pContext->RSSetState(rasterizer->GetRasterizerState().Get());
+    }
+
+    //auto pCameraObject = CGameInstance::Get().GetActiveGameCamera("Player");
+    auto vecCollGroup = CGameInstance::Get().GetColliderGroup("Coll_ShadowCamera");
+    _bool bExists = vecCollGroup && !vecCollGroup->empty();
+
+    std::vector<CChunk3*> vecIntersectedChunk{};
+    vecIntersectedChunk.reserve(m_mapChunks.size());
+
+    for (const auto& [idx, pChunk] : m_mapChunks)
+    {
+        if (bExists)
+        {
+            if (vecCollGroup->front()->Intersect(*pChunk->GetCollBox()))
+            {
+                vecIntersectedChunk.push_back(pChunk.get());
+                pChunk->DrawSolid(pContext, ctx);
+            }
+        }
+        else
+        {
+            vecIntersectedChunk.push_back(pChunk.get());
+            pChunk->DrawSolid(pContext, ctx);
+        }
+    }
+
+
+    const auto& alphaTestVS = m_pResAlphaTestShadowBlockVertexShader;
+    const auto& alphaTestPS = m_pResAlphaTestShadowBlockPixelShader;
+
+    pContext->IASetInputLayout(alphaTestVS->GetInputLayout().Get());
+    pContext->VSSetShader(alphaTestVS->GetVertexShader().Get(), nullptr, 0);
+    pContext->PSSetShader(alphaTestPS->GetPixelShader().Get(), nullptr, 0);
+    {
+        const auto& rs = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, "RS_ALPHATEST_BLOCK_VOXEL_SHADOW");
+        pContext->RSSetState(rs->GetRasterizerState().Get());
+    }
+
+    for (auto& pChunk : vecIntersectedChunk)
+    {
+        pChunk->DrawAlphaTest(pContext, ctx);
+    }
+    return S_OK;
+}
+
+HRESULT CVoxelManager3::RenderDefault(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
+{
     pContext->PSSetSamplers(9, 1, m_pResSamplerPointWrap->GetSamplerState().GetAddressOf());
 
     const auto& solidBlockVS = m_pResSolidBlockVertexShader;
@@ -324,7 +394,7 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     pContext->IASetInputLayout(solidBlockVS->GetInputLayout().Get());
     pContext->VSSetShader(solidBlockVS->GetVertexShader().Get(), nullptr, 0);
     pContext->PSSetShader(solidBlockPS->GetPixelShader().Get(), nullptr, 0);
-   
+
     {
         const auto& rasterizer = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
         pContext->RSSetState(rasterizer->GetRasterizerState().Get());
@@ -355,6 +425,12 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     }
 
 
+    const auto& alphaTestVS = m_pResAlphaTestBlockVertexShader;
+    const auto& alphaTestPS = m_pResAlphaTestBlockPixelShader;
+
+    pContext->IASetInputLayout(alphaTestVS->GetInputLayout().Get());
+    pContext->VSSetShader(alphaTestVS->GetVertexShader().Get(), nullptr, 0);
+    pContext->PSSetShader(alphaTestPS->GetPixelShader().Get(), nullptr, 0);
     {
         const auto& rs = E::CGameInstance::GetConst().GetResourceFirst<E::CResRasterizerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL);
         pContext->RSSetState(rs->GetRasterizerState().Get());
@@ -377,7 +453,7 @@ HRESULT CVoxelManager3::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& 
     //TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_NOCULL
     const auto& alphaBlend = E::CGameInstance::GetConst().GetResourceFirst<E::CResBlendState>(TAG_RES_GRP_PERMANENT_STATE, "BS_ALPHA_BLEND");
     const auto& alphaDepth = E::CGameInstance::GetConst().GetResourceFirst<E::CResDepthStencilState>(TAG_RES_GRP_PERMANENT_STATE, "DS_NO_DEPTHWRITE");
-    
+
 
     _float fBlendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
     pContext->OMSetBlendState(alphaBlend->GetBlendState().Get(), fBlendFactor, 0xffffffff);
@@ -3838,8 +3914,18 @@ HRESULT CVoxelManager3::Initialize()
         m_pResSolidBlockVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block");
         m_pResSolidBlockPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block");
 
+        m_pResAlphaTestBlockVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_BlockAlphaTest");
+        m_pResAlphaTestBlockPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_BlockAlphaTest");
+
         m_pResWaterBlockVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Water");
         m_pResWaterBlockPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Water");
+    
+        m_pResSolidShadowBlockVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_Block");
+        m_pResSolidShadowBlockPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_Block");
+
+        m_pResAlphaTestShadowBlockVertexShader = CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_BlockAlphaTest");
+        m_pResAlphaTestShadowBlockPixelShader = CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_BlockAlphaTest");
+
     }
     {
         m_pResBlocksTexutreArray = CGameInstance::Get().GetResourceFirst<E::CResTexture2DArray>("VOXEL_MANAGER_TEX", "TEXTURE_ARRAY");;
