@@ -145,6 +145,8 @@ HRESULT CResEnttGeoSteve::Load(const std::any& arg)
         RightToLeft();
 
         Scaling();
+
+        BoneSorting();
     }
     m_eState = STATE::LOADED;
     return S_OK;

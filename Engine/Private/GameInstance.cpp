@@ -1724,6 +1724,25 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 4: Zombie
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Zombie/zombie.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 5: Creeper
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Creeper/creeper.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+
 
 		// Entity_64_32_Ted2d_Array
 		{
@@ -1851,6 +1870,17 @@ HRESULT CGameInstance::InitializeMCResource()
 				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmor", CResEnttVIBuffer::Create()))
 				{
 					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmor"}, .baseTexId = PackTexId(7, 2), .specificCubeTexIds = {{"armor2", PackTexId(7, 3)}}});
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Zombie", CResEnttGeoZombie::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Zombie", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Zombie"}} );
 				}
 			}
 		}

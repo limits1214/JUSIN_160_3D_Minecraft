@@ -3,6 +3,10 @@
 #include "Resources.h"
 #include "GameInstance.h"
 #include "ComEntityModel.h"
+#include "ComAnimator.h"
+#include "ComConstantBuffer.h"
+#include "CameraObject.h"
+
 NS_USING(Engine)
 
 
@@ -25,16 +29,31 @@ HRESULT CSkeletonEntity::Initialize(void* pArg)
     }
 
     {
-        CComEntityModel::DESC componentDesc{};
-        componentDesc.pGameObject = this;
-        componentDesc.viBufferId = { "MC_ENTITY_VIBuffer", "Skeleton" };
-        componentDesc.geometryId = { "MC_ENTITY_GEOMETRY", "Skeleton" };
-        auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_EntityModel", &componentDesc);
-        if (pProto == nullptr)
+        CComEntityModel::DESC Desc{};
+        Desc.viBufferId = { "MC_ENTITY_VIBuffer", "Skeleton" };
+        Desc.geometryId = { "MC_ENTITY_GEOMETRY", "Skeleton" };
+        if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_EntityModel", "Com_EntityModel", &Desc, &m_pComEntityModel)))
         {
             return E_FAIL;
-        }
-        m_pComEntityModel = AddComponent("Com_EntityModel", static_uptr_cast<CComEntityModel>(std::move(pProto)));
+        };
+    }
+
+    {
+        CComAnimator::DESC Desc{};
+        Desc.pComEntityModel = m_pComEntityModel;
+        if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_Animator", "Com_Animator", &Desc, &m_pComAnimator)))
+        {
+            return E_FAIL;
+        };
+    }
+
+    {
+        CComConstantBuffer::DESC Desc{};
+        Desc.cBufferId = { TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_OBJECT };
+        if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_ConstantBuffer", "ComCBufferPerObject", &Desc, &m_pComCBufferPerObject)))
+        {
+            return E_FAIL;
+        };
     }
 
     return S_OK;

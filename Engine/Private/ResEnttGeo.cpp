@@ -75,6 +75,10 @@ void CResEnttGeo::Scaling()
             cube.size.z *= fScale;
 
             cube.inflate *= fScale;
+
+            cube.pivot.x *= fScale;
+            cube.pivot.y *= fScale;
+            cube.pivot.z *= fScale;
         }
 
         // locators 스케일 (있으면)
