@@ -1884,6 +1884,17 @@ HRESULT CGameInstance::InitializeMCResource()
 				}
 			}
 		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Creeper", CResEnttGeoCreeper::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Creeper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Creeper"} });
+				}
+			}
+		}
 	}
 
 	// initialize item texture

@@ -1026,6 +1026,12 @@
     <ClInclude Include="..\public\ZombieEntity.h">
       <Filter>GameObject\Entity\Monster\Zombie</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoCreeper.h">
+      <Filter>Resource\Entity\Geometry\Creeper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\CreeperEntity.h">
+      <Filter>GameObject\Entity\Monster\Creeper</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1510,6 +1516,12 @@
     </ClCompile>
     <ClCompile Include="..\private\ZombieEntity.cpp">
       <Filter>GameObject\Entity\Monster\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoCreeper.cpp">
+      <Filter>Resource\Entity\Geometry\Creeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\CreeperEntity.cpp">
+      <Filter>GameObject\Entity\Monster\Creeper</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

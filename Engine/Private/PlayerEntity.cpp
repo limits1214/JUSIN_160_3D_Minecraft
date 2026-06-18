@@ -26,6 +26,7 @@
 #include "ChickenEntity.h"
 #include "SkeletonEntity.h"
 #include "ZombieEntity.h"
+#include "CreeperEntity.h"
 
 #include "HandHeldBlock.h"
 #include "HandHeldItem.h"
@@ -163,6 +164,23 @@ void CPlayerEntity::UpdateGUI()
                 "02_TEST_ENTITY", &Desc))
             {
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CZombieEntity>(handle.value()))
+                {
+                    pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+                    //pObj->SetPlayer(GetHandle());
+                }
+            }
+        }
+    }
+
+    if (ImGui::Button("spawnCreeper"))
+    {
+        {
+            E::CCreeperEntity::DESC Desc{};
+            Desc.sObjectTag = "Creeper";
+            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CreeperEntity",
+                "02_TEST_ENTITY", &Desc))
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCreeperEntity>(handle.value()))
                 {
                     pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
                     //pObj->SetPlayer(GetHandle());
