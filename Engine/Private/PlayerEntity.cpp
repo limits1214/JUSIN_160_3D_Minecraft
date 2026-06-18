@@ -27,6 +27,7 @@
 #include "SkeletonEntity.h"
 #include "ZombieEntity.h"
 #include "CreeperEntity.h"
+#include "SpiderEntity.h"
 
 #include "HandHeldBlock.h"
 #include "HandHeldItem.h"
@@ -181,6 +182,23 @@ void CPlayerEntity::UpdateGUI()
                 "02_TEST_ENTITY", &Desc))
             {
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCreeperEntity>(handle.value()))
+                {
+                    pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+                    //pObj->SetPlayer(GetHandle());
+                }
+            }
+        }
+    }
+
+    if (ImGui::Button("spawnSpider"))
+    {
+        {
+            E::CSpiderEntity::DESC Desc{};
+            Desc.sObjectTag = "Spider";
+            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_SpiderEntity",
+                "02_TEST_ENTITY", &Desc))
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CSpiderEntity>(handle.value()))
                 {
                     pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
                     //pObj->SetPlayer(GetHandle());

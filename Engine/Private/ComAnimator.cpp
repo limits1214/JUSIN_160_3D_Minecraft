@@ -275,6 +275,45 @@ void CComAnimator::HeadLookAt(_float fTimeDelta, _float3 vTarget)
     //}
 }
 
+void CComAnimator::SetSpiderDefaultLegPose(_float fTimeDelta)
+{
+    // 8개의 모든 다리 본을 가져옵니다.
+    auto pLeg0 = m_pComEntityModel->GetBone("leg0");
+    auto pLeg1 = m_pComEntityModel->GetBone("leg1");
+    auto pLeg2 = m_pComEntityModel->GetBone("leg2");
+    auto pLeg3 = m_pComEntityModel->GetBone("leg3");
+    auto pLeg4 = m_pComEntityModel->GetBone("leg4");
+    auto pLeg5 = m_pComEntityModel->GetBone("leg5");
+    auto pLeg6 = m_pComEntityModel->GetBone("leg6");
+    auto pLeg7 = m_pComEntityModel->GetBone("leg7");
+
+    if (!(pLeg0 && pLeg1 && pLeg2 && pLeg3 && pLeg4 && pLeg5 && pLeg6 && pLeg7))
+        return;
+
+    // 회전 구조: { Pitch(X), Yaw(Y), Roll(Z) }
+    // JSON의 축 기준에 맞춰 방향과 각도를 변환한 고정 포즈 값입니다.
+
+    // leg0 (오른쪽 앞다리) : Y=45도, Z=-45도
+    pLeg0->SetRotation({ 0.f, XMConvertToRadians(45.0f),  XMConvertToRadians(-45.0f) });
+    // leg1 (왼쪽 앞다리)   : Y=-45도, Z=45도
+    pLeg1->SetRotation({ 0.f, XMConvertToRadians(-45.0f), XMConvertToRadians(45.0f) });
+
+    // leg2 (오른쪽 중앞)   : Y=22.5도, Z=-33.3도
+    pLeg2->SetRotation({ 0.f, XMConvertToRadians(22.5f),  XMConvertToRadians(-33.3f) });
+    // leg3 (왼쪽 중앞)     : Y=-22.5도, Z=33.3도
+    pLeg3->SetRotation({ 0.f, XMConvertToRadians(-22.5f), XMConvertToRadians(33.3f) });
+
+    // leg4 (오른쪽 중뒤)   : Y=-22.5도, Z=-33.3도
+    pLeg4->SetRotation({ 0.f, XMConvertToRadians(-22.5f), XMConvertToRadians(-33.3f) });
+    // leg5 (왼쪽 중뒤)     : Y=22.5도, Z=33.3도
+    pLeg5->SetRotation({ 0.f, XMConvertToRadians(22.5f),  XMConvertToRadians(33.3f) });
+
+    // leg6 (오른쪽 뒷다리) : Y=-45도, Z=-45도
+    pLeg6->SetRotation({ 0.f, XMConvertToRadians(-45.0f), XMConvertToRadians(-45.0f) });
+    // leg7 (왼쪽 뒷다리)   : Y=45도, Z=45도
+    pLeg7->SetRotation({ 0.f, XMConvertToRadians(45.0f),  XMConvertToRadians(45.0f) });
+}
+
 HRESULT CComAnimator::Initialize(void* pArg)
 {
     auto pDesc = static_cast<DESC*>(pArg);

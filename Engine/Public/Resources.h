@@ -49,6 +49,7 @@
 #include "ResEnttGeoPlayerArmor.h"
 #include "ResEnttGeoZombie.h"
 #include "ResEnttGeoCreeper.h"
+#include "ResEnttGeoSpider.h"
 
 #include "ResFont.h"
 #include "ResFontCustom.h"

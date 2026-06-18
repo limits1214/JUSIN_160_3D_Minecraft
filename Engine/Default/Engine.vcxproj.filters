@@ -529,6 +529,12 @@
     <Filter Include="GameObject\Entity\Monster\Creeper">
       <UniqueIdentifier>{cd25a691-3cec-43d2-b043-dee4536d50d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\Spider">
+      <UniqueIdentifier>{e81b8cef-ffd0-431b-8153-640cd78fd007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\Spider">
+      <UniqueIdentifier>{cd03b60c-ace9-4ba8-a338-1ecee72fe389}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1032,6 +1038,12 @@
     <ClInclude Include="..\public\CreeperEntity.h">
       <Filter>GameObject\Entity\Monster\Creeper</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoSpider.h">
+      <Filter>Resource\Entity\Geometry\Spider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\SpiderEntity.h">
+      <Filter>GameObject\Entity\Monster\Spider</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1522,6 +1534,12 @@
     </ClCompile>
     <ClCompile Include="..\private\CreeperEntity.cpp">
       <Filter>GameObject\Entity\Monster\Creeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoSpider.cpp">
+      <Filter>Resource\Entity\Geometry\Spider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\SpiderEntity.cpp">
+      <Filter>GameObject\Entity\Monster\Spider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
