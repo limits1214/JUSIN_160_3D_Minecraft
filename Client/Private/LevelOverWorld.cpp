@@ -107,10 +107,10 @@ HRESULT CLevelOverWorld::Initialize()
 		Desc.eProj = E::CCameraObject::PROJ::ORTHOGRAPHIC;
 		Desc.vAt = { 0.f, 0.f, 0.f };
 		Desc.vEye = { 0.f, 10.f, -10.f };
-		Desc.fWidth = 64.f;
-		Desc.fHeight = 64.f;
+		Desc.fWidth = 128.f;
+		Desc.fHeight = 128.f;
 		Desc.fNear = 0.1f;
-		Desc.fFar = 200.f;
+		Desc.fFar = 300.f;
 		Desc.sObjectTag = "ShadowCam";
 
 		if (auto shadowCam = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_ShadowCamera",

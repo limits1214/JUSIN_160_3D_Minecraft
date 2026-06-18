@@ -1546,5 +1546,14 @@
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropBlock.hlsl">
       <Filter>100.Shaders\Item</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Shadow_Block.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\BlockAlphaTest.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Shadow_BlockAlphaTest.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -76,8 +76,12 @@ public:
 	
 	//float g_fTimeFactor = ; // 0.0f ~ 1.0f
 private:
-	float fDayDuration = 60.0f * 1.f;
+	float fDayDuration = 60.0f * 5.f;
 	_float m_fElapsedTime{10.f};
+
+private:
+	_float m_fShadowSnapTimer = 0.f;
+	_vector m_vShadowEye = XMVectorZero();
 
 public:
 	static UPtr<CWorldManager> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);

@@ -166,7 +166,9 @@ private:
 
 public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) override;
-	bool HasRenderPass(RENDERPASS ePass) const override { return ePass == RENDERPASS::DEFAULT; };
+	HRESULT RenderShadow(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
+	HRESULT RenderDefault(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
+	bool HasRenderPass(RENDERPASS ePass) const override { return (ePass == RENDERPASS::DEFAULT) || (ePass == RENDERPASS::SHADOW); };
 
 public:
 	//void InitialFillingBlockLighting(CChunk3* pChunk);
@@ -262,7 +264,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 1 };
+	int32_t m_iRenderDistance{ 15 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 //public:
@@ -285,8 +287,15 @@ private:
 	SPtr<CResSamplerState> m_pResSamplerPointWrap{};
 	SPtr<CResPixelShader> m_pResSolidBlockPixelShader{};
 	SPtr<CResVertexShader> m_pResSolidBlockVertexShader{};
+	SPtr<CResPixelShader> m_pResAlphaTestBlockPixelShader{};
+	SPtr<CResVertexShader> m_pResAlphaTestBlockVertexShader{};
 	SPtr<CResPixelShader> m_pResWaterBlockPixelShader{};
 	SPtr<CResVertexShader> m_pResWaterBlockVertexShader{};
+
+	SPtr<CResPixelShader> m_pResSolidShadowBlockPixelShader{};
+	SPtr<CResVertexShader> m_pResSolidShadowBlockVertexShader{};
+	SPtr<CResPixelShader> m_pResAlphaTestShadowBlockPixelShader{};
+	SPtr<CResVertexShader> m_pResAlphaTestShadowBlockVertexShader{};
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};
