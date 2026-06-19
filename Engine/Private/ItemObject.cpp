@@ -561,6 +561,21 @@ void CItemObject::RecipeInitialize()
         CItemObject::s_vecRecipies.push_back(recipe);
     }
 
+    // bread
+    {
+        ItemInfo wheat = ItemInfo(ITEM_TYPE::ITEM_Wheat, 1);
+        ItemInfo res = ItemInfo(ITEM_TYPE::ITEM_Bread, 1);
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = wheat;
+        recipe.pattern[1].first = wheat;
+        recipe.pattern[2].first = wheat;
+       
+        recipe.result = res;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
 }
 
 CItemObject::CItemObject()

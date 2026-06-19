@@ -123,6 +123,7 @@ std::optional<CItemObject::ItemInfo> CFurnaceStorage::GetSmeltResult(const CItem
         //    return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Glass, 1 };
         //case CBlock3::TYPE::COBBLESTONE:
         //    return CItemObject::ItemInfo{ CBlock3{ CBlock3::TYPE::STONE }, 1 };
+
         default:
             return std::nullopt;
         }
@@ -137,6 +138,15 @@ std::optional<CItemObject::ItemInfo> CFurnaceStorage::GetSmeltResult(const CItem
         return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Gold_Ingot, 1 };
     case CItemObject::ITEM_TYPE::ITEM_Raw_Copper:
         return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Copper_Ingot, 1 };
+
+    case CItemObject::ITEM_TYPE::ITEM_Raw_Beef:
+        return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Beef_Cooked, 1 };
+    case CItemObject::ITEM_TYPE::ITEM_Raw_Chicken:
+        return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Chicken_Cooked, 1 };
+    case CItemObject::ITEM_TYPE::ITEM_Raw_Porkchop:
+        return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Porkchop_Cooked, 1 };
+    case CItemObject::ITEM_TYPE::ITEM_Raw_Mutton:
+        return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Mutton_Cooked, 1 };
     default:
         return std::nullopt;
     }

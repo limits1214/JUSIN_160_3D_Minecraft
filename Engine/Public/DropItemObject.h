@@ -162,6 +162,31 @@ public:
 
 			case Engine::CItemObject::ITEM_TYPE::ITEM_Gunpowder:
 				return  "01_DROPITEM_Gunpowder";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Chicken:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Chicken_Cooked:
+				return  "01_DROPITEM_Chicken";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Beef:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Beef_Cooked:
+				return  "01_DROPITEM_Beef";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Porkchop:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Porkchop_Cooked:
+				return  "01_DROPITEM_Porkchop";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Mutton:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Mutton_Cooked:
+				return  "01_DROPITEM_Mutton";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Apple:
+				return  "01_DROPITEM_Apple";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Wheat:
+				return  "01_DROPITEM_Wheat";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Bread:
+				return  "01_DROPITEM_Bread";
 			}
 		}
 		return "01_DROPBLOCK_CUBE";
@@ -302,6 +327,31 @@ public:
 
 			case Engine::CItemObject::ITEM_TYPE::ITEM_Gunpowder:
 				return  "Gunpowder";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Chicken:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Chicken_Cooked:
+				return  "Chicken";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Beef:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Beef_Cooked:
+				return  "Beef";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Porkchop:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Porkchop_Cooked:
+				return  "Porkchop";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Mutton:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Mutton_Cooked:
+				return  "Mutton";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Apple:
+				return  "Apple";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Wheat:
+				return  "Wheat";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Bread:
+				return  "Bread";
 			}
 		}
 		return "CubeItemDirt";
