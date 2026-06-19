@@ -14,27 +14,60 @@ private:
 	static CB_PER_UI GetPerUIByType(CBlock3::TYPE eType)
 	{
 		CB_PER_UI perUI{};
+		perUI.texCoord = { 0 / 300.f, 0 / 300.f };
+		perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 		switch (eType)
 		{
 		case CBlock3::TYPE::DIRT:
 			perUI.texIndex = PackTexId(17, 0);
-			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
-			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
 		case CBlock3::TYPE::COBBLESTONE:
 			perUI.texIndex = PackTexId(17, 1);
-			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
-			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
 		case CBlock3::TYPE::SAND:
 			perUI.texIndex = PackTexId(17, 2);
-			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
-			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
 			return perUI;
 		case CBlock3::TYPE::TNT:
 			perUI.texIndex = PackTexId(17, 3);
-			perUI.texCoord = { 0 / 300.f, 0 / 300.f };
-			perUI.uvSize = { 300.f / 300.f, 300.f / 300.f };
+			return perUI;
+		case CBlock3::TYPE::LOG_ACACIA:
+			perUI.texIndex = PackTexId(17, 4);
+			return perUI;
+		case CBlock3::TYPE::PLANK_ACACIA:
+			perUI.texIndex = PackTexId(17, 5);
+			return perUI;
+		case CBlock3::TYPE::LOG_BIRCH:
+			perUI.texIndex = PackTexId(17, 6);
+			return perUI;
+		case CBlock3::TYPE::PLANK_BIRCH:
+			perUI.texIndex = PackTexId(17, 7);
+			return perUI;
+		case CBlock3::TYPE::LOG_CHERRY:
+			perUI.texIndex = PackTexId(17, 8);
+			return perUI;
+		case CBlock3::TYPE::PLANK_CHERRY:
+			perUI.texIndex = PackTexId(17, 9);
+			return perUI;
+		case CBlock3::TYPE::LOG_OAK:
+			perUI.texIndex = PackTexId(17, 10);
+			return perUI;
+		case CBlock3::TYPE::PLANK_OAK:
+			perUI.texIndex = PackTexId(17, 11);
+			return perUI;
+		case CBlock3::TYPE::OBSIDIAN:
+			perUI.texIndex = PackTexId(17, 12);
+			return perUI;
+		case CBlock3::TYPE::GRASS:
+			perUI.texIndex = PackTexId(17, 13);
+			return perUI;
+		case CBlock3::TYPE::CRAFTING_TABLE:
+			perUI.texIndex = PackTexId(17, 14);
+			return perUI;
+		case CBlock3::TYPE::CHEST:
+			perUI.texIndex = PackTexId(17, 15);
+			return perUI;
+		case CBlock3::TYPE::FURNACE:
+			perUI.texIndex = PackTexId(17, 16);
 			return perUI;
 		case CBlock3::TYPE::END:
 			return perUI;
