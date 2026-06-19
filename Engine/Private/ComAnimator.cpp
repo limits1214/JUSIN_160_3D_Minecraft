@@ -314,6 +314,71 @@ void CComAnimator::SetSpiderDefaultLegPose(_float fTimeDelta)
     pLeg7->SetRotation({ 0.f, XMConvertToRadians(45.0f),  XMConvertToRadians(45.0f) });
 }
 
+void CComAnimator::SetEnderManBasePose(_float fTimeDelta)
+{
+    auto pBody = m_pComEntityModel->GetBone("body");
+    auto pHead = m_pComEntityModel->GetBone("head");
+    auto pLeftArm = m_pComEntityModel->GetBone("leftArm");
+    auto pRightArm = m_pComEntityModel->GetBone("rightArm");
+    auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg");
+    auto pRightLeg = m_pComEntityModel->GetBone("rightLeg");
+
+    if (!(pBody && pHead && pLeftArm && pRightArm && pLeftLeg && pRightLeg))
+        return;
+
+    const _float fPixelScale = 1.0f / 16.0f;
+
+    // 1. 모든 본의 평행이동(Translation) 채널을 원점(0)으로 리셋합니다.
+    // 지오메트리 파싱 단계에서 이미 완벽한 높이와 위치로 뼈대가 조립되어 있기 때문입니다.
+    pBody->SetTranslation({ 0.0f, 0.0f, 0.0f });
+    pHead->SetTranslation({ 0.0f, 0.0f, 0.0f });
+    pLeftArm->SetTranslation({ 0.0f, 0.0f, 0.0f });
+    pLeftLeg->SetTranslation({ 0.0f, 0.0f, 0.0f });
+    pRightLeg->SetTranslation({ 0.0f, 0.0f, 0.0f });
+
+    // 2. [유일한 예외] 오른팔(rightArm) 보정
+    // RightToLeft()의 반전 연산 때문에 오른팔 피벗이 몸통 안쪽(+3.0)으로 파고들었습니다.
+    // 이를 왼팔(-5.0)과 완벽한 대칭점인 바깥쪽(+5.0 위치)으로 밀어내기 위해 X축 오프셋을 줍니다.
+    // 공식: (목표 대칭 위치 5.0 - RightToLeft로 변환된 현재 피벗 X) * fPixelScale
+    _float rightArmOffsetX = (5.0f * fPixelScale) - pRightArm->GetPivot().x;
+
+    // 오른팔만 X축으로 밀어주고 Y, Z는 원래 지오메트리를 유지(0.0)합니다.
+    pRightArm->SetTranslation({ rightArmOffsetX, 0.0f, 0.0f });
+}
+
+void CComAnimator::HumanoidBob(_float fTimeDelta)
+{// 양팔 본을 가져옵니다.
+    auto pLeftArm = m_pComEntityModel->GetBone("leftArm");
+    auto pRightArm = m_pComEntityModel->GetBone("rightArm");
+
+    if (!(pLeftArm && pRightArm))
+        return;
+
+    // 실시간 타이머 누적 (query.life_time 대용)
+    m_fElapsed += fTimeDelta;
+
+    // [JSON 스크립트 공식 이식]
+    // 103.2f는 속도 계수, 2.865f는 최대 회전 각도(도 단위)입니다.
+    // 마인크래프트의 공식 연산 결과는 '도(Degree)' 단위이므로 DirectXMath에 넣기 전 라디안으로 변환해야 합니다.
+
+    // 1. 공통 cos 값 계산
+    _float cosValue = cosf(m_fElapsed * 103.2f) * 2.865f + 2.865f;
+
+    // 2. 오른팔 (rightArm) : (cos * 2.865) + 2.865 -> Z축 정방향 회전
+    _float rightDegZ = cosValue;
+
+    // 3. 왼팔 (leftArm) : ((cos * 2.865) + 2.865) * -1.0 -> Z축 역방향 회전 (좌우 대칭)
+    _float leftDegZ = cosValue * -1.0f;
+
+    // 변환 행렬 구조에 주입 (Pitch=0, Yaw=0, Roll=Z축회전)
+    // 기존에 BasePose나 다른 애니메이션에서 지정한 Pitch/Yaw 회전이 있다면 
+    // GetRotation()을 받아와서 Z값만 변경(+= 또는 대입)해주는 구조가 안전합니다.
+
+    // 여기서는 밥 애니메이션 고유의 로컬 회전만 대입하는 기준입니다.
+    pLeftArm->SetRotation({ 0.0f, 0.0f, XMConvertToRadians(leftDegZ) });
+    pRightArm->SetRotation({ 0.0f, 0.0f, XMConvertToRadians(rightDegZ) });
+}
+
 HRESULT CComAnimator::Initialize(void* pArg)
 {
     auto pDesc = static_cast<DESC*>(pArg);

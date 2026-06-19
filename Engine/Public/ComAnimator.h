@@ -25,6 +25,9 @@ public:
 	void HeadLookAt(_float fTimeDelta, _float3 vPos);
 
 	void SetSpiderDefaultLegPose(_float fTimeDelta);
+	void SetEnderManBasePose(_float fTimeDelta);
+
+	void HumanoidBob(_float fTimeDelta);
 private:
 	HRESULT Initialize(void* pArg) override;
 

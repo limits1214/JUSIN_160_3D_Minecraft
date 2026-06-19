@@ -32,7 +32,7 @@ void CWorldManager::UpdateGUI()
 
 void CWorldManager::Update(_float fTimeDelta)
 {
-	m_fElapsedTime += fTimeDelta;
+	//m_fElapsedTime += fTimeDelta;
 
 	UpdateSunShadowCamera(fTimeDelta);
 

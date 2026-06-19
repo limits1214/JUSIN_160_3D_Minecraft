@@ -257,6 +257,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\DropBlock.h" />
     <ClInclude Include="..\public\DropItem.h" />
     <ClInclude Include="..\public\DropItemObject.h" />
+    <ClInclude Include="..\public\EnderManEntity.h" />
     <ClInclude Include="..\Public\Engine_Base.h" />
     <ClInclude Include="..\Public\Engine_Defines.h" />
     <ClInclude Include="..\Public\Engine_Enum.h" />
@@ -285,6 +286,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\Item.h" />
     <ClInclude Include="..\public\ResCloudVIBuffer.h" />
     <ClInclude Include="..\public\ResEnttGeoCreeper.h" />
+    <ClInclude Include="..\public\ResEnttGeoEnderMan.h" />
     <ClInclude Include="..\public\ResEnttGeoSpider.h" />
     <ClInclude Include="..\public\ResEnttGeoZombie.h" />
     <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
@@ -521,6 +523,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\CreeperEntity.cpp" />
     <ClCompile Include="..\private\DropBlock.cpp" />
     <ClCompile Include="..\private\DropItemObject.cpp" />
+    <ClCompile Include="..\private\EnderManEntity.cpp" />
     <ClCompile Include="..\private\FallingVoxel.cpp" />
     <ClCompile Include="..\private\FurnaceStorage.cpp" />
     <ClCompile Include="..\private\HandHeldBlock.cpp" />
@@ -529,6 +532,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\ResCloudVIBuffer.cpp" />
     <ClCompile Include="..\private\ResEnttGeoCreeper.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoEnderMan.cpp" />
     <ClCompile Include="..\private\ResEnttGeoSpider.cpp" />
     <ClCompile Include="..\private\ResEnttGeoZombie.cpp" />
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />

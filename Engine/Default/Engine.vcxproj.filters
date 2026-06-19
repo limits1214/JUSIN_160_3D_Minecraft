@@ -535,6 +535,12 @@
     <Filter Include="GameObject\Entity\Monster\Spider">
       <UniqueIdentifier>{cd03b60c-ace9-4ba8-a338-1ecee72fe389}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\EnderMan">
+      <UniqueIdentifier>{bcc037c4-5ce8-4bfe-9c43-3795cea684ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\EnderMan">
+      <UniqueIdentifier>{4283fb75-37d9-4bff-9bec-f76125a7e5b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1044,6 +1050,12 @@
     <ClInclude Include="..\public\SpiderEntity.h">
       <Filter>GameObject\Entity\Monster\Spider</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoEnderMan.h">
+      <Filter>Resource\Entity\Geometry\EnderMan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\EnderManEntity.h">
+      <Filter>GameObject\Entity\Monster\EnderMan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1540,6 +1552,12 @@
     </ClCompile>
     <ClCompile Include="..\private\SpiderEntity.cpp">
       <Filter>GameObject\Entity\Monster\Spider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoEnderMan.cpp">
+      <Filter>Resource\Entity\Geometry\EnderMan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\EnderManEntity.cpp">
+      <Filter>GameObject\Entity\Monster\EnderMan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

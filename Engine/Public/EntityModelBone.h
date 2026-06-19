@@ -80,7 +80,7 @@ public:
         auto r = XMMatrixRotationX(m_Rotation.x) * XMMatrixRotationY(m_Rotation.y) * XMMatrixRotationZ(m_Rotation.z);
         auto s = XMMatrixScaling(m_Scale.x, m_Scale.y, m_Scale.z);
         auto rs = s * r * t;
-        XMStoreFloat4x4(&m_TransformationMatrix, s * r * t);
+        XMStoreFloat4x4(&m_TransformationMatrix, rs);
     }
 
     void ResetChannels()

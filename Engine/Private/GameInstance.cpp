@@ -1752,6 +1752,15 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 7: EnderMan
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/EnderMan/enderman.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
 
 
 		// Entity_64_32_Ted2d_Array
@@ -1913,6 +1922,17 @@ HRESULT CGameInstance::InitializeMCResource()
 				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Spider", CResEnttVIBuffer::Create()))
 				{
 					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Spider"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "EnderMan", CResEnttGeoEnderMan::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "EnderMan", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "EnderMan"} });
 				}
 			}
 		}
