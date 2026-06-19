@@ -1578,6 +1578,71 @@ HRESULT CGameInstance::InitializeMCResource()
 				// 3
 				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/TNT.png");
 			}
+
+			{
+				// 4
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Acacia_Log.png");
+			}
+
+			{
+				// 5
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Acacia_Planks.png");
+			}
+
+			{
+				// 6
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Birch_Log.png");
+			}
+
+			{
+				// 7
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Birch_Planks.png");
+			}
+
+			{
+				// 8
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Cherry_Log.png");
+			}
+
+			{
+				// 9
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Cherry_Planks.png");
+			}
+
+			{
+				// 10
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Oak_Log.png");
+			}
+
+			{
+				// 11
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Oak_Planks.png");
+			}
+
+			{
+				// 12
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Obsidian.png");
+			}
+
+			{
+				// 13
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Glass.png");
+			}
+
+			{
+				// 14
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Crafting_Table.png");
+			}
+
+			{
+				// 15
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Chest.png");
+			}
+
+			{
+				// 16
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Furnace.png");
+			}
 		}
 
 

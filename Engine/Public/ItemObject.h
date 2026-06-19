@@ -154,7 +154,7 @@ public:
 			switch (info.block->GetType())
 			{
 			case CBlock3::TYPE::DIRT:
-				return L"흙흙";
+				return L"흙";
 			case CBlock3::TYPE::LOG_ACACIA:
 				return L"아카시아나무";
 			case CBlock3::TYPE::LOG_BIRCH:
