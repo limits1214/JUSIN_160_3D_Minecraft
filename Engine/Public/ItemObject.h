@@ -99,6 +99,13 @@ public:
 		ITEM_String,
 		ITEM_Feather,
 		ITEM_Flint,
+
+		ITEM_Bucket_Empty,
+		ITEM_Bucket_Water,
+		ITEM_Bucket_Lava,
+
+		ITEM_FlintAndSteel,
+		ITEM_Gunpowder,
 		END
 	};
 	struct ItemInfo
@@ -342,6 +349,10 @@ public:
 		case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1:
 		case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2:
 
+		case CItemObject::ITEM_TYPE::ITEM_Bucket_Water:
+		case CItemObject::ITEM_TYPE::ITEM_Bucket_Lava:
+
+		case CItemObject::ITEM_TYPE::ITEM_FlintAndSteel:
 			return false;
 		}
 		return true;
@@ -519,6 +530,18 @@ public:
 			return  PackTexId(6, 78);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Feather:
 			return  PackTexId(6, 79);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Empty:
+			return  PackTexId(6, 80);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Water:
+			return  PackTexId(6, 81);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Lava:
+			return  PackTexId(6, 82);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_FlintAndSteel:
+			return  PackTexId(6, 83);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Gunpowder:
+			return  PackTexId(6, 84);
 		}
 		return 0;
 	}

@@ -151,6 +151,17 @@ public:
 				return  "01_DROPITEM_Flint";
 			case Engine::CItemObject::ITEM_TYPE::ITEM_Feather:
 				return  "01_DROPITEM_Feather";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Empty:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Water:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Lava:
+				return  "01_DROPITEM_Bucket";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_FlintAndSteel:
+				return  "01_DROPITEM_FlintAndSteel";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Gunpowder:
+				return  "01_DROPITEM_Gunpowder";
 			}
 		}
 		return "01_DROPBLOCK_CUBE";
@@ -280,6 +291,17 @@ public:
 				return  "Flint";
 			case Engine::CItemObject::ITEM_TYPE::ITEM_Feather:
 				return  "Feather";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Empty:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Water:
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Bucket_Lava:
+				return  "Bucket";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_FlintAndSteel:
+				return  "FlintAndSteel";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Gunpowder:
+				return  "Gunpowder";
 			}
 		}
 		return "CubeItemDirt";

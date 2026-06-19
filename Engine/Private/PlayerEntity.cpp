@@ -760,6 +760,8 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
 
         if (pDestroyStage->GetFrameIndex() == 9)
         {
+            CGameInstance::Get().AddParticleRenderDestruct(res.block.value(), { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f }, 10);
+
             CBlock3 newBlock{};
             newBlock.SetType(CBlock3::TYPE::AIR);
             CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, newBlock);
@@ -2146,60 +2148,15 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
 
 void CPlayerEntity::ReadyPlayerItem()
 {
-    CItemObject::ItemInfo info{};
-    info.eItemType = CItemObject::ITEM_TYPE::ITEM_WoodPickaxe;
-    m_ItemArrHotbar[0] = info;
-
-    CItemObject::ItemInfo stick{};
-    stick.eItemType = CItemObject::ITEM_TYPE::ITEM_Stick;
-    stick.iCnt = 1;
-    m_ItemArrHotbar[1] = stick;
-
-    CItemObject::ItemInfo coal{};
-    coal.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
-    coal.iCnt = 1;
-    m_ItemArrHotbar[2] = coal;
-
-
-    CItemObject::ItemInfo craftingtable{};
-    craftingtable.block = CBlock3(CBlock3::TYPE::CRAFTING_TABLE);
-    craftingtable.iCnt = 1;
-    m_ItemArrHotbar[3] = craftingtable;
-
-    {
-        CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Feather;
-        item.iCnt = 1;
-        m_ItemArrHotbar[4] = item;
-    }
-
-    {
-        CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Flint;
-        item.iCnt = 1;
-        m_ItemArrHotbar[5] = item;
-    }
-
-    {
-        CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_String;
-        item.iCnt = 1;
-        m_ItemArrHotbar[6] = item;
-    }
-
-    {
-        CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Netherite_Ingot;
-        item.iCnt = 64;
-        m_ItemArrHotbar[7] = item;
-    }
-
-    {
-        CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Diamond;
-        item.iCnt = 64;
-        m_ItemArrHotbar[8] = item;
-    }
+    m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_WoodPickaxe };
+    m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Stick, 64 };
+    m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 1 };
+    m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::SAND), 64 };
+    m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Feather, 64 };
+    m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Flint, 64 };
+    m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_String, 64 };
+    m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Gunpowder, 64 };
+    m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
 }
 
 HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
