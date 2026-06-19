@@ -106,6 +106,19 @@ public:
 
 		ITEM_FlintAndSteel,
 		ITEM_Gunpowder,
+
+		ITEM_Raw_Beef,
+		ITEM_Raw_Chicken,
+		ITEM_Raw_Porkchop,
+		ITEM_Raw_Mutton,
+
+		ITEM_Beef_Cooked,
+		ITEM_Chicken_Cooked,
+		ITEM_Porkchop_Cooked,
+		ITEM_Mutton_Cooked,
+		ITEM_Apple,
+		ITEM_Wheat,
+		ITEM_Bread,
 		END
 	};
 	struct ItemInfo
@@ -542,6 +555,33 @@ public:
 			return  PackTexId(6, 83);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Gunpowder:
 			return  PackTexId(6, 84);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Beef:
+			return  PackTexId(6, 4);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Chicken:
+			return  PackTexId(6, 3);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Porkchop:
+			return  PackTexId(6, 2);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Raw_Mutton:
+			return  PackTexId(6, 5);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Beef_Cooked:
+			return  PackTexId(6, 85);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Chicken_Cooked:
+			return  PackTexId(6, 86);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Porkchop_Cooked:
+			return  PackTexId(6, 87);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Mutton_Cooked:
+			return  PackTexId(6, 88);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Apple:
+			return  PackTexId(6, 89);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Wheat:
+			return  PackTexId(6, 90);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Bread:
+			return  PackTexId(6, 91);
 		}
 		return 0;
 	}

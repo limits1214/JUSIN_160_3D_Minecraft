@@ -2152,10 +2152,10 @@ void CPlayerEntity::ReadyPlayerItem()
     m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Stick, 64 };
     m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 1 };
     m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::SAND), 64 };
-    m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Feather, 64 };
-    m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Flint, 64 };
-    m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_String, 64 };
-    m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Gunpowder, 64 };
+    m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Apple, 64 };
+    m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Wheat, 64 };
+    m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bread, 64 };
+    m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Mutton, 64 };
     m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
 }
 

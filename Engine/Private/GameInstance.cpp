@@ -2062,22 +2062,22 @@ HRESULT CGameInstance::InitializeMCResource()
 
 		// 2: porkchop_raw
 		{
-			AddTexItem16_16("./Resources/Texture/Item/porkchop_raw.png", "PorkchopRaw");
+			AddTexItem16_16("./Resources/Texture/Item/porkchop_raw.png", "Porkchop");
 		}
 
 		// 3: chicken_raw
 		{
-			AddTexItem16_16("./Resources/Texture/Item/chicken_raw.png", "ChickenRaw");
+			AddTexItem16_16("./Resources/Texture/Item/chicken_raw.png", "Chicken");
 		}
 
 		// 4: beef_raw.png
 		{
-			AddTexItem16_16("./Resources/Texture/Item/beef_raw.png", "BeefRaw");
+			AddTexItem16_16("./Resources/Texture/Item/beef_raw.png", "Beef");
 		}
 
 		// 5: mutton_raw.png
 		{
-			AddTexItem16_16("./Resources/Texture/Item/mutton_raw.png", "MuttonRaw");
+			AddTexItem16_16("./Resources/Texture/Item/mutton_raw.png", "Mutton");
 		}
 
 		// 6: copperHelmet
@@ -2474,6 +2474,43 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			AddTexItem16_16("./Resources/Texture/Item/gunpowder.png", "Gunpowder");
 		}
+
+		// 85: beef_cooked.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/beef_cooked.png");
+		}
+
+		// 86: chicken_cooked.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/chicken_cooked.png");
+		}
+
+		// 87: porkchop_cooked.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/porkchop_cooked.png");
+		}
+
+		// 88: mutton_cooked.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/mutton_cooked.png");
+		}
+
+		// 89: apple.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/apple.png", "Apple");
+		}
+
+		// 90: wheat.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/wheat.png", "Wheat");
+		}
+
+		// 91: bread.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/bread.png", "Bread");
+		}
+
+
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
 		{
