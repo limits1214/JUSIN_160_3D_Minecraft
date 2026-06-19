@@ -2025,137 +2025,369 @@ HRESULT CGameInstance::InitializeMCResource()
 
 	// initialize item texture
 	{
+		uint32_t countingResourceIdx{};
+		auto AddTexItem16_16 = [&](const _string& path, const char* pItemVIBufferTag = nullptr)
+			{
+				auto pTexture = CResTexture2D::Create(path);
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", pTexture);
+
+
+				if (pItemVIBufferTag)
+				{
+					if (auto res = AddResource("MC_ITEM_VIBuffer", pItemVIBufferTag, CResExtrudedItemVIBuffer::Create()))
+					{
+						if (FAILED(res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = countingResourceIdx })))
+						{
+							return E_FAIL;
+						};
+					}
+				}
+				++countingResourceIdx;
+				return S_OK;
+			};
 		
 		// 0: woodPickaxe
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Pickaxe/wood_pickaxe.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "WoodPickaxe", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 0 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/wood_pickaxe.png", "WoodPickaxe");
 		}
 
 		// 1: string
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/string.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "String", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 1 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/string.png", "String");
 		}
 
 		// 2: porkchop_raw
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/porkchop_raw.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "PorkchopRaw", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 2 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/porkchop_raw.png", "PorkchopRaw");
 		}
 
 		// 3: chicken_raw
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/chicken_raw.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "ChickenRaw", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 3 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/chicken_raw.png", "ChickenRaw");
 		}
 
 		// 4: beef_raw.png
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/beef_raw.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "BeefRaw", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 4 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/beef_raw.png", "BeefRaw");
 		}
 
 		// 5: mutton_raw.png
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/mutton_raw.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/mutton_raw.png", "MuttonRaw");
 		}
 
 		// 6: copperHelmet
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Helmet/copper_helmet.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "CopperHelmet", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 6  });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/copper_helmet.png", "CopperHelmet");
 		}
 
 		// 7: copper_pickaxe
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Pickaxe/copper_pickaxe.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				//if (auto res = AddResource("MC_ITEM_VIBuffer", "CopperHelmet", CResExtrudedItemVIBuffer::Create()))
-				//{
-				//	res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 6 , .texIndex = PackTexId(6, 6) });
-				//}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/copper_pickaxe.png");
 		}
 
 		// 8: coal
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/coal.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "Coal", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 8 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/coal.png", "Coal");
 		}
 
 		// 9: stick.png
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/stick.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "Stick", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 9 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/stick.png", "Stick");
 		}
 
 		// 10: torch_on.png
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/torch_on.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "Torch", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 10 });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/torch_on.png", "Torch");
+		}
+
+		// 11: stone_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/stone_pickaxe.png");
+		}
+
+		// 12: iron_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/iron_pickaxe.png");
+		}
+
+		// 13: gold_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/gold_pickaxe.png");
+		}
+
+		// 14: diamond_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/diamond_pickaxe.png");
+		}
+
+		// 15: netherite_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/netherite_pickaxe.png");
+		}
+
+		// 16: iron_helmet.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/iron_helmet.png");
+		}
+
+		// 17: gold_helmet.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/gold_helmet.png");
+		}
+
+		// 18: diamond_helmet.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/diamond_helmet.png");
+		}
+
+		// 19: netherite_helmet.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/netherite_helmet.png");
+		}
+
+		// 20: copper_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/copper_chestplate.png", "Chestplate");
+		}
+
+		// 21: iron_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/iron_chestplate.png");
+		}
+
+		// 22: gold_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/gold_chestplate.png");
+		}
+
+		// 23: diamond_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/diamond_chestplate.png");
+		}
+
+		// 24: netherite_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/netherite_chestplate.png");
+		}
+
+		// 25: copper_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/copper_leggings.png", "Leggings");
+		}
+
+		// 26: iron_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/iron_leggings.png");
+		}
+
+		// 27: gold_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/gold_leggings.png");
+		}
+
+		// 28: diamond_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/diamond_leggings.png");
+		}
+
+		// 29: netherite_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/netherite_leggings.png");
+		}
+
+		// 30: copper_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/copper_boots.png", "Boots");
+		}
+
+		// 31: iron_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/iron_boots.png");
+		}
+
+		// 32: gold_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/gold_boots.png");
+		}
+
+		// 33: diamond_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/diamond_boots.png");
+		}
+
+		// 34: netherite_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/netherite_boots.png");
+		}
+
+		// 35: wood_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/wood_axe.png", "Axe");
+		}
+
+		// 36: stone_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/stone_axe.png");
+		}
+
+		// 37: copper_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/copper_axe.png");
+		}
+
+		// 38: iron_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/iron_axe.png");
+		}
+
+		// 39: gold_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/gold_axe.png");
+		}
+
+		// 40: diamond_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/diamond_axe.png");
+		}
+
+		// 41: netherite_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/netherite_axe.png");
+		}
+
+		// 42: wood_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/wood_hoe.png", "Hoe");
+		}
+
+		// 43: stone_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/stone_hoe.png");
+		}
+
+		// 44: copper_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/copper_hoe.png");
+		}
+
+		// 45: iron_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/iron_hoe.png");
+		}
+
+		// 46: gold_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/gold_hoe.png");
+		}
+
+		// 47: diamond_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/diamond_hoe.png");
+		}
+
+		// 48: netherite_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/netherite_hoe.png");
+		}
+
+		// 49: wood_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/wood_shovel.png", "Shovel");
+		}
+
+		// 50: stone_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/stone_shovel.png");
+		}
+
+		// 51: copper_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/copper_shovel.png");
+		}
+
+		// 52: iron_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/iron_shovel.png");
+		}
+
+		// 53: gold_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/gold_shovel.png");
+		}
+
+		// 54: diamond_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/diamond_shovel.png");
+		}
+
+		// 55: netherite_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/netherite_shovel.png");
+		}
+
+		// 56: wood_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/wood_sword.png", "Sword");
+		}
+
+		// 57: stone_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/stone_sword.png");
+		}
+
+		// 58: copper_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/copper_sword.png");
+		}
+
+		// 59: iron_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/iron_sword.png");
+		}
+
+		// 60: gold_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/gold_sword.png");
+		}
+
+		// 61: diamond_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/diamond_sword.png");
+		}
+
+		// 62: netherite_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/netherite_sword.png");
+		}
+
+		// 63: bow_standby.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Bow/bow_standby.png", "Bow_Standby");
+		}
+
+		// 64: bow_pulling_0.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Bow/bow_pulling_0.png", "Bow_Pulling_0");
+		}
+
+		// 65: bow_pulling_1.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Bow/bow_pulling_1.png", "Bow_Pulling_1");
+		}
+
+		// 66: bow_pulling_2.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Bow/bow_pulling_2.png", "Bow_Pulling_2");
+		}
+
+		// 67: arrow.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/arrow.png", "Arrow");
 		}
 
 
