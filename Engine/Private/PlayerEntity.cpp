@@ -2166,21 +2166,23 @@ void CPlayerEntity::ReadyPlayerItem()
     craftingtable.iCnt = 1;
     m_ItemArrHotbar[3] = craftingtable;
 
-    CItemObject::ItemInfo chest{};
-    chest.block = CBlock3(CBlock3::TYPE::CHEST);
-    chest.iCnt = 1;
-    m_ItemArrHotbar[4] = chest;
+    {
+        CItemObject::ItemInfo item{};
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Feather;
+        item.iCnt = 1;
+        m_ItemArrHotbar[4] = item;
+    }
 
     {
         CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperHelmet;
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Flint;
         item.iCnt = 1;
         m_ItemArrHotbar[5] = item;
     }
 
     {
         CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperChestplate;
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_String;
         item.iCnt = 1;
         m_ItemArrHotbar[6] = item;
     }

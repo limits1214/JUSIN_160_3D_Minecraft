@@ -2440,6 +2440,16 @@ HRESULT CGameInstance::InitializeMCResource()
 			AddTexItem16_16("./Resources/Texture/Item/netherite_ingot.png");
 		}
 
+		// 78: flint.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flint.png", "Flint");
+		}
+
+		// 79:feather.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/feather.png", "Feather");
+		}
+
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
 		{
