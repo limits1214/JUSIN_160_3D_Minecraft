@@ -90,6 +90,8 @@ public:
 		ITEM_Diamond,
 		ITEM_NetheriteScrap,
 
+		ITEM_Charcoal,
+
 		ITEM_Coal,
 		ITEM_Stick,
 		ITEM_Torch,
@@ -493,6 +495,9 @@ public:
 			return  PackTexId(6, 74);
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteScrap:
 			return  PackTexId(6, 75);
+
+		case CItemObject::ITEM_TYPE::ITEM_Charcoal:
+			return  PackTexId(6, 76);
 
 
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Coal:

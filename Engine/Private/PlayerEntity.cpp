@@ -878,6 +878,22 @@ void CPlayerEntity::DestroyStageEndItemConverter(CItemObject::ItemInfo& info)
         info.block = std::nullopt;
         info.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
         return;
+    case CBlock3::TYPE::STONE_COPPER_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Copper;
+        return;
+    case CBlock3::TYPE::STONE_IRON_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Iron;
+        return;
+    case CBlock3::TYPE::STONE_GOLD_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Gold;
+        return;
+    case CBlock3::TYPE::STONE_DIAMOND_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Diamond;
+        return;
     case CBlock3::TYPE::TORCH_ON:
         info.block = std::nullopt;
         info.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
@@ -2178,7 +2194,7 @@ void CPlayerEntity::ReadyPlayerItem()
 
     {
         CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperBoots;
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Charcoal;
         item.iCnt = 1;
         m_ItemArrHotbar[8] = item;
     }

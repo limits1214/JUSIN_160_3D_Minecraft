@@ -134,6 +134,9 @@ public:
 			case CItemObject::ITEM_TYPE::ITEM_NetheriteScrap:
 				return "01_DROPITEM_NetheriteScrap";
 
+			case CItemObject::ITEM_TYPE::ITEM_Charcoal:
+				return "01_DROPITEM_Charcoal";
+
 			case CItemObject::ITEM_TYPE::ITEM_Coal:
 				return "01_DROPITEM_Coal";
 			case CItemObject::ITEM_TYPE::ITEM_Stick:
@@ -251,6 +254,9 @@ public:
 				return "Diamond";
 			case CItemObject::ITEM_TYPE::ITEM_NetheriteScrap:
 				return "NetheriteScrap";
+
+			case CItemObject::ITEM_TYPE::ITEM_Charcoal:
+				return "Charcoal";
 
 			case CItemObject::ITEM_TYPE::ITEM_Coal:
 				return "Coal";

@@ -2430,6 +2430,11 @@ HRESULT CGameInstance::InitializeMCResource()
 			AddTexItem16_16("./Resources/Texture/Item/netherite_scrap.png", "NetheriteScrap");
 		}
 
+		// 76: charcoal.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/charcoal.png", "Charcoal");
+		}
+
 
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
