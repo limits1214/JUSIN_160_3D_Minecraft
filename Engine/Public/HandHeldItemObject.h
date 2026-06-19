@@ -21,9 +21,9 @@ public:
 		{
 			switch (info.eItemType)
 			{
-			case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
 				return "01_HANDHELD_Helmet";
-			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_CopperPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
 				return "01_HANDHELD_Picaxe";
 
