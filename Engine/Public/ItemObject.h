@@ -251,8 +251,70 @@ public:
 		switch (eType)
 		{
 		case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_StonePickaxe:
 		case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_IronPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_GoldPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_NetheritePickaxe:
+
+		case CItemObject::ITEM_TYPE::ITEM_WoodAxe:
+		case CItemObject::ITEM_TYPE::ITEM_StoneAxe:
+		case CItemObject::ITEM_TYPE::ITEM_CooperAxe:
+		case CItemObject::ITEM_TYPE::ITEM_IronAxe:
+		case CItemObject::ITEM_TYPE::ITEM_GoldAxe:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondAxe:
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteAxe:
+
+		case CItemObject::ITEM_TYPE::ITEM_WoodHoe:
+		case CItemObject::ITEM_TYPE::ITEM_StoneHoe:
+		case CItemObject::ITEM_TYPE::ITEM_CooperHoe:
+		case CItemObject::ITEM_TYPE::ITEM_IronHoe:
+		case CItemObject::ITEM_TYPE::ITEM_GoldHoe:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondHoe:
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteHoe:
+
+		case CItemObject::ITEM_TYPE::ITEM_WoodShovel:
+		case CItemObject::ITEM_TYPE::ITEM_StoneShovel:
+		case CItemObject::ITEM_TYPE::ITEM_CooperShovel:
+		case CItemObject::ITEM_TYPE::ITEM_IronShovel:
+		case CItemObject::ITEM_TYPE::ITEM_GoldShovel:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondShovel:
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteShovel:
+
+		case CItemObject::ITEM_TYPE::ITEM_WoodSword:
+		case CItemObject::ITEM_TYPE::ITEM_StoneSword:
+		case CItemObject::ITEM_TYPE::ITEM_CooperSword:
+		case CItemObject::ITEM_TYPE::ITEM_IronSword:
+		case CItemObject::ITEM_TYPE::ITEM_GoldSword:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondSword:
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteSword:
+
+
 		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+		case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
+		case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
+
+		case CItemObject::ITEM_TYPE::ITEM_CooperChestplate:
+		case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
+		case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
+
+		case CItemObject::ITEM_TYPE::ITEM_CooperLeggings:
+		case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
+		case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
+
+		case CItemObject::ITEM_TYPE::ITEM_CooperBoots:
+		case CItemObject::ITEM_TYPE::ITEM_IronBoots:
+		case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
+		case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteBoots:
+
 			return false;
 		}
 		return true;
