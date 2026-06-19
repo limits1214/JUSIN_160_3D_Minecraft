@@ -15,28 +15,28 @@ public:
 	DECLARE_DERIVED_TYPE(CHandHeldItemObject, CItemObject)
 
 public:
-	static _string GetHandHeldItemLayer(const CItemObject::ItemInfo& info)
-	{
-		if (!info.block)
-		{
-			switch (info.eItemType)
-			{
-			case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
-				return "01_HANDHELD_Helmet";
-			case CItemObject::ITEM_TYPE::ITEM_CopperPickaxe:
-			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
-				return "01_HANDHELD_Picaxe";
+	//static _string GetHandHeldItemLayer(const CItemObject::ItemInfo& info)
+	//{
+	//	if (!info.block)
+	//	{
+	//		switch (info.eItemType)
+	//		{
+	//		case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
+	//			return "01_HANDHELD_Helmet";
+	//		case CItemObject::ITEM_TYPE::ITEM_CopperPickaxe:
+	//		case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
+	//			return "01_HANDHELD_Picaxe";
 
-			case CItemObject::ITEM_TYPE::ITEM_Coal:
-				return "01_HANDHELD_Coal";
-			case CItemObject::ITEM_TYPE::ITEM_Stick:
-				return "01_HANDHELD_Stick";
-			case CItemObject::ITEM_TYPE::ITEM_Torch:
-				return "01_HANDHELD_Torch";
-			}
-		}
-		return "01_HANDHELD_CUBE";
-	}
+	//		case CItemObject::ITEM_TYPE::ITEM_Coal:
+	//			return "01_HANDHELD_Coal";
+	//		case CItemObject::ITEM_TYPE::ITEM_Stick:
+	//			return "01_HANDHELD_Stick";
+	//		case CItemObject::ITEM_TYPE::ITEM_Torch:
+	//			return "01_HANDHELD_Torch";
+	//		}
+	//	}
+	//	return "01_HANDHELD_CUBE";
+	//}
 
 protected:
 	explicit CHandHeldItemObject();

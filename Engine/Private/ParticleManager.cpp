@@ -14,10 +14,10 @@ float Randf(float min, float max)
         (rand() / (float)RAND_MAX);
 }
 
-void CParticleManager::AddParticleRenderDestruct(CBlock3 block, _float3 pos)
+void CParticleManager::AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt)
 {
     auto texId = CBlock3::GetTexType(block.GetType(), FACE_DIR::POS_X);
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < iCnt; ++i)
     {
         ATTRIBUTE att{};
         att.bAlive = true;

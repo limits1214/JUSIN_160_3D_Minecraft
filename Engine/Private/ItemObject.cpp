@@ -479,9 +479,88 @@ void CItemObject::RecipeInitialize()
 
             CItemObject::s_vecRecipies.push_back(recipe);
         }
-
     }
-    
+
+    // bow
+    {
+        ItemInfo stick = ItemInfo(ITEM_TYPE::ITEM_Stick, 1);
+
+        ItemInfo string = ItemInfo(ITEM_TYPE::ITEM_String, 1);
+
+        ItemInfo res = ItemInfo(ITEM_TYPE::ITEM_Bow_Standby);
+
+        SRecipe recipe{};
+        recipe.pattern[1].first = stick;
+        recipe.pattern[3].first = stick;
+        recipe.pattern[7].first = stick;
+        recipe.pattern[2].first = string;
+        recipe.pattern[5].first = string;
+        recipe.pattern[8].first = string;
+        recipe.result = res;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    // arrow
+    {
+        ItemInfo stick = ItemInfo(ITEM_TYPE::ITEM_Stick, 1);
+
+        ItemInfo feather = ItemInfo(ITEM_TYPE::ITEM_Feather, 1);
+
+        ItemInfo flint = ItemInfo(ITEM_TYPE::ITEM_Flint, 1);
+
+        ItemInfo res = ItemInfo(ITEM_TYPE::ITEM_Arrow, 4);
+
+        SRecipe recipe{};
+        recipe.pattern[1].first = flint;
+        recipe.pattern[4].first = stick;
+        recipe.pattern[7].first = feather;
+        recipe.result = res;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    // flintAndSteel
+    {
+        ItemInfo flint = ItemInfo(ITEM_TYPE::ITEM_Flint, 1);
+
+        ItemInfo ironIngot = ItemInfo(ITEM_TYPE::ITEM_Iron_Ingot, 1);
+
+
+        ItemInfo res = ItemInfo(ITEM_TYPE::ITEM_FlintAndSteel);
+
+        SRecipe recipe{};
+        recipe.pattern[1].first = ironIngot;
+        recipe.pattern[3].first = flint;
+        recipe.result = res;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    // tnt
+    {
+        ItemInfo gunpowder = ItemInfo(ITEM_TYPE::ITEM_Gunpowder, 1);
+
+        ItemInfo sand = ItemInfo(CBlock3(CBlock3::TYPE::SAND), 1);
+
+
+        ItemInfo res = ItemInfo(CBlock3(CBlock3::TYPE::TNT), 1);
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = gunpowder;
+        recipe.pattern[1].first = sand;
+        recipe.pattern[2].first = gunpowder;
+        recipe.pattern[3].first = sand;
+        recipe.pattern[4].first = gunpowder;
+        recipe.pattern[5].first = sand;
+        recipe.pattern[6].first = gunpowder;
+        recipe.pattern[7].first = sand;
+        recipe.pattern[8].first = gunpowder;
+        recipe.result = res;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
 }
 
 CItemObject::CItemObject()

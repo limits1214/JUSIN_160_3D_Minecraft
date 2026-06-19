@@ -274,7 +274,7 @@ public:
 
 
 #pragma region PARTICLE_MANAGER
-	void AddParticleRenderDestruct(CBlock3 block, _float3 pos);
+	void AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt = 1);
 #pragma
 
 

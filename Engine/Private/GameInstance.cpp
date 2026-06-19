@@ -2450,6 +2450,30 @@ HRESULT CGameInstance::InitializeMCResource()
 			AddTexItem16_16("./Resources/Texture/Item/feather.png", "Feather");
 		}
 
+		// 80: bucket_empty.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/bucket_empty.png", "Bucket");
+		}
+
+		// 81: bucket_water.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/bucket_water.png");
+		}
+
+		// 82: bucket_lava.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/bucket_lava.png");
+		}
+
+		// 83: flint_and_steel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flint_and_steel.png", "FlintAndSteel");
+		}
+
+		// 84: gunpowder.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/gunpowder.png", "Gunpowder");
+		}
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
 		{
@@ -2924,9 +2948,9 @@ void CGameInstance::FontLateDraw(RENDERGROUP eRenderGroup)
 
 
 #pragma region PARTICLE_MANAGER
-void CGameInstance::AddParticleRenderDestruct(CBlock3 block, _float3 pos)
+void CGameInstance::AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt)
 {
-	m_pParticleManager->AddParticleRenderDestruct(block, pos);
+	m_pParticleManager->AddParticleRenderDestruct(block, pos, iCnt);
 }
 #pragma endregion
 
