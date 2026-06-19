@@ -997,6 +997,15 @@ HRESULT CGameInstance::InitializeMCResource()
 				}
 				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
 			}
+			{
+				//8 enderDragon
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/Entity/EnderDragon/dragon.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
 		}
 
 		{
@@ -1933,6 +1942,17 @@ HRESULT CGameInstance::InitializeMCResource()
 				if (auto res = AddResource("MC_ENTITY_VIBuffer", "EnderMan", CResEnttVIBuffer::Create()))
 				{
 					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "EnderMan"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "EnderDragon", CResEnttGeoEnderDragon::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "EnderDragon", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "EnderDragon"} });
 				}
 			}
 		}

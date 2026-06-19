@@ -160,6 +160,7 @@ void CLevelLoading::LoadingCheck()
 #include "CreeperEntity.h"
 #include "SpiderEntity.h"
 #include "EnderManEntity.h"
+#include "EnderDragonEntity.h"
 #include "DropItem.h"
 #include "DropBlock.h"
 #include "HandHeldItem.h"
@@ -236,6 +237,10 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 		return E_FAIL;
 	}
 	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_EnderManEntity", E::CEnderManEntity::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_EnderDragonEntity", E::CEnderDragonEntity::Create())))
 	{
 		return E_FAIL;
 	}

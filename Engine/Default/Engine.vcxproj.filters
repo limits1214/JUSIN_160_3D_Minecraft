@@ -541,6 +541,12 @@
     <Filter Include="GameObject\Entity\Monster\EnderMan">
       <UniqueIdentifier>{4283fb75-37d9-4bff-9bec-f76125a7e5b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\EnderDragon">
+      <UniqueIdentifier>{a7e6be32-7142-4c29-b465-f25898bb54fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\EnderDragon">
+      <UniqueIdentifier>{e4ceed53-2fcb-4fd8-8b04-d5e1534f48b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1056,6 +1062,12 @@
     <ClInclude Include="..\public\EnderManEntity.h">
       <Filter>GameObject\Entity\Monster\EnderMan</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoEnderDragon.h">
+      <Filter>Resource\Entity\Geometry\EnderDragon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\EnderDragonEntity.h">
+      <Filter>GameObject\Entity\Monster\EnderDragon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1558,6 +1570,12 @@
     </ClCompile>
     <ClCompile Include="..\private\EnderManEntity.cpp">
       <Filter>GameObject\Entity\Monster\EnderMan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoEnderDragon.cpp">
+      <Filter>Resource\Entity\Geometry\EnderDragon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\EnderDragonEntity.cpp">
+      <Filter>GameObject\Entity\Monster\EnderDragon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

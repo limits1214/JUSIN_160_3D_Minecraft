@@ -29,6 +29,7 @@
 #include "CreeperEntity.h"
 #include "SpiderEntity.h"
 #include "EnderManEntity.h"
+#include "EnderDragonEntity.h"
 
 #include "HandHeldBlock.h"
 #include "HandHeldItem.h"
@@ -217,6 +218,23 @@ void CPlayerEntity::UpdateGUI()
                 "02_TEST_ENTITY", &Desc))
             {
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CEnderManEntity>(handle.value()))
+                {
+                    pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
+                    //pObj->SetPlayer(GetHandle());
+                }
+            }
+        }
+    }
+
+    if (ImGui::Button("spawnEnderDragon"))
+    {
+        {
+            E::CEnderDragonEntity::DESC Desc{};
+            Desc.sObjectTag = "EnderDragon";
+            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_EnderDragonEntity",
+                "02_TEST_ENTITY", &Desc))
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CEnderDragonEntity>(handle.value()))
                 {
                     pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
                     //pObj->SetPlayer(GetHandle());
