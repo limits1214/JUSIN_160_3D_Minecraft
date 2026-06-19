@@ -77,18 +77,11 @@ private:
 	static CB_PER_UI GetPerUIByType(CItemObject::ITEM_TYPE eType)
 	{
 		CB_PER_UI perUI{};
+		perUI.texIndex = CItemObject::GetPackedTexIdByType(eType);
+		perUI.texCoord = { 0 / 16.f, 0 / 16.f };
+		perUI.uvSize = { 16.f / 16.f, 16.f / 16.f };
 		switch (eType)
 		{
-		case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
-		case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
-		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
-		case CItemObject::ITEM_TYPE::ITEM_Coal:
-		case CItemObject::ITEM_TYPE::ITEM_Stick:
-		case CItemObject::ITEM_TYPE::ITEM_Torch:
-			perUI.texIndex = CItemObject::GetPackedTexIdByType(eType);
-			perUI.texCoord = { 0 / 16.f, 0 / 16.f };
-			perUI.uvSize = { 16.f / 16.f, 16.f / 16.f };
-			return perUI;
 		case CItemObject::ITEM_TYPE::END:
 			return perUI;
 		}

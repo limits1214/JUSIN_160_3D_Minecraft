@@ -74,6 +74,22 @@ public:
 		ITEM_DiamondBoots,
 		ITEM_NetheriteBoots,
 
+		ITEM_Bow_Standby,
+		ITEM_Bow_Pulling_0,
+		ITEM_Bow_Pulling_1,
+		ITEM_Bow_Pulling_2,
+
+		ITEM_Arrow,
+
+		ITEM_Raw_Iron,
+		ITEM_Raw_Copper,
+		ITEM_Raw_Gold,
+		ITEM_Iron_Ingot,
+		ITEM_Copper_Ingot,
+		ITEM_Gold_Ingot,
+		ITEM_Diamond,
+		ITEM_NetheriteScrap,
+
 		ITEM_Coal,
 		ITEM_Stick,
 		ITEM_Torch,
@@ -315,6 +331,11 @@ public:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteBoots:
 
+		case CItemObject::ITEM_TYPE::ITEM_Bow_Standby:
+		case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0:
+		case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1:
+		case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2:
+
 			return false;
 		}
 		return true;
@@ -326,10 +347,154 @@ public:
 		{
 		case Engine::CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
 			return  PackTexId(6, 0);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_StonePickaxe:
+			return  PackTexId(6, 11);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
 			return  PackTexId(6, 7);
-		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+		case Engine::CItemObject::ITEM_TYPE::ITEM_IronPickaxe:
+			return  PackTexId(6, 12);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_GoldPickaxe:
+			return  PackTexId(6, 13);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_DiamondPickaxe:
+			return  PackTexId(6, 14);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_NetheritePickaxe:
+			return  PackTexId(6, 15);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_WoodAxe:
+			return  PackTexId(6, 35);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_StoneAxe:
+			return  PackTexId(6, 36);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperAxe:
+			return  PackTexId(6, 37);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_IronAxe:
+			return  PackTexId(6, 38);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_GoldAxe:
+			return  PackTexId(6, 39);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_DiamondAxe:
+			return  PackTexId(6, 40);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_NetheriteAxe:
+			return  PackTexId(6, 41);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_WoodHoe:
+			return  PackTexId(6, 42);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_StoneHoe:
+			return  PackTexId(6, 43);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperHoe:
+			return  PackTexId(6, 44);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_IronHoe:
+			return  PackTexId(6, 45);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_GoldHoe:
+			return  PackTexId(6, 46);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_DiamondHoe:
+			return  PackTexId(6, 47);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_NetheriteHoe:
+			return  PackTexId(6, 48);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_WoodShovel:
+			return  PackTexId(6, 49);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_StoneShovel:
+			return  PackTexId(6, 50);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperShovel:
+			return  PackTexId(6, 51);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_IronShovel:
+			return  PackTexId(6, 52);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_GoldShovel:
+			return  PackTexId(6, 53);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_DiamondShovel:
+			return  PackTexId(6, 54);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_NetheriteShovel:
+			return  PackTexId(6, 55);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_WoodSword:
+			return  PackTexId(6, 56);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_StoneSword:
+			return  PackTexId(6, 57);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperSword:
+			return  PackTexId(6, 58);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_IronSword:
+			return  PackTexId(6, 59);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_GoldSword:
+			return  PackTexId(6, 60);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_DiamondSword:
+			return  PackTexId(6, 61);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_NetheriteSword:
+			return  PackTexId(6, 62);
+
+		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
 			return  PackTexId(6, 6);
+		case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
+			return  PackTexId(6, 16);
+		case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
+			return  PackTexId(6, 17);
+		case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
+			return  PackTexId(6, 18);
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
+			return  PackTexId(6, 19);
+
+		case CItemObject::ITEM_TYPE::ITEM_CooperChestplate:
+			return  PackTexId(6, 20);
+		case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
+			return  PackTexId(6, 21);
+		case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
+			return  PackTexId(6, 22);
+		case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
+			return  PackTexId(6, 23);
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
+			return  PackTexId(6, 24);
+
+		case CItemObject::ITEM_TYPE::ITEM_CooperLeggings:
+			return  PackTexId(6, 25);
+		case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
+			return  PackTexId(6, 26);
+		case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
+			return  PackTexId(6, 27);
+		case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
+			return  PackTexId(6, 28);
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
+			return  PackTexId(6, 29);
+
+		case CItemObject::ITEM_TYPE::ITEM_CooperBoots:
+			return  PackTexId(6, 30);
+		case CItemObject::ITEM_TYPE::ITEM_IronBoots:
+			return  PackTexId(6, 31);
+		case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
+			return  PackTexId(6, 32);
+		case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
+			return  PackTexId(6, 33);
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteBoots:
+			return  PackTexId(6, 34);
+
+
+		case CItemObject::ITEM_TYPE::ITEM_Bow_Standby:
+			return  PackTexId(6, 63);
+		case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0:
+			return  PackTexId(6, 64);
+		case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1:
+			return  PackTexId(6, 65);
+		case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2:
+			return  PackTexId(6, 66);
+
+		case CItemObject::ITEM_TYPE::ITEM_Arrow:
+			return  PackTexId(6, 67);
+
+		case CItemObject::ITEM_TYPE::ITEM_Raw_Iron:
+			return  PackTexId(6, 68);
+		case CItemObject::ITEM_TYPE::ITEM_Raw_Copper:
+			return  PackTexId(6, 69);
+		case CItemObject::ITEM_TYPE::ITEM_Raw_Gold:
+			return  PackTexId(6, 70);
+		case CItemObject::ITEM_TYPE::ITEM_Iron_Ingot:
+			return  PackTexId(6, 71);
+		case CItemObject::ITEM_TYPE::ITEM_Copper_Ingot:
+			return  PackTexId(6, 72);
+		case CItemObject::ITEM_TYPE::ITEM_Gold_Ingot:
+			return  PackTexId(6, 73);
+		case CItemObject::ITEM_TYPE::ITEM_Diamond:
+			return  PackTexId(6, 74);
+		case CItemObject::ITEM_TYPE::ITEM_NetheriteScrap:
+			return  PackTexId(6, 75);
+
+
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Coal:
 			return  PackTexId(6, 8);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Stick:

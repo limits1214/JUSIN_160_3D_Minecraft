@@ -34,10 +34,105 @@ public:
 			switch (info.eItemType)
 			{
 			case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
 				return "01_DROPITEM_Helmet";
-			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+
+			case CItemObject::ITEM_TYPE::ITEM_CooperChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
+				return "01_DROPITEM_Chestplate";
+
+			case CItemObject::ITEM_TYPE::ITEM_CooperLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
+				return "01_DROPITEM_Leggings";
+
+			case CItemObject::ITEM_TYPE::ITEM_CooperBoots:
+			case CItemObject::ITEM_TYPE::ITEM_IronBoots:
+			case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteBoots:
+				return "01_DROPITEM_Boots";
+
+
 			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
-				return "01_DROPITEM_Picaxe";
+			case CItemObject::ITEM_TYPE::ITEM_StonePickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_IronPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_GoldPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_NetheritePickaxe:
+				return "01_DROPITEM_WoodPickaxe";
+
+			case CItemObject::ITEM_TYPE::ITEM_WoodAxe:
+			case CItemObject::ITEM_TYPE::ITEM_StoneAxe:
+			case CItemObject::ITEM_TYPE::ITEM_CooperAxe:
+			case CItemObject::ITEM_TYPE::ITEM_IronAxe:
+			case CItemObject::ITEM_TYPE::ITEM_GoldAxe:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondAxe:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteAxe:
+				return "01_DROPITEM_Axe";
+
+			case CItemObject::ITEM_TYPE::ITEM_WoodHoe:
+			case CItemObject::ITEM_TYPE::ITEM_StoneHoe:
+			case CItemObject::ITEM_TYPE::ITEM_CooperHoe:
+			case CItemObject::ITEM_TYPE::ITEM_IronHoe:
+			case CItemObject::ITEM_TYPE::ITEM_GoldHoe:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondHoe:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteHoe:
+				return "01_DROPITEM_Hoe";
+
+			case CItemObject::ITEM_TYPE::ITEM_WoodShovel:
+			case CItemObject::ITEM_TYPE::ITEM_StoneShovel:
+			case CItemObject::ITEM_TYPE::ITEM_CooperShovel:
+			case CItemObject::ITEM_TYPE::ITEM_IronShovel:
+			case CItemObject::ITEM_TYPE::ITEM_GoldShovel:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondShovel:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteShovel:
+				return "01_DROPITEM_Shovel";
+
+			case CItemObject::ITEM_TYPE::ITEM_WoodSword:
+			case CItemObject::ITEM_TYPE::ITEM_StoneSword:
+			case CItemObject::ITEM_TYPE::ITEM_CooperSword:
+			case CItemObject::ITEM_TYPE::ITEM_IronSword:
+			case CItemObject::ITEM_TYPE::ITEM_GoldSword:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondSword:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteSword:
+				return "01_DROPITEM_Sword";
+
+			case CItemObject::ITEM_TYPE::ITEM_Bow_Standby:
+				return "01_DROPITEM_Bow_Standby";
+			case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0:
+				return "01_DROPITEM_Bow_Pulling_0";
+			case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1:
+				return "01_DROPITEM_Bow_Pulling_1";
+			case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2:
+				return "01_DROPITEM_Bow_Pulling_2";
+
+			case CItemObject::ITEM_TYPE::ITEM_Arrow:
+				return "01_DROPITEM_Arrow";
+
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Iron:
+				return "01_DROPITEM_RawIron";
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Copper:
+				return "01_DROPITEM_RawCopper";
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Gold:
+				return "01_DROPITEM_RawGold";
+			case CItemObject::ITEM_TYPE::ITEM_Iron_Ingot:
+			case CItemObject::ITEM_TYPE::ITEM_Copper_Ingot:
+			case CItemObject::ITEM_TYPE::ITEM_Gold_Ingot:
+				return "01_DROPITEM_Ingot";
+			case CItemObject::ITEM_TYPE::ITEM_Diamond:
+				return "01_DROPITEM_Diamond";
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteScrap:
+				return "01_DROPITEM_NetheriteScrap";
 
 			case CItemObject::ITEM_TYPE::ITEM_Coal:
 				return "01_DROPITEM_Coal";
@@ -57,10 +152,106 @@ public:
 			switch (info.eItemType)
 			{
 			case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
 				return "CopperHelmet";
+
+			case CItemObject::ITEM_TYPE::ITEM_CooperChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
+				return "Chestplate";
+
+			case CItemObject::ITEM_TYPE::ITEM_CooperLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
+				return "Leggings";
+
+			case CItemObject::ITEM_TYPE::ITEM_CooperBoots:
+			case CItemObject::ITEM_TYPE::ITEM_IronBoots:
+			case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteBoots:
+				return "Boots";
+
+
 			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_StonePickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_IronPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_GoldPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_NetheritePickaxe:
 				return "WoodPickaxe";
+
+			case CItemObject::ITEM_TYPE::ITEM_WoodAxe:
+			case CItemObject::ITEM_TYPE::ITEM_StoneAxe:
+			case CItemObject::ITEM_TYPE::ITEM_CooperAxe:
+			case CItemObject::ITEM_TYPE::ITEM_IronAxe:
+			case CItemObject::ITEM_TYPE::ITEM_GoldAxe:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondAxe:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteAxe:
+				return "Axe";
+
+			case CItemObject::ITEM_TYPE::ITEM_WoodHoe:
+			case CItemObject::ITEM_TYPE::ITEM_StoneHoe:
+			case CItemObject::ITEM_TYPE::ITEM_CooperHoe:
+			case CItemObject::ITEM_TYPE::ITEM_IronHoe:
+			case CItemObject::ITEM_TYPE::ITEM_GoldHoe:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondHoe:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteHoe:
+				return "Hoe";
+
+			case CItemObject::ITEM_TYPE::ITEM_WoodShovel:
+			case CItemObject::ITEM_TYPE::ITEM_StoneShovel:
+			case CItemObject::ITEM_TYPE::ITEM_CooperShovel:
+			case CItemObject::ITEM_TYPE::ITEM_IronShovel:
+			case CItemObject::ITEM_TYPE::ITEM_GoldShovel:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondShovel:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteShovel:
+				return "Shovel";
+
+			case CItemObject::ITEM_TYPE::ITEM_WoodSword:
+			case CItemObject::ITEM_TYPE::ITEM_StoneSword:
+			case CItemObject::ITEM_TYPE::ITEM_CooperSword:
+			case CItemObject::ITEM_TYPE::ITEM_IronSword:
+			case CItemObject::ITEM_TYPE::ITEM_GoldSword:
+			case CItemObject::ITEM_TYPE::ITEM_DiamondSword:
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteSword:
+				return "Sword";
+
+			case CItemObject::ITEM_TYPE::ITEM_Bow_Standby:
+				return "Bow_Standby";
+			case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0:
+				return "Bow_Pulling_0";
+			case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1:
+				return "Bow_Pulling_1";
+			case CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2:
+				return "Bow_Pulling_2";
+
+			case CItemObject::ITEM_TYPE::ITEM_Arrow:
+				return "Arrow";
+
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Iron:
+				return "RawIron";
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Copper:
+				return "RawCopper";
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Gold:
+				return "RawGold";
+			case CItemObject::ITEM_TYPE::ITEM_Iron_Ingot:
+			case CItemObject::ITEM_TYPE::ITEM_Copper_Ingot:
+			case CItemObject::ITEM_TYPE::ITEM_Gold_Ingot:
+				return "Ingot";
+			case CItemObject::ITEM_TYPE::ITEM_Diamond:
+				return "Diamond";
+			case CItemObject::ITEM_TYPE::ITEM_NetheriteScrap:
+				return "NetheriteScrap";
+
 			case CItemObject::ITEM_TYPE::ITEM_Coal:
 				return "Coal";
 			case CItemObject::ITEM_TYPE::ITEM_Stick:
