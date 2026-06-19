@@ -27,9 +27,11 @@ public:
 public:
 	void SetRender(_bool b) { m_bRender = b; }
 
+public:
+	void SetBreathCnt(uint32_t i) { m_iCurrentBreathCnt = i; }
 private:
 	_bool m_bRender{ true };
-	int32_t m_iCurrentHalfBreathCnt{ 5 };
+	int32_t m_iCurrentBreathCnt{ 5 };
 
 public:
 	static E::UPtr<CUIBreathBar> Create();

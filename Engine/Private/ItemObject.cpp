@@ -576,6 +576,21 @@ void CItemObject::RecipeInitialize()
         CItemObject::s_vecRecipies.push_back(recipe);
     }
 
+    // bucket
+    {
+        ItemInfo iron = ItemInfo(ITEM_TYPE::ITEM_Iron_Ingot, 1);
+        ItemInfo res = ItemInfo(ITEM_TYPE::ITEM_Bucket_Empty, 1);
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = iron;
+        recipe.pattern[2].first = iron;
+        recipe.pattern[4].first = iron;
+
+        recipe.result = res;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
 }
 
 CItemObject::CItemObject()

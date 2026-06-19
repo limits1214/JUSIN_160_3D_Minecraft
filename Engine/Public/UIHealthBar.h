@@ -24,6 +24,9 @@ public:
 public:
 	void SetRender(_bool b) { m_bRender = b; }
 
+public:
+	void SetHalfHealth(uint32_t i) { m_iCurrentHalfHealthCnt = i; }
+
 private:
 	_bool m_bRender{ true };
 	int32_t m_iCurrentHalfHealthCnt{ 5 };

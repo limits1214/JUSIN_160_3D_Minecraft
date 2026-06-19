@@ -1077,6 +1077,8 @@ void CPlayerEntity::ProcessUI(float fTimeDelta)
     ProcessUIChest(fTimeDelta);
     ProcessUIChestOnCursor(fTimeDelta);
 
+    ProcessUIStatus(fTimeDelta);
+
 
 }
 
@@ -4106,6 +4108,52 @@ void CPlayerEntity::SpawnDropItemObject(const CItemObject::ItemInfo& info, _floa
                 }
             }
         }
+    }
+}
+
+void CPlayerEntity::ProcessUIStatus(_float fTimeDelta)
+{
+    ProcessUIStatusHealth(fTimeDelta);
+    ProcessUIStatusHunger(fTimeDelta);
+    ProcessUIStatusArmor(fTimeDelta);
+    ProcessUIStatusLevel(fTimeDelta);
+    ProcessUIStatusBreath(fTimeDelta);
+}
+void CPlayerEntity::ProcessUIStatusHealth(_float fTimeDelta)
+{
+    GetUIController()->GetHealthBar()->SetHalfHealth(m_iHalfHealth);
+}
+void CPlayerEntity::ProcessUIStatusHunger(_float fTimeDelta)
+{
+    GetUIController()->GetHungerBar()->SetHalfHunger(m_iHalfHunger);
+}
+void CPlayerEntity::ProcessUIStatusArmor(_float fTimeDelta)
+{
+    if (m_iHalfArmor == 0)
+    {
+        GetUIController()->GetArmorBar()->SetRender(false);
+    }
+    else
+    {
+        GetUIController()->GetArmorBar()->SetRender(true);
+        GetUIController()->GetArmorBar()->SetHalfArmor(m_iHalfArmor);
+    }
+}
+void CPlayerEntity::ProcessUIStatusLevel(_float fTimeDelta)
+{
+    GetUIController()->GetExperienceBar()->SetLevel(m_iLevel);
+    GetUIController()->GetExperienceBar()->SetGage(m_fExperienceGage);
+}
+void CPlayerEntity::ProcessUIStatusBreath(_float fTimeDelta)
+{
+    if (m_iBreath == 10)
+    {
+        GetUIController()->GetBreathBar()->SetRender(false);
+    }
+    else
+    {
+        GetUIController()->GetBreathBar()->SetRender(true);
+        GetUIController()->GetBreathBar()->SetBreathCnt(m_iBreath);
     }
 }
 

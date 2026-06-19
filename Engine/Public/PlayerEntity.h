@@ -214,6 +214,20 @@ private:
 private:
 	void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
 
+private:
+	void ProcessUIStatus(_float fTimeDelta);
+	void ProcessUIStatusHealth(_float fTimeDelta);
+	void ProcessUIStatusHunger(_float fTimeDelta);
+	void ProcessUIStatusArmor(_float fTimeDelta);
+	void ProcessUIStatusLevel(_float fTimeDelta);
+	void ProcessUIStatusBreath(_float fTimeDelta);
+	int32_t m_iHalfHealth{ 20 };// max: 20
+	int32_t m_iHalfHunger{ 20 };// max: 20
+	int32_t m_iHalfArmor{ 0 };// max: 20
+	int32_t m_iLevel{ 0 };
+	_float m_fExperienceGage{ 0.f };
+	int32_t m_iBreath{ 10 }; // max: 10
+
 
 public:
 	static UPtr<CPlayerEntity> Create();

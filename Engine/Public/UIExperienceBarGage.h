@@ -24,6 +24,17 @@ public:
 public:
 	void SetRender(_bool b) { m_bRender = b; }
 
+	void SetGage(_float f)
+	{
+		if (m_fGage != f)
+		{
+			m_fGage = f;
+			m_fSizeX = 182.f * MC_UI_SCALE * m_fGage;
+
+			m_fX = (1280.f * 0.5f) - (182.f * 0.5f * MC_UI_SCALE) + (m_fSizeX * 0.5f);
+			m_bCalcCoord = true;
+		}
+	}
 private:
 	_bool m_bRender{ true };
 	_float m_fGage = { 0.5f };

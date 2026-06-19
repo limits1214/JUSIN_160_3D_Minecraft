@@ -12,15 +12,14 @@
 #include "UIChest.h"
 #include "UIChest2.h"
 #include "UITextBg.h"
+#include "UIHealthBar.h"
+#include "UIHungerBar.h"
+#include "UIArmorBar.h"
+#include "UIBreathBar.h"
+#include "UIExperienceBar.h"
 
 NS_BEGIN(Engine)
 
-//class CUIHotBar;
-class CUIHealthBar;
-class CUIHungerBar;
-class CUIArmorBar;
-class CUIBreathBar;
-class CUIExperienceBar;
 class CUICrosshair;
 
 class ENGINE_DLL CUIController final : public E::CUIObject
