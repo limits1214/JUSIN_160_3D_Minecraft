@@ -24,6 +24,8 @@ public:
 public:
 	void SetRender(_bool b) { m_bRender = b; }
 
+public:
+	void SetHalfHunger(uint32_t i) { m_iCurrentHalfHungerCnt = i; }
 private:
 	_bool m_bRender{ true };
 	int32_t m_iCurrentHalfHungerCnt{ 5 };

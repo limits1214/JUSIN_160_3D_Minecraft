@@ -24,8 +24,15 @@ public:
 public:
 	void SetRender(_bool b) { m_bRender = b; }
 
+public:
+	void SetLevel(uint32_t i) { m_iLevel = i; };
+	void SetGage(_float f) { m_fGage = f; };
+
 private:
 	_bool m_bRender{ true };
+
+	uint32_t m_iLevel{};
+	_float m_fGage{};
 
 public:
 	static E::UPtr<CUIExperienceBar> Create();
