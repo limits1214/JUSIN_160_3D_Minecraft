@@ -2390,6 +2390,46 @@ HRESULT CGameInstance::InitializeMCResource()
 			AddTexItem16_16("./Resources/Texture/Item/arrow.png", "Arrow");
 		}
 
+		// 68: raw_iron.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/raw_iron.png", "RawIron");
+		}
+
+		// 69: raw_copper.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/raw_copper.png", "RawCopper");
+		}
+
+		// 70: raw_gold.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/raw_gold.png", "RawGold");
+		}
+
+		// 71: iron_ingot.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/iron_ingot.png", "Ingot");
+		}
+
+		// 72: copper_ingot.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/copper_ingot.png");
+		}
+
+		// 73: gold_ingot.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/gold_ingot.png");
+		}
+
+		// 74: diamond.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/diamond.png", "Diamond");
+		}
+
+		// 75: netherite_scrap.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/netherite_scrap.png", "NetheriteScrap");
+		}
+
 
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY

@@ -2159,6 +2159,24 @@ void CPlayerEntity::ReadyPlayerItem()
     furnace.block = CBlock3(CBlock3::TYPE::FURNACE);
     furnace.iCnt = 1;
     m_ItemArrHotbar[5] = furnace;
+
+    CItemObject::ItemInfo sword{};
+    sword.eItemType = CItemObject::ITEM_TYPE::ITEM_DiamondHelmet;
+    m_ItemArrHotbar[6] = sword;
+
+    {
+        CItemObject::ItemInfo item{};
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_DiamondChestplate;
+        item.iCnt = 1;
+        m_ItemArrHotbar[7] = item;
+    }
+
+    {
+        CItemObject::ItemInfo item{};
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_NetheriteScrap;
+        item.iCnt = 1;
+        m_ItemArrHotbar[8] = item;
+    }
 }
 
 HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
