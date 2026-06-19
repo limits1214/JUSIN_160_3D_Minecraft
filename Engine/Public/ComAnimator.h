@@ -28,6 +28,9 @@ public:
 	void SetEnderManBasePose(_float fTimeDelta);
 
 	void HumanoidBob(_float fTimeDelta);
+
+	void EnderDragonSetup(_float fTimeDelta);
+	void Update_PreAnimation_Direct(float fTimeDelta);
 private:
 	HRESULT Initialize(void* pArg) override;
 

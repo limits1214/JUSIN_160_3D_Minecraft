@@ -378,7 +378,258 @@ void CComAnimator::HumanoidBob(_float fTimeDelta)
     pLeftArm->SetRotation({ 0.0f, 0.0f, XMConvertToRadians(leftDegZ) });
     pRightArm->SetRotation({ 0.0f, 0.0f, XMConvertToRadians(rightDegZ) });
 }
+void CComAnimator::EnderDragonSetup(_float fTimeDelta)
+{
+    // 최상위 root 본 검사
+    auto pRoot = m_pComEntityModel->GetBone("root");
+    if (!pRoot) return;
 
+    const _float fPixelScale = 1.0f / 16.0f;
+
+    // -----------------------------------------------------------------
+    // 1. 타이머 진행 및 공통 수식 연산 (Degree 기반으로 통합 관리)
+    // -----------------------------------------------------------------
+    static float m_fWingFlapProgress = 0.f;
+    float m_fFlapSpeed = 1.0f; // 필요에 따라 속도 조절
+
+    m_fWingFlapProgress = std::fmod(m_fWingFlapProgress + fTimeDelta * m_fFlapSpeed, 1.0f);
+
+    // flap_time을 0 ~ 360도(Degree) 범위로 설정하여 공식 수식 상수를 그대로 활용
+    _float flap_time = m_fWingFlapProgress * 360.0f;
+
+    // Degree를 입력받아 내부에서 라디안으로 변환 후 sin/cos을 계산하는 람다식
+    auto DegSin = [](_float deg) { return std::sin(deg * 3.14159265f / 180.0f); };
+    auto DegCos = [](_float deg) { return std::cos(deg * 3.14159265f / 180.0f); };
+
+    // Setup에 필요한 트랜스레이트 팩터 연산 (공식 디그리 수식 보정)
+    _float base_rotation_translate = DegSin(flap_time - 57.3f) + 1.0f;
+    _float fRotationFactorTranslate = (base_rotation_translate * base_rotation_translate + base_rotation_translate * 2.0f) * 0.05f;
+
+    _float fClampedPitch = 0.0f;
+    _float fClampedRoll = 0.0f;
+
+
+    // -----------------------------------------------------------------
+    // 2. root 본 세팅 [ -10.0, Y, 30.0 ] / [ Pitch, 180.0, Roll ]
+    // -----------------------------------------------------------------
+    _float fPosX = 10.0f * fPixelScale;
+    _float fPosY = (30.0f + fRotationFactorTranslate * 10.0f) * fPixelScale;
+    _float fPosZ = -30.0f * fPixelScale;
+    pRoot->SetTranslation({ fPosX, fPosY, fPosZ });
+
+    _float3 fRootRot = { XMConvertToRadians(fClampedPitch), XMConvertToRadians(180.0f), XMConvertToRadians(fClampedRoll) };
+    pRoot->SetRotation(fRootRot);
+
+
+    // -----------------------------------------------------------------
+    // 3. jaw 본 세팅 (공식 수식 단위 오류 수정)
+    // -----------------------------------------------------------------
+    if (auto pJaw = m_pComEntityModel->GetBone("jaw"))
+    {
+        // 원래 공식 수식의 의도: 날갯짓에 맞춰 입을 아웅다웅 벌리는 각도(Degree) 제어
+        _float fJawRotX = 75.0f + (DegSin(flap_time) + 57.3f) * 11.46f;
+
+        // 위 수식은 베드락 엔진 특유의 수식 보정값이 섞여 있어 각도가 너무 클 경우, 
+        // 입이 너무 크게 벌어진다면 아래와 같이 억제된 순수 사인 흔들림으로 대체하셔도 좋습니다.
+        // _float fJawRotX = 15.0f + DegSin(flap_time) * 10.0f; 
+
+        pJaw->SetRotation({ XMConvertToRadians(fJawRotX), 0.0f, 0.0f });
+    }
+
+
+    // -----------------------------------------------------------------
+    // 4. wing & wingtip 본 세팅 (공식 수식 단위 동기화 완료)
+    // -----------------------------------------------------------------
+    // 왼쪽 날개
+    if (auto pWing = m_pComEntityModel->GetBone("wing"))
+    {
+        _float fWingRotX = 7.16f - DegCos(flap_time) * 11.46f;
+        _float fWingRotZ = (DegSin(flap_time) + 0.125f) * 45.84f;
+        pWing->SetRotation({ XMConvertToRadians(fWingRotX), 0.0f, XMConvertToRadians(fWingRotZ) });
+    }
+    if (auto pWingTip = m_pComEntityModel->GetBone("wingtip"))
+    {
+        // 내부에 디그리 상수 114.6도가 그대로 더해지므로 정상 주기 작동
+        _float fWingTipRotZ = -(DegSin(flap_time + 114.6f) + 0.5f) * 43.0f;
+        pWingTip->SetRotation({ 0.0f, 0.0f, XMConvertToRadians(fWingTipRotZ) });
+    }
+
+    // 오른쪽 날개 (wing1)
+    if (auto pWing1 = m_pComEntityModel->GetBone("wing1"))
+    {
+        _float fWing1RotX = 7.16f - DegCos(flap_time) * 11.46f;
+        _float fWing1RotZ = (DegSin(-flap_time) + 0.125f) * 45.84f;
+        pWing1->SetRotation({ XMConvertToRadians(fWing1RotX), 0.0f, XMConvertToRadians(fWing1RotZ) });
+    }
+    if (auto pWingTip1 = m_pComEntityModel->GetBone("wingtip1"))
+    {
+        _float fWingTip1RotZ = (DegSin(flap_time + 114.6f) + 0.5f) * 43.0f;
+        pWingTip1->SetRotation({ 0.0f, 0.0f, XMConvertToRadians(fWingTip1RotZ) });
+    }
+
+
+    // -----------------------------------------------------------------
+    // 5. limbs (다리/관절/발) 본 세팅 (공식 JSON 데이터 100% 매칭)
+    // -----------------------------------------------------------------
+
+    // --- [좌측 뒷다리 체인] ---
+    if (auto pRearLeg = m_pComEntityModel->GetBone("rearleg"))
+    {
+        _float fRotX = 57.3f + fRotationFactorTranslate * 5.7f;
+        pRearLeg->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+    if (auto pRearLegTip = m_pComEntityModel->GetBone("rearlegtip"))
+    {
+        _float fRotX = 28.65f + fRotationFactorTranslate * 5.7f;
+        pRearLegTip->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+    if (auto pRearFoot = m_pComEntityModel->GetBone("rearfoot"))
+    {
+        _float fRotX = 43.0f + fRotationFactorTranslate * 5.7f;
+        pRearFoot->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+
+    // --- [우측 뒷다리 체인 (rearleg1)] ---
+    if (auto pRearLeg1 = m_pComEntityModel->GetBone("rearleg1"))
+    {
+        _float fRotX = 57.3f + fRotationFactorTranslate * 5.7f;
+        pRearLeg1->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+    if (auto pRearLegTip1 = m_pComEntityModel->GetBone("rearlegtip1"))
+    {
+        _float fRotX = 28.65f + fRotationFactorTranslate * 5.7f;
+        pRearLegTip1->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+    if (auto pRearFoot1 = m_pComEntityModel->GetBone("rearfoot1"))
+    {
+        _float fRotX = 43.0f + fRotationFactorTranslate * 5.7f;
+        pRearFoot1->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+
+    // --- [좌측 앞다리 체인] ---
+    if (auto pFrontLeg = m_pComEntityModel->GetBone("frontleg"))
+    {
+        _float fRotX = 74.5f + fRotationFactorTranslate * 5.7f;
+        pFrontLeg->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+    if (auto pFrontLegTip = m_pComEntityModel->GetBone("frontlegtip"))
+    {
+        _float fRotX = -28.65f - fRotationFactorTranslate * 5.7f;
+        pFrontLegTip->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+    if (auto pFrontFoot = m_pComEntityModel->GetBone("frontfoot"))
+    {
+        _float fRotX = 43.0f + fRotationFactorTranslate * 5.7f;
+        pFrontFoot->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+
+    // --- [우측 앞다리 체인 (frontleg1)] ---
+    if (auto pFrontLeg1 = m_pComEntityModel->GetBone("frontleg1"))
+    {
+        _float fRotX = 74.5f + fRotationFactorTranslate * 5.7f;
+        pFrontLeg1->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+    if (auto pFrontLegTip1 = m_pComEntityModel->GetBone("frontlegtip1"))
+    {
+        _float fRotX = -28.65f - fRotationFactorTranslate * 5.7f;
+        pFrontLegTip1->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+    if (auto pFrontFoot1 = m_pComEntityModel->GetBone("frontfoot1"))
+    {
+        _float fRotX = 43.0f + fRotationFactorTranslate * 5.7f;
+        pFrontFoot1->SetRotation({ XMConvertToRadians(fRotX), 0.0f, 0.0f });
+    }
+}
+
+//
+//void CComAnimator::EnderDragonSetup(_float fTimeDelta)
+//{
+//    // 최상위 root 본 검사
+//    auto pRoot = m_pComEntityModel->GetBone("root");
+//    if (!pRoot) return;
+//
+//    const _float fPixelScale = 1.0f / 16.0f;
+//
+//    // -----------------------------------------------------------------
+//    // 1. pre_animation 타이머 및 수식 연산 (wing_flap_position 연동)
+//    // -----------------------------------------------------------------
+//    // m_fWingFlapProgress는 클래스 멤버 변수(0.0f ~ 1.0f 루프 타이머)로 선언되어 있어야 합니다.
+//    // m_fFlapSpeed 역시 날갯짓 속도 멤버 변수입니다.
+//    static float m_fWingFlapProgress = 0.f;
+//    float m_fFlapSpeed = 1.f;
+//    m_fWingFlapProgress = std::fmod(m_fWingFlapProgress + fTimeDelta * m_fFlapSpeed, 1.0f);
+//    _float flap_time = m_fWingFlapProgress * 360.0f;
+//
+//    // 마인크래프트 수식은 Degree 기준이므로 std::sin/cos 내부에서 라디안 변환을 처리합니다.
+//    auto DegSin = [](_float deg) { return std::sin(deg * 3.14159265f / 180.f); };
+//    auto DegCos = [](_float deg) { return std::cos(deg * 3.14159265f / 180.f); };
+//
+//    // 기본 날갯짓 변수 연산
+//    _float base_rotation_translate = DegSin(flap_time - 57.3f) + 1.0f;
+//    _float fRotationFactorTranslate = (base_rotation_translate * base_rotation_translate + base_rotation_translate * 2.0f) * 0.05f;
+//
+//    // 역사 버퍼를 제외한 기본 대기 상태의 Pitch / Roll 값 (초기화)
+//    _float fClampedPitch = 0.0f;
+//    _float fClampedRoll = 0.0f;
+//
+//
+//    // -----------------------------------------------------------------
+//    // 2. root 본 세팅 (몸통 전체 공중 부양 및 회전)
+//    // -----------------------------------------------------------------
+//    // Position 셋업 [ -10.0, Y, 30.0 ] -> 왼손 좌표계 축 반전 (X: +, Z: -)
+//    _float fPosX = 10.0f * fPixelScale;
+//    _float fPosY = (30.0f + fRotationFactorTranslate * 10.0f) * fPixelScale;
+//    _float fPosZ = -30.0f * fPixelScale;
+//    pRoot->SetTranslation({ fPosX, fPosY, fPosZ });
+//
+//    // Rotation 셋업 [ Pitch, 180.0, Roll ] -> 라디안 변환 주입
+//    _float3 fRootRot = { XMConvertToRadians(fClampedPitch), XMConvertToRadians(180.0f), XMConvertToRadians(fClampedRoll) };
+//    pRoot->SetRotation(fRootRot);
+//
+//
+//    // -----------------------------------------------------------------
+//    // 3. neck 본 세팅 (목 코사인 흔들림)
+//    // -----------------------------------------------------------------
+//    if (auto pNeck = m_pComEntityModel->GetBone("neck"))
+//    {
+//        _float fNeckRotX = DegCos(flap_time) * 8.6f;
+//        pNeck->SetRotation({ XMConvertToRadians(fNeckRotX), 0.0f, 0.0f });
+//    }
+//
+//
+//    // -----------------------------------------------------------------
+//    // 4. wing & wingtip 본 세팅 (왼쪽 날개 파트 구동)
+//    // -----------------------------------------------------------------
+//    if (auto pWing = m_pComEntityModel->GetBone("wing"))
+//    {
+//        _float fWingRotX = DegSin(flap_time) * 4.3f;
+//        _float fWingRotZ = (DegSin(flap_time) + 0.5f) * 22.9f;
+//        pWing->SetRotation({ XMConvertToRadians(fWingRotX), 0.0f, XMConvertToRadians(fWingRotZ) });
+//    }
+//
+//    if (auto pWingTip = m_pComEntityModel->GetBone("wingtip"))
+//    {
+//        _float fWingTipRotZ = -(DegSin(flap_time + 45.0f) + 0.5f) * 40.1f;
+//        pWingTip->SetRotation({ 0.0f, 0.0f, XMConvertToRadians(fWingTipRotZ) });
+//    }
+//
+//
+//    // -----------------------------------------------------------------
+//    // 5. wing1 & wingtip1 본 세팅 (오른쪽 날개 파트 - 대칭 부호 반전)
+//    // -----------------------------------------------------------------
+//    if (auto pWing1 = m_pComEntityModel->GetBone("wing1"))
+//    {
+//        _float fWing1RotX = DegSin(flap_time) * 4.3f;
+//        _float fWing1RotZ = -(DegSin(flap_time) + 0.5f) * 22.9f; // 왼쪽 날개와 대칭을 위해 부호 반전 (-)
+//        pWing1->SetRotation({ XMConvertToRadians(fWing1RotX), 0.0f, XMConvertToRadians(fWing1RotZ) });
+//    }
+//
+//    if (auto pWingTip1 = m_pComEntityModel->GetBone("wingtip1"))
+//    {
+//        _float fWingTip1RotZ = (DegSin(flap_time + 45.0f) + 0.5f) * 40.1f; // 왼쪽 날개와 대칭을 위해 부호 반전 (+)
+//        pWingTip1->SetRotation({ 0.0f, 0.0f, XMConvertToRadians(fWingTip1RotZ) });
+//    }
+//}
 HRESULT CComAnimator::Initialize(void* pArg)
 {
     auto pDesc = static_cast<DESC*>(pArg);
