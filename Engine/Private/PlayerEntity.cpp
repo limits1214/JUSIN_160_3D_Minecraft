@@ -273,9 +273,9 @@ void CPlayerEntity::UpdateGUI()
                     woodPixaxeObj->AddDropItemObject(ItemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(CItemObject::ITEM_TYPE::ITEM_WoodPickaxe) });
                     pos.x += 1.f;
 
-                    //ItemInfo.eItemUIType = CUIItem::TYPE::ITEM_CooperPickaxe;
-                    ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_CooperPickaxe;
-                    woodPixaxeObj->AddDropItemObject(ItemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(CItemObject::ITEM_TYPE::ITEM_CooperPickaxe) });
+                    //ItemInfo.eItemUIType = CUIItem::TYPE::ITEM_CopperPickaxe;
+                    ItemInfo.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperPickaxe;
+                    woodPixaxeObj->AddDropItemObject(ItemInfo, pos, {}, { CItemObject::GetPackedTexIdByType(CItemObject::ITEM_TYPE::ITEM_CopperPickaxe) });
                     pos.x += 1.f;
 
                     //ItemInfo.eItemUIType = CUIItem::TYPE::ITEM_WoodPickaxe;
@@ -2155,25 +2155,30 @@ void CPlayerEntity::ReadyPlayerItem()
     chest.iCnt = 1;
     m_ItemArrHotbar[4] = chest;
 
-    CItemObject::ItemInfo furnace{};
-    furnace.block = CBlock3(CBlock3::TYPE::FURNACE);
-    furnace.iCnt = 1;
-    m_ItemArrHotbar[5] = furnace;
-
-    CItemObject::ItemInfo sword{};
-    sword.eItemType = CItemObject::ITEM_TYPE::ITEM_DiamondHelmet;
-    m_ItemArrHotbar[6] = sword;
+    {
+        CItemObject::ItemInfo item{};
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperHelmet;
+        item.iCnt = 1;
+        m_ItemArrHotbar[5] = item;
+    }
 
     {
         CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_DiamondChestplate;
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperChestplate;
+        item.iCnt = 1;
+        m_ItemArrHotbar[6] = item;
+    }
+
+    {
+        CItemObject::ItemInfo item{};
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperLeggings;
         item.iCnt = 1;
         m_ItemArrHotbar[7] = item;
     }
 
     {
         CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_NetheriteScrap;
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperBoots;
         item.iCnt = 1;
         m_ItemArrHotbar[8] = item;
     }

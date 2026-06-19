@@ -12,7 +12,7 @@ public:
 	{
 		ITEM_WoodPickaxe,
 		ITEM_StonePickaxe,
-		ITEM_CooperPickaxe,
+		ITEM_CopperPickaxe,
 		ITEM_IronPickaxe,
 		ITEM_GoldPickaxe,
 		ITEM_DiamondPickaxe,
@@ -20,7 +20,7 @@ public:
 
 		ITEM_WoodAxe,
 		ITEM_StoneAxe,
-		ITEM_CooperAxe,
+		ITEM_CopperAxe,
 		ITEM_IronAxe,
 		ITEM_GoldAxe,
 		ITEM_DiamondAxe,
@@ -28,7 +28,7 @@ public:
 
 		ITEM_WoodShovel,
 		ITEM_StoneShovel,
-		ITEM_CooperShovel,
+		ITEM_CopperShovel,
 		ITEM_IronShovel,
 		ITEM_GoldShovel,
 		ITEM_DiamondShovel,
@@ -36,7 +36,7 @@ public:
 
 		ITEM_WoodHoe,
 		ITEM_StoneHoe,
-		ITEM_CooperHoe,
+		ITEM_CopperHoe,
 		ITEM_IronHoe,
 		ITEM_GoldHoe,
 		ITEM_DiamondHoe,
@@ -44,31 +44,31 @@ public:
 
 		ITEM_WoodSword,
 		ITEM_StoneSword,
-		ITEM_CooperSword,
+		ITEM_CopperSword,
 		ITEM_IronSword,
 		ITEM_GoldSword,
 		ITEM_DiamondSword,
 		ITEM_NetheriteSword,
 
-		ITEM_CooperHelmet,
+		ITEM_CopperHelmet,
 		ITEM_IronHelmet,
 		ITEM_GoldHelmet,
 		ITEM_DiamondHelmet,
 		ITEM_NetheriteHelmet,
 
-		ITEM_CooperChestplate,
+		ITEM_CopperChestplate,
 		ITEM_IronChestplate,
 		ITEM_GoldChestplate,
 		ITEM_DiamondChestplate,
 		ITEM_NetheriteChestplate,
 
-		ITEM_CooperLeggings,
+		ITEM_CopperLeggings,
 		ITEM_IronLeggings,
 		ITEM_GoldLeggings,
 		ITEM_DiamondLeggings,
 		ITEM_NetheriteLeggings,
 
-		ITEM_CooperBoots,
+		ITEM_CopperBoots,
 		ITEM_IronBoots,
 		ITEM_GoldBoots,
 		ITEM_DiamondBoots,
@@ -248,9 +248,9 @@ public:
 			{
 			case ITEM_TYPE::ITEM_WoodPickaxe:
 				return L"나무곡괭이";
-			case ITEM_TYPE::ITEM_CooperPickaxe:
+			case ITEM_TYPE::ITEM_CopperPickaxe:
 				return L"구리곡괭이";
-			case ITEM_TYPE::ITEM_CooperHelmet:
+			case ITEM_TYPE::ITEM_CopperHelmet:
 				return L"구리헬맷";
 			case ITEM_TYPE::ITEM_Coal:
 				return L"석탄";
@@ -268,7 +268,7 @@ public:
 		{
 		case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
 		case CItemObject::ITEM_TYPE::ITEM_StonePickaxe:
-		case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+		case CItemObject::ITEM_TYPE::ITEM_CopperPickaxe:
 		case CItemObject::ITEM_TYPE::ITEM_IronPickaxe:
 		case CItemObject::ITEM_TYPE::ITEM_GoldPickaxe:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondPickaxe:
@@ -276,7 +276,7 @@ public:
 
 		case CItemObject::ITEM_TYPE::ITEM_WoodAxe:
 		case CItemObject::ITEM_TYPE::ITEM_StoneAxe:
-		case CItemObject::ITEM_TYPE::ITEM_CooperAxe:
+		case CItemObject::ITEM_TYPE::ITEM_CopperAxe:
 		case CItemObject::ITEM_TYPE::ITEM_IronAxe:
 		case CItemObject::ITEM_TYPE::ITEM_GoldAxe:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondAxe:
@@ -284,7 +284,7 @@ public:
 
 		case CItemObject::ITEM_TYPE::ITEM_WoodHoe:
 		case CItemObject::ITEM_TYPE::ITEM_StoneHoe:
-		case CItemObject::ITEM_TYPE::ITEM_CooperHoe:
+		case CItemObject::ITEM_TYPE::ITEM_CopperHoe:
 		case CItemObject::ITEM_TYPE::ITEM_IronHoe:
 		case CItemObject::ITEM_TYPE::ITEM_GoldHoe:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondHoe:
@@ -292,7 +292,7 @@ public:
 
 		case CItemObject::ITEM_TYPE::ITEM_WoodShovel:
 		case CItemObject::ITEM_TYPE::ITEM_StoneShovel:
-		case CItemObject::ITEM_TYPE::ITEM_CooperShovel:
+		case CItemObject::ITEM_TYPE::ITEM_CopperShovel:
 		case CItemObject::ITEM_TYPE::ITEM_IronShovel:
 		case CItemObject::ITEM_TYPE::ITEM_GoldShovel:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondShovel:
@@ -300,32 +300,32 @@ public:
 
 		case CItemObject::ITEM_TYPE::ITEM_WoodSword:
 		case CItemObject::ITEM_TYPE::ITEM_StoneSword:
-		case CItemObject::ITEM_TYPE::ITEM_CooperSword:
+		case CItemObject::ITEM_TYPE::ITEM_CopperSword:
 		case CItemObject::ITEM_TYPE::ITEM_IronSword:
 		case CItemObject::ITEM_TYPE::ITEM_GoldSword:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondSword:
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteSword:
 
 
-		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+		case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
 		case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
 		case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
 
-		case CItemObject::ITEM_TYPE::ITEM_CooperChestplate:
+		case CItemObject::ITEM_TYPE::ITEM_CopperChestplate:
 		case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
 		case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
 
-		case CItemObject::ITEM_TYPE::ITEM_CooperLeggings:
+		case CItemObject::ITEM_TYPE::ITEM_CopperLeggings:
 		case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
 		case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
 
-		case CItemObject::ITEM_TYPE::ITEM_CooperBoots:
+		case CItemObject::ITEM_TYPE::ITEM_CopperBoots:
 		case CItemObject::ITEM_TYPE::ITEM_IronBoots:
 		case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
 		case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
@@ -349,7 +349,7 @@ public:
 			return  PackTexId(6, 0);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_StonePickaxe:
 			return  PackTexId(6, 11);
-		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CopperPickaxe:
 			return  PackTexId(6, 7);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_IronPickaxe:
 			return  PackTexId(6, 12);
@@ -364,7 +364,7 @@ public:
 			return  PackTexId(6, 35);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_StoneAxe:
 			return  PackTexId(6, 36);
-		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperAxe:
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CopperAxe:
 			return  PackTexId(6, 37);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_IronAxe:
 			return  PackTexId(6, 38);
@@ -379,7 +379,7 @@ public:
 			return  PackTexId(6, 42);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_StoneHoe:
 			return  PackTexId(6, 43);
-		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperHoe:
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CopperHoe:
 			return  PackTexId(6, 44);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_IronHoe:
 			return  PackTexId(6, 45);
@@ -394,7 +394,7 @@ public:
 			return  PackTexId(6, 49);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_StoneShovel:
 			return  PackTexId(6, 50);
-		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperShovel:
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CopperShovel:
 			return  PackTexId(6, 51);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_IronShovel:
 			return  PackTexId(6, 52);
@@ -409,7 +409,7 @@ public:
 			return  PackTexId(6, 56);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_StoneSword:
 			return  PackTexId(6, 57);
-		case Engine::CItemObject::ITEM_TYPE::ITEM_CooperSword:
+		case Engine::CItemObject::ITEM_TYPE::ITEM_CopperSword:
 			return  PackTexId(6, 58);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_IronSword:
 			return  PackTexId(6, 59);
@@ -420,7 +420,7 @@ public:
 		case Engine::CItemObject::ITEM_TYPE::ITEM_NetheriteSword:
 			return  PackTexId(6, 62);
 
-		case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+		case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
 			return  PackTexId(6, 6);
 		case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
 			return  PackTexId(6, 16);
@@ -431,7 +431,7 @@ public:
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
 			return  PackTexId(6, 19);
 
-		case CItemObject::ITEM_TYPE::ITEM_CooperChestplate:
+		case CItemObject::ITEM_TYPE::ITEM_CopperChestplate:
 			return  PackTexId(6, 20);
 		case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
 			return  PackTexId(6, 21);
@@ -442,7 +442,7 @@ public:
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
 			return  PackTexId(6, 24);
 
-		case CItemObject::ITEM_TYPE::ITEM_CooperLeggings:
+		case CItemObject::ITEM_TYPE::ITEM_CopperLeggings:
 			return  PackTexId(6, 25);
 		case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
 			return  PackTexId(6, 26);
@@ -453,7 +453,7 @@ public:
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
 			return  PackTexId(6, 29);
 
-		case CItemObject::ITEM_TYPE::ITEM_CooperBoots:
+		case CItemObject::ITEM_TYPE::ITEM_CopperBoots:
 			return  PackTexId(6, 30);
 		case CItemObject::ITEM_TYPE::ITEM_IronBoots:
 			return  PackTexId(6, 31);

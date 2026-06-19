@@ -33,28 +33,28 @@ public:
 		{
 			switch (info.eItemType)
 			{
-			case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
 			case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
 			case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
 			case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
 				return "01_DROPITEM_Helmet";
 
-			case CItemObject::ITEM_TYPE::ITEM_CooperChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_CopperChestplate:
 			case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
 			case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
 			case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
 				return "01_DROPITEM_Chestplate";
 
-			case CItemObject::ITEM_TYPE::ITEM_CooperLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_CopperLeggings:
 			case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
 			case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
 			case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
 				return "01_DROPITEM_Leggings";
 
-			case CItemObject::ITEM_TYPE::ITEM_CooperBoots:
+			case CItemObject::ITEM_TYPE::ITEM_CopperBoots:
 			case CItemObject::ITEM_TYPE::ITEM_IronBoots:
 			case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
@@ -64,7 +64,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_StonePickaxe:
-			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_CopperPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_IronPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_GoldPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondPickaxe:
@@ -73,7 +73,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodAxe:
 			case CItemObject::ITEM_TYPE::ITEM_StoneAxe:
-			case CItemObject::ITEM_TYPE::ITEM_CooperAxe:
+			case CItemObject::ITEM_TYPE::ITEM_CopperAxe:
 			case CItemObject::ITEM_TYPE::ITEM_IronAxe:
 			case CItemObject::ITEM_TYPE::ITEM_GoldAxe:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondAxe:
@@ -82,7 +82,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodHoe:
 			case CItemObject::ITEM_TYPE::ITEM_StoneHoe:
-			case CItemObject::ITEM_TYPE::ITEM_CooperHoe:
+			case CItemObject::ITEM_TYPE::ITEM_CopperHoe:
 			case CItemObject::ITEM_TYPE::ITEM_IronHoe:
 			case CItemObject::ITEM_TYPE::ITEM_GoldHoe:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondHoe:
@@ -91,7 +91,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodShovel:
 			case CItemObject::ITEM_TYPE::ITEM_StoneShovel:
-			case CItemObject::ITEM_TYPE::ITEM_CooperShovel:
+			case CItemObject::ITEM_TYPE::ITEM_CopperShovel:
 			case CItemObject::ITEM_TYPE::ITEM_IronShovel:
 			case CItemObject::ITEM_TYPE::ITEM_GoldShovel:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondShovel:
@@ -100,7 +100,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodSword:
 			case CItemObject::ITEM_TYPE::ITEM_StoneSword:
-			case CItemObject::ITEM_TYPE::ITEM_CooperSword:
+			case CItemObject::ITEM_TYPE::ITEM_CopperSword:
 			case CItemObject::ITEM_TYPE::ITEM_IronSword:
 			case CItemObject::ITEM_TYPE::ITEM_GoldSword:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondSword:
@@ -151,28 +151,28 @@ public:
 		{
 			switch (info.eItemType)
 			{
-			case CItemObject::ITEM_TYPE::ITEM_CooperHelmet:
+			case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
 			case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
 			case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
 			case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
 				return "CopperHelmet";
 
-			case CItemObject::ITEM_TYPE::ITEM_CooperChestplate:
+			case CItemObject::ITEM_TYPE::ITEM_CopperChestplate:
 			case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
 			case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
 			case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
 				return "Chestplate";
 
-			case CItemObject::ITEM_TYPE::ITEM_CooperLeggings:
+			case CItemObject::ITEM_TYPE::ITEM_CopperLeggings:
 			case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
 			case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
 			case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
 				return "Leggings";
 
-			case CItemObject::ITEM_TYPE::ITEM_CooperBoots:
+			case CItemObject::ITEM_TYPE::ITEM_CopperBoots:
 			case CItemObject::ITEM_TYPE::ITEM_IronBoots:
 			case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
@@ -182,7 +182,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_StonePickaxe:
-			case CItemObject::ITEM_TYPE::ITEM_CooperPickaxe:
+			case CItemObject::ITEM_TYPE::ITEM_CopperPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_IronPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_GoldPickaxe:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondPickaxe:
@@ -191,7 +191,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodAxe:
 			case CItemObject::ITEM_TYPE::ITEM_StoneAxe:
-			case CItemObject::ITEM_TYPE::ITEM_CooperAxe:
+			case CItemObject::ITEM_TYPE::ITEM_CopperAxe:
 			case CItemObject::ITEM_TYPE::ITEM_IronAxe:
 			case CItemObject::ITEM_TYPE::ITEM_GoldAxe:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondAxe:
@@ -200,7 +200,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodHoe:
 			case CItemObject::ITEM_TYPE::ITEM_StoneHoe:
-			case CItemObject::ITEM_TYPE::ITEM_CooperHoe:
+			case CItemObject::ITEM_TYPE::ITEM_CopperHoe:
 			case CItemObject::ITEM_TYPE::ITEM_IronHoe:
 			case CItemObject::ITEM_TYPE::ITEM_GoldHoe:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondHoe:
@@ -209,7 +209,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodShovel:
 			case CItemObject::ITEM_TYPE::ITEM_StoneShovel:
-			case CItemObject::ITEM_TYPE::ITEM_CooperShovel:
+			case CItemObject::ITEM_TYPE::ITEM_CopperShovel:
 			case CItemObject::ITEM_TYPE::ITEM_IronShovel:
 			case CItemObject::ITEM_TYPE::ITEM_GoldShovel:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondShovel:
@@ -218,7 +218,7 @@ public:
 
 			case CItemObject::ITEM_TYPE::ITEM_WoodSword:
 			case CItemObject::ITEM_TYPE::ITEM_StoneSword:
-			case CItemObject::ITEM_TYPE::ITEM_CooperSword:
+			case CItemObject::ITEM_TYPE::ITEM_CopperSword:
 			case CItemObject::ITEM_TYPE::ITEM_IronSword:
 			case CItemObject::ITEM_TYPE::ITEM_GoldSword:
 			case CItemObject::ITEM_TYPE::ITEM_DiamondSword:
