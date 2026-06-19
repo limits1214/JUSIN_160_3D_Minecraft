@@ -124,6 +124,27 @@ void CItemObject::RecipeInitialize()
     }
 
     {
+        ItemInfo stick{};
+        stick.eItemType = CItemObject::ITEM_TYPE::ITEM_Stick;
+        stick.iCnt = 1;
+
+        ItemInfo charcoal{};
+        charcoal.eItemType = CItemObject::ITEM_TYPE::ITEM_Charcoal;
+        charcoal.iCnt = 1;
+
+        ItemInfo torch{};
+        torch.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
+        torch.iCnt = 1;
+
+        SRecipe recipe{};
+        recipe.pattern[0].first = charcoal;
+        recipe.pattern[3].first = stick;
+        recipe.result = torch;
+
+        CItemObject::s_vecRecipies.push_back(recipe);
+    }
+
+    {
         ItemInfo cobbleStone{};
         cobbleStone.block = CBlock3(CBlock3::TYPE::COBBLESTONE);
         cobbleStone.iCnt = 1;
@@ -146,7 +167,320 @@ void CItemObject::RecipeInitialize()
         CItemObject::s_vecRecipies.push_back(recipe);
     }
 
+    // make armor
+    {
+        std::vector<ITEM_TYPE> ingots{
+           { ITEM_TYPE::ITEM_Copper_Ingot },
+           { ITEM_TYPE::ITEM_Iron_Ingot },
+           { ITEM_TYPE::ITEM_Gold_Ingot },
+           { ITEM_TYPE::ITEM_Diamond },
+           { ITEM_TYPE::ITEM_Netherite_Ingot },
+        };
 
+        std::vector<ITEM_TYPE> resHelmet{
+           { ITEM_TYPE::ITEM_CopperHelmet },
+           { ITEM_TYPE::ITEM_IronHelmet },
+           { ITEM_TYPE::ITEM_GoldHelmet },
+           { ITEM_TYPE::ITEM_DiamondHelmet },
+           { ITEM_TYPE::ITEM_NetheriteHelmet },
+        };
+
+        std::vector<ITEM_TYPE> resChestplate{
+           { ITEM_TYPE::ITEM_CopperChestplate },
+           { ITEM_TYPE::ITEM_IronChestplate },
+           { ITEM_TYPE::ITEM_GoldChestplate },
+           { ITEM_TYPE::ITEM_DiamondChestplate },
+           { ITEM_TYPE::ITEM_NetheriteChestplate },
+        };
+
+        std::vector<ITEM_TYPE> resLeggings{
+          { ITEM_TYPE::ITEM_CopperLeggings },
+          { ITEM_TYPE::ITEM_IronLeggings },
+          { ITEM_TYPE::ITEM_GoldLeggings },
+          { ITEM_TYPE::ITEM_DiamondLeggings },
+          { ITEM_TYPE::ITEM_NetheriteLeggings },
+        };
+
+        std::vector<ITEM_TYPE> resBoots{
+          { ITEM_TYPE::ITEM_CopperBoots },
+          { ITEM_TYPE::ITEM_IronBoots },
+          { ITEM_TYPE::ITEM_GoldBoots },
+          { ITEM_TYPE::ITEM_DiamondBoots },
+          { ITEM_TYPE::ITEM_NetheriteBoots },
+        };
+
+        // helmet
+        for (uint32_t i = 0; i < ingots.size(); ++i)
+        {
+            ItemInfo ingot{};
+            ingot.eItemType = ingots[i];
+            ingot.iCnt = 1;
+
+            ItemInfo res{};
+            res.eItemType = resHelmet[i];
+
+            SRecipe recipe{};
+            recipe.pattern[3].first = ingot;
+            recipe.pattern[4].first = ingot;
+            recipe.pattern[5].first = ingot;
+            recipe.pattern[6].first = ingot;
+            recipe.pattern[8].first = ingot;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+
+        // chestplate
+        for (uint32_t i = 0; i < ingots.size(); ++i)
+        {
+            ItemInfo ingot{};
+            ingot.eItemType = ingots[i];
+            ingot.iCnt = 1;
+
+            ItemInfo res{};
+            res.eItemType = resChestplate[i];
+
+            SRecipe recipe{};
+            recipe.pattern[0].first = ingot;
+            recipe.pattern[2].first = ingot;
+            recipe.pattern[3].first = ingot;
+            recipe.pattern[4].first = ingot;
+            recipe.pattern[5].first = ingot;
+            recipe.pattern[6].first = ingot;
+            recipe.pattern[7].first = ingot;
+            recipe.pattern[8].first = ingot;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+
+        // leggings
+        for (uint32_t i = 0; i < ingots.size(); ++i)
+        {
+            ItemInfo ingot{};
+            ingot.eItemType = ingots[i];
+            ingot.iCnt = 1;
+
+            ItemInfo res{};
+            res.eItemType = resLeggings[i];
+
+            SRecipe recipe{};
+            recipe.pattern[0].first = ingot;
+            recipe.pattern[1].first = ingot;
+            recipe.pattern[2].first = ingot;
+            recipe.pattern[3].first = ingot;
+            recipe.pattern[5].first = ingot;
+            recipe.pattern[6].first = ingot;
+            recipe.pattern[8].first = ingot;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+
+        // boots
+        for (uint32_t i = 0; i < ingots.size(); ++i)
+        {
+            ItemInfo ingot{};
+            ingot.eItemType = ingots[i];
+            ingot.iCnt = 1;
+
+            ItemInfo res{};
+            res.eItemType = resBoots[i];
+
+            SRecipe recipe{};
+            recipe.pattern[3].first = ingot;
+            recipe.pattern[5].first = ingot;
+            recipe.pattern[6].first = ingot;
+            recipe.pattern[8].first = ingot;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+    }
+
+    // pixaxe, axe, hoe, shovel, sword
+    {
+        std::vector<ItemInfo> ingredients{
+            ItemInfo(CBlock3::TYPE::PLANK_ACACIA, 1),
+            ItemInfo(CBlock3::TYPE::PLANK_OAK, 1),
+            ItemInfo(CBlock3::TYPE::PLANK_BIRCH, 1),
+            ItemInfo(CBlock3::TYPE::PLANK_CHERRY, 1),
+            ItemInfo(CBlock3::TYPE::COBBLESTONE, 1),
+            ItemInfo(ITEM_TYPE::ITEM_Copper_Ingot, 1),
+            ItemInfo(ITEM_TYPE::ITEM_Iron_Ingot, 1),
+            ItemInfo(ITEM_TYPE::ITEM_Gold_Ingot, 1),
+            ItemInfo(ITEM_TYPE::ITEM_Diamond, 1),
+            ItemInfo(ITEM_TYPE::ITEM_Netherite_Ingot, 1),
+        };
+
+
+        std::vector<ItemInfo> resPixaxe{
+            ItemInfo(ITEM_TYPE::ITEM_WoodPickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_WoodPickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_WoodPickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_WoodPickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_StonePickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_CopperPickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_IronPickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_GoldPickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_DiamondPickaxe),
+            ItemInfo(ITEM_TYPE::ITEM_NetheritePickaxe),
+        };
+
+        std::vector<ItemInfo> resAxe{
+            ItemInfo(ITEM_TYPE::ITEM_WoodAxe),
+            ItemInfo(ITEM_TYPE::ITEM_WoodAxe),
+            ItemInfo(ITEM_TYPE::ITEM_WoodAxe),
+            ItemInfo(ITEM_TYPE::ITEM_WoodAxe),
+            ItemInfo(ITEM_TYPE::ITEM_StoneAxe),
+            ItemInfo(ITEM_TYPE::ITEM_CopperAxe),
+            ItemInfo(ITEM_TYPE::ITEM_IronAxe),
+            ItemInfo(ITEM_TYPE::ITEM_GoldAxe),
+            ItemInfo(ITEM_TYPE::ITEM_DiamondAxe),
+            ItemInfo(ITEM_TYPE::ITEM_NetheriteAxe),
+        };
+
+        std::vector<ItemInfo> resHoe{
+           ItemInfo(ITEM_TYPE::ITEM_WoodHoe),
+           ItemInfo(ITEM_TYPE::ITEM_WoodHoe),
+           ItemInfo(ITEM_TYPE::ITEM_WoodHoe),
+           ItemInfo(ITEM_TYPE::ITEM_WoodHoe),
+           ItemInfo(ITEM_TYPE::ITEM_StoneHoe),
+           ItemInfo(ITEM_TYPE::ITEM_CopperHoe),
+           ItemInfo(ITEM_TYPE::ITEM_IronHoe),
+           ItemInfo(ITEM_TYPE::ITEM_GoldHoe),
+           ItemInfo(ITEM_TYPE::ITEM_DiamondHoe),
+           ItemInfo(ITEM_TYPE::ITEM_NetheriteHoe),
+        };
+
+        std::vector<ItemInfo> resShovel{
+           ItemInfo(ITEM_TYPE::ITEM_WoodShovel),
+           ItemInfo(ITEM_TYPE::ITEM_WoodShovel),
+           ItemInfo(ITEM_TYPE::ITEM_WoodShovel),
+           ItemInfo(ITEM_TYPE::ITEM_WoodShovel),
+           ItemInfo(ITEM_TYPE::ITEM_StoneShovel),
+           ItemInfo(ITEM_TYPE::ITEM_CopperShovel),
+           ItemInfo(ITEM_TYPE::ITEM_IronShovel),
+           ItemInfo(ITEM_TYPE::ITEM_GoldShovel),
+           ItemInfo(ITEM_TYPE::ITEM_DiamondShovel),
+           ItemInfo(ITEM_TYPE::ITEM_NetheriteShovel),
+        };
+
+        std::vector<ItemInfo> resSword{
+           ItemInfo(ITEM_TYPE::ITEM_WoodSword),
+           ItemInfo(ITEM_TYPE::ITEM_WoodSword),
+           ItemInfo(ITEM_TYPE::ITEM_WoodSword),
+           ItemInfo(ITEM_TYPE::ITEM_WoodSword),
+           ItemInfo(ITEM_TYPE::ITEM_StoneSword),
+           ItemInfo(ITEM_TYPE::ITEM_CopperSword),
+           ItemInfo(ITEM_TYPE::ITEM_IronSword),
+           ItemInfo(ITEM_TYPE::ITEM_GoldSword),
+           ItemInfo(ITEM_TYPE::ITEM_DiamondSword),
+           ItemInfo(ITEM_TYPE::ITEM_NetheriteSword),
+        };
+
+        assert(ingredients.size() == resPixaxe.size());
+        assert(ingredients.size() == resAxe.size());
+        assert(ingredients.size() == resHoe.size());
+        assert(ingredients.size() == resShovel.size());
+        assert(ingredients.size() == resSword.size());
+
+        // pickaxe
+        for (uint32_t i = 0; i < ingredients.size(); ++i)
+        {
+            ItemInfo ingredient{ ingredients[i] };
+
+            ItemInfo stick = ItemInfo(ITEM_TYPE::ITEM_Stick, 1);
+
+            ItemInfo res{ resPixaxe[i] };
+
+            SRecipe recipe{};
+            recipe.pattern[0].first = ingredient;
+            recipe.pattern[1].first = ingredient;
+            recipe.pattern[2].first = ingredient;
+            recipe.pattern[4].first = stick;
+            recipe.pattern[7].first = stick;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+
+        // axe
+        for (uint32_t i = 0; i < ingredients.size(); ++i)
+        {
+            ItemInfo ingredient{ ingredients[i] };
+
+            ItemInfo stick = ItemInfo(ITEM_TYPE::ITEM_Stick, 1);
+
+            ItemInfo res{ resAxe[i] };
+
+            SRecipe recipe{};
+            recipe.pattern[0].first = ingredient;
+            recipe.pattern[1].first = ingredient;
+            recipe.pattern[3].first = ingredient;
+            recipe.pattern[4].first = stick;
+            recipe.pattern[7].first = stick;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+
+        // hoe
+        for (uint32_t i = 0; i < ingredients.size(); ++i)
+        {
+            ItemInfo ingredient{ ingredients[i] };
+
+            ItemInfo stick = ItemInfo(ITEM_TYPE::ITEM_Stick, 1);
+
+            ItemInfo res{ resHoe[i] };
+
+            SRecipe recipe{};
+            recipe.pattern[0].first = ingredient;
+            recipe.pattern[1].first = ingredient;
+            recipe.pattern[4].first = stick;
+            recipe.pattern[7].first = stick;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+
+        // shovel
+        for (uint32_t i = 0; i < ingredients.size(); ++i)
+        {
+            ItemInfo ingredient{ ingredients[i] };
+
+            ItemInfo stick = ItemInfo(ITEM_TYPE::ITEM_Stick, 1);
+
+            ItemInfo res{ resShovel[i] };
+
+            SRecipe recipe{};
+            recipe.pattern[1].first = ingredient;
+            recipe.pattern[4].first = stick;
+            recipe.pattern[7].first = stick;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+
+        // sword
+        for (uint32_t i = 0; i < ingredients.size(); ++i)
+        {
+            ItemInfo ingredient{ ingredients[i] };
+
+            ItemInfo stick = ItemInfo(ITEM_TYPE::ITEM_Stick, 1);
+
+            ItemInfo res{ resSword[i] };
+
+            SRecipe recipe{};
+            recipe.pattern[1].first = ingredient;
+            recipe.pattern[4].first = ingredient;
+            recipe.pattern[7].first = stick;
+            recipe.result = res;
+
+            CItemObject::s_vecRecipies.push_back(recipe);
+        }
+
+    }
     
 }
 

@@ -87,6 +87,7 @@ public:
 		ITEM_Iron_Ingot,
 		ITEM_Copper_Ingot,
 		ITEM_Gold_Ingot,
+		ITEM_Netherite_Ingot,
 		ITEM_Diamond,
 		ITEM_NetheriteScrap,
 
@@ -491,6 +492,8 @@ public:
 			return  PackTexId(6, 72);
 		case CItemObject::ITEM_TYPE::ITEM_Gold_Ingot:
 			return  PackTexId(6, 73);
+		case CItemObject::ITEM_TYPE::ITEM_Netherite_Ingot:
+			return  PackTexId(6, 77);
 		case CItemObject::ITEM_TYPE::ITEM_Diamond:
 			return  PackTexId(6, 74);
 		case CItemObject::ITEM_TYPE::ITEM_NetheriteScrap:

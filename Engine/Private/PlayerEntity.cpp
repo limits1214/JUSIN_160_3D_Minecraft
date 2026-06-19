@@ -2187,15 +2187,15 @@ void CPlayerEntity::ReadyPlayerItem()
 
     {
         CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_CopperLeggings;
-        item.iCnt = 1;
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Netherite_Ingot;
+        item.iCnt = 64;
         m_ItemArrHotbar[7] = item;
     }
 
     {
         CItemObject::ItemInfo item{};
-        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Charcoal;
-        item.iCnt = 1;
+        item.eItemType = CItemObject::ITEM_TYPE::ITEM_Diamond;
+        item.iCnt = 64;
         m_ItemArrHotbar[8] = item;
     }
 }
