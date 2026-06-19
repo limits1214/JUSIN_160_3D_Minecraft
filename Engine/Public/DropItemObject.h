@@ -128,6 +128,7 @@ public:
 			case CItemObject::ITEM_TYPE::ITEM_Iron_Ingot:
 			case CItemObject::ITEM_TYPE::ITEM_Copper_Ingot:
 			case CItemObject::ITEM_TYPE::ITEM_Gold_Ingot:
+			case CItemObject::ITEM_TYPE::ITEM_Netherite_Ingot:
 				return "01_DROPITEM_Ingot";
 			case CItemObject::ITEM_TYPE::ITEM_Diamond:
 				return "01_DROPITEM_Diamond";
@@ -249,6 +250,7 @@ public:
 			case CItemObject::ITEM_TYPE::ITEM_Iron_Ingot:
 			case CItemObject::ITEM_TYPE::ITEM_Copper_Ingot:
 			case CItemObject::ITEM_TYPE::ITEM_Gold_Ingot:
+			case CItemObject::ITEM_TYPE::ITEM_Netherite_Ingot:
 				return "Ingot";
 			case CItemObject::ITEM_TYPE::ITEM_Diamond:
 				return "Diamond";

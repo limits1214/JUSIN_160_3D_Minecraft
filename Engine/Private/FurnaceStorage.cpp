@@ -111,14 +111,14 @@ std::optional<CItemObject::ItemInfo> CFurnaceStorage::GetSmeltResult(const CItem
         //case CBlock3::TYPE::STONE_GOLD_ORE:
         //case CBlock3::TYPE::DEEPSLATE_GOLD_ORE:
         //    return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_GoldIngot, 1 };
-        case CBlock3::TYPE::STONE_COAL_ORE:
-        case CBlock3::TYPE::DEEPSLATE_COAL_ORE:
-            return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 1 };
+        //case CBlock3::TYPE::STONE_COAL_ORE:
+        //case CBlock3::TYPE::DEEPSLATE_COAL_ORE:
+        //    return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 1 };
         case CBlock3::TYPE::LOG_OAK:
         case CBlock3::TYPE::LOG_BIRCH:
         case CBlock3::TYPE::LOG_CHERRY:
         case CBlock3::TYPE::LOG_ACACIA:
-            return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 1 };
+            return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Charcoal, 1 };
         //case CBlock3::TYPE::SAND:
         //    return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Glass, 1 };
         //case CBlock3::TYPE::COBBLESTONE:
@@ -131,8 +131,12 @@ std::optional<CItemObject::ItemInfo> CFurnaceStorage::GetSmeltResult(const CItem
     // 아이템 재료
     switch (ingredient.eItemType)
     {
-    case CItemObject::ITEM_TYPE::ITEM_Coal: // 예시: 그 외 아이템 제련
-        return std::nullopt;
+    case CItemObject::ITEM_TYPE::ITEM_Raw_Iron: 
+        return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Iron_Ingot, 1 };
+    case CItemObject::ITEM_TYPE::ITEM_Raw_Gold:
+        return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Gold_Ingot, 1 };
+    case CItemObject::ITEM_TYPE::ITEM_Raw_Copper:
+        return CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Copper_Ingot, 1 };
     default:
         return std::nullopt;
     }
@@ -162,6 +166,7 @@ std::optional<float> CFurnaceStorage::GetFuelDuration(const CItemObject::ItemInf
     switch (fuel.eItemType)
     {
     case CItemObject::ITEM_TYPE::ITEM_Coal:    return 80.f;
+    case CItemObject::ITEM_TYPE::ITEM_Charcoal:    return 80.f;
     case CItemObject::ITEM_TYPE::ITEM_Stick:   return 5.f;
     default:
         return std::nullopt;
