@@ -96,6 +96,9 @@ public:
 		ITEM_Coal,
 		ITEM_Stick,
 		ITEM_Torch,
+		ITEM_String,
+		ITEM_Feather,
+		ITEM_Flint,
 		END
 	};
 	struct ItemInfo
@@ -509,6 +512,13 @@ public:
 			return  PackTexId(6, 9);
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Torch:
 			return  PackTexId(6, 10);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_String:
+			return  PackTexId(6, 1);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flint:
+			return  PackTexId(6, 78);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Feather:
+			return  PackTexId(6, 79);
 		}
 		return 0;
 	}

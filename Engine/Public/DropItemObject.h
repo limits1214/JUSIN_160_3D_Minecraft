@@ -144,6 +144,13 @@ public:
 				return "01_DROPITEM_Stick";
 			case CItemObject::ITEM_TYPE::ITEM_Torch:
 				return "01_DROPITEM_Torch";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_String:
+				return  "01_DROPITEM_String";
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Flint:
+				return  "01_DROPITEM_Flint";
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Feather:
+				return  "01_DROPITEM_Feather";
 			}
 		}
 		return "01_DROPBLOCK_CUBE";
@@ -266,6 +273,13 @@ public:
 				return "Stick";
 			case CItemObject::ITEM_TYPE::ITEM_Torch:
 				return "Torch";
+
+			case Engine::CItemObject::ITEM_TYPE::ITEM_String:
+				return  "String";
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Flint:
+				return  "Flint";
+			case Engine::CItemObject::ITEM_TYPE::ITEM_Feather:
+				return  "Feather";
 			}
 		}
 		return "CubeItemDirt";
