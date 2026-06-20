@@ -66,6 +66,8 @@ private:
 private:
 	CComEntityModel* m_pComEntityModel{};
 
+	CComEntityModel* m_pComInventoryPlayerEntityModel{};
+
 public:
 	void SetDestroyState(CHandle h) { m_hDestroyStage = h; }
 private:
@@ -229,6 +231,7 @@ private:
 	int32_t m_iHalfHealth{ 20 };// max: 20
 	int32_t m_iHalfHunger{ 20 };// max: 20
 	int32_t m_iHalfArmor{ 0 };// max: 20
+	int32_t m_iRealHealfArmor{ 0 };
 	int32_t m_iLevel{ 0 };
 	_float m_fExperienceGage{ 0.f };
 	int32_t m_iBreath{ 10 }; // max: 10
@@ -236,6 +239,13 @@ private:
 private:
 	void ProcessArmorEntities(_float fTimeDelta);
 	std::array<CHandle, 4> m_hArmorEntities{};
+
+	void ProcessPlayerOpenInvenArmorEntities(_float fTimeDelta);
+	std::array<CHandle, 4> m_hPlayerOpenInvenArmorEntities{};
+
+private:
+	void ProcessPlayerOpenInvenAction(_float fTimeDelta);
+	void ProcessPlayerCameraAction(_float fTimeDelta);
 
 
 public:
