@@ -370,7 +370,25 @@ HRESULT CLevelOverWorld::Initialize()
 	}
 
 
+	{
+		E::CCameraObject::CAMERA_DESC Desc{};
+		Desc.eProj = E::CCameraObject::PROJ::PERSPECTIVE;
+		Desc.vAt = { 0.f, 0.f, 0.f };
+		Desc.vEye = { 0.f, 10.f, -10.f };
+		Desc.fAspect = { 1.f };
+		Desc.fFovY = 75.f;
+		Desc.fNear = 1.f;
+		Desc.fFar = 100.f;
 
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_PlayerInvenUICamera",
+			"99_CAMERA", &Desc))
+		{
+			if (FAILED(E::CGameInstance::Get().RegistGameCamera("PlayerInvenUI", handle.value())))
+			{
+				int x = 0;
+			}
+		}
+	}
 	{
 		E::CCameraObject::CAMERA_DESC Desc{};
 		Desc.eProj = E::CCameraObject::PROJ::ORTHOGRAPHIC;

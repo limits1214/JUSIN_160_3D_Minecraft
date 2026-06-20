@@ -149,7 +149,7 @@ HRESULT CUIExperienceBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_
 	}
 
 	auto size = E::CGameInstance::Get().FontMeasureString("NeoDGM_20px", std::to_wstring(m_iLevel).data(), 1.f);
-	E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_20px", std::to_wstring(m_iLevel), { m_fX - (size.x * 0.5f) , m_fY - 15.f }, 1, XMVectorSet(0.f, 0.f, 0.f, 1.f));
+	E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_20px", std::to_wstring(m_iLevel), { m_fX - (size.x * 0.5f) , m_fY - 15.f }, 1, XMVectorSet(128.f / 255.f, 255.f / 255.f, 32.f / 255.f, 1.f));
 	
 	return S_OK;
 }

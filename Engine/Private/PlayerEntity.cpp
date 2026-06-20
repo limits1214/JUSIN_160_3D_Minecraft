@@ -374,6 +374,8 @@ void CPlayerEntity::UpdateGUI()
 
 HRESULT CPlayerEntity::Initialize(void* pArg)
 {
+    m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::PLAYER_INVEN_UI);
+
     auto* pDesc = static_cast<DESC*>(pArg);
     if (FAILED(CPlayerEntityObject::Initialize(pArg)))
     {
@@ -612,9 +614,22 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 
 HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
+    switch (ctx.pass)
+    {
+    case RENDERPASS::DEFAULT:
+        return RenderDefault(pContext, ctx);
+    case RENDERPASS::SHADOW:
+        return RenderShadow(pContext, ctx);
+    case RENDERPASS::PLAYER_INVEN_UI:
+        return RenderPlayerInvenUI(pContext, ctx);
+    }
+}
+
+HRESULT CPlayerEntity::RenderDefault(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+{
     if (m_eCameraType == CAMERA_TYPE::FPS)
     {
-        
+
     }
     else
     {
@@ -639,8 +654,51 @@ HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 
         m_pComEntityModel->Render(pContext, ctx);
     }
-    
+
     return S_OK;
+}
+
+HRESULT CPlayerEntity::RenderShadow(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+{
+    return S_OK;
+}
+
+HRESULT CPlayerEntity::RenderPlayerInvenUI(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
+{
+    {
+        auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
+        D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+        if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+        {
+
+            E::CB_PER_OBJECT cbPerObject{};
+            cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
+            XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
+
+            memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
+            pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
+        }
+        pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
+        pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
+    }
+
+    m_pComEntityModel->BindBoneMatrix(pContext);
+
+    m_pComEntityModel->Render(pContext, ctx);
+    return S_OK;
+}
+
+void CPlayerEntity::AddRenderPassPlayerInvenUIPass()
+{
+    if (auto cam = CGameInstance::Get().GetGameCamera("PlayerInvenUI"))
+    {
+        CGameInstance::Get().RendererDrawPlayerInvenUIPass();
+        auto playerPos = GetTransform().GetPosition();
+        auto camPos = playerPos;
+        camPos.z -= 4.f;
+        cam->GetTransform().SetPosition(XMLoadFloat3(&camPos));
+        cam->GetTransform().LookAt(XMLoadFloat3(&playerPos));
+    }
 }
 
 void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
@@ -1109,6 +1167,8 @@ void CPlayerEntity::ProcessUIInventory(float fTimeDelta)
    
     if (pUIController->Getinventory()->GetRender())
     {
+        AddRenderPassPlayerInvenUIPass();
+
         pUIController->Getinventory()->SetInventoryHotbarItemData(m_ItemArrHotbar.data(), 9);
         pUIController->Getinventory()->SetInventoryItemData(m_ItemArrInventory.data(), 9 * 3);
         pUIController->Getinventory()->SetInventoryArmorItemData(m_ItemArrArmor.data(), 4);

@@ -1,5 +1,6 @@
 #pragma once
 #include "UIObject.h"
+#include "UIItem.h"
 NS_BEGIN(Engine)
 class CComConstantBuffer;
 class ENGINE_DLL CUICraftingTable final : public E::CUIObject

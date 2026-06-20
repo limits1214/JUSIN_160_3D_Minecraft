@@ -211,6 +211,51 @@ HRESULT CUIInventory::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 	pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
 
 
+	{
+		{
+			E::CB_PER_UI perUI{};
+			perUI.texIndex = PackTexId(200, 0);
+			perUI.texCoord = { 0 / 256.f, 0 / 256.f };
+			perUI.uvSize = { 256.f / 256.f, 256.f / 256.f };
+			if (FAILED(m_pComCBufferPerUI->MapDiscard(pContext, &perUI, sizeof(perUI))))
+			{
+				return E_FAIL;
+			}
+			pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+			pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+		}
+		{
+			E::CB_PER_OBJECT cbPerObject{};
+			auto worldMat = *GetTransform().GetCombinedWorldMatrix();
+			worldMat.m[3][0] += -75.f;
+			worldMat.m[3][1] += 20.f;
+			worldMat.m[3][2] += -0.01f;
+			cbPerObject.matWorld = worldMat;
+
+			
+			XMStoreFloat4x4(&cbPerObject.matWVP, XMLoadFloat4x4(&worldMat) * ctx.matViewProj);
+			if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+			{
+				return E_FAIL;
+			}
+			pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+			pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+		}
+
+		{
+			auto tex2D = CGameInstance::Get().GetResourceFirst<CResDynamicTexture2D>(TAG_RES_GRP_PERMANENT_TEXTURE, "DynTex2D_PlayerInvenUI");
+			ID3D11ShaderResourceView* pSRVs[1] = { tex2D->GetSRV().Get()};
+			pContext->PSSetShaderResources(3, 1, pSRVs);
+		}
+
+		pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+
+		{
+			ID3D11ShaderResourceView* pSRVs[1] = { nullptr };
+			pContext->PSSetShaderResources(3, 1, pSRVs);
+		}
+	}
+
 	return S_OK;
 }
 

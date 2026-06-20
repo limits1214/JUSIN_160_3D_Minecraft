@@ -53,6 +53,11 @@ public:
 	void LateUpdate(E::_float fTimeDelta) override;
 
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
+	HRESULT RenderDefault(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx);
+	HRESULT RenderShadow(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx);
+	HRESULT RenderPlayerInvenUI(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx);
+
+	void AddRenderPassPlayerInvenUIPass();
 
 private:
 	_float3 m_vHeadRotation = { 0.f, 0.f, 0.f };

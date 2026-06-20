@@ -27,6 +27,7 @@
 #include "UICamera.h"
 #include "PlayerCamera.h"
 #include "ShadowCamera.h"
+#include "PlayerInvenUICamera.h"
 
 #include "Resources.h"
 
@@ -2569,6 +2570,10 @@ HRESULT CGameInstance::InitializePrototype()
 	{
 		return E_FAIL;
 	}
+	if (AddPrototype("CAMERAS", "Prototype_GameObject_PlayerInvenUICamera", CPlayerInvenUICamera::Create()))
+	{
+		return E_FAIL;
+	}
 	return S_OK;
 }
 
@@ -2892,6 +2897,10 @@ const std::unordered_map<StringID, std::vector<const CCollider*>>* CGameInstance
 HRESULT CGameInstance::AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject)
 {
 	return m_pRenderer->AddRenderObject(eRenderGroup, pRenderObject);
+}
+void CGameInstance::RendererDrawPlayerInvenUIPass()
+{
+	m_pRenderer->DrawPlayerInvenUIPass();
 }
 #pragma endregion
 

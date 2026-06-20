@@ -34,11 +34,17 @@ HRESULT CRenderer::Initialize()
         return E_FAIL;
     }
 
+    if (FAILED(InitializePlayerInvenUI()))
+    {
+        return E_FAIL;
+    }
+
     return S_OK;
 }
 
 HRESULT CRenderer::InitializeOffscreen()
-{// offscreenTexture
+{
+    // offscreenTexture
     {
         auto vClientScreenSize = CGameInstance::Get().GetClientScreenSize();
         if (auto res = CGameInstance::Get().AddResource(TAG_RES_GRP_PERMANENT_BUFFER, "VIBuffer_FullscreenTex", E::CResQuadFullscreenTexBuffer::Create()))
@@ -189,6 +195,106 @@ HRESULT CRenderer::InitializeFullscreen()
     return S_OK;
 }
 
+HRESULT CRenderer::InitializePlayerInvenUI()
+{
+    UINT iWidth = 512;
+    UINT iHeight = 512;
+
+    // playerInvenUI
+    {
+        if (auto res = CGameInstance::Get().AddResourceT(TAG_RES_GRP_PERMANENT_TEXTURE, "DynTex2D_PlayerInvenUI", E::CResDynamicTexture2D::Create()))
+        {
+            CResDynamicTexture2D::DESC Desc{};
+            Desc.texDesc = {
+                .Width = iWidth,
+                .Height = iHeight,
+                .MipLevels = 1,
+                .ArraySize = 1,
+                .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
+                .SampleDesc = {.Count = 1, .Quality = 0 },
+                .Usage = D3D11_USAGE_DEFAULT,
+                .BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
+                .CPUAccessFlags = 0,
+                .MiscFlags = 0
+            };
+            if (FAILED(res->Load(Desc)))
+            {
+                return E_FAIL;
+            }
+            if (FAILED(res->CreateSRV()))
+            {
+                return E_FAIL;
+            }
+            if (FAILED(res->CreateRTV()))
+            {
+                return E_FAIL;
+            }
+            m_pPlayerInvenUITex2D = res;
+        }
+    }
+
+    {
+        if (auto res = CGameInstance::Get().AddResourceT(TAG_RES_GRP_PERMANENT_TEXTURE, "DynTex2D_PlayerInvenUIDSV", E::CResDynamicTexture2D::Create()))
+        {
+            CResDynamicTexture2D::DESC Desc{};
+            Desc.texDesc = {
+                .Width = iWidth,
+                .Height = iHeight,
+                .MipLevels = 1,
+                .ArraySize = 1,
+                .Format = DXGI_FORMAT_D24_UNORM_S8_UINT,
+                .SampleDesc = {.Count = 1, .Quality = 0 },
+                .Usage = D3D11_USAGE_DEFAULT,
+                .BindFlags = D3D11_BIND_DEPTH_STENCIL,
+                .CPUAccessFlags = 0,
+                .MiscFlags = 0
+            };
+            if (FAILED(res->Load(Desc)))
+            {
+                return E_FAIL;
+            }
+
+            if (FAILED(res->CreateDSV()))
+            {
+                return E_FAIL;
+            }
+            m_pPlayerInvenUIDSVTex2D = res;
+        }
+    }
+
+    if (auto res = CGameInstance::Get().AddResourceT(TAG_RES_GRP_PERMANENT_VP, "VP_PlayerInvenUI", E::CResViewPort::Create()))
+    {
+        D3D11_VIEWPORT Desc{};
+        Desc.TopLeftX = 0.f;
+        Desc.TopLeftY = 0.f;
+        Desc.Width = static_cast<float>(iWidth);
+        Desc.Height = static_cast<float>(iHeight);
+        Desc.MinDepth = 0.f;
+        Desc.MaxDepth = 1.f;
+        if (FAILED(res->Load(Desc)))
+        {
+            return E_FAIL;
+        }
+        m_pPlayerInvenUIVP = res;
+    }
+    
+    //if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_PlayerInvenUI", "./Resources/Shader/PlayerInvenUI/PlayerInvenUI.hlsl"))
+    //{
+    //    if (FAILED(res->Load()))
+    //    {
+    //        return E_FAIL;
+    //    };
+    //}
+    //if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_PlayerInvenUI", "./Resources/Shader/PlayerInvenUI/PlayerInvenUI.hlsl"))
+    //{
+    //    if (FAILED(res->Load()))
+    //    {
+    //        return E_FAIL;
+    //    };
+    //}
+    return S_OK;
+}
+
 HRESULT CRenderer::AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject)
 {
     if (eRenderGroup >= RENDERGROUP::END ||
@@ -202,9 +308,10 @@ HRESULT CRenderer::AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRende
 HRESULT CRenderer::Draw()
 {
     RENDER_CTX ctx{};
+
+
+
     CCameraObject* pShadowCamera{};
-
-
     _bool bApplyShadow = false;
     bApplyShadow = CGameInstance::Get().GetWorldDayFactor() > 0.64f ? true : false;
     if (bApplyShadow)
@@ -275,6 +382,67 @@ HRESULT CRenderer::Draw()
                 }
             }
         }
+    }
+
+    // PLAYER_INVEN_UI_PASS
+    if (m_bDrawPlayerInvenUIPass)
+    {
+        m_bDrawPlayerInvenUIPass = false;
+        ctx.pass = RENDERPASS::PLAYER_INVEN_UI;
+        if (auto pPlayerInvenUICam = CGameInstance::Get().GetGameCamera("PlayerInvenUI"))
+        {
+            ID3D11RenderTargetView* pRTVs[1] = { m_pPlayerInvenUITex2D->GetRTV().Get()};
+            m_pContext->OMSetRenderTargets(1, pRTVs, m_pPlayerInvenUIDSVTex2D->GetDSV().Get());
+            _float4 clearColor = { 0.f, 0.f, 1.f, 0.f };
+            m_pContext->ClearRenderTargetView(pRTVs[0], reinterpret_cast<const float*>(&clearColor));
+            m_pContext->ClearDepthStencilView(m_pPlayerInvenUIDSVTex2D->GetDSV().Get(), D3D11_CLEAR_DEPTH, 1.f, 0);
+            m_pContext->RSSetViewports(1, &m_pPlayerInvenUIVP->GetViewPort());
+
+            ctx.matProj = pPlayerInvenUICam->GetProj();
+            ctx.matView = pPlayerInvenUICam->GetView();
+            ctx.matViewProj = ctx.matView * ctx.matProj;
+            ctx.eye = pPlayerInvenUICam->GetTransform().GetLoadedPostion();
+
+            auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_FRAME);
+            D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+            if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+            {
+                CB_PER_FRAME cbPerFrame{};
+                XMStoreFloat4x4(&cbPerFrame.matProj, pPlayerInvenUICam->GetProj());
+                XMStoreFloat4x4(&cbPerFrame.matView, pPlayerInvenUICam->GetView());
+                XMStoreFloat4x4(&cbPerFrame.matViewProj, pPlayerInvenUICam->GetView() * pPlayerInvenUICam->GetProj());
+                XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pPlayerInvenUICam->GetView()));
+                XMStoreFloat4x4(&cbPerFrame.matInvViewProj, XMMatrixInverse(nullptr, XMLoadFloat4x4(&cbPerFrame.matViewProj)));
+                XMStoreFloat4x4(&cbPerFrame.matSkyRotation, XMMatrixRotationX(CGameInstance::Get().GetWorldSkyRotation()));
+                float starAngle = CGameInstance::Get().GetWorldSkyRotation() * -0.1f;
+                XMStoreFloat4x4(&cbPerFrame.matStarRotation, XMMatrixRotationX(starAngle));
+                cbPerFrame.fDayFactor = CGameInstance::Get().GetWorldDayFactor();
+                cbPerFrame.vCamPos = pPlayerInvenUICam->GetTransform().GetPosition();
+
+                {
+                    float fAngle = CGameInstance::Get().GetWorldSkyRotation();
+                    XMStoreFloat3(&cbPerFrame.vShadowLightDir, XMVector3Normalize(XMVectorSet(sin(fAngle), cos(fAngle), 0.0f, 0.f)));
+                }
+
+
+                memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
+                m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
+            }
+            m_pContext->VSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+            m_pContext->PSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+            m_pContext->GSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+
+
+
+
+            if (FAILED(RenderNonBlend(ctx)))
+            {
+                return E_FAIL;
+            }
+        }
+
+        ID3D11RenderTargetView* pNullRTVs[] = { nullptr };
+        m_pContext->OMSetRenderTargets(1, pNullRTVs, nullptr);
     }
     
     
@@ -377,47 +545,50 @@ HRESULT CRenderer::Draw()
         }
 
 
+        //UI
         {
-            auto pUICame = CGameInstance::Get().GetActiveUICamera();
-            if (!pUICame)
             {
-                return S_OK;
-            }
-            {
-                ctx.matProj = pUICame->GetProj();
-                ctx.matView = pUICame->GetView();
-                ctx.matViewProj = ctx.matView * ctx.matProj;
-                ctx.eye = pUICame->GetTransform().GetLoadedPostion();
-
-                auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_FRAME);
-                D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-                if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+                auto pUICame = CGameInstance::Get().GetActiveUICamera();
+                if (!pUICame)
                 {
-                    CB_PER_FRAME cbPerFrame{};
-                    XMStoreFloat4x4(&cbPerFrame.matProj, pUICame->GetProj());
-                    XMStoreFloat4x4(&cbPerFrame.matView, pUICame->GetView());
-                    XMStoreFloat4x4(&cbPerFrame.matViewProj, pUICame->GetView() * pUICame->GetProj());
-                    XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pUICame->GetView()));
-                    //XMStoreFloat4x4(&cbPerFrame.matInvViewProj, XMMatrixInverse(nullptr, XMLoadFloat4x4(&cbPerFrame.matViewProj)));
-                    cbPerFrame.vCamPos = pUICame->GetTransform().GetPosition();
-                    cbPerFrame.fDayFactor = CGameInstance::Get().GetWorldDayFactor();
-                    memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
-                    m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
+                    return S_OK;
                 }
-                m_pContext->VSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
-                m_pContext->PSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
-                m_pContext->GSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+                {
+                    ctx.matProj = pUICame->GetProj();
+                    ctx.matView = pUICame->GetView();
+                    ctx.matViewProj = ctx.matView * ctx.matProj;
+                    ctx.eye = pUICame->GetTransform().GetLoadedPostion();
+
+                    auto pCbPerFrame = CGameInstance::Get().GetResourceFirst<CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_FRAME);
+                    D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+                    if (SUCCEEDED(m_pContext->Map(pCbPerFrame->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+                    {
+                        CB_PER_FRAME cbPerFrame{};
+                        XMStoreFloat4x4(&cbPerFrame.matProj, pUICame->GetProj());
+                        XMStoreFloat4x4(&cbPerFrame.matView, pUICame->GetView());
+                        XMStoreFloat4x4(&cbPerFrame.matViewProj, pUICame->GetView() * pUICame->GetProj());
+                        XMStoreFloat4x4(&cbPerFrame.matInvView, XMMatrixInverse(nullptr, pUICame->GetView()));
+                        //XMStoreFloat4x4(&cbPerFrame.matInvViewProj, XMMatrixInverse(nullptr, XMLoadFloat4x4(&cbPerFrame.matViewProj)));
+                        cbPerFrame.vCamPos = pUICame->GetTransform().GetPosition();
+                        cbPerFrame.fDayFactor = CGameInstance::Get().GetWorldDayFactor();
+                        memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
+                        m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
+                    }
+                    m_pContext->VSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+                    m_pContext->PSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+                    m_pContext->GSSetConstantBuffers(1, 1, pCbPerFrame->GetCBuffer().GetAddressOf());
+                }
             }
-        }
 
-        if (FAILED(RenderUI(ctx)))
-        {
-            return E_FAIL;
-        }
+            if (FAILED(RenderUI(ctx)))
+            {
+                return E_FAIL;
+            }
 
-        if (FAILED(RenderUIToolTip(ctx)))
-        {
-            return E_FAIL;
+            if (FAILED(RenderUIToolTip(ctx)))
+            {
+                return E_FAIL;
+            }
         }
 
         // unbinding shadow map

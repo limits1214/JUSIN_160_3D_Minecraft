@@ -285,6 +285,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\HandHeldItem.h" />
     <ClInclude Include="..\public\HandHeldItemObject.h" />
     <ClInclude Include="..\public\Item.h" />
+    <ClInclude Include="..\public\PlayerInvenUICamera.h" />
     <ClInclude Include="..\public\ResCloudVIBuffer.h" />
     <ClInclude Include="..\public\ResEnttGeoCreeper.h" />
     <ClInclude Include="..\public\ResEnttGeoEnderDragon.h" />
@@ -533,6 +534,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\HandHeldItem.cpp" />
     <ClCompile Include="..\private\HandHeldItemObject.cpp" />
     <ClCompile Include="..\private\Item.cpp" />
+    <ClCompile Include="..\private\PlayerInvenUICamera.cpp" />
     <ClCompile Include="..\private\ResCloudVIBuffer.cpp" />
     <ClCompile Include="..\private\ResEnttGeoCreeper.cpp" />
     <ClCompile Include="..\private\ResEnttGeoEnderDragon.cpp" />
@@ -735,6 +737,10 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Particle\Particle.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\PlayerInvenUI\PlayerInvenUI.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
