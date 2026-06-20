@@ -250,6 +250,11 @@ HRESULT CRenderer::Draw()
                         cbPerFrame.fDayFactor = CGameInstance::Get().GetWorldDayFactor();
                         cbPerFrame.vCamPos = pShadowCamera->GetTransform().GetPosition();
 
+                        {
+                            float fAngle = CGameInstance::Get().GetWorldSkyRotation();
+                            XMStoreFloat3(&cbPerFrame.vShadowLightDir, XMVector3Normalize(XMVectorSet(sin(fAngle), cos(fAngle), 0.0f, 0.f)));
+                        }
+
 
                         memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
                         m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
@@ -324,12 +329,17 @@ HRESULT CRenderer::Draw()
                     cbPerFrame.vCamPos = pGameCam->GetTransform().GetPosition();
                     if (dirLight.has_value())
                     {
-                        cbPerFrame.dirLight = dirLight.value();
+                        //cbPerFrame.dirLight = dirLight.value();
                     }
 
                     if (pShadowCamera)
                     {
                         XMStoreFloat4x4(&cbPerFrame.matShadowLightViewProj, pShadowCamera->GetView()* pShadowCamera->GetProj());
+                    }
+
+                    {
+                        float fAngle = CGameInstance::Get().GetWorldSkyRotation();
+                        XMStoreFloat3(&cbPerFrame.vShadowLightDir, XMVector3Normalize(XMVectorSet(sin(fAngle), cos(fAngle), 0.0f, 0.f)));
                     }
 
                     memcpy(mappedSubResource.pData, &cbPerFrame, sizeof(cbPerFrame));
