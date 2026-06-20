@@ -236,6 +236,7 @@ public:
 #pragma region RENDERER
 public:
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
+	void RendererDrawPlayerInvenUIPass();
 #pragma endregion
 
 #pragma region LIGHT_MANAGER

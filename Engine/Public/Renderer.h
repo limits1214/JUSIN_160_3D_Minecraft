@@ -19,9 +19,15 @@ public:
 	HRESULT InitializeOffscreen();
 	HRESULT InitializeShadow();
 	HRESULT InitializeFullscreen();
+	HRESULT InitializePlayerInvenUI();
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
 	HRESULT Draw();
 	void FrameEnd();
+
+public:
+	void DrawPlayerInvenUIPass() { m_bDrawPlayerInvenUIPass = true; }
+private:
+	_bool m_bDrawPlayerInvenUIPass{ false };
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};
@@ -34,6 +40,11 @@ private:
 private:
 	SPtr<CResDynamicTexture2D> m_pShadowTex2D{};
 	SPtr<CResViewPort> m_pShadowVP{};
+
+private:
+	SPtr<CResDynamicTexture2D> m_pPlayerInvenUITex2D{};
+	SPtr<CResDynamicTexture2D> m_pPlayerInvenUIDSVTex2D{};
+	SPtr<CResViewPort> m_pPlayerInvenUIVP{};
 
 private:
 	ComPtr<ID3D11RenderTargetView> m_pBackBufferRTV{};

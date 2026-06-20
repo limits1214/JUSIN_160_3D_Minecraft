@@ -10,7 +10,7 @@ namespace Engine
 	{
 		DEFAULT = 1 << 0,
 		SHADOW = 1 << 1,
-		SSAO = 1 << 2,
+		PLAYER_INVEN_UI = 1 << 2,
 	};
 	enum class STATE { RIGHT, UP, LOOK, POSITION, END };
 	//enum class VSYNC{ OFF, ON };
