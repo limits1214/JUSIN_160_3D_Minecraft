@@ -553,6 +553,21 @@
     <Filter Include="100.Shaders\PlayerInvenUI">
       <UniqueIdentifier>{3cbc4f1c-b2e2-4e9a-829c-432c6fdf8f76}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Entity\Armor">
+      <UniqueIdentifier>{11eb32d4-55a8-42aa-b121-8f60f68d2401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor\Helmet">
+      <UniqueIdentifier>{1367e327-5dbf-475e-ba92-8d0201338a64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor\Chestplate">
+      <UniqueIdentifier>{dbc6cec8-84c0-4fa3-80d7-9075359f699e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor\Leggings">
+      <UniqueIdentifier>{2cd95769-280c-427f-a1aa-ff7772f13230}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor\Boots">
+      <UniqueIdentifier>{3dabb78a-059c-4cfc-b2e5-4fe49069f1d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1077,6 +1092,21 @@
     <ClInclude Include="..\public\PlayerInvenUICamera.h">
       <Filter>GameObject\Camera\PlayerInvenUICamera</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ArmorEntity.h">
+      <Filter>GameObject\Entity\Armor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorBoots.h">
+      <Filter>Resource\Entity\Geometry\Armor\Boots</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorChestplate.h">
+      <Filter>Resource\Entity\Geometry\Armor\Chestplate</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorHelmet.h">
+      <Filter>Resource\Entity\Geometry\Armor\Helmet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorLeggings.h">
+      <Filter>Resource\Entity\Geometry\Armor\Leggings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1588,6 +1618,21 @@
     </ClCompile>
     <ClCompile Include="..\private\PlayerInvenUICamera.cpp">
       <Filter>GameObject\Camera\PlayerInvenUICamera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ArmorEntity.cpp">
+      <Filter>GameObject\Entity\Armor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorBoots.cpp">
+      <Filter>Resource\Entity\Geometry\Armor\Boots</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorChestplate.cpp">
+      <Filter>Resource\Entity\Geometry\Armor\Chestplate</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorHelmet.cpp">
+      <Filter>Resource\Entity\Geometry\Armor\Helmet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorLeggings.cpp">
+      <Filter>Resource\Entity\Geometry\Armor\Leggings</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

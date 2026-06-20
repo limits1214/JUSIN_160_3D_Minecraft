@@ -47,6 +47,11 @@
 #include "ResEnttGeoSteveArm.h"
 #include "ResEnttGeoSkeleton.h"
 #include "ResEnttGeoPlayerArmor.h"
+#include "ResEnttGeoPlayerArmorHelmet.h"
+#include "ResEnttGeoPlayerArmorChestplate.h"
+#include "ResEnttGeoPlayerArmorLeggings.h"
+#include "ResEnttGeoPlayerArmorBoots.h"
+
 #include "ResEnttGeoZombie.h"
 #include "ResEnttGeoCreeper.h"
 #include "ResEnttGeoSpider.h"
