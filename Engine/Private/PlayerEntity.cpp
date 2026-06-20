@@ -36,6 +36,8 @@
 
 #include "PlayerFPSArm.h"
 
+#include "ArmorEntity.h";
+
 
 NS_USING(Engine)
 
@@ -502,6 +504,8 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
     ProcessDestroyStage(fTimeDelta);
 
+
+    ProcessArmorEntities(fTimeDelta);
     ProcessUI(fTimeDelta);
 
 
@@ -2212,10 +2216,10 @@ void CPlayerEntity::ReadyPlayerItem()
 {
     m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_WoodPickaxe };
     //m_ItemArrHotbar[0]->fDurability = 0.95f;
-    m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Stick, 64 };
-    m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 1 };
-    m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::SAND), 64 };
-    m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Apple, 64 };
+    m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondHelmet };
+    m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_IronChestplate };
+    m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_GoldLeggings };
+    m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_NetheriteBoots };
     m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Wheat, 64 };
     m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bread, 64 };
     m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Mutton, 64 };
@@ -4216,6 +4220,352 @@ void CPlayerEntity::ProcessUIStatusBreath(_float fTimeDelta)
         GetUIController()->GetBreathBar()->SetRender(true);
         GetUIController()->GetBreathBar()->SetBreathCnt(m_iBreath);
     }
+}
+
+void CPlayerEntity::ProcessArmorEntities(_float fTimeDelta)
+{
+    size_t HelmetIdx = 0;
+    size_t ChestplateIdx = 1;
+    size_t LeggingsIdx = 2;
+    size_t BootsIdx = 3;
+
+    auto* pHelemt = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hArmorEntities[HelmetIdx]);
+    auto* pChestplate = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hArmorEntities[ChestplateIdx]);
+    auto* pLeggings = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hArmorEntities[LeggingsIdx]);
+    auto* pBoots = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hArmorEntities[BootsIdx]);
+
+    // Helmet
+    {
+        if (m_ItemArrArmor[HelmetIdx])
+        {
+            E::CArmorEntity::ARMOR_MADE made{ E::CArmorEntity::ARMOR_MADE::END };
+            switch (m_ItemArrArmor[HelmetIdx]->eItemType)
+            {
+            case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
+                made = CArmorEntity::ARMOR_MADE::COPPER;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
+                made = CArmorEntity::ARMOR_MADE::IRON;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
+                made = CArmorEntity::ARMOR_MADE::GOLD;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
+                made = CArmorEntity::ARMOR_MADE::DIAMOND;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
+                made = CArmorEntity::ARMOR_MADE::NETHERITE;
+                break;
+            }
+
+            if (pHelemt)
+            {
+                if (pHelemt->GetArmorMade() != made)
+                {
+                    pHelemt->SetPendingDestroyCascade();
+                }
+            }
+            else
+            {
+                if (made != E::CArmorEntity::ARMOR_MADE::END)
+                {
+                    E::CArmorEntity::DESC Desc{};
+                    Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::HELMET;
+                    Desc.eArmorMade = made;
+                    Desc.sObjectTag = "ArmorHelmet";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+                        "45_ARMOR", &Desc))
+                    {
+                        m_hArmorEntities[HelmetIdx] = handle.value();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (pHelemt)
+            {
+                pHelemt->SetPendingDestroyCascade();
+            }
+        }
+    }
+
+
+    // Chestplate
+    {
+        if (m_ItemArrArmor[ChestplateIdx])
+        {
+            E::CArmorEntity::ARMOR_MADE made{ E::CArmorEntity::ARMOR_MADE::END };
+            switch (m_ItemArrArmor[ChestplateIdx]->eItemType)
+            {
+            case CItemObject::ITEM_TYPE::ITEM_CopperChestplate:
+                made = CArmorEntity::ARMOR_MADE::COPPER;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
+                made = CArmorEntity::ARMOR_MADE::IRON;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
+                made = CArmorEntity::ARMOR_MADE::GOLD;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
+                made = CArmorEntity::ARMOR_MADE::DIAMOND;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
+                made = CArmorEntity::ARMOR_MADE::NETHERITE;
+                break;
+            }
+
+            if (pChestplate)
+            {
+                if (pChestplate->GetArmorMade() != made)
+                {
+                    pChestplate->SetPendingDestroyCascade();
+                }
+            }
+            else
+            {
+                if (made != E::CArmorEntity::ARMOR_MADE::END)
+                {
+                    E::CArmorEntity::DESC Desc{};
+                    Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::CHESTPLATE;
+                    Desc.eArmorMade = made;
+                    Desc.sObjectTag = "ArmorChestplate";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+                        "45_ARMOR", &Desc))
+                    {
+                        m_hArmorEntities[ChestplateIdx] = handle.value();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (pChestplate)
+            {
+                pChestplate->SetPendingDestroyCascade();
+            }
+        }
+    }
+
+    // Leggings
+    {
+        if (m_ItemArrArmor[LeggingsIdx])
+        {
+            E::CArmorEntity::ARMOR_MADE made{ E::CArmorEntity::ARMOR_MADE::END };
+            switch (m_ItemArrArmor[LeggingsIdx]->eItemType)
+            {
+            case CItemObject::ITEM_TYPE::ITEM_CopperLeggings:
+                made = CArmorEntity::ARMOR_MADE::COPPER;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
+                made = CArmorEntity::ARMOR_MADE::IRON;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
+                made = CArmorEntity::ARMOR_MADE::GOLD;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
+                made = CArmorEntity::ARMOR_MADE::DIAMOND;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
+                made = CArmorEntity::ARMOR_MADE::NETHERITE;
+                break;
+            }
+
+            if (pLeggings)
+            {
+                if (pLeggings->GetArmorMade() != made)
+                {
+                    pLeggings->SetPendingDestroyCascade();
+                }
+            }
+            else
+            {
+                if (made != E::CArmorEntity::ARMOR_MADE::END)
+                {
+                    E::CArmorEntity::DESC Desc{};
+                    Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::LEGGINGS;
+                    Desc.eArmorMade = made;
+                    Desc.sObjectTag = "ArmorLeggings";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+                        "45_ARMOR", &Desc))
+                    {
+                        m_hArmorEntities[LeggingsIdx] = handle.value();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (pLeggings)
+            {
+                pLeggings->SetPendingDestroyCascade();
+            }
+        }
+    }
+
+
+    // Boots
+    {
+        if (m_ItemArrArmor[BootsIdx])
+        {
+            E::CArmorEntity::ARMOR_MADE made{ E::CArmorEntity::ARMOR_MADE::END };
+            switch (m_ItemArrArmor[BootsIdx]->eItemType)
+            {
+            case CItemObject::ITEM_TYPE::ITEM_CopperBoots:
+                made = CArmorEntity::ARMOR_MADE::COPPER;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_IronBoots:
+                made = CArmorEntity::ARMOR_MADE::IRON;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
+                made = CArmorEntity::ARMOR_MADE::GOLD;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
+                made = CArmorEntity::ARMOR_MADE::DIAMOND;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_NetheriteBoots:
+                made = CArmorEntity::ARMOR_MADE::NETHERITE;
+                break;
+            }
+
+            if (pBoots)
+            {
+                if (pBoots->GetArmorMade() != made)
+                {
+                    pBoots->SetPendingDestroyCascade();
+                }
+            }
+            else
+            {
+                if (made != E::CArmorEntity::ARMOR_MADE::END)
+                {
+                    E::CArmorEntity::DESC Desc{};
+                    Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::BOOTS;
+                    Desc.eArmorMade = made;
+                    Desc.sObjectTag = "ArmorBoots";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+                        "45_ARMOR", &Desc))
+                    {
+                        m_hArmorEntities[BootsIdx] = handle.value();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (pBoots)
+            {
+                pBoots->SetPendingDestroyCascade();
+            }
+        }
+    }
+
+
+
+    // second 
+    {
+        auto* pHelemt = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hArmorEntities[HelmetIdx]);
+        auto* pChestplate = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hArmorEntities[ChestplateIdx]);
+        auto* pLeggings = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hArmorEntities[LeggingsIdx]);
+        auto* pBoots = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hArmorEntities[BootsIdx]);
+
+        if (m_eCameraType == CAMERA_TYPE::TPS)
+        {
+            auto pos = GetTransform().GetLoadedPostion();
+            auto root = m_pComEntityModel->GetBone("root");
+            auto waist =m_pComEntityModel->GetBone("waist");
+            auto body = m_pComEntityModel->GetBone("body");
+            auto head = m_pComEntityModel->GetBone("head");
+            auto hat = m_pComEntityModel->GetBone("hat");
+            auto rightArm = m_pComEntityModel->GetBone("rightArm");
+            auto leftArm = m_pComEntityModel->GetBone("leftArm");
+            auto rightLeg = m_pComEntityModel->GetBone("rightLeg");
+            auto leftLeg = m_pComEntityModel->GetBone("leftLeg");
+
+            
+
+            if (pHelemt)
+            {
+                pHelemt->SetRender(true);
+                pHelemt->GetTransform().SetPosition(pos);
+
+                auto waist2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("waist");
+                auto body2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
+                auto head2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("head");
+                auto hat2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("hat");
+
+                waist2->SetRotation(*root->GetRotation());
+                body2->SetRotation(*body->GetRotation());
+                head2->SetRotation(*head->GetRotation());
+                hat2->SetRotation(*hat->GetRotation());
+            }
+            if (pChestplate)
+            {
+                pChestplate->SetRender(true);
+                pChestplate->GetTransform().SetPosition(pos);
+
+                auto waist2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("waist");
+                auto body2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
+                auto rightArm2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("rightArm");
+                auto lefttArm2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("leftArm");
+
+                waist2->SetRotation(*root->GetRotation());
+                body2->SetRotation(*body->GetRotation());
+                rightArm2->SetRotation(*rightArm->GetRotation());
+                lefttArm2->SetRotation(*leftArm->GetRotation());
+            }
+            if (pLeggings)
+            {
+                pLeggings->SetRender(true);
+                pLeggings->GetTransform().SetPosition(pos);
+
+                auto waist2 = pLeggings->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("waist");
+                auto body2 = pLeggings->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
+                auto rightLeg2 = pLeggings->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("rightLeg");
+                auto leftLeg2 = pLeggings->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("leftLeg");
+
+                waist2->SetRotation(*root->GetRotation());
+                body2->SetRotation(*body->GetRotation());
+                rightLeg2->SetRotation(*rightLeg->GetRotation());
+                leftLeg2->SetRotation(*leftLeg->GetRotation());
+            }
+            if (pBoots)
+            {
+                pBoots->SetRender(true);
+                pBoots->GetTransform().SetPosition(pos);
+
+                auto waist2 = pBoots->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("waist");
+                auto body2 = pBoots->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
+                auto rightLeg2 = pBoots->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("rightLeg");
+                auto leftLeg2 = pBoots->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("leftLeg");
+
+                waist2->SetRotation(*root->GetRotation());
+                body2->SetRotation(*body->GetRotation());
+                rightLeg2->SetRotation(*rightLeg->GetRotation());
+                leftLeg2->SetRotation(*leftLeg->GetRotation());
+            }
+        }
+        else
+        {
+            if (pHelemt)
+            {
+                pHelemt->SetRender(false);
+            }
+            if (pChestplate)
+            {
+                pChestplate->SetRender(false);
+            }
+            if (pLeggings)
+            {
+                pLeggings->SetRender(false);
+            }
+            if (pBoots)
+            {
+                pBoots->SetRender(false);
+            }
+        }
+    }
+
 }
 
 UPtr<CPlayerEntity> CPlayerEntity::Create()

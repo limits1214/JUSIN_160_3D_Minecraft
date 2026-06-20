@@ -66,17 +66,17 @@ HRESULT CResEnttGeoPlayerArmorBoots::Load(const std::any& arg)
                 // armor1에서 덮어씌운 inflate 1.0f 적용
                 {.origin = {-3.9f, 0.0f, -2.0f}, .size = {4.0f, 12.0f, 4.0f}, .uv = {0.0f, 16.0f}, .texIndex = PackTexId(7, 2), .inflate = 1.0f }
             }
-        },
-        {
-            .name = "leftLeg",
-            .parent = "body",
-            .pivot = {1.9f, 12.0f, 0.0f},
-            .cubes = {
-                // armor1에서 덮어씌운 inflate 1.0f 적용
-                {.origin = {-0.1f, 0.0f, -2.0f}, .size = {4.0f, 12.0f, 4.0f}, .uv = {0.0f, 16.0f}, .texIndex = PackTexId(7, 2), .inflate = 1.0f }
             },
-            .mirror = true
-        }
+            {
+                .name = "leftLeg",
+                .parent = "body",
+                .pivot = {1.9f, 12.0f, 0.0f},
+                .cubes = {
+                    // armor1에서 덮어씌운 inflate 1.0f 적용
+                    {.origin = {-0.1f, 0.0f, -2.0f}, .size = {4.0f, 12.0f, 4.0f}, .uv = {0.0f, 16.0f}, .texIndex = PackTexId(7, 2), .inflate = 1.0f }
+                },
+                .mirror = true
+            }
         };
 
         RightToLeft();

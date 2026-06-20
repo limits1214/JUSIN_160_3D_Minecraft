@@ -17,6 +17,8 @@ CArmorEntity::~CArmorEntity()
 
 HRESULT CArmorEntity::Initialize(void* pArg)
 {
+    m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::PLAYER_INVEN_UI);
+
     auto* pDesc = static_cast<DESC*>(pArg);
     m_eArmorType = pDesc->eArmorType;
     m_eArmorMade = pDesc->eArmorMade;
@@ -64,12 +66,16 @@ void CArmorEntity::PriorityUpdate(E::_float fTimeDelta)
 
 void CArmorEntity::Update(E::_float fTimeDelta)
 {
-    m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
 }
 
 void CArmorEntity::LateUpdate(E::_float fTimeDelta)
 {
-    CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
+    if (m_bRender)
+    {
+        m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
+        CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
+    }
+    
     GetTransform().Update();
 }
 

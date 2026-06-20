@@ -233,6 +233,10 @@ private:
 	_float m_fExperienceGage{ 0.f };
 	int32_t m_iBreath{ 10 }; // max: 10
 
+private:
+	void ProcessArmorEntities(_float fTimeDelta);
+	std::array<CHandle, 4> m_hArmorEntities{};
+
 
 public:
 	static UPtr<CPlayerEntity> Create();
