@@ -38,6 +38,8 @@
 
 #include "Skybox.h"
 
+#include "ArmorEntity.h"
+
 //#include "HandHeldItemObject.h"
 #include "HandHeldItem.h"
 
@@ -264,6 +266,58 @@ HRESULT CLevelOverWorld::Initialize()
 			}
 		}
 	}
+
+/*
+
+	{
+		E::CArmorEntity::DESC Desc{};
+		Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::HELMET;
+		Desc.eArmorMade = E::CArmorEntity::ARMOR_MADE::NETHERITE;
+		Desc.sObjectTag = "ArmorHelmet";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+			"45_ARMOR", &Desc))
+		{
+			int x = 0;
+		}
+	}
+
+	{
+		E::CArmorEntity::DESC Desc{};
+		Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::CHESTPLATE;
+		Desc.eArmorMade = E::CArmorEntity::ARMOR_MADE::NETHERITE;
+		Desc.sObjectTag = "ArmorChestplate";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+			"45_ARMOR", &Desc))
+		{
+			int x = 0;
+		}
+	}
+	{
+		E::CArmorEntity::DESC Desc{};
+		Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::LEGGINGS;
+		Desc.eArmorMade = E::CArmorEntity::ARMOR_MADE::NETHERITE;
+		Desc.sObjectTag = "ArmorLeggings";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+			"45_ARMOR", &Desc))
+		{
+			int x = 0;
+		}
+	}
+
+	{
+		E::CArmorEntity::DESC Desc{};
+		Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::BOOTS;
+		Desc.eArmorMade = E::CArmorEntity::ARMOR_MADE::NETHERITE;
+		Desc.sObjectTag = "ArmorBoots";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+			"45_ARMOR", &Desc))
+		{
+			int x = 0;
+		}
+	}
+
+
+*/
 
 	//{
 	//	E::CUIItem::DESC Desc{};

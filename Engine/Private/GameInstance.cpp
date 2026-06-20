@@ -1836,6 +1836,95 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 8: copper_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/copper_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 9: copper_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/copper_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 10: iron_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/iron_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 11: iron_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/iron_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 12: gold_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/gold_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 13: gold_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/gold_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 14: diamond_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/diamond_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 15: diamond_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/diamond_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 16: netherite_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/netherite_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 17: netherite_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/netherite_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
 
 
 		// Entity_64_32_Ted2d_Array
@@ -1957,13 +2046,159 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
-		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmor", CResEnttGeoPlayerArmor::Create()))
+		//if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmor", CResEnttGeoPlayerArmor::Create()))
+		//{
+		//	if (SUCCEEDED(pRes->Load()))
+		//	{
+		//		if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmor", CResEnttVIBuffer::Create()))
+		//		{
+		//			res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmor"}, .baseTexId = PackTexId(7, 2), .specificCubeTexIds = {{"armor2", PackTexId(7, 3)}}});
+		//		}
+		//	}
+		//}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmorHelmet", CResEnttGeoPlayerArmorHelmet::Create()))
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmor", CResEnttVIBuffer::Create()))
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet", CResEnttVIBuffer::Create()))
 				{
-					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmor"}, .baseTexId = PackTexId(7, 2), .specificCubeTexIds = {{"armor2", PackTexId(7, 3)}}});
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"} });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Copper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 8) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Iron", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 10) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Gold", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 12) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Diamond", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 14) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Netherite", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 16) });
+				}
+
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmorChestplate", CResEnttGeoPlayerArmorChestplate::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"} });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Copper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 8) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Iron", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 10) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Gold", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 12) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Diamond", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 14) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Netherite", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 16) });
+				}
+			}
+		}
+
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmorLeggings", CResEnttGeoPlayerArmorLeggings::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"} });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Copper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 9) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Iron", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 11) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Gold", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 13) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Diamond", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 15) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Netherite", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 17) });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmorBoots", CResEnttGeoPlayerArmorBoots::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"} });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Copper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 8) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Iron", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 10) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Gold", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 12) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Diamond", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 14) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Netherite", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 16) });
 				}
 			}
 		}

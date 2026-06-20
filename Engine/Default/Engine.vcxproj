@@ -230,6 +230,7 @@ call CopyClient.bat</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\public\AnimalEntityObject.h" />
+    <ClInclude Include="..\public\ArmorEntity.h" />
     <ClInclude Include="..\public\BaseApp.h" />
     <ClInclude Include="..\public\Block3.h" />
     <ClInclude Include="..\public\BlockOutline.h" />
@@ -290,6 +291,10 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\ResEnttGeoCreeper.h" />
     <ClInclude Include="..\public\ResEnttGeoEnderDragon.h" />
     <ClInclude Include="..\public\ResEnttGeoEnderMan.h" />
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorBoots.h" />
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorHelmet.h" />
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorChestplate.h" />
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorLeggings.h" />
     <ClInclude Include="..\public\ResEnttGeoSpider.h" />
     <ClInclude Include="..\public\ResEnttGeoZombie.h" />
     <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
@@ -502,6 +507,7 @@ call CopyClient.bat</Command>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
     </ClCompile>
     <ClCompile Include="..\private\AnimalEntityObject.cpp" />
+    <ClCompile Include="..\private\ArmorEntity.cpp" />
     <ClCompile Include="..\private\BaseApp.cpp" />
     <ClCompile Include="..\private\Block3.cpp" />
     <ClCompile Include="..\private\BlockOutline.cpp" />
@@ -539,6 +545,10 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\ResEnttGeoCreeper.cpp" />
     <ClCompile Include="..\private\ResEnttGeoEnderDragon.cpp" />
     <ClCompile Include="..\private\ResEnttGeoEnderMan.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorBoots.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorHelmet.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorChestplate.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorLeggings.cpp" />
     <ClCompile Include="..\private\ResEnttGeoSpider.cpp" />
     <ClCompile Include="..\private\ResEnttGeoZombie.cpp" />
     <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
