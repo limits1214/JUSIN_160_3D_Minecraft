@@ -43,7 +43,7 @@ public:
 	{
 		m_text = text;
 
-		auto size = E::CGameInstance::Get().FontMeasureString("NeoDGM_20px", m_text.c_str(), scale);
+		auto size = E::CGameInstance::Get().FontMeasureString("NeoDGM_15px", m_text.c_str(), scale);
 		m_textWidth = size.x;
 		m_textHeight = size.y;
 

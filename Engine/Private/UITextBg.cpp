@@ -70,7 +70,7 @@ void CUITextBg::Update(E::_float fTimeDelta)
 		GetCursorPos(&mousePos);
 		ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
 
-		SetOrigin(_float2{ (float)mousePos.x, (float)mousePos.y });
+		SetOrigin(_float2{ (float)mousePos.x , (float)mousePos.y - 30.f });
 	}
 
 }
@@ -136,7 +136,7 @@ HRESULT CUITextBg::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ct
 		{
 			float textX = m_fX - m_fSizeX * 0.5f + m_paddingX;
 			float textY = m_fY - m_fSizeY * 0.5f + m_paddingY;
-			E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI_TOOLTIP, "NeoDGM_20px", m_text.c_str(), { textX, textY });
+			E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI_TOOLTIP, "NeoDGM_15px", m_text.c_str(), { textX, textY });
 
 			//perUI.rectSizePx = { m_fSizeX, m_fSizeY };
 

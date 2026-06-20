@@ -105,6 +105,24 @@ HRESULT CFontManager::Initialize()
             return E_FAIL;
         }
     }
+
+    //MakeSpriteFont "Neo둥근모 Pro" /FontSize:15 /FastPack /CharacterRegion:0x0020-0x00FF /CharacterRegion:0x3131-0x3163 /CharacterRegion:0xAC00-0xD800 /DefaultCharacter:0xAC00 NeoDGM_15px.spritefont
+    if (auto res = CGameInstance::Get().AddResource("FONT", "NeoDGM_15px", CResFontCustom::Create("./Resources/Font/NeoDGM_15px.spritefont")))
+    {
+        if (FAILED(res->Load()))
+        {
+            return E_FAIL;
+        }
+    }
+
+    //MakeSpriteFont "Neo둥근모 Pro" /FontSize:10 /FastPack /CharacterRegion:0x0020-0x00FF /CharacterRegion:0x3131-0x3163 /CharacterRegion:0xAC00-0xD800 /DefaultCharacter:0xAC00 NeoDGM_10px.spritefont
+    if (auto res = CGameInstance::Get().AddResource("FONT", "NeoDGM_10px", CResFontCustom::Create("./Resources/Font/NeoDGM_10px.spritefont")))
+    {
+        if (FAILED(res->Load()))
+        {
+            return E_FAIL;
+        }
+    }
     m_pBatch = std::make_unique<SpriteBatch>(m_pContext.Get());
 	return S_OK;
 }
