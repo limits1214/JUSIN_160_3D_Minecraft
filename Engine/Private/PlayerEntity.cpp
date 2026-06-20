@@ -384,18 +384,28 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
         return E_FAIL;
     }
 
+   
     {
-        CComEntityModel::DESC componentDesc{};
-        componentDesc.pGameObject = this;
-        componentDesc.viBufferId = { "MC_ENTITY_VIBuffer", "Steve" };
-        componentDesc.geometryId = { "MC_ENTITY_GEOMETRY", "Steve" };
-        auto pProto = CGameInstance::Get().ClonePrototype("PERMANENT", "Prototype_Component_EntityModel", &componentDesc);
-        if (pProto == nullptr)
+        CComEntityModel::DESC Desc{};
+        Desc.viBufferId = { "MC_ENTITY_VIBuffer", "Steve" };
+        Desc.geometryId = { "MC_ENTITY_GEOMETRY", "Steve" };
+        if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_EntityModel", "Com_EntityModel", &Desc, &m_pComEntityModel)))
         {
             return E_FAIL;
-        }
-        m_pComEntityModel = AddComponent("Com_EntityModel", static_uptr_cast<CComEntityModel>(std::move(pProto)));
+        };
     }
+
+    //
+    {
+        CComEntityModel::DESC Desc{};
+        Desc.viBufferId = { "MC_ENTITY_VIBuffer", "Steve" };
+        Desc.geometryId = { "MC_ENTITY_GEOMETRY", "Steve" };
+        if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_EntityModel", "Com_InventoryPlayerEntityModel", &Desc, &m_pComInventoryPlayerEntityModel)))
+        {
+            return E_FAIL;
+        };
+    }
+    
    
     //m_pCenterCollider = CCollSphere::Create({0.f, 0.3f, 0.f}, 0.3f);
     m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.25f, 0.9f, 0.25f });
@@ -506,6 +516,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
 
     ProcessArmorEntities(fTimeDelta);
+    ProcessPlayerOpenInvenArmorEntities(fTimeDelta);
     ProcessUI(fTimeDelta);
 
 
@@ -520,7 +531,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     GetTransform().Update();
 
     m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
-
+    m_pComInventoryPlayerEntityModel->UpdateBoneMatrix(fTimeDelta);
     E::CGameInstance::Get().AddColliderGroup("Coll_PlayerCenter", m_pCenterCollider.get());
     m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
 
@@ -674,10 +685,11 @@ HRESULT CPlayerEntity::RenderPlayerInvenUI(ID3D11DeviceContext* pContext, const 
         D3D11_MAPPED_SUBRESOURCE mappedSubResource;
         if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
         {
-
+            ;
             E::CB_PER_OBJECT cbPerObject{};
-            cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
-            XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
+            XMStoreFloat4x4(&cbPerObject.matWorld, XMMatrixIdentity());
+            //cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
+            XMStoreFloat4x4(&cbPerObject.matWVP, XMLoadFloat4x4(&cbPerObject.matWorld) * ctx.matViewProj);
 
             memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
             pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
@@ -685,10 +697,10 @@ HRESULT CPlayerEntity::RenderPlayerInvenUI(ID3D11DeviceContext* pContext, const 
         pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
         pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
     }
+    
+    m_pComInventoryPlayerEntityModel->BindBoneMatrix(pContext);
 
-    m_pComEntityModel->BindBoneMatrix(pContext);
-
-    m_pComEntityModel->Render(pContext, ctx);
+    m_pComInventoryPlayerEntityModel->Render(pContext, ctx);
     return S_OK;
 }
 
@@ -697,11 +709,11 @@ void CPlayerEntity::AddRenderPassPlayerInvenUIPass()
     if (auto cam = CGameInstance::Get().GetGameCamera("PlayerInvenUI"))
     {
         CGameInstance::Get().RendererDrawPlayerInvenUIPass();
-        auto playerPos = GetTransform().GetPosition();
-        auto camPos = playerPos;
-        camPos.z -= 4.f;
-        cam->GetTransform().SetPosition(XMLoadFloat3(&camPos));
-        cam->GetTransform().LookAt(XMLoadFloat3(&playerPos));
+        //auto playerPos = GetTransform().GetPosition();
+        //auto camPos = playerPos;
+        //camPos.z += 4.f;
+        //cam->GetTransform().SetPosition(XMLoadFloat3(&camPos));
+        //cam->GetTransform().LookAt(XMLoadFloat3(&playerPos));
     }
 }
 
@@ -1490,506 +1502,9 @@ root
 */
 void CPlayerEntity::ProcessActionUpdate(_float fTimeDelta)
 {
-    m_pComEntityModel->ResetBonesChannel();
-    if (m_eCameraType == CAMERA_TYPE::FPS)
-    {
-        PlayerMove(fTimeDelta);
-
-        // camera control
-        {
-            PlayerCameraTrace(fTimeDelta);
-        }
-
-        if (auto tmpCamera = CGameInstance::Get().GetGameCamera("Player"))
-        {
-            if (m_hRightItem)
-            {
-                if (auto pItem = CGameInstance::Get().GetGameObjectByHandle(m_hRightItem.value()))
-                {
-                    tmpCamera->GetTransform().Update();
-                    XMMATRIX matCameraWorld = tmpCamera->GetTransform().GetLoadedCombinedWorldMatrix();
-
-                    XMMATRIX matScale = XMMatrixScaling(1.f, 1.f, 1.f);
-                    XMMATRIX matTrans = XMMatrixTranslation(0.25f, -0.22f, 0.4f); 
-                    XMMATRIX matBaseOffset = matScale * matTrans;
-
-                    XMMATRIX matFinalRotation = XMMatrixIdentity();
-
-                    if (auto pArm = Cast<CPlayerFPSArm>(pItem))
-                    {
-                        
-                    }
-                    else if (auto pHandHeld = Cast<CHandHeldItem>(pItem))
-                    {
-                        if (auto pInfo = pHandHeld->GetItemInfo())
-                        {
-                            if (pInfo->block)
-                            {
-                                matFinalRotation = XMMatrixRotationRollPitchYaw(
-                                    XMConvertToRadians(-15.f),
-                                    XMConvertToRadians(35.f),
-                                    XMConvertToRadians(0.f)
-                                );
-                            }
-                            else
-                            {
-                               
-
-                                XMMATRIX matToPivot = XMMatrixTranslation(0.f, 0.1f, 0.1f); 
-
-                                XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
-                                    XMConvertToRadians(0.f),
-                                    XMConvertToRadians(-90.f),
-                                    XMConvertToRadians(0.f)
-                                );
-
-                                matFinalRotation = matRot * matToPivot;
-                            }
-                        }
-                    }
-
-
-                   
-                    static bool  bIsSwinging = false;   
-                    static float fSwingProgress = 0.f;    
-
-                    if (
-                        (CGameInstance::Get().MousePressing(MOUSEKEYSTATE::LB) || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
-                        && !bIsSwinging)
-                    {
-                        bIsSwinging = true;
-                        fSwingProgress = 0.f;
-                    }
-
-                  
-                    XMMATRIX matGlobalSwing = XMMatrixIdentity();
-
-                    if (bIsSwinging)
-                    {
-                        fSwingProgress += fTimeDelta * 5.f;
-
-                        if (fSwingProgress >= 1.f)
-                        {
-                            fSwingProgress = 1.f;
-                            bIsSwinging = false; //
-                        }
-
     
-                        float fAngleFactor = sinf(fSwingProgress * XM_PI); // 0.0 -> 1.0 -> 0.0 
-
-                        matGlobalSwing = XMMatrixRotationRollPitchYaw(
-                            fAngleFactor * XMConvertToRadians(90.f),
-                            0.f,
-                            0.f
-                        );
-                    }
-
-
-                   
-                    XMMATRIX matFinalParent = matFinalRotation * matGlobalSwing * matBaseOffset  * matCameraWorld;
-
-                    _float4x4 matParent;
-                    XMStoreFloat4x4(&matParent, matFinalParent);
-                    pItem->GetTransform().SetParentWorldMatrix(matParent);
-                }
-            }
-        }
-    } // End if FPS
-    else // NOT FPS
-    {
-        /*
-        머리 돌리기
-        카메라 위치로 머리를 돌려야함
-        이때 머리는 루트의 영향을 받아버림
-        머리가 45도 이상 돌릴때는 머리가 아니라 루트를 돌려야함
-        y축을 돌릴때는 머리와 루트를 두개 고려해야하지만
-        x축을 돌리는건 오직 머리만 고려함
-    */
-        {
-            if (m_pActivePlayerCamera)
-            {
-                auto pHeadBone = m_pComEntityModel->GetBone("head");
-                auto pRootBone = m_pComEntityModel->GetBone("root");
-
-                if (pHeadBone && pRootBone)
-                {
-                    _float adjustY = 0.f;
-                    _float adjustX = 1.f;
-                    if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
-                    {
-                        adjustY = XMConvertToRadians(180.f);
-                        adjustX = -1.f;
-                    }
-
-                    // 목표는 카메라가 돌린 x,y 값
-                    float targetRotYRad = XMConvertToRadians(m_pActivePlayerCamera->GetTransform().GetRotationEuler().y);
-                    float targetRotXRad = XMConvertToRadians(m_pActivePlayerCamera->GetTransform().GetRotationEuler().x);
-
-                    bool bMovingLeftRight = m_bKeyPressingA || m_bKeyPressingD;
-                    bool bMovingForwardBackward = m_bKeyPressingW || m_bKeyPressingS;
-
-
-
-                    // 왼쪽 오른쪽로 움직이고 있으면 Root는 각 45도 방향으로
-                    if (bMovingLeftRight)
-                    {
-                        float sign;
-                        if (m_bKeyPressingA)
-                        {
-                            sign = -1.f;
-                        }
-                        else
-                        {
-                            sign = 1.f;
-                        }
-
-                        float threshold = XMConvertToRadians(45.f);
-
-                        float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;;
-
-                        while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
-                        while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
-
-                        //(sign * threshold)
-
-                        float delta = (toRotYRadDiff + (threshold * sign)) * 5.f * fTimeDelta;
-                        m_fRootRotRadY += delta;
-                        //pHeadBone->GetRotation()->y += (threshold * sign);
-                        pHeadBone->GetRotation()->y += toRotYRadDiff;
-                        pHeadBone->GetRotation()->x += targetRotXRad;
-
-                        pRootBone->GetRotation()->y += m_fRootRotRadY;
-                    }
-
-                    // 앞뒤로 움직이고 있으면 Root는 보고 있는 방향으로
-                    else if (bMovingForwardBackward)
-                    {
-                        float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;
-
-                        while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
-                        while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
-
-                        float sign = toRotYRadDiff > 0 ? 1.f : -1.f;
-
-                        float threshold = XMConvertToRadians(0.f);
-
-                        if (fabsf(toRotYRadDiff) > threshold)
-                        {
-                            float delta = (toRotYRadDiff - (threshold * sign)) * 5.f * fTimeDelta;
-                            m_fRootRotRadY += delta;
-
-                            pHeadBone->GetRotation()->y += toRotYRadDiff;
-                        }
-                        else
-                        {
-                            pHeadBone->GetRotation()->y += (threshold * sign);
-                        }
-
-
-                        pRootBone->GetRotation()->y += m_fRootRotRadY;
-
-                        pHeadBone->GetRotation()->x += targetRotXRad;
-                    }
-                    // 움직이지 않는 상태
-                    else
-                    {
-                        float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;
-
-                        while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
-                        while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
-
-                        float sign = toRotYRadDiff > 0 ? 1.f : -1.f;
-
-                        float threshold = XMConvertToRadians(45.f);
-
-                        if (fabsf(toRotYRadDiff) > threshold)
-                        {
-                            float delta = (toRotYRadDiff - (threshold * sign)) * 5.f * fTimeDelta;
-                            m_fRootRotRadY += delta;
-                            pHeadBone->GetRotation()->y += (threshold * sign);
-                        }
-                        else
-                        {
-                            pHeadBone->GetRotation()->y += toRotYRadDiff;
-                        }
-
-
-                        pRootBone->GetRotation()->y += m_fRootRotRadY;
-
-                        pHeadBone->GetRotation()->x += targetRotXRad;
-                    }
-                }
-            }
-        }
-
-
-        // move head bone
-        {
-            if (false && m_pActivePlayerCamera)
-            {
-                auto pHeadBone = m_pComEntityModel->GetBone("head");
-                auto pRootBone = m_pComEntityModel->GetBone("root");
-                if (pHeadBone && pRootBone)
-                {
-                    _float adjustY = 0.f;
-                    _float adjustX = 1.f;
-                    if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
-                    {
-                        adjustY = XMConvertToRadians(180.f);
-                        adjustX = -1.f;
-                    }
-
-                    auto playerCamEulerRot = m_pActivePlayerCamera->GetTransform().GetRotationEuler();
-                    float targetHeadY = XMConvertToRadians(playerCamEulerRot.y) + adjustY;
-                    float targetHeadX = XMConvertToRadians(playerCamEulerRot.x) * adjustX;
-
-                    // targetHeadY 정규화
-                    while (targetHeadY > XM_PI)  targetHeadY -= XM_2PI;
-                    while (targetHeadY < -XM_PI) targetHeadY += XM_2PI;
-
-                    // 멤버에서 읽되, 비교용으로만 정규화
-                    float currRootNorm = m_fRootRotRadY;
-                    while (currRootNorm > XM_PI)  currRootNorm -= XM_2PI;
-                    while (currRootNorm < -XM_PI) currRootNorm += XM_2PI;
-
-                    // head가 root 기준으로 얼마나 돌아있나
-                    float relativeAngle = targetHeadY - currRootNorm;
-                    while (relativeAngle > XM_PI)  relativeAngle -= XM_2PI;
-                    while (relativeAngle < -XM_PI) relativeAngle += XM_2PI;
-
-                    const float HEAD_LIMIT = XMConvertToRadians(45.f);
-                    const float ROOT_SPEED = 10.f;
-                    bool bForwardMoving = m_bKeyPressingW || m_bKeyPressingS;
-                    bool bLRMoving = m_bKeyPressingA || m_bKeyPressingD;
-
-                    // root를 얼마나 틀지 계산하는 람다
-                    auto SmoothRoot = [&](float targetRootY) -> float
-                        {
-                            float delta = targetRootY - currRootNorm;
-                            while (delta > XM_PI)  delta -= XM_2PI;
-                            while (delta < -XM_PI) delta += XM_2PI;
-                            // m_fRootRotY에 delta만큼 더함 (정규화 없이 누적)
-                            return m_fRootRotRadY + delta * ROOT_SPEED * fTimeDelta;
-                        };
-
-                    if (bLRMoving)
-                    {
-                        float sideOffset = m_bKeyPressingA ? -HEAD_LIMIT : HEAD_LIMIT;
-                        float targetRootY = targetHeadY + sideOffset;
-
-                        m_fRootRotRadY = SmoothRoot(targetRootY);
-
-                        // 새 root 기준 head 상대각
-                        float newRootNorm = m_fRootRotRadY;
-                        while (newRootNorm > XM_PI)  newRootNorm -= XM_2PI;
-                        while (newRootNorm < -XM_PI) newRootNorm += XM_2PI;
-
-                        float newRelative = targetHeadY - newRootNorm;
-                        while (newRelative > XM_PI)  newRelative -= XM_2PI;
-                        while (newRelative < -XM_PI) newRelative += XM_2PI;
-                        newRelative = std::clamp(newRelative, -HEAD_LIMIT, HEAD_LIMIT);
-
-                        pRootBone->AddRotation({ 0.f, newRootNorm, 0.f });
-                        pHeadBone->AddRotation({ targetHeadX, newRelative, 0.f });
-                    }
-                    else if (bForwardMoving)
-                    {
-                        m_fRootRotRadY = SmoothRoot(targetHeadY);
-
-                        float newRootNorm = m_fRootRotRadY;
-                        while (newRootNorm > XM_PI)  newRootNorm -= XM_2PI;
-                        while (newRootNorm < -XM_PI) newRootNorm += XM_2PI;
-
-                        float newRelative = targetHeadY - newRootNorm;
-                        while (newRelative > XM_PI)  newRelative -= XM_2PI;
-                        while (newRelative < -XM_PI) newRelative += XM_2PI;
-                        newRelative = std::clamp(newRelative, -HEAD_LIMIT, HEAD_LIMIT);
-
-                        pRootBone->AddRotation({ 0.f, newRootNorm, 0.f });
-                        pHeadBone->AddRotation({ targetHeadX, newRelative, 0.f });
-                    }
-                    else
-                    {
-                        // 정지: head가 45도 안이면 root 안 움직임
-                        if (fabsf(relativeAngle) <= HEAD_LIMIT)
-                        {
-                            // m_fRootRotY 변경 없음
-                            pRootBone->AddRotation({ 0.f, currRootNorm, 0.f });
-                            pHeadBone->AddRotation({ targetHeadX, relativeAngle, 0.f });
-                        }
-                        else
-                        {
-                            // 45도 초과 → root를 head 방향으로 밀어줌
-                            float sign = (relativeAngle > 0.f) ? 1.f : -1.f;
-                            float targetRootY = targetHeadY - sign * HEAD_LIMIT;
-
-                            m_fRootRotRadY = SmoothRoot(targetRootY);
-
-                            float newRootNorm = m_fRootRotRadY;
-                            while (newRootNorm > XM_PI)  newRootNorm -= XM_2PI;
-                            while (newRootNorm < -XM_PI) newRootNorm += XM_2PI;
-
-                            pRootBone->AddRotation({ 0.f, newRootNorm, 0.f });
-                            pHeadBone->AddRotation({ targetHeadX, sign * HEAD_LIMIT, 0.f });
-                        }
-                    }
-                }
-            }
-        }
-
-        if (1)
-        {
-            static float fTmp2 = 0;
-            fTmp2 += fTimeDelta;;
-            float lifeTime = fTmp2;
-            float bob = (cosf(lifeTime * XMConvertToRadians(103.2f)) * 2.865f) + 2.865f;
-
-            if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
-            {
-                pLeftArm->GetRotation()->z += XMConvertToRadians(-bob);
-            }
-
-            if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
-            {
-                pRightArm->GetRotation()->z += XMConvertToRadians(bob);
-            }
-        }
-
-        if (1)
-        {
-            static float fWalkCycle = 0.f;
-            bool bMoving = m_bKeyPressingA || m_bKeyPressingD || m_bKeyPressingW || m_bKeyPressingS;
-            if (bMoving)
-            {
-                fWalkCycle += fTimeDelta * 6.28f;
-                if (fWalkCycle > 6.28f) {
-                    fWalkCycle -= 6.28f;
-                }
-
-                float tcos0 = cos(fWalkCycle) * 30;
-
-                // leftarm, leftleg, rightarm, rightleg 회전 적용
-                if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
-                {
-                    pLeftArm->GetRotation()->x += XMConvertToRadians(tcos0);
-                }
-
-                if (auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg"))
-                {
-                    pLeftLeg->GetRotation()->x += XMConvertToRadians(tcos0 * -1.4f);
-
-                }
-
-                if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
-                {
-                    pRightArm->GetRotation()->x += XMConvertToRadians(-tcos0);
-                }
-
-                if (auto pRightLeg = m_pComEntityModel->GetBone("rightLeg"))
-                {
-                    pRightLeg->GetRotation()->x += XMConvertToRadians(tcos0 * 1.4f);
-                }
-            }
-        }
-
-
-
-        PlayerMove(fTimeDelta);
-
-
-
-        /////
-
-        if (1)
-        {
-            if (m_bKeyPressingShift)
-            {
-                constexpr float fScale = 0.0625f;
-
-                if (auto pWaist = m_pComEntityModel->GetBone("waist"))
-                {
-                    pWaist->GetRotation()->x += XMConvertToRadians(28.f);
-                    pWaist->GetTranslatoin()->y -= 1.f * fScale;
-                }
-
-                if (auto pHead = m_pComEntityModel->GetBone("head"))
-                {
-                    pHead->GetRotation()->x += -XMConvertToRadians(28.f);
-
-                }
-            }
-        }
-
-
-
-        {
-
-            if (m_bMousePressingLeft)
-            {
-                m_bAttacking = true;
-                m_fAttackTime = 0.0f;
-                m_fAttackDuration = 0.3f;  // 공격 지속 시간
-            }
-
-            if (m_bAttacking)
-            {
-                // attack_time: 0.0 ~ 1.0
-                m_fAttackTime += fTimeDelta / m_fAttackDuration;
-                m_fAttackTime = std::min(m_fAttackTime, 1.0f);
-
-                float attackTime = m_fAttackTime;
-                float attackBodyRotY = (float)m_iMouseMoveX;  // 현재 head 회전값
-
-                // body 회전
-                if (auto pBody = m_pComEntityModel->GetBone("body"))
-                {
-                    float t = 1.0f - pow(1.0f - attackTime, 4.0f);
-                    float leftArmRotX = -(sin(t * 3.14159f) * 1.2f + sin(attackTime * 3.14159f)) * 10.0f;
-                    //pBody->GetRotation()->y += XMConvertToRadians(leftArmRotX);
-                }
-
-                // leftarm 회전
-                if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
-                {
-                    float t = 1.0f - pow(1.0f - attackTime, 4.0f);
-                    float leftArmRotX = -(sin(t * 3.14159f) * 1.2f + sin(attackTime * 3.14159f)) * 10.0f;
-
-                    pLeftArm->GetRotation()->x += XMConvertToRadians(leftArmRotX);
-                }
-
-                // rightarm 회전
-                if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
-                {
-                    float t = 1.0f - pow(1.0f - attackTime, 4.0f);
-                    float sinT = sin(t * 3.14159f);
-
-                    float rightArmRotX = -(sinT * 1.2f + sin(attackTime * 3.14159f)) * 30.0f;
-
-                    float rightArmRotY = -(sinT != 0.0f ?
-                        (-90.0f * sinT) + 30.0f :
-                        0.0f);
-
-                    pRightArm->GetRotation()->x += XMConvertToRadians(rightArmRotX);
-                    pRightArm->GetRotation()->y += XMConvertToRadians(rightArmRotY);
-
-                }
-
-                // 공격 완료
-                if (m_fAttackTime >= 1.0f)
-                {
-                    m_bAttacking = false;
-                    m_fAttackTime = 0.0f;
-                }
-            }
-        }
-
-
-
-        // camera control
-        {
-            PlayerCameraTrace(fTimeDelta);
-        }
-    }
+    ProcessPlayerOpenInvenAction(fTimeDelta);
+    ProcessPlayerCameraAction(fTimeDelta);
 }
 
 void CPlayerEntity::ProcessItemColliding(_float fTimeDelta)
@@ -4194,6 +3709,64 @@ void CPlayerEntity::ProcessUIStatusHunger(_float fTimeDelta)
 }
 void CPlayerEntity::ProcessUIStatusArmor(_float fTimeDelta)
 {
+    uint32_t halfArmor = 0;
+
+    // Helmet (0, 1, 2, 3, 3)
+    if (m_ItemArrArmor[0])
+    {
+        switch (m_ItemArrArmor[0]->eItemType)
+        {
+        case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:     halfArmor += 1; break;
+        case CItemObject::ITEM_TYPE::ITEM_IronHelmet:       halfArmor += 2; break;
+        case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:       halfArmor += 2; break;
+        case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:    halfArmor += 3; break;
+        case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:  halfArmor += 3; break;
+        }
+    }
+
+    // Chestplate (4, 6, 5, 8, 8)
+    if (m_ItemArrArmor[1])
+    {
+        switch (m_ItemArrArmor[1]->eItemType)
+        {
+        case CItemObject::ITEM_TYPE::ITEM_CopperChestplate:    halfArmor += 4; break;
+        case CItemObject::ITEM_TYPE::ITEM_IronChestplate:      halfArmor += 6; break;
+        case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:      halfArmor += 5; break;
+        case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:   halfArmor += 8; break;
+        case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate: halfArmor += 8; break;
+        }
+    }
+
+    // Leggings (3, 5, 3, 6, 6)
+    if (m_ItemArrArmor[2])
+    {
+        switch (m_ItemArrArmor[2]->eItemType)
+        {
+        case CItemObject::ITEM_TYPE::ITEM_CopperLeggings:    halfArmor += 3; break;
+        case CItemObject::ITEM_TYPE::ITEM_IronLeggings:      halfArmor += 5; break;
+        case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:      halfArmor += 3; break;
+        case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:   halfArmor += 6; break;
+        case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings: halfArmor += 6; break;
+        }
+    }
+
+    // Boots (1, 2, 1, 3, 3)
+    if (m_ItemArrArmor[3])
+    {
+        switch (m_ItemArrArmor[3]->eItemType)
+        {
+        case CItemObject::ITEM_TYPE::ITEM_CopperBoots:    halfArmor += 1; break;
+        case CItemObject::ITEM_TYPE::ITEM_IronBoots:      halfArmor += 2; break;
+        case CItemObject::ITEM_TYPE::ITEM_GoldBoots:      halfArmor += 1; break;
+        case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:   halfArmor += 3; break;
+        case CItemObject::ITEM_TYPE::ITEM_NetheriteBoots: halfArmor += 3; break;
+        }
+    }
+    m_iRealHealfArmor = halfArmor;
+    // 최종적으로 20을 넘지 않도록 제한
+    if (halfArmor > 20) halfArmor = 20;
+    m_iHalfArmor = halfArmor;
+
     if (m_iHalfArmor == 0)
     {
         GetUIController()->GetArmorBar()->SetRender(false);
@@ -4566,6 +4139,814 @@ void CPlayerEntity::ProcessArmorEntities(_float fTimeDelta)
         }
     }
 
+}
+
+void CPlayerEntity::ProcessPlayerOpenInvenArmorEntities(_float fTimeDelta)
+{
+    size_t HelmetIdx = 0;
+    size_t ChestplateIdx = 1;
+    size_t LeggingsIdx = 2;
+    size_t BootsIdx = 3;
+
+    auto* pHelemt = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hPlayerOpenInvenArmorEntities[HelmetIdx]);
+    auto* pChestplate = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hPlayerOpenInvenArmorEntities[ChestplateIdx]);
+    auto* pLeggings = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hPlayerOpenInvenArmorEntities[LeggingsIdx]);
+    auto* pBoots = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hPlayerOpenInvenArmorEntities[BootsIdx]);
+
+    // Helmet
+    {
+        if (m_ItemArrArmor[HelmetIdx])
+        {
+            E::CArmorEntity::ARMOR_MADE made{ E::CArmorEntity::ARMOR_MADE::END };
+            switch (m_ItemArrArmor[HelmetIdx]->eItemType)
+            {
+            case CItemObject::ITEM_TYPE::ITEM_CopperHelmet:
+                made = CArmorEntity::ARMOR_MADE::COPPER;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_IronHelmet:
+                made = CArmorEntity::ARMOR_MADE::IRON;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_GoldHelmet:
+                made = CArmorEntity::ARMOR_MADE::GOLD;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_DiamondHelmet:
+                made = CArmorEntity::ARMOR_MADE::DIAMOND;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_NetheriteHelmet:
+                made = CArmorEntity::ARMOR_MADE::NETHERITE;
+                break;
+            }
+
+            if (pHelemt)
+            {
+                if (pHelemt->GetArmorMade() != made)
+                {
+                    pHelemt->SetPendingDestroyCascade();
+                }
+            }
+            else
+            {
+                if (made != E::CArmorEntity::ARMOR_MADE::END)
+                {
+                    E::CArmorEntity::DESC Desc{};
+                    Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::HELMET;
+                    Desc.eArmorMade = made;
+                    Desc.sObjectTag = "ArmorHelmet";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+                        "45_ARMOR", &Desc))
+                    {
+                        m_hPlayerOpenInvenArmorEntities[HelmetIdx] = handle.value();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (pHelemt)
+            {
+                pHelemt->SetPendingDestroyCascade();
+            }
+        }
+    }
+
+
+    // Chestplate
+    {
+        if (m_ItemArrArmor[ChestplateIdx])
+        {
+            E::CArmorEntity::ARMOR_MADE made{ E::CArmorEntity::ARMOR_MADE::END };
+            switch (m_ItemArrArmor[ChestplateIdx]->eItemType)
+            {
+            case CItemObject::ITEM_TYPE::ITEM_CopperChestplate:
+                made = CArmorEntity::ARMOR_MADE::COPPER;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_IronChestplate:
+                made = CArmorEntity::ARMOR_MADE::IRON;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_GoldChestplate:
+                made = CArmorEntity::ARMOR_MADE::GOLD;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_DiamondChestplate:
+                made = CArmorEntity::ARMOR_MADE::DIAMOND;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_NetheriteChestplate:
+                made = CArmorEntity::ARMOR_MADE::NETHERITE;
+                break;
+            }
+
+            if (pChestplate)
+            {
+                if (pChestplate->GetArmorMade() != made)
+                {
+                    pChestplate->SetPendingDestroyCascade();
+                }
+            }
+            else
+            {
+                if (made != E::CArmorEntity::ARMOR_MADE::END)
+                {
+                    E::CArmorEntity::DESC Desc{};
+                    Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::CHESTPLATE;
+                    Desc.eArmorMade = made;
+                    Desc.sObjectTag = "ArmorChestplate";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+                        "45_ARMOR", &Desc))
+                    {
+                        m_hPlayerOpenInvenArmorEntities[ChestplateIdx] = handle.value();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (pChestplate)
+            {
+                pChestplate->SetPendingDestroyCascade();
+            }
+        }
+    }
+
+    // Leggings
+    {
+        if (m_ItemArrArmor[LeggingsIdx])
+        {
+            E::CArmorEntity::ARMOR_MADE made{ E::CArmorEntity::ARMOR_MADE::END };
+            switch (m_ItemArrArmor[LeggingsIdx]->eItemType)
+            {
+            case CItemObject::ITEM_TYPE::ITEM_CopperLeggings:
+                made = CArmorEntity::ARMOR_MADE::COPPER;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_IronLeggings:
+                made = CArmorEntity::ARMOR_MADE::IRON;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_GoldLeggings:
+                made = CArmorEntity::ARMOR_MADE::GOLD;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_DiamondLeggings:
+                made = CArmorEntity::ARMOR_MADE::DIAMOND;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_NetheriteLeggings:
+                made = CArmorEntity::ARMOR_MADE::NETHERITE;
+                break;
+            }
+
+            if (pLeggings)
+            {
+                if (pLeggings->GetArmorMade() != made)
+                {
+                    pLeggings->SetPendingDestroyCascade();
+                }
+            }
+            else
+            {
+                if (made != E::CArmorEntity::ARMOR_MADE::END)
+                {
+                    E::CArmorEntity::DESC Desc{};
+                    Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::LEGGINGS;
+                    Desc.eArmorMade = made;
+                    Desc.sObjectTag = "ArmorLeggings";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+                        "45_ARMOR", &Desc))
+                    {
+                        m_hPlayerOpenInvenArmorEntities[LeggingsIdx] = handle.value();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (pLeggings)
+            {
+                pLeggings->SetPendingDestroyCascade();
+            }
+        }
+    }
+
+
+    // Boots
+    {
+        if (m_ItemArrArmor[BootsIdx])
+        {
+            E::CArmorEntity::ARMOR_MADE made{ E::CArmorEntity::ARMOR_MADE::END };
+            switch (m_ItemArrArmor[BootsIdx]->eItemType)
+            {
+            case CItemObject::ITEM_TYPE::ITEM_CopperBoots:
+                made = CArmorEntity::ARMOR_MADE::COPPER;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_IronBoots:
+                made = CArmorEntity::ARMOR_MADE::IRON;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_GoldBoots:
+                made = CArmorEntity::ARMOR_MADE::GOLD;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_DiamondBoots:
+                made = CArmorEntity::ARMOR_MADE::DIAMOND;
+                break;
+            case CItemObject::ITEM_TYPE::ITEM_NetheriteBoots:
+                made = CArmorEntity::ARMOR_MADE::NETHERITE;
+                break;
+            }
+
+            if (pBoots)
+            {
+                if (pBoots->GetArmorMade() != made)
+                {
+                    pBoots->SetPendingDestroyCascade();
+                }
+            }
+            else
+            {
+                if (made != E::CArmorEntity::ARMOR_MADE::END)
+                {
+                    E::CArmorEntity::DESC Desc{};
+                    Desc.eArmorType = E::CArmorEntity::ARMOR_TYPE::BOOTS;
+                    Desc.eArmorMade = made;
+                    Desc.sObjectTag = "ArmorBoots";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArmorEntity",
+                        "45_ARMOR", &Desc))
+                    {
+                        m_hPlayerOpenInvenArmorEntities[BootsIdx] = handle.value();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (pBoots)
+            {
+                pBoots->SetPendingDestroyCascade();
+            }
+        }
+    }
+
+
+
+    // second 
+    {
+        auto* pHelemt = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hPlayerOpenInvenArmorEntities[HelmetIdx]);
+        auto* pChestplate = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hPlayerOpenInvenArmorEntities[ChestplateIdx]);
+        auto* pLeggings = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hPlayerOpenInvenArmorEntities[LeggingsIdx]);
+        auto* pBoots = CGameInstance::Get().GetGameObjectByHandleT<CArmorEntity>(m_hPlayerOpenInvenArmorEntities[BootsIdx]);
+
+        
+            auto pos = GetTransform().GetLoadedPostion();
+            auto root = m_pComInventoryPlayerEntityModel->GetBone("root");
+            auto waist = m_pComInventoryPlayerEntityModel->GetBone("waist");
+            auto body = m_pComInventoryPlayerEntityModel->GetBone("body");
+            auto head = m_pComInventoryPlayerEntityModel->GetBone("head");
+            auto hat = m_pComInventoryPlayerEntityModel->GetBone("hat");
+            auto rightArm = m_pComInventoryPlayerEntityModel->GetBone("rightArm");
+            auto leftArm = m_pComInventoryPlayerEntityModel->GetBone("leftArm");
+            auto rightLeg = m_pComInventoryPlayerEntityModel->GetBone("rightLeg");
+            auto leftLeg = m_pComInventoryPlayerEntityModel->GetBone("leftLeg");
+
+
+
+            if (pHelemt)
+            {
+                pHelemt->SetRender(true);
+                //pHelemt->GetTransform().SetPosition(pos);
+
+                auto waist2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("waist");
+                auto body2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
+                auto head2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("head");
+                auto hat2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("hat");
+
+                waist2->SetRotation(*root->GetRotation());
+                body2->SetRotation(*body->GetRotation());
+                head2->SetRotation(*head->GetRotation());
+                hat2->SetRotation(*hat->GetRotation());
+            }
+            if (pChestplate)
+            {
+                pChestplate->SetRender(true);
+                //pChestplate->GetTransform().SetPosition(pos);
+
+                auto waist2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("waist");
+                auto body2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
+                auto rightArm2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("rightArm");
+                auto lefttArm2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("leftArm");
+
+                waist2->SetRotation(*root->GetRotation());
+                body2->SetRotation(*body->GetRotation());
+                rightArm2->SetRotation(*rightArm->GetRotation());
+                lefttArm2->SetRotation(*leftArm->GetRotation());
+            }
+            if (pLeggings)
+            {
+                pLeggings->SetRender(true);
+                //pLeggings->GetTransform().SetPosition(pos);
+
+                auto waist2 = pLeggings->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("waist");
+                auto body2 = pLeggings->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
+                auto rightLeg2 = pLeggings->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("rightLeg");
+                auto leftLeg2 = pLeggings->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("leftLeg");
+
+                waist2->SetRotation(*root->GetRotation());
+                body2->SetRotation(*body->GetRotation());
+                rightLeg2->SetRotation(*rightLeg->GetRotation());
+                leftLeg2->SetRotation(*leftLeg->GetRotation());
+            }
+            if (pBoots)
+            {
+                pBoots->SetRender(true);
+                //pBoots->GetTransform().SetPosition(pos);
+
+                auto waist2 = pBoots->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("waist");
+                auto body2 = pBoots->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
+                auto rightLeg2 = pBoots->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("rightLeg");
+                auto leftLeg2 = pBoots->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("leftLeg");
+
+                waist2->SetRotation(*root->GetRotation());
+                body2->SetRotation(*body->GetRotation());
+                rightLeg2->SetRotation(*rightLeg->GetRotation());
+                leftLeg2->SetRotation(*leftLeg->GetRotation());
+            }
+        //{
+        //    if (pHelemt)
+        //    {
+        //        pHelemt->SetRender(false);
+        //    }
+        //    if (pChestplate)
+        //    {
+        //        pChestplate->SetRender(false);
+        //    }
+        //    if (pLeggings)
+        //    {
+        //        pLeggings->SetRender(false);
+        //    }
+        //    if (pBoots)
+        //    {
+        //        pBoots->SetRender(false);
+        //    }
+        //}
+    }
+
+}
+
+void CPlayerEntity::ProcessPlayerOpenInvenAction(_float fTimeDelta)
+{
+    if (GetUIController()->Getinventory()->GetRender())
+    {
+        if (auto cam = CGameInstance::Get().GetGameCamera("PlayerInvenUI"))
+        {
+            m_pComInventoryPlayerEntityModel->ResetBonesChannel();
+
+            {
+                static float fTmp2 = 0;
+                fTmp2 += fTimeDelta;;
+                float lifeTime = fTmp2;
+                float bob = (cosf(lifeTime * XMConvertToRadians(103.2f)) * 2.865f) + 2.865f;
+
+                if (auto pLeftArm = m_pComInventoryPlayerEntityModel->GetBone("leftArm"))
+                {
+                    pLeftArm->GetRotation()->z += XMConvertToRadians(-bob);
+                }
+
+                if (auto pRightArm = m_pComInventoryPlayerEntityModel->GetBone("rightArm"))
+                {
+                    pRightArm->GetRotation()->z += XMConvertToRadians(bob);
+                }
+            }
+
+            POINT mousePos;
+            GetCursorPos(&mousePos);
+            ScreenToClient(CGameInstance::Get().GetHwnd(), &mousePos);
+
+            _float2 clientSize = CGameInstance::Get().GetClientScreenSize();
+            //_float2 clientSize = {256.f, 256.f };
+
+            float ndcX = (2.0f * mousePos.x / (clientSize.x)) - 1.0f;
+            float ndcY = 1.0f - (2.0f * mousePos.y / (clientSize.y));
+
+            auto pHeadBone = m_pComInventoryPlayerEntityModel->GetBone("head");
+
+
+
+            // 1. 역행렬 미리 계산 (V * P의 역행렬)
+            _matrix V = cam->GetView();
+            _matrix P = cam->GetProj();
+            _matrix invVP = XMMatrixInverse(nullptr, V * P);
+
+            // 2. 마우스 좌표(NDC)를 월드 좌표로 변환 (Z=0은 Near Plane)
+            _vector mouseNear = XMVector3TransformCoord(XMVectorSet(ndcX, ndcY, 0.0f, 1.0f), invVP);
+            _vector mouseFar = XMVector3TransformCoord(XMVectorSet(ndcX, ndcY, 1.0f, 1.0f), invVP);
+
+            // 3. 카메라와 캐릭터 머리 사이의 거리(약 4.0f)만큼 떨어진 지점을 타겟으로 설정
+            // 마우스 레이 상에서 캐릭터 머리 Z깊이와 동일한 지점의 월드 좌표를 찾습니다.
+            _vector dir = XMVector3Normalize(mouseFar - mouseNear);
+            _float3 targetPos;
+            // 캐릭터 머리가 대략 (0,0,0) 근처라면, Z축 기준으로 타겟을 잡습니다.
+            XMStoreFloat3(&targetPos, mouseNear + dir * 4.0f);
+
+            // 4. 머리 위치에서 타겟을 향하는 방향 벡터 계산
+            _float3 headWorldPos = *pHeadBone->GetTranslatoin();
+            headWorldPos.x -= 0.5f;
+            headWorldPos.y -= 1.5f;
+            _float3 lookDir = { -targetPos.x - headWorldPos.x, -targetPos.y - headWorldPos.y, -targetPos.z - headWorldPos.z };
+
+            // 5. 회전 계산 (이전 코드 재활용)
+            float targetYaw = atan2f(lookDir.x, lookDir.z);
+            float distXZ = sqrtf(lookDir.x * lookDir.x + lookDir.z * lookDir.z);
+            float targetPitch = atan2f(-lookDir.y, distXZ);
+
+            pHeadBone->GetRotation()->y = -targetYaw;
+            pHeadBone->GetRotation()->x = -targetPitch;
+
+
+        }
+    }
+}
+
+void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
+{
+    m_pComEntityModel->ResetBonesChannel();
+    if (m_eCameraType == CAMERA_TYPE::FPS)
+    {
+        PlayerMove(fTimeDelta);
+
+        // camera control
+        {
+            PlayerCameraTrace(fTimeDelta);
+        }
+
+        if (auto tmpCamera = CGameInstance::Get().GetGameCamera("Player"))
+        {
+            if (m_hRightItem)
+            {
+                if (auto pItem = CGameInstance::Get().GetGameObjectByHandle(m_hRightItem.value()))
+                {
+                    tmpCamera->GetTransform().Update();
+                    XMMATRIX matCameraWorld = tmpCamera->GetTransform().GetLoadedCombinedWorldMatrix();
+
+                    XMMATRIX matScale = XMMatrixScaling(1.f, 1.f, 1.f);
+                    XMMATRIX matTrans = XMMatrixTranslation(0.25f, -0.22f, 0.4f);
+                    XMMATRIX matBaseOffset = matScale * matTrans;
+
+                    XMMATRIX matFinalRotation = XMMatrixIdentity();
+
+                    if (auto pArm = Cast<CPlayerFPSArm>(pItem))
+                    {
+
+                    }
+                    else if (auto pHandHeld = Cast<CHandHeldItem>(pItem))
+                    {
+                        if (auto pInfo = pHandHeld->GetItemInfo())
+                        {
+                            if (pInfo->block)
+                            {
+                                matFinalRotation = XMMatrixRotationRollPitchYaw(
+                                    XMConvertToRadians(-15.f),
+                                    XMConvertToRadians(35.f),
+                                    XMConvertToRadians(0.f)
+                                );
+                            }
+                            else
+                            {
+
+
+                                XMMATRIX matToPivot = XMMatrixTranslation(0.f, 0.1f, 0.1f);
+
+                                XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
+                                    XMConvertToRadians(0.f),
+                                    XMConvertToRadians(-90.f),
+                                    XMConvertToRadians(0.f)
+                                );
+
+                                matFinalRotation = matRot * matToPivot;
+                            }
+                        }
+                    }
+
+
+
+                    static bool  bIsSwinging = false;
+                    static float fSwingProgress = 0.f;
+
+                    if (
+                        (CGameInstance::Get().MousePressing(MOUSEKEYSTATE::LB) || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+                        && !bIsSwinging)
+                    {
+                        bIsSwinging = true;
+                        fSwingProgress = 0.f;
+                    }
+
+
+                    XMMATRIX matGlobalSwing = XMMatrixIdentity();
+
+                    if (bIsSwinging)
+                    {
+                        fSwingProgress += fTimeDelta * 5.f;
+
+                        if (fSwingProgress >= 1.f)
+                        {
+                            fSwingProgress = 1.f;
+                            bIsSwinging = false; //
+                        }
+
+
+                        float fAngleFactor = sinf(fSwingProgress * XM_PI); // 0.0 -> 1.0 -> 0.0 
+
+                        matGlobalSwing = XMMatrixRotationRollPitchYaw(
+                            fAngleFactor * XMConvertToRadians(90.f),
+                            0.f,
+                            0.f
+                        );
+                    }
+
+
+
+                    XMMATRIX matFinalParent = matFinalRotation * matGlobalSwing * matBaseOffset * matCameraWorld;
+
+                    _float4x4 matParent;
+                    XMStoreFloat4x4(&matParent, matFinalParent);
+                    pItem->GetTransform().SetParentWorldMatrix(matParent);
+                }
+            }
+        }
+    } // End if FPS
+    else // NOT FPS
+    {
+        /*
+        머리 돌리기
+        카메라 위치로 머리를 돌려야함
+        이때 머리는 루트의 영향을 받아버림
+        머리가 45도 이상 돌릴때는 머리가 아니라 루트를 돌려야함
+        y축을 돌릴때는 머리와 루트를 두개 고려해야하지만
+        x축을 돌리는건 오직 머리만 고려함
+    */
+        {
+            if (m_pActivePlayerCamera)
+            {
+                auto pHeadBone = m_pComEntityModel->GetBone("head");
+                auto pRootBone = m_pComEntityModel->GetBone("root");
+
+                if (pHeadBone && pRootBone)
+                {
+                    _float adjustY = 0.f;
+                    _float adjustX = 1.f;
+                    if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
+                    {
+                        adjustY = XMConvertToRadians(180.f);
+                        adjustX = -1.f;
+                    }
+
+                    // 목표는 카메라가 돌린 x,y 값
+                    float targetRotYRad = XMConvertToRadians(m_pActivePlayerCamera->GetTransform().GetRotationEuler().y);
+                    float targetRotXRad = XMConvertToRadians(m_pActivePlayerCamera->GetTransform().GetRotationEuler().x);
+
+                    bool bMovingLeftRight = m_bKeyPressingA || m_bKeyPressingD;
+                    bool bMovingForwardBackward = m_bKeyPressingW || m_bKeyPressingS;
+
+
+
+                    // 왼쪽 오른쪽로 움직이고 있으면 Root는 각 45도 방향으로
+                    if (bMovingLeftRight)
+                    {
+                        float sign;
+                        if (m_bKeyPressingA)
+                        {
+                            sign = -1.f;
+                        }
+                        else
+                        {
+                            sign = 1.f;
+                        }
+
+                        float threshold = XMConvertToRadians(45.f);
+
+                        float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;;
+
+                        while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                        while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                        //(sign * threshold)
+
+                        float delta = (toRotYRadDiff + (threshold * sign)) * 5.f * fTimeDelta;
+                        m_fRootRotRadY += delta;
+                        //pHeadBone->GetRotation()->y += (threshold * sign);
+                        pHeadBone->GetRotation()->y += toRotYRadDiff;
+                        pHeadBone->GetRotation()->x += targetRotXRad;
+
+                        pRootBone->GetRotation()->y += m_fRootRotRadY;
+                    }
+
+                    // 앞뒤로 움직이고 있으면 Root는 보고 있는 방향으로
+                    else if (bMovingForwardBackward)
+                    {
+                        float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;
+
+                        while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                        while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                        float sign = toRotYRadDiff > 0 ? 1.f : -1.f;
+
+                        float threshold = XMConvertToRadians(0.f);
+
+                        if (fabsf(toRotYRadDiff) > threshold)
+                        {
+                            float delta = (toRotYRadDiff - (threshold * sign)) * 5.f * fTimeDelta;
+                            m_fRootRotRadY += delta;
+
+                            pHeadBone->GetRotation()->y += toRotYRadDiff;
+                        }
+                        else
+                        {
+                            pHeadBone->GetRotation()->y += (threshold * sign);
+                        }
+
+
+                        pRootBone->GetRotation()->y += m_fRootRotRadY;
+
+                        pHeadBone->GetRotation()->x += targetRotXRad;
+                    }
+                    // 움직이지 않는 상태
+                    else
+                    {
+                        float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;
+
+                        while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                        while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                        float sign = toRotYRadDiff > 0 ? 1.f : -1.f;
+
+                        float threshold = XMConvertToRadians(45.f);
+
+                        if (fabsf(toRotYRadDiff) > threshold)
+                        {
+                            float delta = (toRotYRadDiff - (threshold * sign)) * 5.f * fTimeDelta;
+                            m_fRootRotRadY += delta;
+                            pHeadBone->GetRotation()->y += (threshold * sign);
+                        }
+                        else
+                        {
+                            pHeadBone->GetRotation()->y += toRotYRadDiff;
+                        }
+
+
+                        pRootBone->GetRotation()->y += m_fRootRotRadY;
+
+                        pHeadBone->GetRotation()->x += targetRotXRad;
+                    }
+                }
+            }
+        }
+
+
+
+        if (1)
+        {
+            static float fTmp2 = 0;
+            fTmp2 += fTimeDelta;;
+            float lifeTime = fTmp2;
+            float bob = (cosf(lifeTime * XMConvertToRadians(103.2f)) * 2.865f) + 2.865f;
+
+            if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+            {
+                pLeftArm->GetRotation()->z += XMConvertToRadians(-bob);
+            }
+
+            if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+            {
+                pRightArm->GetRotation()->z += XMConvertToRadians(bob);
+            }
+        }
+
+        if (1)
+        {
+            static float fWalkCycle = 0.f;
+            bool bMoving = m_bKeyPressingA || m_bKeyPressingD || m_bKeyPressingW || m_bKeyPressingS;
+            if (bMoving)
+            {
+                fWalkCycle += fTimeDelta * 6.28f;
+                if (fWalkCycle > 6.28f) {
+                    fWalkCycle -= 6.28f;
+                }
+
+                float tcos0 = cos(fWalkCycle) * 30;
+
+                // leftarm, leftleg, rightarm, rightleg 회전 적용
+                if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+                {
+                    pLeftArm->GetRotation()->x += XMConvertToRadians(tcos0);
+                }
+
+                if (auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg"))
+                {
+                    pLeftLeg->GetRotation()->x += XMConvertToRadians(tcos0 * -1.4f);
+
+                }
+
+                if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+                {
+                    pRightArm->GetRotation()->x += XMConvertToRadians(-tcos0);
+                }
+
+                if (auto pRightLeg = m_pComEntityModel->GetBone("rightLeg"))
+                {
+                    pRightLeg->GetRotation()->x += XMConvertToRadians(tcos0 * 1.4f);
+                }
+            }
+        }
+
+
+
+        PlayerMove(fTimeDelta);
+        // camera control
+        {
+            PlayerCameraTrace(fTimeDelta);
+        }
+
+
+        /////
+
+        if (1)
+        {
+            if (m_bKeyPressingShift)
+            {
+                constexpr float fScale = 0.0625f;
+
+                if (auto pWaist = m_pComEntityModel->GetBone("waist"))
+                {
+                    pWaist->GetRotation()->x += XMConvertToRadians(28.f);
+                    pWaist->GetTranslatoin()->y -= 1.f * fScale;
+                }
+
+                if (auto pHead = m_pComEntityModel->GetBone("head"))
+                {
+                    pHead->GetRotation()->x += -XMConvertToRadians(28.f);
+
+                }
+            }
+        }
+
+
+
+        {
+
+            if (m_bMousePressingLeft)
+            {
+                m_bAttacking = true;
+                m_fAttackTime = 0.0f;
+                m_fAttackDuration = 0.3f;  // 공격 지속 시간
+            }
+
+            if (m_bAttacking)
+            {
+                // attack_time: 0.0 ~ 1.0
+                m_fAttackTime += fTimeDelta / m_fAttackDuration;
+                m_fAttackTime = std::min(m_fAttackTime, 1.0f);
+
+                float attackTime = m_fAttackTime;
+                float attackBodyRotY = (float)m_iMouseMoveX;  // 현재 head 회전값
+
+                // body 회전
+                if (auto pBody = m_pComEntityModel->GetBone("body"))
+                {
+                    float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                    float leftArmRotX = -(sin(t * 3.14159f) * 1.2f + sin(attackTime * 3.14159f)) * 10.0f;
+                    //pBody->GetRotation()->y += XMConvertToRadians(leftArmRotX);
+                }
+
+                // leftarm 회전
+                if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+                {
+                    float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                    float leftArmRotX = -(sin(t * 3.14159f) * 1.2f + sin(attackTime * 3.14159f)) * 10.0f;
+
+                    pLeftArm->GetRotation()->x += XMConvertToRadians(leftArmRotX);
+                }
+
+                // rightarm 회전
+                if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+                {
+                    float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                    float sinT = sin(t * 3.14159f);
+
+                    float rightArmRotX = -(sinT * 1.2f + sin(attackTime * 3.14159f)) * 30.0f;
+
+                    float rightArmRotY = -(sinT != 0.0f ?
+                        (-90.0f * sinT) + 30.0f :
+                        0.0f);
+
+                    pRightArm->GetRotation()->x += XMConvertToRadians(rightArmRotX);
+                    pRightArm->GetRotation()->y += XMConvertToRadians(rightArmRotY);
+
+                }
+
+                // 공격 완료
+                if (m_fAttackTime >= 1.0f)
+                {
+                    m_bAttacking = false;
+                    m_fAttackTime = 0.0f;
+                }
+            }
+        }
+
+
+
+
+    }
 }
 
 UPtr<CPlayerEntity> CPlayerEntity::Create()

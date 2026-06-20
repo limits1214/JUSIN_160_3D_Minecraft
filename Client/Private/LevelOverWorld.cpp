@@ -428,11 +428,12 @@ HRESULT CLevelOverWorld::Initialize()
 		E::CCameraObject::CAMERA_DESC Desc{};
 		Desc.eProj = E::CCameraObject::PROJ::PERSPECTIVE;
 		Desc.vAt = { 0.f, 0.f, 0.f };
-		Desc.vEye = { 0.f, 10.f, -10.f };
+		Desc.vEye = { 0.f, 0.f, 4.f };
 		Desc.fAspect = { 1.f };
 		Desc.fFovY = 75.f;
 		Desc.fNear = 1.f;
 		Desc.fFar = 100.f;
+		Desc.sObjectTag = "PlayerInvenUICam";
 
 		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("CAMERAS", "Prototype_GameObject_PlayerInvenUICamera",
 			"99_CAMERA", &Desc))
