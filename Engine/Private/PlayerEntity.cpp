@@ -1429,54 +1429,102 @@ void CPlayerEntity::ProcessHandHeldItem(float fTimeDelta)
             }
         }
     }
-
     CPlayerFPSArm* pPlayerArm{};
     if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT< CPlayerFPSArm>(m_hPlayerFPSArm))
     {
         pPlayerArm = pObj;
     }
-
-    if (pHandHeldObj && pPlayerArm)
+    if (m_eCameraType == CAMERA_TYPE::FPS)
     {
-        uint8_t iLight{ 0xFF };
-        auto pos = GetTransform().GetPosition();
-        int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
-        int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
-        int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
-        if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
-        {
-            iLight = optCurrBlock->GetLight();
-        }
-        if (auto& hotbarItemInfo = m_ItemArrHotbar[selectIdx])
-        {
-            m_hRightItem = pHandHeldObj->GetHandle();
-            //pHandHeldObj->GetTransform().SetParentWorldMatrix(*GetTransform().GetWorldMatrix());
-            pHandHeldObj->SetRender(true);
-            pPlayerArm->SetRender(false);
+       
 
-            pHandHeldObj->SetItemInfo(hotbarItemInfo.value());
-            pHandHeldObj->SetVIBufferID({ "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(hotbarItemInfo.value()) });
-           
-            pHandHeldObj->SetLight(iLight);
-            pHandHeldObj->SetPlayerHandle(GetHandle());
-           
-        }
-        else
+        if (pHandHeldObj && pPlayerArm)
         {
+            uint8_t iLight{ 0xFF };
             auto pos = GetTransform().GetPosition();
             int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
             int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
             int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
             if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
             {
-                pPlayerArm->SetLight(optCurrBlock->GetLight());
+                iLight = optCurrBlock->GetLight();
             }
-            pPlayerArm->SetRender(true);
-            pPlayerArm->SetLight(iLight);
-            pHandHeldObj->SetRender(false);
-            m_hRightItem = m_hPlayerFPSArm;
+            if (auto& hotbarItemInfo = m_ItemArrHotbar[selectIdx])
+            {
+                m_hRightItem = pHandHeldObj->GetHandle();
+                //pHandHeldObj->GetTransform().SetParentWorldMatrix(*GetTransform().GetWorldMatrix());
+                pHandHeldObj->SetRender(true);
+                pPlayerArm->SetRender(false);
+
+                pHandHeldObj->SetItemInfo(hotbarItemInfo.value());
+                pHandHeldObj->SetVIBufferID({ "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(hotbarItemInfo.value()) });
+
+                pHandHeldObj->SetLight(iLight);
+                pHandHeldObj->SetPlayerHandle(GetHandle());
+
+            }
+            else
+            {
+                auto pos = GetTransform().GetPosition();
+                int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+                int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
+                int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+                if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+                {
+                    pPlayerArm->SetLight(optCurrBlock->GetLight());
+                }
+                pPlayerArm->SetRender(true);
+                pPlayerArm->SetLight(iLight);
+                pHandHeldObj->SetRender(false);
+                m_hRightItem = m_hPlayerFPSArm;
+            }
         }
     }
+    else if (m_eCameraType == CAMERA_TYPE::TPS || m_eCameraType == CAMERA_TYPE::TPS_BACK)
+    {
+        if (pPlayerArm)
+        {
+            pPlayerArm->SetRender(false);
+        }
+        
+        if (pHandHeldObj)
+        {
+            uint8_t iLight{ 0xFF };
+            auto pos = GetTransform().GetPosition();
+            int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
+            int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+            if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+            {
+                iLight = optCurrBlock->GetLight();
+            }
+            if (auto& hotbarItemInfo = m_ItemArrHotbar[selectIdx])
+            {
+                m_hRightItem = pHandHeldObj->GetHandle();
+                //pHandHeldObj->GetTransform().SetParentWorldMatrix(*GetTransform().GetWorldMatrix());
+                pHandHeldObj->SetRender(true);
+
+                pHandHeldObj->SetItemInfo(hotbarItemInfo.value());
+                pHandHeldObj->SetVIBufferID({ "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(hotbarItemInfo.value()) });
+
+                pHandHeldObj->SetLight(iLight);
+                pHandHeldObj->SetPlayerHandle(GetHandle());
+
+            }
+            else
+            {
+                auto pos = GetTransform().GetPosition();
+                int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+                int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
+                int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+
+                pHandHeldObj->SetRender(false);
+                m_hRightItem = m_hPlayerFPSArm;
+            }
+        }
+    }
+
+    
     
 }
 
@@ -4066,8 +4114,9 @@ void CPlayerEntity::ProcessArmorEntities(_float fTimeDelta)
                 auto body2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
                 auto head2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("head");
                 auto hat2 = pHelemt->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("hat");
-
-                waist2->SetRotation(*root->GetRotation());
+                _float3 pluswaistrot;
+                XMStoreFloat3(&pluswaistrot, XMLoadFloat3(root->GetRotation()) + XMLoadFloat3(waist->GetRotation()));
+                waist2->SetRotation(pluswaistrot);
                 body2->SetRotation(*body->GetRotation());
                 head2->SetRotation(*head->GetRotation());
                 hat2->SetRotation(*hat->GetRotation());
@@ -4081,8 +4130,9 @@ void CPlayerEntity::ProcessArmorEntities(_float fTimeDelta)
                 auto body2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("body");
                 auto rightArm2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("rightArm");
                 auto lefttArm2 = pChestplate->GetComponent<CComEntityModel>("Com_EntityModel")->GetBone("leftArm");
-
-                waist2->SetRotation(*root->GetRotation());
+                _float3 pluswaistrot;
+                XMStoreFloat3(&pluswaistrot, XMLoadFloat3(root->GetRotation()) + XMLoadFloat3(waist->GetRotation()));
+                waist2->SetRotation(pluswaistrot);
                 body2->SetRotation(*body->GetRotation());
                 rightArm2->SetRotation(*rightArm->GetRotation());
                 lefttArm2->SetRotation(*leftArm->GetRotation());
@@ -4667,6 +4717,8 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
     } // End if FPS
     else // NOT FPS
     {
+
+        
         /*
         머리 돌리기
         카메라 위치로 머리를 돌려야함
@@ -4944,8 +4996,36 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
         }
 
 
+        if (m_hRightItem)
+        {
+            if (auto pItem = CGameInstance::Get().GetGameObjectByHandle(m_hRightItem.value()))
+            {
+                auto pRightItem = m_pComEntityModel->GetBone("rightItem");
+                auto pos = GetTransform().GetPosition();
 
+                // 1. 기존 로컬 행렬 가져옴
+                _matrix matLocal = XMLoadFloat4x4(pRightItem->GetCombinedTransformationMatrix());
 
+                // 2. Y축 회전 적용
+                float fRotationY = XMConvertToRadians(-90.0f);
+                _matrix matRotateY = XMMatrixRotationY(fRotationY);
+                _matrix matResult = matRotateY * matLocal;
+
+                // 3. 앞으로 전진 (Local Forward Vector 활용)
+                float fForwardDistance = 0.3f; // 전진할 거리 (수치를 조절하세요)
+                _vector vForward = matResult.r[0]; // 행렬의 3번째 열이 Local Forward 방향입니다.
+                _vector vOffset = XMVectorScale(vForward, fForwardDistance);
+
+                // 4. 위치 성분에 오프셋 더하기
+                matResult.r[3] = XMVectorAdd(matResult.r[3], vOffset); // 전진 이동 적용
+                matResult.r[3] = XMVectorAdd(matResult.r[3], XMLoadFloat3(&pos)); // 월드 위치 적용
+
+                _float4x4 asdf;
+                XMStoreFloat4x4(&asdf, matResult);
+                pItem->GetTransform().SetParentWorldMatrix(asdf);
+            }
+        }
+        
     }
 }
 
