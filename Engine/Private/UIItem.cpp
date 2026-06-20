@@ -224,9 +224,21 @@ HRESULT CUIItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 	{
 		if (m_ItemInfo)
 		{
-			if (m_ItemInfo->iCnt >= 1)
+			if (CItemObject::IsCountableItem(m_ItemInfo->eItemType))
 			{
-				E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_10px", std::to_wstring(m_ItemInfo->iCnt), { m_fX + 1.f , m_fY + 3.f });
+				if (m_ItemInfo->iCnt >= 1)
+				{
+					if (m_ItemInfo->iCnt < 10)
+					{
+						auto spaced = L"  " + std::to_wstring(m_ItemInfo->iCnt);
+						E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_10px", spaced, { m_fX + 1.f , m_fY + 3.f });
+					}
+					else
+					{
+						E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_10px", std::to_wstring(m_ItemInfo->iCnt), { m_fX + 1.f , m_fY + 3.f });
+					}
+					
+				}
 			}
 		}
 	}
@@ -253,8 +265,10 @@ HRESULT CUIItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 					}
 					{
 						E::CB_PER_OBJECT cbPerObject{};
-						cbPerObject.matWorld = *m_pComDurabilityBgTransform->GetCombinedWorldMatrix();
-						XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityBgTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+						auto matWorld = *m_pComDurabilityBgTransform->GetCombinedWorldMatrix();
+						matWorld.m[3][1] -= 5.f * MC_UI_SCALE;
+						cbPerObject.matWorld = matWorld;
+						XMStoreFloat4x4(&cbPerObject.matWVP, XMLoadFloat4x4(&matWorld) * ctx.matViewProj);
 						if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
 						{
 							return E_FAIL;
@@ -282,8 +296,10 @@ HRESULT CUIItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 					}
 					{
 						E::CB_PER_OBJECT cbPerObject{};
-						cbPerObject.matWorld = *m_pComDurabilityGageTransform->GetCombinedWorldMatrix();
-						XMStoreFloat4x4(&cbPerObject.matWVP, m_pComDurabilityGageTransform->GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+						auto matWorld = *m_pComDurabilityGageTransform->GetCombinedWorldMatrix();
+						matWorld.m[3][1] -= 5.f * MC_UI_SCALE;
+						cbPerObject.matWorld = matWorld;
+						XMStoreFloat4x4(&cbPerObject.matWVP, XMLoadFloat4x4(&matWorld)* ctx.matViewProj);
 						if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
 						{
 							return E_FAIL;
