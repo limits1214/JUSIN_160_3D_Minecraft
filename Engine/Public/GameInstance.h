@@ -200,6 +200,12 @@ public:
 	{
 		return static_cast<const CGameObjectManager*>(m_pGameObjectManager.get())->GetGameObjectByHandleT<T>(handle);
 	}
+
+	template<typename T>
+	const T* GetFirstGameObjectByLayer(std::string_view sLayerName) const
+	{
+		return m_pGameObjectManager->GetFirstGameObjectByLayer<T>(sLayerName);
+	}
 #pragma endregion
 
 
