@@ -342,12 +342,10 @@ HRESULT CLevelOverWorld::Initialize()
 			E::CExperienceOrb::DESC Desc{};
 			Desc.sObjectTag = "ExperienceOrb";
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
-				"01_DROPITEM", &Desc))
+				"56_ExperienceOrb", &Desc))
 			{
 			}
 		}
-
-
 
 	// handheld
 	if(false)
