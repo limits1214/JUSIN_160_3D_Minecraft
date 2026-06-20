@@ -40,6 +40,18 @@ public:
 		return &m_Bones[iter->second];
 	}
 
+	_bool SetBone(const std::string& name, const CEntityModelBone& bone)
+	{
+		auto iter = m_BonesLookup.find(name);
+		if (iter == m_BonesLookup.end())
+		{
+			return false;
+		}
+
+		m_Bones[iter->second] = bone;
+		return true;
+	}
+
 private:
 	HRESULT Initialize(void* pArg) override;
 

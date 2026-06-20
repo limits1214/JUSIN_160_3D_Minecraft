@@ -89,9 +89,18 @@ private:
 	CComAnimator* m_pComAnimator{ };
 	CComConstantBuffer* m_pComCBufferPerObject{};
 
+public:
+	ARMOR_TYPE GetArmorType() const { return m_eArmorType; }
+	ARMOR_MADE GetArmorMade() const { return m_eArmorMade; }
 private:
 	ARMOR_TYPE m_eArmorType{ ARMOR_TYPE::END };
 	ARMOR_MADE m_eArmorMade{ ARMOR_MADE::END };
+
+
+public:
+	void SetRender(_bool b) { m_bRender = b; }
+private:
+	_bool m_bRender{ false };
 
 public:
 	static UPtr<CArmorEntity> Create();
