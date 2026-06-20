@@ -2211,6 +2211,7 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
 void CPlayerEntity::ReadyPlayerItem()
 {
     m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_WoodPickaxe };
+    //m_ItemArrHotbar[0]->fDurability = 0.95f;
     m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Stick, 64 };
     m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 1 };
     m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::SAND), 64 };
