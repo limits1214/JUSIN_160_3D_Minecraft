@@ -805,6 +805,18 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// experenceOrb shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_ExperienceOrb", "./Resources/Shader/ExperienceOrb/ExperienceOrb.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_ExperienceOrb", "./Resources/Shader/ExperienceOrb/ExperienceOrb.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
 	// cross hair shader
 	{
 		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Crosshair", "./Resources/Shader/Crosshair/CrossHair.hlsl"))

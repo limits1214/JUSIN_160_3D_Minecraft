@@ -338,14 +338,14 @@ HRESULT CLevelOverWorld::Initialize()
 		//	}
 		//}
 
-		//{
-		//	E::CExperienceOrb::DESC Desc{};
-		//	Desc.sObjectTag = "ExperienceOrb";
-		//	if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
-		//		"01_DROPITEM", &Desc))
-		//	{
-		//	}
-		//}
+		{
+			E::CExperienceOrb::DESC Desc{};
+			Desc.sObjectTag = "ExperienceOrb";
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
+				"01_DROPITEM", &Desc))
+			{
+			}
+		}
 
 
 

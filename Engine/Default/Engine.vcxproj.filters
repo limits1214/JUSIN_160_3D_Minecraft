@@ -568,6 +568,9 @@
     <Filter Include="Resource\Entity\Geometry\Armor\Boots">
       <UniqueIdentifier>{3dabb78a-059c-4cfc-b2e5-4fe49069f1d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="100.Shaders\ExperienceOrb">
+      <UniqueIdentifier>{feca626f-de8c-43f0-8679-b8f9b7e84b02}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1704,6 +1707,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\PlayerInvenUI\PlayerInvenUI.hlsl">
       <Filter>100.Shaders\PlayerInvenUI</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ExperienceOrb\ExperienceOrb.hlsl">
+      <Filter>100.Shaders\ExperienceOrb</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
