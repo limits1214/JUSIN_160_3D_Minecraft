@@ -54,7 +54,11 @@ public:
 
 	void TakeDamage(uint32_t iDam);
 
-	uint32_t m_iHeart{ 5 };
+private:
+	void ProcessDropDropItem(_float fTimeDelta);
+	void ProcessDestroy(_float fTimeDelta);
+	_bool m_bDropDropItem{ false };
+	int32_t m_iHeart{ 5 };
 private:
 	_float m_fDeathTimer = 0.f;
 private:

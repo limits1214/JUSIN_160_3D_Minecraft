@@ -371,6 +371,17 @@ public:
 		return true;
 	}
 
+
+	static uint32_t IsEatableItem(CItemObject::ITEM_TYPE eType)
+	{
+		switch (eType)
+		{
+			case CItemObject::ITEM_TYPE::ITEM_Apple:
+				return 5;
+		}
+		return 0;
+	}
+
 	static uint32_t GetPackedTexIdByType(ITEM_TYPE eType)
 	{
 		switch (eType)
@@ -586,6 +597,8 @@ public:
 		return 0;
 	}
 
+
+	static void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
 	
 public:
 	typedef struct tagDesc : GAMEOBJECT_DESC

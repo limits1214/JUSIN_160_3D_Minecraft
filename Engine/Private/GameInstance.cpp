@@ -3296,6 +3296,10 @@ void CGameInstance::AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32
 {
 	m_pParticleManager->AddParticleRenderDestruct(block, pos, iCnt);
 }
+void CGameInstance::AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt)
+{
+	m_pParticleManager->AddParticleRenderDeathSmoke(pos, iCnt);
+}
 #pragma endregion
 
 #pragma region WORLD_MANAGER

@@ -10,12 +10,13 @@ public:
 	enum class PARTICLE_TYPE
 	{
 		BLOCK_DESTRUCT,
-		PARTICLES_ATLAS_SMOKE,
+		PARTICLES_ATLAS_DEATH_SMOKE,
 		END
 	};
 
 public:
 	void AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt = 1);
 
 
 	//enum class PARTICLE_TEX_TYPE

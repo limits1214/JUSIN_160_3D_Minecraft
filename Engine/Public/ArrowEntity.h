@@ -5,6 +5,7 @@ NS_BEGIN(Engine)
 class CComEntityModel;
 class CComAnimator;
 class CComConstantBuffer;
+class CCollider;
 class ENGINE_DLL CArrowEntity : public CEntityObject
 {
 public:
@@ -17,6 +18,7 @@ public:
 
 private:
 	explicit CArrowEntity();
+	CArrowEntity(const CArrowEntity& rhs);
 	~CArrowEntity() override;
 
 public:
@@ -33,10 +35,34 @@ private:
 	CComAnimator* m_pComAnimator{ };
 	CComConstantBuffer* m_pComCBufferPerObject{};
 
+private:
+	UPtr<CCollider> m_pHeadCollider{};
+
 public:
 	void SetRender(_bool b) { m_bRender = b; }
 private:
 	_bool m_bRender{ true };
+
+private:
+	void UpdateArrowLiftTime(_float fTimeDelta);
+	void UpdateArrowVelocity(_float fTimeDelta);
+	void UpdateArrowVelocity2(_float fTimeDelta);
+	void VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir);
+
+private:
+	_float m_fSpeed{ 5.f };
+	_bool m_bOnGround{ false };
+	_float m_fArrowLiftTime{ 15.f };
+
+public:
+	// 화살 발사 초기화 함수 (발사 위치, 방향, 속도 지정)
+	void Shoot(const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed);
+
+private:
+	// 물리 이동을 위한 변수들
+	DirectX::XMFLOAT3 m_vVelocity{ 0.f, 0.f, 11.f }; // 현재 화살의 속도 벡터
+	E::_float m_fGravity{ 9.8f };                   // 중력값 (마인크래프트 느낌에 맞춰 조절 필요)
+	E::_float m_fDrag{ 0.99f };                     // 공기 저항 (매 초마다 속도 감소율)
 
 public:
 	static UPtr<CArrowEntity> Create();

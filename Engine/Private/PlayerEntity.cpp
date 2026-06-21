@@ -40,6 +40,8 @@
 
 #include "ExperienceOrb.h"
 
+#include "ArrowEntity.h"
+
 
 NS_USING(Engine)
 
@@ -526,9 +528,9 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
     ProcessThrowItem(fTimeDelta);
     ProcessHandHeldItem(fTimeDelta);
 
+    ProcessLeftClick(fTimeDelta);
     ProcessRightClick(fTimeDelta);
 
-    ProcessDestroyStage(fTimeDelta);
 
 
     ProcessArmorEntities(fTimeDelta);
@@ -875,7 +877,7 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             pos.y += 0.5f;
             pos.z += 0.5f;
 
-            SpawnDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f });
+            CItemObject::SpawnDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f });
         }
     }
     else
@@ -902,7 +904,7 @@ void CPlayerEntity::DestroyStageEndAfterProcess(const CItemObject::ItemInfo& inf
             {
                 auto copy = pStorage->fuel.value();
                 copy.iCnt = 1;
-                SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
             }
         }
         if (pStorage->ingredient)
@@ -911,7 +913,7 @@ void CPlayerEntity::DestroyStageEndAfterProcess(const CItemObject::ItemInfo& inf
             {
                 auto copy = pStorage->ingredient.value();
                 copy.iCnt = 1;
-                SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
             }
         }
         if (pStorage->result)
@@ -920,7 +922,7 @@ void CPlayerEntity::DestroyStageEndAfterProcess(const CItemObject::ItemInfo& inf
             {
                 auto copy = pStorage->result.value();
                 copy.iCnt = 1;
-                SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
             }
         }
         CGameInstance::Get().GetWorldFurnaceStorage()->DelStorage(wbLocatoin);
@@ -944,7 +946,7 @@ void CPlayerEntity::DestroyStageEndAfterProcess(const CItemObject::ItemInfo& inf
                 {
                     auto copy = pStorage->items[i].value();
                     copy.iCnt = 1;
-                    SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+                    CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
                 }
             }
         }
@@ -999,12 +1001,120 @@ CDestroyStage* CPlayerEntity::GetDestroyStage() const
     return CGameInstance::Get().GetGameObjectByHandleT<CDestroyStage>(m_hDestroyStage);
 }
 
+void CPlayerEntity::ProcessLeftClick(float fTimeDelta)
+{
+    ProcessDestroyStage(fTimeDelta);
+}
+
 void CPlayerEntity::ProcessRightClick(float fTimeDelta)
 {
     if (!m_pActivePlayerCamera) return;
+
+    if (m_bMousePressingRight)
+    {
+        auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+        if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
+        {
+            if (
+                hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby
+                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0
+                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1
+                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
+                )
+            {
+                if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
+                {
+                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
+                }
+                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
+                {
+                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
+                }
+                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
+                {
+                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
+                }
+                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2)
+                {
+                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
+
+                    {
+                        E::CArrowEntity::DESC Desc{};
+                        Desc.sObjectTag = "Arrow";
+                        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArrowEntity",
+                            "49_ARROW", &Desc))
+                        {
+                            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CArrowEntity>(handle.value()))
+                            {
+                                const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+                                auto pos = GetTransform().GetPosition();
+                                pos.y += 1.8f;
+                                //auto look = GetTransform().GetState(STATE::LOOK);
+                                //auto pos = XMLoadFloat3(&rayOrigin2);
+                                auto look = XMLoadFloat3(&rayDir2);
+                                
+                                pObj->Shoot(XMLoadFloat3(&pos), look, 30.f);
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+        }
+    }
     
     if (m_bMouseDownRight)
     {
+        auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+        if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
+        {
+            if (
+                hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby
+                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0
+                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1
+                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
+                )
+            {
+                if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
+                {
+                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
+                }
+                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
+                {
+                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
+                }
+                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
+                {
+                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
+                }
+                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2)
+                {
+                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
+
+                    E::CArrowEntity::DESC Desc{};
+                    Desc.sObjectTag = "Arrow";
+                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArrowEntity",
+                        "49_ARROW", &Desc))
+                    {
+                        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CArrowEntity>(handle.value()))
+                        {
+                            const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+                            //auto pos = GetTransform().GetState(STATE::POSITION);
+                            //auto look = GetTransform().GetState(STATE::LOOK);
+                            auto pos = XMLoadFloat3(&rayOrigin2);
+                            auto look = XMLoadFloat3(&rayDir2);
+                            pObj->Shoot(pos, look, 50.f);
+                        }
+                    }
+                }
+
+                return;
+            }
+        }
+
+        
+
+
         const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
         CVoxelManager3::BLOCK_RAY_RESULT res;
         if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin2, rayDir2, 5.f, res))
@@ -1040,7 +1150,6 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
             else if (res.eHitFace == FACE_DIR::POS_Z) worldBZ += 1;
             else if (res.eHitFace == FACE_DIR::NEG_Z) worldBZ -= 1;
 
-            auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
             if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
             {
                 if (hotbarItemInfo->block)
@@ -1382,7 +1491,7 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
                     XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                     startPos.y += 1.f;
 
-                    SpawnDropItemObject(newInfo, startPos, { 0.f, 2.f, 0.f });
+                    CItemObject::SpawnDropItemObject(newInfo, startPos, { 0.f, 2.f, 0.f });
                 }
             }
             else // not block
@@ -1416,7 +1525,7 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
                     XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                     startPos.y += 1.f;
 
-                    SpawnDropItemObject(newInfo, startPos, { 0.f, 2.f, 0.f });
+                    CItemObject::SpawnDropItemObject(newInfo, startPos, { 0.f, 2.f, 0.f });
                 }
             }
            
@@ -1828,7 +1937,7 @@ void CPlayerEntity::ReadyPlayerItem()
     m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Wheat, 64 };
     m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bread, 64 };
     m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Mutton, 64 };
-    m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
+    m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bow_Standby };
 }
 
 HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
@@ -1981,7 +2090,7 @@ void CPlayerEntity::ProcessUIInventoryItemOnCursor(_float fTimeDelta)
                 _float3 startPos{};
                 XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                 startPos.y += 1.f;
-                SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
             }
             pObj->SetPendingDestroyCascade();
         }
@@ -2494,7 +2603,7 @@ void CPlayerEntity::ProcessUICraftingItemOnCursor(_float fTimeDelta)
                 _float3 startPos{};
                 XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                 startPos.y += 1.f;
-                SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
             }
             pObj->SetPendingDestroyCascade();
         }
@@ -3008,7 +3117,7 @@ void CPlayerEntity::ProcessUIFurnaceOnCursor(_float fTimeDelta)
                 _float3 startPos{};
                 XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                 startPos.y += 1.f;
-                SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
             }
             pObj->SetPendingDestroyCascade();
         }
@@ -3390,7 +3499,7 @@ void CPlayerEntity::ProcessUIChestOnCursor(_float fTimeDelta)
                 _float3 startPos{};
                 XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                 startPos.y += 1.f;
-                SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
             }
             pObj->SetPendingDestroyCascade();
         }
@@ -3745,54 +3854,54 @@ void CPlayerEntity::ProcessUIChestOnCursor(_float fTimeDelta)
         }
     }
 }
+//
+//void CPlayerEntity::SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel)
+//{
+//    if (info.block)
+//    {
+//        E::CDropItemObject::DESC Desc{};
+//        Desc.sObjectTag = "CDropBlock_Cube";
+//        Desc.viBufferId = { "MC_ITEM_VIBuffer", CDropItemObject::GetVIBufferName(info) };
+//
+//        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(info), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
+//        {
+//            if (!pLayer->empty())
+//            {
+//                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
+//                {
+//                    auto type = info.block->GetType();
+//
+//                    std::vector<uint32_t> texs{};
+//                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
+//                    {
+//                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
+//                    }
+//
+//                    pObj->AddDropItemObject(info, pos, vel, texs);
+//                }
+//            }
+//        }
+//    }
+//    else
+//    {
+//        {
+//            E::CDropItemObject::DESC Desc{};
+//            Desc.sObjectTag = "CDropItem";
+//            Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(info) };
+//
+//            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(info), "ITEM", "Prototype_GameObject_DropItem", &Desc))
+//            {
+//                if (!pLayer->empty())
+//                {
+//                    if (au//}to pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+//                    {
+//                        pObj->AddDropItemObject(info, pos, vel, { CItemObject::GetPackedTexIdByType(info.eItemType) });
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-void CPlayerEntity::SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel)
-{
-    if (info.block)
-    {
-        E::CDropItemObject::DESC Desc{};
-        Desc.sObjectTag = "CDropBlock_Cube";
-        Desc.viBufferId = { "MC_ITEM_VIBuffer", CDropItemObject::GetVIBufferName(info) };
-
-        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(info), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
-        {
-            if (!pLayer->empty())
-            {
-                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
-                {
-                    auto type = info.block->GetType();
-
-                    std::vector<uint32_t> texs{};
-                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
-                    {
-                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
-                    }
-
-                    pObj->AddDropItemObject(info, pos, vel, texs);
-                }
-            }
-        }
-    }
-    else
-    {
-        {
-            E::CDropItemObject::DESC Desc{};
-            Desc.sObjectTag = "CDropItem";
-            Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(info) };
-
-            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(info), "ITEM", "Prototype_GameObject_DropItem", &Desc))
-            {
-                if (!pLayer->empty())
-                {
-                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
-                    {
-                        pObj->AddDropItemObject(info, pos, vel, { CItemObject::GetPackedTexIdByType(info.eItemType) });
-                    }
-                }
-            }
-        }
-    }
-}
 
 void CPlayerEntity::ProcessUIStatus(_float fTimeDelta)
 {
@@ -4708,13 +4817,11 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                             }
                             else
                             {
-
-
                                 XMMATRIX matToPivot = XMMatrixTranslation(0.f, 0.1f, 0.1f);
 
                                 XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
                                     XMConvertToRadians(0.f),
-                                    XMConvertToRadians(-90.f),
+                                    XMConvertToRadians(90.f),
                                     XMConvertToRadians(0.f)
                                 );
 
@@ -5062,13 +5169,13 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                 _matrix matLocal = XMLoadFloat4x4(pRightItem->GetCombinedTransformationMatrix());
 
                 // 2. Y축 회전 적용
-                float fRotationY = XMConvertToRadians(-90.0f);
-                _matrix matRotateY = XMMatrixRotationY(fRotationY);
+                float fRotationY = XMConvertToRadians(90.0f);
+                _matrix matRotateY = XMMatrixRotationY(fRotationY) * XMMatrixRotationX(XMConvertToRadians(90.0f));
                 _matrix matResult = matRotateY * matLocal;
 
                 // 3. 앞으로 전진 (Local Forward Vector 활용)
                 float fForwardDistance = 0.3f; // 전진할 거리 (수치를 조절하세요)
-                _vector vForward = matResult.r[0]; // 행렬의 3번째 열이 Local Forward 방향입니다.
+                _vector vForward = matResult.r[1]; // 행렬의 3번째 열이 Local Forward 방향입니다.
                 _vector vOffset = XMVectorScale(vForward, fForwardDistance);
 
                 // 4. 위치 성분에 오프셋 더하기

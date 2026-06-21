@@ -81,6 +81,7 @@ private:
 	CHandle m_hDestroyStage{};
 
 public:
+	void ProcessLeftClick(float fTimeDelta);
 	void ProcessRightClick(float fTimeDelta);
 
 public:
@@ -221,7 +222,7 @@ private:
 	std::optional<XMINT3> m_openChestLocation{};
 
 private:
-	void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
+	//void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
 
 private:
 	void ProcessUIStatus(_float fTimeDelta);

@@ -9,6 +9,10 @@
 
 #include "CollBox.h"
 
+#include "ExperienceOrb.h"
+
+#include "ItemObject.h"
+
 NS_USING(Engine)
 
 CPigEntity::CPigEntity()
@@ -72,11 +76,12 @@ void CPigEntity::PriorityUpdate(E::_float fTimeDelta)
 
 void CPigEntity::Update(E::_float fTimeDelta)
 {
-    // 1. 매 프레임 애니메이션 및 본 채널 초기화
-    m_pComEntityModel->ResetBonesChannel();
+    
 
     if(m_eCurrentState == PIG_STATE::DIE)
     {
+        ProcessDropDropItem(fTimeDelta);
+
         m_fDeathTimer += fTimeDelta;
 
         m_pComEntityModel->ResetBonesChannel();
@@ -111,9 +116,12 @@ void CPigEntity::Update(E::_float fTimeDelta)
         m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
 
         if (m_fDeathTimer >= TOTAL_DURATION)
-            SetPendingDestroyCascade();
+            ProcessDestroy(fTimeDelta);
         return;
     }
+
+    // 1. 매 프레임 애니메이션 및 본 채널 초기화
+    m_pComEntityModel->ResetBonesChannel();
 
     // 2. 피격 타이머 업데이트 (피격 시 붉어지는 필터 컬러 처리)
     if (m_bIsHit)
@@ -123,6 +131,12 @@ void CPigEntity::Update(E::_float fTimeDelta)
         {
             m_bIsHit = false;
             m_fHitTimer = 0.f;
+        }
+
+        if (m_iHeart <= 0)
+        {
+            m_eCurrentState = PIG_STATE::DIE;
+            return; 
         }
     }
 
@@ -250,7 +264,7 @@ void CPigEntity::Update(E::_float fTimeDelta)
 
 void CPigEntity::TakeDamage(uint32_t iDam)
 {
-    if (m_bIsHit || m_eCurrentState == PIG_STATE::DIE) return; // 이미 죽었거나 피격 쿨타임 중이면 무시
+    if (m_eCurrentState == PIG_STATE::DIE) return; // 이미 죽었거나 피격 쿨타임 중이면 무시
 
     m_bIsHit = true;
     m_fHitTimer = 0.3f; // 0.3초간 빨갛게 물듦
@@ -282,6 +296,37 @@ void CPigEntity::TakeDamage(uint32_t iDam)
         // 만약 CComAnimator 내부에 머리 회전용 쿼터니언 변수(m_vCurrentHeadRotQuat)를 쓰신다면
         // 여기서 함께 XMQuaternionIdentity() 등으로 초기화해주면 더욱 안전합니다.
     }
+}
+
+void CPigEntity::ProcessDropDropItem(_float fTimeDelta)
+{
+    if (m_bDropDropItem) return;
+    m_bDropDropItem = true;
+
+
+
+}
+
+void CPigEntity::ProcessDestroy(_float fTimeDelta)
+{
+    SetPendingDestroyCascade();
+    if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CExperienceOrb>("56_ExperienceOrb"))
+    {
+        auto pos = GetTransform().GetPosition();
+        pos.x += 0.f;
+        pos.y += 0.55f;
+        pObj->AddOrb(pos, {}, rand() % 16);
+    }
+
+    CGameInstance::Get().AddParticleRenderDeathSmoke(GetTransform().GetPosition(), 10);
+
+
+    CItemObject::ItemInfo info{};
+    info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Porkchop;
+    info.iCnt = 1;
+    _float3 startPos{ GetTransform().GetPosition() };
+    startPos.y += 1.f;
+    CItemObject::SpawnDropItemObject(info, startPos, { 0.f, 2.f, 0.f });
 }
 
 void CPigEntity::LateUpdate(E::_float fTimeDelta)

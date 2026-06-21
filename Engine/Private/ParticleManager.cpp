@@ -63,6 +63,45 @@ void CParticleManager::AddParticleRenderDestruct(CBlock3 block, _float3 pos, uin
     }
 }
 
+void CParticleManager::AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt)
+{
+    for (int i = 0; i < iCnt; ++i)
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 4.f;
+        att.iTexId = PackTexId(10, 0);
+        att.vPos = { pos };
+        att.vAcceleration = { 0.f, -1.8f, 0.f };
+        //att.vAcceleration = { 0.f, 0.f, 0.f };
+
+        //auto tmp = rand() % 10 / 10.f;
+        //auto tmp2 = rand() % 10 / 10.f;
+        att.vUv = { 8.f * (7) / 128.f, 0.f / 128.f };
+        //8.f / 128.f;
+        att.vUvSize = { 8.f / 128.f, 8.f / 128.f };
+        //att.vSize = { 8.f / 128.f, 8.f / 128.f };
+        auto tmpSize = Randf(0.1f, 1.5f);
+        att.vSize = { tmpSize, tmpSize };
+        att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(0.5f, 1.5f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(1.f, 4.f);
+
+        dir *= speed;
+
+        XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE, att);
+    }
+}
+
 CParticleManager::CParticleManager(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
     : m_pDevice {pDevice}
     , m_pContext {pContext}
@@ -147,7 +186,7 @@ void CParticleManager::UpdateGUI()
         dir *= speed;
 
         XMStoreFloat3(&att.vVelocity, dir);
-        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_SMOKE, att);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE, att);
     }
     ImGui::End();
 }
@@ -210,8 +249,8 @@ void CParticleManager::Update(_float fTimeDelta)
 
     // PARTICLES_ATLAS_SMOKE
     {
-        auto& particles = m_arrParticles[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_SMOKE)];
-        auto& vertices = m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_SMOKE)];
+        auto& particles = m_arrParticles[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)];
+        auto& vertices = m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)];
 
         size_t i = 0;
         while (i < particles.size())
@@ -219,8 +258,8 @@ void CParticleManager::Update(_float fTimeDelta)
             ATTRIBUTE& att = particles[i];
 
             att.fAge += fTimeDelta ;
-            XMStoreFloat3(&att.vVelocity, XMLoadFloat3(&att.vVelocity) + XMLoadFloat3(&att.vAcceleration) * fTimeDelta * 0.1f);
-            XMStoreFloat3(&att.vPos, XMLoadFloat3(&att.vPos) + XMLoadFloat3(&att.vVelocity) * fTimeDelta * 0.1f);
+            XMStoreFloat3(&att.vVelocity, XMLoadFloat3(&att.vVelocity) + XMLoadFloat3(&att.vAcceleration) * fTimeDelta );
+            XMStoreFloat3(&att.vPos, XMLoadFloat3(&att.vPos) + XMLoadFloat3(&att.vVelocity) * fTimeDelta );
 
             
             const float fTileWidth = 8.0f / 128.0f;
@@ -331,12 +370,12 @@ HRESULT CParticleManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX
 
 
         {
-            if (!m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_SMOKE)].empty())
+            if (!m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)].empty())
             {
                 D3D11_MAPPED_SUBRESOURCE subResource{};
                 if (SUCCEEDED(pContext->Map(m_pResVIBuffer->GetVertexBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource)))
                 {
-                    memcpy(subResource.pData, m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_SMOKE)].data(), m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_SMOKE)].size() * sizeof(VTX_POINT_PARTICLE));
+                    memcpy(subResource.pData, m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)].data(), m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)].size() * sizeof(VTX_POINT_PARTICLE));
                     pContext->Unmap(m_pResVIBuffer->GetVertexBuffer().Get(), 0);
                 }
 
@@ -354,7 +393,7 @@ HRESULT CParticleManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX
                 pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
 
                
-                pContext->Draw((uint32_t)m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_SMOKE)].size(), 0);
+                pContext->Draw((uint32_t)m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)].size(), 0);
 
                
             }
