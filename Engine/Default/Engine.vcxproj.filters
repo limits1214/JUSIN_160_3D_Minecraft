@@ -574,6 +574,12 @@
     <Filter Include="Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer">
       <UniqueIdentifier>{453277c1-8ea5-49b8-a080-5d5fbb2732c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Entity\Geometry\Arrow">
+      <UniqueIdentifier>{edaf739a-ce6a-4710-9e91-275f89cbf071}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Arrow">
+      <UniqueIdentifier>{cdb3c769-c8bc-4d2e-bd9d-7a789d46724c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1116,6 +1122,12 @@
     <ClInclude Include="..\public\ResExperenceOrbVIBuffer.h">
       <Filter>Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoArrow.h">
+      <Filter>Resource\Entity\Geometry\Arrow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ArrowEntity.h">
+      <Filter>GameObject\Entity\Arrow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1645,6 +1657,12 @@
     </ClCompile>
     <ClCompile Include="..\private\ResExperenceOrbVIBuffer.cpp">
       <Filter>Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoArrow.cpp">
+      <Filter>Resource\Entity\Geometry\Arrow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ArrowEntity.cpp">
+      <Filter>GameObject\Entity\Arrow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

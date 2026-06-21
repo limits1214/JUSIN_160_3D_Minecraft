@@ -162,6 +162,7 @@ void CLevelLoading::LoadingCheck()
 #include "EnderManEntity.h"
 #include "EnderDragonEntity.h"
 #include "ArmorEntity.h"
+#include "ArrowEntity.h"
 #include "DropItem.h"
 #include "DropBlock.h"
 #include "HandHeldItem.h"
@@ -246,6 +247,10 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 		return E_FAIL;
 	}
 	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_ArmorEntity", E::CArmorEntity::Create())))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ENTITY", "Prototype_GameObject_ArrowEntity", E::CArrowEntity::Create())))
 	{
 		return E_FAIL;
 	}
