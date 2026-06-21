@@ -571,6 +571,9 @@
     <Filter Include="100.Shaders\ExperienceOrb">
       <UniqueIdentifier>{feca626f-de8c-43f0-8679-b8f9b7e84b02}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer">
+      <UniqueIdentifier>{453277c1-8ea5-49b8-a080-5d5fbb2732c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1110,6 +1113,9 @@
     <ClInclude Include="..\public\ResEnttGeoPlayerArmorLeggings.h">
       <Filter>Resource\Entity\Geometry\Armor\Leggings</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ResExperenceOrbVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1636,6 +1642,9 @@
     </ClCompile>
     <ClCompile Include="..\private\ResEnttGeoPlayerArmorLeggings.cpp">
       <Filter>Resource\Entity\Geometry\Armor\Leggings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResExperenceOrbVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1754,9 +1754,13 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "ExperienceOrb", CResQuadItemVIBuffer::Create()))
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "ExperienceOrb", CResExperenceOrbVIBuffer::Create()))
 				{
-					res->Load(CResQuadItemVIBuffer::DESC{ .textureId = {"MC_TEX_64_64", "TEXTURES"}, .resourceIdx = 4, .texIndex = PackTexId(8, 4) });
+					//CResExperenceOrbVIBuffer::DESC{ .textureId = {"MC_TEX_64_64", "TEXTURES"}, .resourceIdx = 4, .texIndex = PackTexId(8, 4) }
+					if (res->Load())
+					{
+						return E_FAIL;
+					}
 				}
 			}
 		}

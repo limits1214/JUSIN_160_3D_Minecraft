@@ -262,6 +262,20 @@ HRESULT CLevelOverWorld::Initialize()
 					{
 						playerObj->SetUIController(handle.value());
 					}
+
+
+
+					
+				}
+
+				{
+					E::CExperienceOrb::DESC Desc{};
+					Desc.sObjectTag = "ExperienceOrb";
+					Desc.hPlayer = playerHandle.value();
+					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
+						"56_ExperienceOrb", &Desc))
+					{
+					}
 				}
 			}
 		}
@@ -338,14 +352,7 @@ HRESULT CLevelOverWorld::Initialize()
 		//	}
 		//}
 
-		{
-			E::CExperienceOrb::DESC Desc{};
-			Desc.sObjectTag = "ExperienceOrb";
-			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
-				"56_ExperienceOrb", &Desc))
-			{
-			}
-		}
+		
 
 	// handheld
 	if(false)

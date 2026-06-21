@@ -148,6 +148,8 @@ namespace Engine
 	{
 		_float4x4 matWorld{};
 		//uint32_t   texIndex{};
+		_float2   uvOffset{};
+		_float4   vColor{};
 		uint32_t	light{ 0xFF };
 	}VTX_EXP_ORB_INSTANCED_DATA;
 
