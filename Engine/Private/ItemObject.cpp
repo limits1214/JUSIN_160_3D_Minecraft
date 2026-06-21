@@ -1,5 +1,7 @@
 #include "ItemObject.h"
-
+#include "GameInstance.h"
+#include "DropItemObject.h"
+#include "DropBlock.h"
 NS_USING(Engine)
 
 void CItemObject::RecipeInitialize()
@@ -591,6 +593,55 @@ void CItemObject::RecipeInitialize()
         CItemObject::s_vecRecipies.push_back(recipe);
     }
 
+}
+
+void CItemObject::SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel)
+
+{
+    if (info.block)
+    {
+        E::CDropItemObject::DESC Desc{};
+        Desc.sObjectTag = "CDropBlock_Cube";
+        Desc.viBufferId = { "MC_ITEM_VIBuffer", CDropItemObject::GetVIBufferName(info) };
+
+        if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(info), "ITEM", "Prototype_GameObject_DropBlock", &Desc))
+        {
+            if (!pLayer->empty())
+            {
+                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropBlock>(pLayer->front()))
+                {
+                    auto type = info.block->GetType();
+
+                    std::vector<uint32_t> texs{};
+                    for (uint32_t i = 0; i < ETOUI(FACE_DIR::END); ++i)
+                    {
+                        texs.push_back(PackTexId(9, ETOUI(CBlock3::GetTexType(type, static_cast<FACE_DIR>(i)))));
+                    }
+
+                    pObj->AddDropItemObject(info, pos, vel, texs);
+                }
+            }
+        }
+    }
+    else
+    {
+        {
+            E::CDropItemObject::DESC Desc{};
+            Desc.sObjectTag = "CDropItem";
+            Desc.viBufferId = { "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(info) };
+
+            if (auto pLayer = CGameInstance::Get().GetGameObjectLayer(CDropItemObject::GetDropItemLayer(info), "ITEM", "Prototype_GameObject_DropItem", &Desc))
+            {
+                if (!pLayer->empty())
+                {
+                    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CDropItemObject>(pLayer->front()))
+                    {
+                        pObj->AddDropItemObject(info, pos, vel, { CItemObject::GetPackedTexIdByType(info.eItemType) });
+                    }
+                }
+            }
+        }
+    }
 }
 
 CItemObject::CItemObject()
