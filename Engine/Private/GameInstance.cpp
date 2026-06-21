@@ -1677,6 +1677,33 @@ HRESULT CGameInstance::InitializeMCResource()
 		}
 	}
 
+	// 128_128 texture
+	{
+		{
+			// 0: particles.png
+			if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_128_128", "TEXTURES", CResTexture2D::Create("./Resources/Texture/particles.png")))
+			{
+				if (FAILED(pRes->Load()))
+				{
+					int x = 0;
+				}
+			}
+		}
+
+		// Entity_128_128_Ted2d_Array
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_TEX_128_128", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_128_128", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(10, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+	}
+
 	// initialize cube item
 	{
 		if (auto res = AddResource("MC_ITEM_VIBuffer", "CubeItemDirt", CResCubeItemVIBuffer::Create()))

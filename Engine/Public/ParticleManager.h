@@ -10,7 +10,7 @@ public:
 	enum class PARTICLE_TYPE
 	{
 		BLOCK_DESTRUCT,
-		PARTICLES_ATLAS,
+		PARTICLES_ATLAS_SMOKE,
 		END
 	};
 
@@ -26,10 +26,12 @@ public:
 
 	typedef struct tagAttribute
 	{
-		_float2 vUv{};
-		_float2 vUvSize{};
-		_float2 vSize{};
+		_float2 vUv{}; // 시작지점
+		_float2 vUvSize{}; // 시작지점으로부터오프셋
+		_float2 vSize{};// GS에서  포인트로부터 늘릴 사이즈
 		uint32_t iFrameIndex{};
+		uint32_t iMaxFrameIndex{};
+		_float fFramePlusUnit{};
 		uint32_t iTexId{};
 		_float3 vPos{};
 		_float3 vVelocity{};
