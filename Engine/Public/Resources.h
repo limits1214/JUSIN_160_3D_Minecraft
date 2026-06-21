@@ -58,6 +58,7 @@
 #include "ResEnttGeoSpider.h"
 #include "ResEnttGeoEnderMan.h"
 #include "ResEnttGeoEnderDragon.h"
+#include "ResEnttGeoArrow.h"
 
 #include "ResFont.h"
 #include "ResFontCustom.h"

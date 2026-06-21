@@ -40,6 +40,8 @@
 
 #include "ArmorEntity.h"
 
+#include "ArrowEntity.h"
+
 //#include "HandHeldItemObject.h"
 #include "HandHeldItem.h"
 
@@ -265,7 +267,7 @@ HRESULT CLevelOverWorld::Initialize()
 
 
 
-					
+
 				}
 
 				{
@@ -281,6 +283,17 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
+
+	{
+		//Prototype_GameObject_ArrowEntity
+		E::CArrowEntity::DESC Desc{};
+		Desc.sObjectTag = "Arrow";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArrowEntity",
+			"49_ARROW", &Desc))
+		{
+			int x = 0;
+		}
+	}
 /*
 
 	{

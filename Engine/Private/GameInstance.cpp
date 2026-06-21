@@ -2003,6 +2003,15 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 2: Arrow
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_32_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Arrow/arrows.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
 		// 32_32_texArray
 		{
 			CResTexture2DArray::DESC desc{};
@@ -2297,6 +2306,17 @@ HRESULT CGameInstance::InitializeMCResource()
 				if (auto res = AddResource("MC_ENTITY_VIBuffer", "EnderDragon", CResEnttVIBuffer::Create()))
 				{
 					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "EnderDragon"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Arrow", CResEnttGeoArrow::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Arrow", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Arrow"}, .bUseFlatQuad = true });
 				}
 			}
 		}

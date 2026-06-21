@@ -15,6 +15,7 @@ public:
 		std::pair<StringID, StringID> geometryId{};
 		std::optional<uint32_t> baseTexId{};
 		std::unordered_map<_string, uint32_t> specificCubeTexIds{};
+		_bool bUseFlatQuad{ false };
 	} DESC;
 
 private:

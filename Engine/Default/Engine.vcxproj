@@ -231,6 +231,7 @@ call CopyClient.bat</Command>
   <ItemGroup>
     <ClInclude Include="..\public\AnimalEntityObject.h" />
     <ClInclude Include="..\public\ArmorEntity.h" />
+    <ClInclude Include="..\public\ArrowEntity.h" />
     <ClInclude Include="..\public\BaseApp.h" />
     <ClInclude Include="..\public\Block3.h" />
     <ClInclude Include="..\public\BlockOutline.h" />
@@ -288,6 +289,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\Item.h" />
     <ClInclude Include="..\public\PlayerInvenUICamera.h" />
     <ClInclude Include="..\public\ResCloudVIBuffer.h" />
+    <ClInclude Include="..\public\ResEnttGeoArrow.h" />
     <ClInclude Include="..\public\ResEnttGeoCreeper.h" />
     <ClInclude Include="..\public\ResEnttGeoEnderDragon.h" />
     <ClInclude Include="..\public\ResEnttGeoEnderMan.h" />
@@ -509,6 +511,7 @@ call CopyClient.bat</Command>
     </ClCompile>
     <ClCompile Include="..\private\AnimalEntityObject.cpp" />
     <ClCompile Include="..\private\ArmorEntity.cpp" />
+    <ClCompile Include="..\private\ArrowEntity.cpp" />
     <ClCompile Include="..\private\BaseApp.cpp" />
     <ClCompile Include="..\private\Block3.cpp" />
     <ClCompile Include="..\private\BlockOutline.cpp" />
@@ -543,6 +546,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\PlayerInvenUICamera.cpp" />
     <ClCompile Include="..\private\ResCloudVIBuffer.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoArrow.cpp" />
     <ClCompile Include="..\private\ResEnttGeoCreeper.cpp" />
     <ClCompile Include="..\private\ResEnttGeoEnderDragon.cpp" />
     <ClCompile Include="..\private\ResEnttGeoEnderMan.cpp" />
