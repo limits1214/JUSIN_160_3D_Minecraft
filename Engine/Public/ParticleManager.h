@@ -11,12 +11,15 @@ public:
 	{
 		BLOCK_DESTRUCT,
 		PARTICLES_ATLAS_DEATH_SMOKE,
+		PARTICLES_ATLAS_EXPLODE_SMOKE,
+		PARTICLES_ATLAS_TORCH,
 		END
 	};
 
 public:
 	void AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt = 1);
 	void AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt = 1);
 
 
 	//enum class PARTICLE_TEX_TYPE
@@ -54,6 +57,7 @@ public:
 public:
 	HRESULT RenderX(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) ;
 	HRESULT Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) override;
+	HRESULT RenderPaticle(ID3D11DeviceContext* pContext, PARTICLE_TYPE eType);
 	bool HasRenderPass(RENDERPASS ePass) const override { return ePass == RENDERPASS::DEFAULT; };
 
 public:
@@ -61,6 +65,10 @@ public:
 public:
 	HRESULT AddParticle(PARTICLE_TYPE eType, const ATTRIBUTE& particle);
 	void Update(_float fTimeDelta);
+	void Update_BLOCK_DESTRUCT(_float fTimeDelta);
+	void Update_PARTICLES_ATLAS_DEATH_SMOKE(_float fTimeDelta);
+	void Update_PARTICLES_ATLAS_EXPLODE_SMOKE(_float fTimeDelta);
+	void Update_PARTICLES_ATLAS_TORCH(_float fTimeDelta);
 
 private:
 	HRESULT Initialize();
