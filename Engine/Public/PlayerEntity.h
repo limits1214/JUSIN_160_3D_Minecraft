@@ -111,6 +111,7 @@ private:
 
 private:
 	void ProcessItemColliding(_float fTimeDelta);
+	void ProcessExpOrbColliding(_float fTimeDelta);
 
 private:
 	void PlayerCameraTrace(_float fTimeDelta);
@@ -184,6 +185,7 @@ private:
 	void ReadyPlayerItem();
 
 	HRESULT ProcessItemGain(const CItemObject::ItemInfo& info);
+	HRESULT ProcessExpOrbGain(_float fGage);
 	
 	std::array<std::optional<CItemObject::ItemInfo>, 4> m_ItemArrArmor{};
 	std::optional<CItemObject::ItemInfo> m_ItemShiled{};

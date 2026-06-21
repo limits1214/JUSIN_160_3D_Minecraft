@@ -2,7 +2,7 @@
 #include "EntityObject.h"
 
 NS_BEGIN(Engine)
-class CComEntityModel;
+class CComConstantBuffer;
 class ENGINE_DLL CExperienceOrb : public CEntityObject
 {
 public:
@@ -11,8 +11,8 @@ public:
 		_float3 vPos{};
 		_float3 vVelocity{};
 		bool    bOnGround{ false };
-		_float  fBobYOffset{};
-		_float  fBobYRot{};
+		//_float  fBobYOffset{};
+		//_float  fBobYRot{};
 		_float  fBobTime{};
 		uint32_t iType{};
 		SPtr<CCollider> boxCollider{};
@@ -25,7 +25,7 @@ public:
 public:
 	typedef struct tagDesc : CEntityObject::DESC
 	{
-
+		CHandle hPlayer{};
 	}DESC;
 
 public:
@@ -53,17 +53,27 @@ public:
 	void AddOrb(const _float3& vPos, const _float3& vVelocity, uint32_t iType);
 
 private:
-	void VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDelta);
+	//void VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDelta);
 
+	void VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDelta, _bool bMagnet, XMVECTOR vToPlayer);
 
 private:
 	_float m_fSpeed{ 5.f };
 
+public:
+	std::list<InstancedExpOrbDesc>& GetExpOrbObjects() { return m_listOrbs; }
 private:
+	CComConstantBuffer* m_pComCBufferPerObject{};
 	std::list<InstancedExpOrbDesc> m_listOrbs{};
 	std::vector<VTX_EXP_ORB_INSTANCED_DATA> m_vecInstancedData{};
 	uint32_t m_iNumElements{ 100 };
 	SPtr<CResDynamicBuffer> m_pResInstancedBuffer{};
+
+
+public:
+	void SetPlayerHandle(CHandle h) { m_hPlayer = h; }
+private:
+	CHandle m_hPlayer{};
 
 public:
 	static UPtr<CExperienceOrb> Create();

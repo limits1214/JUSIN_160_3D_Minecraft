@@ -3,6 +3,7 @@
 #include "Resources.h"
 #include "CameraObject.h"
 #include "CollBox.h"
+#include "ComConstantBuffer.h"
 NS_USING(Engine)
 
 CExperienceOrb::CExperienceOrb()
@@ -15,6 +16,8 @@ CExperienceOrb::~CExperienceOrb()
 
 HRESULT CExperienceOrb::Initialize(void* pArg)
 {
+	auto pDesc = static_cast<DESC*>(pArg);
+	m_hPlayer = pDesc->hPlayer;
 	if (FAILED(CEntityObject::Initialize(pArg)))
 	{
 		return E_FAIL;
@@ -39,6 +42,15 @@ HRESULT CExperienceOrb::Initialize(void* pArg)
 		m_pResInstancedBuffer = res;
 	}
 
+	{
+		CComConstantBuffer::DESC Desc{};
+		Desc.cBufferId = { TAG_RES_GRP_PERMANENT_BUFFER, TAG_RES_CBUFFER_OBJECT };
+		if (FAILED(AddComponentFromProto("PERMANENT", "Prototype_Component_ConstantBuffer", "ComCBufferPerObject", &Desc, &m_pComCBufferPerObject)))
+		{
+			return E_FAIL;
+		};
+	}
+
 	return S_OK;
 }
 
@@ -48,31 +60,70 @@ void CExperienceOrb::PriorityUpdate(E::_float fTimeDelta)
 
 void CExperienceOrb::Update(E::_float fTimeDelta)
 {
+	CGameObject* pPlayerObj = CGameInstance::Get().GetGameObjectByHandle(m_hPlayer);
+
+	//  발밑이 아닌 가슴/몸통 쪽으로 날아오도록 Y축을 살짝 올려줍니다.
+	_float3 playerPos = pPlayerObj->GetTransform().GetPosition();
+	playerPos.y += 1.0f;
+	XMVECTOR vTargetPos = XMLoadFloat3(&playerPos);
+
 	m_vecInstancedData.clear();
+
+	auto pGameCam = E::CGameInstance::Get().GetActiveGameCamera();
+	_matrix matCamWorld = pGameCam->GetTransform().GetLoadedWorldMatrix();
+
+	XMVECTOR vCamRight = XMVector3Normalize(matCamWorld.r[0]);
+	XMVECTOR vCamUp = XMVector3Normalize(matCamWorld.r[1]);
+	XMVECTOR vCamLook = XMVector3Normalize(matCamWorld.r[2]);
+
+	_float3 scale = GetTransform().GetScale();
+	float frameSize = 0.25f;
 
 	for (auto& item : m_listOrbs)
 	{
-		_bool bGravity{ true };
-		if (bGravity)    VelocityUpdate(item, fTimeDelta);
-		//if (m_bAnimation)  AnimateTransformUpdate(item, fTimeDelta);
+		XMVECTOR vOrbPos = XMLoadFloat3(&item.vPos);
+		XMVECTOR vToPlayer = vTargetPos - vOrbPos;
+		float fDist = XMVectorGetX(XMVector3Length(vToPlayer));
 
-		// 최종 월드행렬
-	   // _matrix matRot = XMMatrixRotationY(XMConvertToDegrees(item.fBobYRot));
-		_matrix matRot = XMMatrixRotationY(item.fBobYRot);
-		_matrix matBob = XMMatrixTranslation(0.f, item.fBobYOffset, 0.f);
-		_matrix matWorld = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
-		XMStoreFloat4x4(&item.matWorld, matRot * matBob * matWorld);
+		// 자석 거리 판정 (예: 6블록 이내면 끌려감)
+		_bool bMagnet = (fDist < 6.0f);
 
-		item.boxCollider->Transform(matWorld);
-		E::CGameInstance::Get().AddColliderGroup("Coll_DropItemObject", item.boxCollider.get());
+		// 3. 물리 및 이동 업데이트 (다가가는 로직 실행)
+		VelocityUpdate(item, fTimeDelta, bMagnet, vToPlayer);
 
+		// 개별 오브 타이머 진행
+		item.fBobTime += fTimeDelta;
 
+		// 빌보드 행렬 조립
+		_matrix matBillboard = XMMatrixIdentity();
+		matBillboard.r[0] = XMVectorSetW(vCamRight * scale.x, 0.f);
+		matBillboard.r[1] = XMVectorSetW(vCamUp * scale.y, 0.f);
+		matBillboard.r[2] = XMVectorSetW(vCamLook * scale.z, 0.f);
 
+		//_matrix matBob = XMMatrixTranslation(0.f, item.fBobYOffset, 0.f);
+		_matrix matTranslation = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
 
+		XMStoreFloat4x4(&item.matWorld, matBillboard *  matTranslation);
 
+		item.boxCollider->Transform(XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z));
+		E::CGameInstance::Get().AddColliderGroup("Coll_ExpOrb", item.boxCollider.get());
 
+		// --- 인스턴스 데이터 세팅 ---
 		VTX_EXP_ORB_INSTANCED_DATA inst{};
+		inst.matWorld = item.matWorld;
 
+		uint32_t safeType = item.iType % 16;
+		int col = safeType % 4;
+		int row = safeType / 4;
+		inst.uvOffset = { col * frameSize, row * frameSize };
+
+		float fSine = sinf(item.fBobTime * 12.0f) * 0.5f + 0.5f;
+		XMVECTOR vColorA = XMVectorSet(0.0f, 1.0f, 0.1f, 1.0f);
+		XMVECTOR vColorB = XMVectorSet(0.8f, 1.0f, 0.0f, 1.0f);
+		XMVECTOR vFinalColor = XMVectorLerp(vColorA, vColorB, fSine);
+		XMStoreFloat4(&inst.vColor, vFinalColor);
+
+		// 라이트 처리
 		int32_t blockX = static_cast<int32_t>(std::floor(item.vPos.x));
 		int32_t blockY = static_cast<int32_t>(std::floor(item.vPos.y));
 		int32_t blockZ = static_cast<int32_t>(std::floor(item.vPos.z));
@@ -81,21 +132,8 @@ void CExperienceOrb::Update(E::_float fTimeDelta)
 			inst.light = optCurrBlock->GetLight();
 		}
 
-
-		inst.matWorld = item.matWorld;
-		//inst.texIndex = item.texIndexs.front();
 		m_vecInstancedData.push_back(inst);
-
 	}
-
-	//static float fTemp = 0;
-	//fTemp += fTimeDelta;
-
-	//int frameIndex = int(fTemp / 0.1f);
-	////int col = frameIndex % 4;
-	////int row = frameIndex / 4;
-	//m_iFrameCol = frameIndex % 4;
-	//m_iFrameRow = frameIndex / 4;
 }
 
 void CExperienceOrb::LateUpdate(E::_float fTimeDelta)
@@ -107,137 +145,48 @@ void CExperienceOrb::LateUpdate(E::_float fTimeDelta)
 
 HRESULT CExperienceOrb::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
-	//
-	//{
-	//	auto pResCBuf = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerQuadItemAnim");
-	//	D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-	//	if (SUCCEEDED(pContext->Map(pResCBuf->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
-	//	{
-	//		E::CB_PER_QUADITEM_ANIM cbPerQuadItemAnim{};
-	//		//cbPerQuadItemAnim.uvOffset =
-	//		//int frameIndex = 0;
-	//		//int col = frameIndex % 4;
-	//		//int row = frameIndex / 4;
+	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_ExperienceOrb");
+	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_ExperienceOrb");
+	const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResExperenceOrbVIBuffer>("MC_ITEM_VIBuffer", "ExperienceOrb");
 
-	//		float frameSize = 1.f / 4.f;  // 0.25f
+	pContext->IASetInputLayout(vs->GetInputLayout().Get());
+	pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
+	pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
 
-	//		// cbuffer에 넘길 값
-	//		cbPerQuadItemAnim.uvOffset = { m_iFrameCol * frameSize, m_iFrameRow * frameSize };
-	//		cbPerQuadItemAnim.uvScale = { frameSize, frameSize };  // 0.25f, 0.25f
-	//		memcpy(mappedSubResource.pData, &cbPerQuadItemAnim, sizeof(cbPerQuadItemAnim));
-	//		pContext->Unmap(pResCBuf->GetCBuffer().Get(), 0);
-	//	}
-	//	pContext->VSSetConstantBuffers(5, 1, pResCBuf->GetCBuffer().GetAddressOf());
-	//}
-	//const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropItem");
-	//const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropItem");
-	//const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResQuadItemVIBuffer>("MC_ITEM_VIBuffer", "ExperienceOrb");
+	ID3D11Buffer* vertexBuffers[] = {
+				viBuffer->GetVertexBuffer().Get(),
+				m_pResInstancedBuffer->GetBuffer().Get()
+	};
+	uint32_t strides[] = {
+		viBuffer->GetVertexStride(),
+		(uint32_t)sizeof(VTX_EXP_ORB_INSTANCED_DATA),
+	};
+	uint32_t offsets[] = {
+		0,
+		0,
+	};
+	pContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+	pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
+	pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
 
-	//pContext->IASetInputLayout(vs->GetInputLayout().Get());
-	//pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
-	//pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
+	{
+		auto pCbPerObject = m_pResInstancedBuffer;
+		D3D11_MAPPED_SUBRESOURCE mappedSubResource;
 
-	//ID3D11Buffer* vertexBuffers[] = {
-	//		viBuffer->GetVertexBuffer().Get()
-	//};
-	//uint32_t strides[] = {
-	//	viBuffer->GetVertexStride()
-	//};
-	//uint32_t offsets[] = {
-	//	0
-	//};
-	//pContext->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
-	//pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
-	//pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
+		if (SUCCEEDED(pContext->Map(pCbPerObject->GetBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+		{
+			std::memcpy(mappedSubResource.pData, m_vecInstancedData.data(), sizeof(VTX_EXP_ORB_INSTANCED_DATA) * m_vecInstancedData.size());
+			pContext->Unmap(pCbPerObject->GetBuffer().Get(), 0);
+		}
+	}
 
-	//{
-	//	auto pCbPerObject =
-	//		E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(
-	//			TAG_RES_GRP_PERMANENT_BUFFER,
-	//			"CB_PerObject");
-
-	//	D3D11_MAPPED_SUBRESOURCE mappedSubResource{};
-
-	//	if (SUCCEEDED(pContext->Map(
-	//		pCbPerObject->GetCBuffer().Get(),
-	//		0,
-	//		D3D11_MAP_WRITE_DISCARD,
-	//		0,
-	//		&mappedSubResource)))
-	//	{
-	//		E::CB_PER_OBJECT cbPerObject{};
-
-	//		XMVECTOR vPos =
-	//			GetTransform().GetLoadedPostion();
-
-	//		_float3 scale =
-	//			GetTransform().GetScale();
-
-	//		auto pGameCam = CGameInstance::Get().GetActiveGameCamera();
-
-	//		// 카메라 월드축 추출
-	//		XMMATRIX matInvView = pGameCam->GetTransform().GetLoadedWorldMatrix();
-
-	//		XMVECTOR vRight =
-	//			XMVector3Normalize(matInvView.r[0]);
-
-	//		XMVECTOR vUp =
-	//			XMVector3Normalize(matInvView.r[1]);
-
-	//		XMVECTOR vLook =
-	//			XMVector3Normalize(matInvView.r[2]);
-
-	//		// 스케일 적용
-	//		vRight *= scale.x;
-	//		vUp *= scale.y;
-	//		vLook *= scale.z;
-
-	//		// Billboard World
-	//		XMMATRIX matWorld = XMMatrixIdentity();
-
-	//		matWorld.r[0] = XMVectorSetW(vRight, 0.f);
-	//		matWorld.r[1] = XMVectorSetW(vUp, 0.f);
-	//		matWorld.r[2] = XMVectorSetW(vLook, 0.f);
-	//		matWorld.r[3] = XMVectorSetW(vPos, 1.f);
-
-	//		XMMATRIX matWVP =
-	//			matWorld * ctx.matViewProj;
-
-	//		XMStoreFloat4x4(
-	//			&cbPerObject.matWorld,
-	//			matWorld);
-
-	//		XMStoreFloat4x4(
-	//			&cbPerObject.matWVP,
-	//			matWVP);
-
-	//		memcpy(
-	//			mappedSubResource.pData,
-	//			&cbPerObject,
-	//			sizeof(cbPerObject));
-
-	//		pContext->Unmap(
-	//			pCbPerObject->GetCBuffer().Get(),
-	//			0);
-	//	}
-
-	//	pContext->VSSetConstantBuffers(
-	//		0,
-	//		1,
-	//		pCbPerObject->GetCBuffer().GetAddressOf());
-
-	//	pContext->PSSetConstantBuffers(
-	//		0,
-	//		1,
-	//		pCbPerObject->GetCBuffer().GetAddressOf());
-	//}
-
-	//{
-	//	const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
-	//	pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
-	//}
+	{
+		const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
+		pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
+	}
 
 	//pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
+	pContext->DrawIndexedInstanced((UINT)viBuffer->GetNumIndices(), (UINT)m_vecInstancedData.size(), 0, 0, 0);
 	return S_OK;
 }
 
@@ -256,46 +205,69 @@ void CExperienceOrb::AddOrb(const _float3& vPos, const _float3& vVelocity, uint3
 	Desc.boxCollider->SetInnerHint2(&hint, sizeof(hint));
 }
 
-void CExperienceOrb::VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDelta)
+void CExperienceOrb::VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDelta, _bool bMagnet, XMVECTOR vToPlayer)
 {
 	XMVECTOR vVel = XMLoadFloat3(&item.vVelocity);
-	XMVECTOR vWishDir = XMVectorZero();
 
-	// 가속
-	float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
-	float fAddSpeed = m_fSpeed - fCurrSpeed;
-	if (fAddSpeed > 0.f)
+	if (bMagnet)
 	{
-		float fAccelSpeed = std::min(18.f * m_fSpeed * fTimeDelta, fAddSpeed);
-		vVel += vWishDir * fAccelSpeed;
-	}
+		//  자석 모드: 기존 물리(중력/마찰) 무시하고 플레이어를 향해 가속
+		XMVECTOR vDir = XMVector3Normalize(vToPlayer);
 
-	// 수평 속도 제한
-	XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
-	float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
-	if (fHorizSpeed > m_fSpeed)
-	{
-		vHoriz = XMVector3Normalize(vHoriz) * m_fSpeed;
-		vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
-	}
+		// 점점 빨라지도록 가속도 부여 (수치는 취향껏 조절, 현재 초당 35.0f 가속)
+		vVel += vDir * 35.0f * fTimeDelta;
 
-	// 마찰
-	if (item.bOnGround)
-	{
-		float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
-		if (fSpeed > 0.f)
+		// 너무 총알처럼 날아가지 않게 최대 속도 제한
+		float fSpeed = XMVectorGetX(XMVector3Length(vVel));
+		if (fSpeed > 15.0f)
 		{
-			float fNewSpeed = std::max(fSpeed - fSpeed * 15.f * fTimeDelta, 0.f);
-			float vy = XMVectorGetY(vVel);
-			vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
+			vVel = vDir * 15.0f;
 		}
+		item.bOnGround = false; // 끌려갈 때는 공중에 뜸
+	}
+	else
+	{
+		//  일반 물리 로직 (자석 범위 밖일 때)
+		XMVECTOR vWishDir = XMVectorZero();
+
+		// 가속
+		float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
+		float fAddSpeed = m_fSpeed - fCurrSpeed;
+		if (fAddSpeed > 0.f)
+		{
+			float fAccelSpeed = std::min(18.f * m_fSpeed * fTimeDelta, fAddSpeed);
+			vVel += vWishDir * fAccelSpeed;
+		}
+
+		// 수평 속도 제한
+		XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
+		float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
+		if (fHorizSpeed > m_fSpeed)
+		{
+			vHoriz = XMVector3Normalize(vHoriz) * m_fSpeed;
+			vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
+		}
+
+		// 마찰
+		if (item.bOnGround)
+		{
+			float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
+			if (fSpeed > 0.f)
+			{
+				float fNewSpeed = std::max(fSpeed - fSpeed * 15.f * fTimeDelta, 0.f);
+				float vy = XMVectorGetY(vVel);
+				vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
+			}
+		}
+
+		// 중력
+		if (!item.bOnGround)
+			vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
 	}
 
-	// 중력
-	if (!item.bOnGround)
-		vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
-
-	// AABB 충돌
+	// ==========================================
+	// AABB 복셀 벽/바닥 충돌 처리
+	// ==========================================
 	const XMFLOAT3 halfExtents = { 0.25f, 0.25f, 0.25f };
 	XMFLOAT3 c = item.vPos;
 
@@ -311,7 +283,9 @@ void CExperienceOrb::VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDe
 			item.bOnGround = true;
 		}
 		else c.y = prevY;
-		vVel = XMVectorSetY(vVel, 0.f);
+
+		//  자석 모드일 땐 벽에 막혀도 위아래로 비비면서 넘어갈 수 있도록 속도를 0으로 죽이지 않음
+		if (!bMagnet) vVel = XMVectorSetY(vVel, 0.f);
 	}
 	else item.bOnGround = false;
 
@@ -321,7 +295,7 @@ void CExperienceOrb::VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDe
 	if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
 	{
 		c.x = px;
-		vVel = XMVectorSetX(vVel, 0.f);
+		if (!bMagnet) vVel = XMVectorSetX(vVel, 0.f);
 	}
 
 	// Z
@@ -330,12 +304,94 @@ void CExperienceOrb::VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDe
 	if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
 	{
 		c.z = pz;
-		vVel = XMVectorSetZ(vVel, 0.f);
+		if (!bMagnet) vVel = XMVectorSetZ(vVel, 0.f);
 	}
 
 	item.vPos = c;
 	XMStoreFloat3(&item.vVelocity, vVel);
 }
+
+//
+//void CExperienceOrb::VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDelta)
+//{
+//	XMVECTOR vVel = XMLoadFloat3(&item.vVelocity);
+//	XMVECTOR vWishDir = XMVectorZero();
+//
+//	// 가속
+//	float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
+//	float fAddSpeed = m_fSpeed - fCurrSpeed;
+//	if (fAddSpeed > 0.f)
+//	{
+//		float fAccelSpeed = std::min(18.f * m_fSpeed * fTimeDelta, fAddSpeed);
+//		vVel += vWishDir * fAccelSpeed;
+//	}
+//
+//	// 수평 속도 제한
+//	XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
+//	float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
+//	if (fHorizSpeed > m_fSpeed)
+//	{
+//		vHoriz = XMVector3Normalize(vHoriz) * m_fSpeed;
+//		vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
+//	}
+//
+//	// 마찰
+//	if (item.bOnGround)
+//	{
+//		float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
+//		if (fSpeed > 0.f)
+//		{
+//			float fNewSpeed = std::max(fSpeed - fSpeed * 15.f * fTimeDelta, 0.f);
+//			float vy = XMVectorGetY(vVel);
+//			vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
+//		}
+//	}
+//
+//	// 중력
+//	if (!item.bOnGround)
+//		vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
+//
+//	// AABB 충돌
+//	const XMFLOAT3 halfExtents = { 0.25f, 0.25f, 0.25f };
+//	XMFLOAT3 c = item.vPos;
+//
+//	// Y
+//	float velY = XMVectorGetY(vVel);
+//	float prevY = c.y;
+//	c.y += velY * fTimeDelta;
+//	if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+//	{
+//		if (velY < 0.f)
+//		{
+//			c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;
+//			item.bOnGround = true;
+//		}
+//		else c.y = prevY;
+//		vVel = XMVectorSetY(vVel, 0.f);
+//	}
+//	else item.bOnGround = false;
+//
+//	// X
+//	float px = c.x;
+//	c.x += XMVectorGetX(vVel) * fTimeDelta;
+//	if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+//	{
+//		c.x = px;
+//		vVel = XMVectorSetX(vVel, 0.f);
+//	}
+//
+//	// Z
+//	float pz = c.z;
+//	c.z += XMVectorGetZ(vVel) * fTimeDelta;
+//	if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+//	{
+//		c.z = pz;
+//		vVel = XMVectorSetZ(vVel, 0.f);
+//	}
+//
+//	item.vPos = c;
+//	XMStoreFloat3(&item.vVelocity, vVel);
+//}
 
 UPtr<CExperienceOrb> CExperienceOrb::Create()
 {

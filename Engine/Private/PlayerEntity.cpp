@@ -38,6 +38,8 @@
 
 #include "ArmorEntity.h";
 
+#include "ExperienceOrb.h"
+
 
 NS_USING(Engine)
 
@@ -242,6 +244,20 @@ void CPlayerEntity::UpdateGUI()
                     //pObj->SetPlayer(GetHandle());
                 }
             }
+        }
+    }
+
+    if (ImGui::Button("Test ExpOrb"))
+    {
+        //56_ExperienceOrb
+        if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CExperienceOrb>("56_ExperienceOrb"))
+        {
+
+            auto pos = GetTransform().GetPosition();
+            pos.x += 1.f;
+            pos.y += 1.f;
+            ;
+            pObj->AddOrb(pos, {}, rand() % 16);
         }
     }
 
@@ -593,6 +609,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     //    }
     //}
     ProcessItemColliding(fTimeDelta);
+    ProcessExpOrbColliding(fTimeDelta);
 
     if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
     {
@@ -1586,6 +1603,31 @@ void CPlayerEntity::ProcessItemColliding(_float fTimeDelta)
     }
 }
 
+void CPlayerEntity::ProcessExpOrbColliding(_float fTimeDelta)
+{
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_ExpOrb"))
+    {
+        for (auto& pColl : *pCollGroup)
+        {
+            if (CGameInstance::Get().IntersectColl(pColl, m_pCenterCollider.get()))
+            {
+                if (auto pObj = Cast<CExperienceOrb>(pColl->GetInnerPointer()))
+                {
+                    auto pHint = static_cast<CExperienceOrb::CollHint*>(pColl->GetInnerHint2());
+                    //const auto& itemInfo = pHint->iter->itemInfo;
+                    //auto* pUIController = GetUIController();
+                   // auto a = *pHint->iter;
+
+                    if (SUCCEEDED(ProcessExpOrbGain(0.3)))
+                    {
+                        pObj->GetExpOrbObjects().erase(pHint->iter);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)
 {
     if (m_pActivePlayerCamera)
@@ -1910,6 +1952,19 @@ HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
 
 
     return E_FAIL;
+}
+
+HRESULT CPlayerEntity::ProcessExpOrbGain(_float fGage)
+{
+    m_fExperienceGage += fGage;
+    if (m_fExperienceGage > 1.f)
+    {
+        m_fExperienceGage -= 1.f;
+        m_iLevel += 1;
+    }
+
+
+    return S_OK;
 }
 
 void CPlayerEntity::ProcessUIInventoryItemOnCursor(_float fTimeDelta)

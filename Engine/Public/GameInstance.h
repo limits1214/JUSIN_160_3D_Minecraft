@@ -202,7 +202,7 @@ public:
 	}
 
 	template<typename T>
-	const T* GetFirstGameObjectByLayer(std::string_view sLayerName) const
+	T* GetFirstGameObjectByLayer(std::string_view sLayerName) const
 	{
 		return m_pGameObjectManager->GetFirstGameObjectByLayer<T>(sLayerName);
 	}

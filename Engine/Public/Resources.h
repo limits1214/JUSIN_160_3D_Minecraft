@@ -13,6 +13,7 @@
 #include "ResCubeItemVIBuffer.h"
 #include "ResFallingVoxelVIBuffer.h"
 #include "ResCloudVIBuffer.h"
+#include "ResExperenceOrbVIBuffer.h"
 
 #include "ResFmodSound.h"
 
