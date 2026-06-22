@@ -2,6 +2,7 @@
 #include "GameInstance.h"
 #include "DropItemObject.h"
 #include "DropBlock.h"
+#include "WorldManager.h"
 NS_USING(Engine)
 
 void CItemObject::RecipeInitialize()
@@ -641,6 +642,114 @@ void CItemObject::SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3
                 }
             }
         }
+    }
+}
+
+void CItemObject::DestoryBlockAfterProcess(const CItemObject::ItemInfo& info, const XMINT3& wbLocatoin)
+{
+    switch (info.block->GetType())
+    {
+    case CBlock3::TYPE::FURNACE:
+    {
+        auto pStorage = CGameInstance::Get().GetWorldFurnaceStorage()->GetStorage(wbLocatoin);
+        _float3 wbFloat = { (float)wbLocatoin.x,(float)wbLocatoin.y, (float)wbLocatoin.z };
+        wbFloat.x += 0.5f;
+        wbFloat.y += 0.5f;
+        wbFloat.z += 0.5f;
+        if (pStorage->fuel)
+        {
+            for (uint32_t i = 0; i < pStorage->fuel->iCnt; ++i)
+            {
+                auto copy = pStorage->fuel.value();
+                copy.iCnt = 1;
+                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+            }
+        }
+        if (pStorage->ingredient)
+        {
+            for (uint32_t i = 0; i < pStorage->ingredient->iCnt; ++i)
+            {
+                auto copy = pStorage->ingredient.value();
+                copy.iCnt = 1;
+                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+            }
+        }
+        if (pStorage->result)
+        {
+            for (uint32_t i = 0; i < pStorage->result->iCnt; ++i)
+            {
+                auto copy = pStorage->result.value();
+                copy.iCnt = 1;
+                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+            }
+        }
+        CGameInstance::Get().GetWorldFurnaceStorage()->DelStorage(wbLocatoin);
+    }
+    return;
+
+    case CBlock3::TYPE::CHEST:
+    {
+        auto pStorage = CGameInstance::Get().GetWorldChestStorage()->GetStorage(wbLocatoin);
+        _float3 wbFloat = { (float)wbLocatoin.x,(float)wbLocatoin.y, (float)wbLocatoin.z };
+        wbFloat.x += 0.5f;
+        wbFloat.y += 0.5f;
+        wbFloat.z += 0.5f;
+
+        for (uint32_t i = 0; i < pStorage->items.size(); ++i)
+        {
+            if (pStorage->items[i].has_value())
+            {
+                uint32_t cnt = pStorage->items[i]->iCnt;
+                for (uint32_t j = 0; j < cnt; ++j)
+                {
+                    auto copy = pStorage->items[i].value();
+                    copy.iCnt = 1;
+                    CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+                }
+            }
+        }
+
+
+        CGameInstance::Get().GetWorldChestStorage()->DelStorage(wbLocatoin);
+    }
+
+    return;
+    }
+}
+
+void CItemObject::DestoryBlockItemConverter(CItemObject::ItemInfo& info)
+{    switch (info.block->GetType())
+    {
+    case CBlock3::TYPE::GRASS:
+        info.block->SetType(CBlock3::TYPE::DIRT);
+        return;
+    case CBlock3::TYPE::STONE:
+        info.block->SetType(CBlock3::TYPE::COBBLESTONE);
+        return;
+    case CBlock3::TYPE::STONE_COAL_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
+        return;
+    case CBlock3::TYPE::STONE_COPPER_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Copper;
+        return;
+    case CBlock3::TYPE::STONE_IRON_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Iron;
+        return;
+    case CBlock3::TYPE::STONE_GOLD_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Gold;
+        return;
+    case CBlock3::TYPE::STONE_DIAMOND_ORE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Diamond;
+        return;
+    case CBlock3::TYPE::TORCH_ON:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
+        return;
     }
 }
 

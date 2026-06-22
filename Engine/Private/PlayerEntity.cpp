@@ -40,6 +40,7 @@
 
 #include "ExperienceOrb.h"
 
+#include "ActivatedTNT.h"
 #include "ArrowEntity.h"
 
 
@@ -246,6 +247,23 @@ void CPlayerEntity::UpdateGUI()
                     //pObj->SetPlayer(GetHandle());
                 }
             }
+        }
+    }
+
+    if (ImGui::Button("spawn activatdTNT"))
+    {
+        //
+        if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CActivatedTNT>("89_ACTIVATED_TNT"))
+        {
+
+            auto pos = GetTransform().GetPosition();
+            //pos.x += 1.f;
+            pos.y += 1.f;
+            CActivatedTNT::SActivatedTNTData data{};
+            data.vPos = pos;
+            pObj->AddBlock(data);
+            //pObj->AddOrb(pos, {}, rand() % 16);
+
         }
     }
 
@@ -866,9 +884,10 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             ItemInfo.block = res.block;
             ItemInfo.iCnt = 1;
 
-          
-            DestroyStageEndAfterProcess(ItemInfo, XMINT3{ res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ });
-            DestroyStageEndItemConverter(ItemInfo);
+            CItemObject::DestoryBlockAfterProcess(ItemInfo, XMINT3{ res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ });
+            CItemObject::DestoryBlockItemConverter(ItemInfo);
+/*            DestroyStageEndAfterProcess(ItemInfo, XMINT3{ res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ });
+            DestroyStageEndItemConverter(ItemInfo);*/
             
 
         
@@ -888,115 +907,115 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
         m_bDestoryStageStart = false;
     }
 }
-
-void CPlayerEntity::DestroyStageEndAfterProcess(const CItemObject::ItemInfo& info, const XMINT3& wbLocatoin)
-{
-    switch (info.block->GetType())
-    {
-    case CBlock3::TYPE::FURNACE:
-    {
-        auto pStorage = CGameInstance::Get().GetWorldFurnaceStorage()->GetStorage(wbLocatoin);
-        _float3 wbFloat = { (float)wbLocatoin.x,(float)wbLocatoin.y, (float)wbLocatoin.z };
-        wbFloat.x += 0.5f;
-        wbFloat.y += 0.5f;
-        wbFloat.z += 0.5f;
-        if (pStorage->fuel)
-        {
-            for (uint32_t i = 0; i < pStorage->fuel->iCnt; ++i)
-            {
-                auto copy = pStorage->fuel.value();
-                copy.iCnt = 1;
-                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
-            }
-        }
-        if (pStorage->ingredient)
-        {
-            for (uint32_t i = 0; i < pStorage->ingredient->iCnt; ++i)
-            {
-                auto copy = pStorage->ingredient.value();
-                copy.iCnt = 1;
-                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
-            }
-        }
-        if (pStorage->result)
-        {
-            for (uint32_t i = 0; i < pStorage->result->iCnt; ++i)
-            {
-                auto copy = pStorage->result.value();
-                copy.iCnt = 1;
-                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
-            }
-        }
-        CGameInstance::Get().GetWorldFurnaceStorage()->DelStorage(wbLocatoin);
-    }
-        return;
-
-    case CBlock3::TYPE::CHEST:
-    {
-        auto pStorage = CGameInstance::Get().GetWorldChestStorage()->GetStorage(wbLocatoin);
-        _float3 wbFloat = { (float)wbLocatoin.x,(float)wbLocatoin.y, (float)wbLocatoin.z };
-        wbFloat.x += 0.5f;
-        wbFloat.y += 0.5f;
-        wbFloat.z += 0.5f;
-
-        for (uint32_t i = 0; i < pStorage->items.size(); ++i)
-        {
-            if (pStorage->items[i].has_value())
-            {
-                uint32_t cnt = pStorage->items[i]->iCnt;
-                for (uint32_t j = 0; j < cnt; ++j)
-                {
-                    auto copy = pStorage->items[i].value();
-                    copy.iCnt = 1;
-                    CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
-                }
-            }
-        }
-
-
-        CGameInstance::Get().GetWorldChestStorage()->DelStorage(wbLocatoin);
-    }
-
-        return;
-    }
-}
-
-void CPlayerEntity::DestroyStageEndItemConverter(CItemObject::ItemInfo& info)
-{
-    switch (info.block->GetType())
-    {
-    case CBlock3::TYPE::GRASS:
-        info.block->SetType(CBlock3::TYPE::DIRT);
-        return;
-    case CBlock3::TYPE::STONE:
-        info.block->SetType(CBlock3::TYPE::COBBLESTONE);
-        return;
-    case CBlock3::TYPE::STONE_COAL_ORE:
-        info.block = std::nullopt;
-        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
-        return;
-    case CBlock3::TYPE::STONE_COPPER_ORE:
-        info.block = std::nullopt;
-        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Copper;
-        return;
-    case CBlock3::TYPE::STONE_IRON_ORE:
-        info.block = std::nullopt;
-        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Iron;
-        return;
-    case CBlock3::TYPE::STONE_GOLD_ORE:
-        info.block = std::nullopt;
-        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Gold;
-        return;
-    case CBlock3::TYPE::STONE_DIAMOND_ORE:
-        info.block = std::nullopt;
-        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Diamond;
-        return;
-    case CBlock3::TYPE::TORCH_ON:
-        info.block = std::nullopt;
-        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
-        return;
-    }
-}
+//
+//void CPlayerEntity::DestroyStageEndAfterProcess(const CItemObject::ItemInfo& info, const XMINT3& wbLocatoin)
+//{
+//    switch (info.block->GetType())
+//    {
+//    case CBlock3::TYPE::FURNACE:
+//    {
+//        auto pStorage = CGameInstance::Get().GetWorldFurnaceStorage()->GetStorage(wbLocatoin);
+//        _float3 wbFloat = { (float)wbLocatoin.x,(float)wbLocatoin.y, (float)wbLocatoin.z };
+//        wbFloat.x += 0.5f;
+//        wbFloat.y += 0.5f;
+//        wbFloat.z += 0.5f;
+//        if (pStorage->fuel)
+//        {
+//            for (uint32_t i = 0; i < pStorage->fuel->iCnt; ++i)
+//            {
+//                auto copy = pStorage->fuel.value();
+//                copy.iCnt = 1;
+//                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+//            }
+//        }
+//        if (pStorage->ingredient)
+//        {
+//            for (uint32_t i = 0; i < pStorage->ingredient->iCnt; ++i)
+//            {
+//                auto copy = pStorage->ingredient.value();
+//                copy.iCnt = 1;
+//                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+//            }
+//        }
+//        if (pStorage->result)
+//        {
+//            for (uint32_t i = 0; i < pStorage->result->iCnt; ++i)
+//            {
+//                auto copy = pStorage->result.value();
+//                copy.iCnt = 1;
+//                CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+//            }
+//        }
+//        CGameInstance::Get().GetWorldFurnaceStorage()->DelStorage(wbLocatoin);
+//    }
+//        return;
+//
+//    case CBlock3::TYPE::CHEST:
+//    {
+//        auto pStorage = CGameInstance::Get().GetWorldChestStorage()->GetStorage(wbLocatoin);
+//        _float3 wbFloat = { (float)wbLocatoin.x,(float)wbLocatoin.y, (float)wbLocatoin.z };
+//        wbFloat.x += 0.5f;
+//        wbFloat.y += 0.5f;
+//        wbFloat.z += 0.5f;
+//
+//        for (uint32_t i = 0; i < pStorage->items.size(); ++i)
+//        {
+//            if (pStorage->items[i].has_value())
+//            {
+//                uint32_t cnt = pStorage->items[i]->iCnt;
+//                for (uint32_t j = 0; j < cnt; ++j)
+//                {
+//                    auto copy = pStorage->items[i].value();
+//                    copy.iCnt = 1;
+//                    CItemObject::SpawnDropItemObject(copy, wbFloat, { 0.f, 2.f, 0.f });
+//                }
+//            }
+//        }
+//
+//
+//        CGameInstance::Get().GetWorldChestStorage()->DelStorage(wbLocatoin);
+//    }
+//
+//        return;
+//    }
+//}
+//
+//void CPlayerEntity::DestroyStageEndItemConverter(CItemObject::ItemInfo& info)
+//{
+//    switch (info.block->GetType())
+//    {
+//    case CBlock3::TYPE::GRASS:
+//        info.block->SetType(CBlock3::TYPE::DIRT);
+//        return;
+//    case CBlock3::TYPE::STONE:
+//        info.block->SetType(CBlock3::TYPE::COBBLESTONE);
+//        return;
+//    case CBlock3::TYPE::STONE_COAL_ORE:
+//        info.block = std::nullopt;
+//        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
+//        return;
+//    case CBlock3::TYPE::STONE_COPPER_ORE:
+//        info.block = std::nullopt;
+//        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Copper;
+//        return;
+//    case CBlock3::TYPE::STONE_IRON_ORE:
+//        info.block = std::nullopt;
+//        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Iron;
+//        return;
+//    case CBlock3::TYPE::STONE_GOLD_ORE:
+//        info.block = std::nullopt;
+//        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Gold;
+//        return;
+//    case CBlock3::TYPE::STONE_DIAMOND_ORE:
+//        info.block = std::nullopt;
+//        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Diamond;
+//        return;
+//    case CBlock3::TYPE::TORCH_ON:
+//        info.block = std::nullopt;
+//        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
+//        return;
+//    }
+//}
 
 CDestroyStage* CPlayerEntity::GetDestroyStage() const
 {
@@ -1139,6 +1158,24 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                     GetUIController()->Getinventory()->SetRender(false);
                     GetUIController()->GetChest()->SetRender(true);
                     return;
+                case CBlock3::TYPE::TNT:
+                    if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
+                    {
+                        if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_FlintAndSteel)
+                        {
+                            if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CActivatedTNT>("89_ACTIVATED_TNT"))
+                            {
+                                CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, CBlock3(CBlock3::TYPE::AIR));
+                                _float3 pos = { (_float)res.iWorldBlockX ,  (_float)res.iWorldBlockY + 0.4f,  (_float)res.iWorldBlockZ };
+                                CActivatedTNT::SActivatedTNTData data{};
+                                data.vPos = pos;
+                                pObj->AddBlock(data);
+                            }
+                            return;
+                        }
+                        
+                    }
+                    
                 }
             }
 
@@ -1934,8 +1971,8 @@ void CPlayerEntity::ReadyPlayerItem()
     m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondHelmet };
     m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_IronChestplate };
     m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_GoldLeggings };
-    m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_NetheriteBoots };
-    m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Wheat, 64 };
+    m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::TNT), 64};
+    m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
     m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bread, 64 };
     m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Mutton, 64 };
     m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bow_Standby };

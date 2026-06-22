@@ -7,6 +7,8 @@
 #include "CollBox.h"
 
 #include "FallingVoxel.h"
+#include "ActivatedTNT.h"
+#include "ItemObject.h"
 
 NS_USING(Engine)
 static inline int32_t FloorDiv(int32_t a, int32_t b)
@@ -327,6 +329,27 @@ void CVoxelManager3::ProcessExplodeBlock(float wbx, float wby, float wbz, float 
                         if ( currentBlock->GetType() != CBlock3::TYPE::AIR )
                         {
                             CGameInstance::Get().VoxelProcessPlayerBlockSet(x, y, z, newBlock);
+
+                            if (currentBlock->GetType() == CBlock3::TYPE::TNT)
+                            {
+                                if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CActivatedTNT>("89_ACTIVATED_TNT"))
+                                {
+                                    _float3 pos = { (_float)x,  (_float)y,  (_float)z };
+                                    CActivatedTNT::SActivatedTNTData data{};
+                                    data.vPos = pos;
+                                    pObj->AddBlock(data);
+                                }
+                            }
+                            else
+                            {
+                                CItemObject::ItemInfo ItemInfo{ currentBlock.value() , 1};
+
+                                CItemObject::DestoryBlockAfterProcess(ItemInfo, XMINT3{ x, y, z });
+                                CItemObject::DestoryBlockItemConverter(ItemInfo);
+
+
+                                CItemObject::SpawnDropItemObject(ItemInfo, { (_float)x + 0.5f,  (_float)y + 0.5f,  (_float)z + 0.5f }, { 0.f, 2.f, 0.f });
+                            }
                         }
                     }
 

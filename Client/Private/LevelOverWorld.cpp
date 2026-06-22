@@ -32,6 +32,7 @@
 #include "UIController.h"
 
 #include "FallingVoxel.h"
+#include "ActivatedTNT.h"
 #include "ChestStorage.h"
 
 #include "UIItem.h"
@@ -397,6 +398,18 @@ HRESULT CLevelOverWorld::Initialize()
 
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("FALLING_VOXEL", "Prototype_GameObject_FallingVoxel",
 				"88_FALLING_VOXEL", &Desc))
+			{
+				int x = 0;
+			}
+		}
+
+
+		{
+			E::CActivatedTNT::DESC Desc{};
+			Desc.sObjectTag = "CActivatedTNT";
+
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ACTIVATED_TNT", "Prototype_GameObject_ActivatedTNT",
+				"89_ACTIVATED_TNT", &Desc))
 			{
 				int x = 0;
 			}

@@ -72,8 +72,8 @@ public:
 	void SetDestroyState(CHandle h) { m_hDestroyStage = h; }
 private:
 	void ProcessDestroyStage(float fTimeDelta);
-	void DestroyStageEndAfterProcess(const CItemObject::ItemInfo& info, const XMINT3& wbLocatoin);
-	void DestroyStageEndItemConverter(CItemObject::ItemInfo& info);
+	//void DestroyStageEndAfterProcess(const CItemObject::ItemInfo& info, const XMINT3& wbLocatoin);
+	//void DestroyStageEndItemConverter(CItemObject::ItemInfo& info);
 	CDestroyStage* GetDestroyStage() const;
 private:
 	std::optional<std::pair<XMINT3, uint8_t>> m_DestoryStageRaycastTarget{};

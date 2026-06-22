@@ -24,6 +24,7 @@ public:
 		std::vector<uint32_t>texIndexs{};
 		SPtr<CCollider> boxCollider{};
 		_float4x4 matWorld{};
+		_float fElapsedTime{};
 	};
 
 public:

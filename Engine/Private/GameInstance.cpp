@@ -880,6 +880,18 @@ HRESULT CGameInstance::InitializeMCResource()
 			res->Load();
 		}
 	}
+	
+	// activated tnt shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_ActivatedTNT", "./Resources/Shader/ActivatedTNT/ActivatedTNT.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_ActivatedTNT", "./Resources/Shader/ActivatedTNT/ActivatedTNT.hlsl"))
+		{
+			res->Load();
+		}
+	}
 
 	// initialize skybox Shader
 	{
