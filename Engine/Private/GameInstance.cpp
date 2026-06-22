@@ -275,6 +275,8 @@ void CGameInstance::UpdateGUI()
 
 	m_pVoxelManager3->UpdateGUI();
 
+	m_pRenderer->UpdateGUI();
+
 	if (ImGui::Button("ShaderRebuild"))
 	{
 		//TAG_RES_GRP_PERMANENT_SHADER
@@ -914,6 +916,26 @@ HRESULT CGameInstance::InitializeMCResource()
 		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Cloud", "./Resources/Shader/Cloud/Cloud.hlsl"))
 		{
 			res->Load();
+		}
+	}
+
+	// ui button
+	{
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/button.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_UI", "BUTTON", pTexture);
+		}
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/button_highlighted.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_UI", "BUTTON_HIGHLIGHT", pTexture);
 		}
 	}
 
@@ -3212,6 +3234,10 @@ void CGameInstance::RendererDrawPlayerInvenUIPass()
 {
 	m_pRenderer->DrawPlayerInvenUIPass();
 }
+void CGameInstance::RendererSetFilterRed(_bool b)
+{
+	m_pRenderer->SetFilterRed(b);
+}
 #pragma endregion
 
 
@@ -3309,9 +3335,9 @@ void CGameInstance::FontLateDraw(RENDERGROUP eRenderGroup)
 
 
 #pragma region PARTICLE_MANAGER
-void CGameInstance::AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt)
+void CGameInstance::AddParticleRenderDestruct(_float3 pos, uint32_t iTexId, uint32_t iCnt , _float4 vColor)
 {
-	m_pParticleManager->AddParticleRenderDestruct(block, pos, iCnt);
+	m_pParticleManager->AddParticleRenderDestruct(pos, iTexId, iCnt, vColor);
 }
 void CGameInstance::AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt)
 {

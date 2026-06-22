@@ -8,15 +8,15 @@
 NS_USING(Engine)
 
 
-void CParticleManager::AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt)
+void CParticleManager::AddParticleRenderDestruct(_float3 pos, uint32_t iTexId, uint32_t iCnt, _float4 vColor )
 {
-    auto texId = CBlock3::GetTexType(block.GetType(), FACE_DIR::POS_X);
+    //auto texId = CBlock3::GetTexType(block.GetType(), FACE_DIR::POS_X);
     for (int i = 0; i < iCnt; ++i)
     {
         ATTRIBUTE att{};
         att.bAlive = true;
         att.fLifeTime = 2.f;
-        att.iTexId = PackTexId(9, static_cast<uint32_t>(texId));
+        att.iTexId = iTexId; //PackTexId(9, static_cast<uint32_t>(texId))
         att.vPos = { pos };
         att.vAcceleration = { 0.f, -9.8f, 0.f };
         //att.vAcceleration = { 0.f, 0.f, 0.f };
@@ -27,17 +27,18 @@ void CParticleManager::AddParticleRenderDestruct(CBlock3 block, _float3 pos, uin
         att.vUvSize = { 0.1f, 0.1f };
         att.vSize = { 0.1f, 0.1f };
 
-        att.vColor = { 1.f, 1.f, 1.f, 1.f };
-        uint32_t baseColorABGR = CBlock3::GetBaseColor(block.GetType());
-        if (baseColorABGR != 0xFF)
-        {
-            _float4 blockTint;
-            blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
-            blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
-            blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
-            blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
-            att.vColor = blockTint;
-        }
+        //att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        //uint32_t baseColorABGR = CBlock3::GetBaseColor(block.GetType());
+        //if (baseColorABGR != 0xFF)
+        //{
+        //    _float4 blockTint;
+        //    blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
+        //    blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
+        //    blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
+        //    blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
+        //    att.vColor = blockTint;
+        //}
+        att.vColor = vColor;
         
         XMVECTOR dir =
             XMVectorSet(

@@ -5,6 +5,7 @@
 #include "VoxelManager3.h"
 #include "CollSphere.h"
 #include "PigEntity.h"
+#include "PlayerEntity.h"
 NS_USING(Engine)
 CActivatedTNT::CActivatedTNT()
 {
@@ -81,6 +82,11 @@ void CActivatedTNT::PriorityUpdate(E::_float fTimeDelta)
 
 void CActivatedTNT::Update(E::_float fTimeDelta)
 {
+	
+}
+
+void CActivatedTNT::LateUpdate(E::_float fTimeDelta)
+{
 	for (auto iter = m_vecActivatedTNT.begin(); iter != m_vecActivatedTNT.end(); )
 	{
 		auto& block = *iter;
@@ -122,12 +128,31 @@ void CActivatedTNT::Update(E::_float fTimeDelta)
 						auto tmpColl = CCollSphere::Create({ block.vPos.x, block.vPos.y, block.vPos.z }, 4);
 						if (pColl->Intersect(*tmpColl))
 						{
-							if(auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
+							if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
 							{
 								pObj->TakeDamage(10);
 							}
 						}
-						
+
+					}
+				}
+			}
+
+			{
+				//Coll_PlayerCenter
+				if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerCenter"))
+				{
+					for (auto& pColl : *pCollGroup)
+					{
+						auto tmpColl = CCollSphere::Create({ block.vPos.x, block.vPos.y, block.vPos.z }, 4);
+						if (pColl->Intersect(*tmpColl))
+						{
+							if (auto pObj = Cast<CPlayerEntity>(pColl->GetInnerPointer()))
+							{
+								pObj->TakeDamage(10);
+							}
+						}
+
 					}
 				}
 			}
@@ -182,10 +207,7 @@ void CActivatedTNT::Update(E::_float fTimeDelta)
 
 		++iter;
 	}
-}
 
-void CActivatedTNT::LateUpdate(E::_float fTimeDelta)
-{
 	E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
 	GetTransform().Update();
 

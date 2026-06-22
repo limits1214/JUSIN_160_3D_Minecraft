@@ -377,6 +377,15 @@ public:
 		switch (eType)
 		{
 			case CItemObject::ITEM_TYPE::ITEM_Apple:
+			case CItemObject::ITEM_TYPE::ITEM_Bread:
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Beef:
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Chicken:
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Mutton:
+			case CItemObject::ITEM_TYPE::ITEM_Raw_Porkchop:
+			case CItemObject::ITEM_TYPE::ITEM_Beef_Cooked:
+			case CItemObject::ITEM_TYPE::ITEM_Chicken_Cooked:
+			case CItemObject::ITEM_TYPE::ITEM_Mutton_Cooked:
+			case CItemObject::ITEM_TYPE::ITEM_Porkchop_Cooked:
 				return 5;
 		}
 		return 0;

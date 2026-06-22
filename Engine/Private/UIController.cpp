@@ -94,6 +94,11 @@ CUITextBg* CUIController::GetTextBg() const
 	return CGameInstance::Get().GetGameObjectByHandleT<CUITextBg>(m_hTextBg);
 }
 
+CUIDeathScreen* CUIController::GetDeathScreen() const
+{
+	return CGameInstance::Get().GetGameObjectByHandleT<CUIDeathScreen>(m_hDeathScreen);
+}
+
 HRESULT CUIController::Initialize(void* pArg)
 {
 	auto* pDesc = static_cast<CUIController::DESC*>(pArg);
@@ -405,6 +410,19 @@ HRESULT CUIController::Initialize(void* pArg)
 			layerID, &Desc))
 		{
 			m_hTextBg = handle.value();
+		}
+	}
+
+	{
+		auto protoID = pDesc->DeathScreen.ProtoPairID;
+		auto layerID = pDesc->DeathScreen.LayerID;
+
+		E::CUIObject::UIOBJECT_DESC Desc{};
+		Desc.sObjectTag = "DeathScreen";
+		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer(protoID.first, protoID.second,
+			layerID, &Desc))
+		{
+			m_hDeathScreen = handle.value();
 		}
 	}
     return S_OK;
