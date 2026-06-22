@@ -898,7 +898,7 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             pos.y += 0.5f;
             pos.z += 0.5f;
 
-            CItemObject::SpawnDropItemObject(ItemInfo, pos, { 0.f, 2.f, 0.f });
+            CItemObject::SpawnDropItemObject(ItemInfo, pos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
         }
     }
     else
@@ -1166,8 +1166,9 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                             if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CActivatedTNT>("89_ACTIVATED_TNT"))
                             {
                                 CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, CBlock3(CBlock3::TYPE::AIR));
-                                _float3 pos = { (_float)res.iWorldBlockX ,  (_float)res.iWorldBlockY + 0.4f,  (_float)res.iWorldBlockZ };
+                                _float3 pos = { (_float)res.iWorldBlockX ,  (_float)res.iWorldBlockY ,  (_float)res.iWorldBlockZ };
                                 CActivatedTNT::SActivatedTNTData data{};
+                                data.vVelocity = {0.f, 3.f, 0.f};
                                 data.vPos = pos;
                                 pObj->AddBlock(data);
                             }
@@ -1529,7 +1530,8 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
                     XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                     startPos.y += 1.f;
 
-                    CItemObject::SpawnDropItemObject(newInfo, startPos, { 0.f, 2.f, 0.f });
+                    
+                    CItemObject::SpawnDropItemObject(newInfo, startPos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
                 }
             }
             else // not block
@@ -1563,7 +1565,7 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
                     XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                     startPos.y += 1.f;
 
-                    CItemObject::SpawnDropItemObject(newInfo, startPos, { 0.f, 2.f, 0.f });
+                    CItemObject::SpawnDropItemObject(newInfo, startPos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
                 }
             }
            
@@ -1731,18 +1733,21 @@ void CPlayerEntity::ProcessItemColliding(_float fTimeDelta)
             {
                 if (auto pObj = Cast<CDropItemObject>(pColl->GetInnerPointer()))
                 {
-                    auto pHint = static_cast<CDropBlock::CollHint*>(pColl->GetInnerHint2());
-                    const auto& itemInfo = pHint->iter->itemInfo;
-                    auto* pUIController = GetUIController();
-
-                    //if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
-                    //{
-                    //    pObj->GetDropItemObjects().erase(pHint->iter);
-                    //}
-
-                    if (SUCCEEDED(ProcessItemGain(itemInfo)))
+                    if (pColl->GetInnerHint2())
                     {
-                        pObj->GetDropItemObjects().erase(pHint->iter);
+                        auto pHint = static_cast<CDropBlock::CollHint*>(pColl->GetInnerHint2().get());
+                        const auto& itemInfo = pHint->iter->itemInfo;
+                        auto* pUIController = GetUIController();
+
+                        //if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
+                        //{
+                        //    pObj->GetDropItemObjects().erase(pHint->iter);
+                        //}
+
+                        if (SUCCEEDED(ProcessItemGain(itemInfo)))
+                        {
+                            pObj->GetDropItemObjects().erase(pHint->iter);
+                        }
                     }
                 }
             }
@@ -1760,7 +1765,7 @@ void CPlayerEntity::ProcessExpOrbColliding(_float fTimeDelta)
             {
                 if (auto pObj = Cast<CExperienceOrb>(pColl->GetInnerPointer()))
                 {
-                    auto pHint = static_cast<CExperienceOrb::CollHint*>(pColl->GetInnerHint2());
+                    auto pHint = static_cast<CExperienceOrb::CollHint*>(pColl->GetInnerHint2().get());
                     //const auto& itemInfo = pHint->iter->itemInfo;
                     //auto* pUIController = GetUIController();
                    // auto a = *pHint->iter;
@@ -2128,7 +2133,7 @@ void CPlayerEntity::ProcessUIInventoryItemOnCursor(_float fTimeDelta)
                 _float3 startPos{};
                 XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                 startPos.y += 1.f;
-                CItemObject::SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(*pInfo, startPos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
             }
             pObj->SetPendingDestroyCascade();
         }
@@ -2641,7 +2646,7 @@ void CPlayerEntity::ProcessUICraftingItemOnCursor(_float fTimeDelta)
                 _float3 startPos{};
                 XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                 startPos.y += 1.f;
-                CItemObject::SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(*pInfo, startPos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
             }
             pObj->SetPendingDestroyCascade();
         }
@@ -3155,7 +3160,7 @@ void CPlayerEntity::ProcessUIFurnaceOnCursor(_float fTimeDelta)
                 _float3 startPos{};
                 XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                 startPos.y += 1.f;
-                CItemObject::SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(*pInfo, startPos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
             }
             pObj->SetPendingDestroyCascade();
         }
@@ -3537,7 +3542,7 @@ void CPlayerEntity::ProcessUIChestOnCursor(_float fTimeDelta)
                 _float3 startPos{};
                 XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
                 startPos.y += 1.f;
-                CItemObject::SpawnDropItemObject(*pInfo, startPos, { 0.f, 2.f, 0.f });
+                CItemObject::SpawnDropItemObject(*pInfo, startPos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
             }
             pObj->SetPendingDestroyCascade();
         }

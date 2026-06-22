@@ -21,6 +21,8 @@ CDropItem::~CDropItem()
 
 HRESULT CDropItem::Initialize(void* pArg)
 {
+    m_vecInstancedData = {};
+    m_iNumElements = 1000;
     m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::SHADOW);
 
     if (FAILED(CDropItemObject::Initialize(pArg)))
@@ -63,7 +65,56 @@ void CDropItem::PriorityUpdate(E::_float fTimeDelta)
 void CDropItem::Update(E::_float fTimeDelta)
 {
     m_vecInstancedData.clear();
+    for (auto iter = m_vecDropItemObjects.begin(); iter != m_vecDropItemObjects.end();)
+    {
+        auto& item = *iter;
 
+        item.fElapsedTime += fTimeDelta;
+        if (item.fElapsedTime > 60.f)
+        {
+            iter = m_vecDropItemObjects.erase(iter);
+            continue;
+        }
+
+        if (m_bGravity)    VelocityUpdate(item, fTimeDelta);
+        if (m_bAnimation)  AnimateTransformUpdate(item, fTimeDelta);
+
+
+        
+
+
+
+        if (m_vecInstancedData.size() < m_iNumElements)
+        {
+            // 최종 월드행렬
+           // _matrix matRot = XMMatrixRotationY(XMConvertToDegrees(item.fBobYRot));
+            _matrix matRot = XMMatrixRotationY(item.fBobYRot);
+            _matrix matBob = XMMatrixTranslation(0.f, item.fBobYOffset, 0.f);
+            _matrix matWorld = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
+            XMStoreFloat4x4(&item.matWorld, matRot * matBob * matWorld);
+
+            item.boxCollider->Transform(matWorld);
+            E::CGameInstance::Get().AddColliderGroup("Coll_DropItemObject", item.boxCollider.get());
+
+
+            VTX_DROP_ITEM_INSTANCED_DATA inst{};
+
+            int32_t blockX = static_cast<int32_t>(std::floor(item.vPos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(item.vPos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(item.vPos.z));
+            if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+            {
+                inst.light = optCurrBlock->GetLight();
+            }
+
+            inst.matWorld = item.matWorld;
+            inst.texIndex = item.texIndexs.front();
+            m_vecInstancedData.push_back(inst);
+        }
+        ++iter;
+    }
+
+    if(false)
     for (auto& item : m_vecDropItemObjects)
     {
         if (m_vecInstancedData.size() > m_iNumElements)

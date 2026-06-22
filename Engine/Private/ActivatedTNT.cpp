@@ -89,9 +89,16 @@ void CActivatedTNT::Update(E::_float fTimeDelta)
 
 		block.fElapsedTime += fTimeDelta;
 		block.fColorTimer += fTimeDelta;
+		{
+			auto copyPos = block.vPos;
+			copyPos.x += 0.5f;
+			copyPos.z += 0.5f;
+			copyPos.y += 1.f;
+			CGameInstance::Get().AddParticleRenderTNTFusing(copyPos, 1);
+		}
 
 		// 폭발 시간이 다가올수록 더 빨리
-		float flashCycle = (block.fElapsedTime > 2.0f) ? 0.25f : 0.5f;
+		float flashCycle = (block.fElapsedTime > 2.0f) ? 0.1f : 0.5f;
 
 		if (block.fColorTimer > flashCycle)
 		{
@@ -197,8 +204,36 @@ void CActivatedTNT::LateUpdate(E::_float fTimeDelta)
 			instData.vColor = { 0.8f, 0.8f, 0.8f, 1.f };
 		}
 
+		
+		auto aMax = block.fTargetFuseTime;
+		auto aMin = block.fTargetFuseTime - 0.5f;
+
+		_float lerped = { 1.f };
+		if (block.fElapsedTime < aMin)
+		{
+
+		}
+		else
+		{
+			auto ratio = (block.fElapsedTime - aMin) / (aMax - aMin);
+			lerped = std::lerp(1.f, 1.2f, ratio);
+			int x = 0;
+		}
+
+		//auto ratio = 1.f - ((block.fTargetFuseTime - block.fElapsedTime) / block.fTargetFuseTime);
+
+		//auto lerped = std::lerp(1.f, 1.5f, ratio);
+		auto matScale = XMMatrixScaling(lerped, lerped, lerped);
+		auto tmpPosOffset = (lerped - 1.f) * 0.5f;
+
+		auto tmpPos = block.vPos;
+		tmpPos.x -= tmpPosOffset;
+		tmpPos.z -= tmpPosOffset;
+
+		auto matTrans = XMMatrixTranslationFromVector(XMLoadFloat3(&tmpPos));
+
 		// 월드 변환 행렬 세팅
-		XMStoreFloat4x4(&instData.matWorld, XMMatrixTranslationFromVector(XMLoadFloat3(&block.vPos)));
+		XMStoreFloat4x4(&instData.matWorld, matScale * matTrans);
 		m_vecInstancedBlockTransform.push_back(instData);
 	}
 }

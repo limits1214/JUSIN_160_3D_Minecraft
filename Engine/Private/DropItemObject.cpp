@@ -152,5 +152,8 @@ void CDropItemObject::AddDropItemObject(const CItemObject::ItemInfo& itemInfo, _
     m_vecDropItemObjects.push_back(Desc);
     CollHint hint{};
     hint.iter = std::prev(m_vecDropItemObjects.end());
-    Desc.boxCollider->SetInnerHint2(&hint, sizeof(hint));
+    //Desc.boxCollider->SetInnerHint2(&hint, sizeof(hint));
+    std::shared_ptr<CollHint> h = std::make_shared<CollHint>(hint);
+    Desc.boxCollider->SetInnerHint2(h);
+    //std::shared_ptr<void> v{ h };
 }

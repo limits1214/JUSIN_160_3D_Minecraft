@@ -15,9 +15,9 @@ CCollider::~CCollider()
 
 void CCollider::Free()
 {
-	if (m_pInnerHint2)
-	{
-		free(m_pInnerHint2);
-	}
+	//if (m_pInnerHint2)
+	//{
+	//	free(m_pInnerHint2);
+	//}
 	CEngineBase::Free();
 }

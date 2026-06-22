@@ -3321,6 +3321,10 @@ void CGameInstance::AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt)
 {
 	m_pParticleManager->AddParticleRenderExplodeSmoke(pos, iCnt);
 }
+void CGameInstance::AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt)
+{
+	m_pParticleManager->AddParticleRenderTNTFusing(pos, iCnt);
+}
 #pragma endregion
 
 #pragma region WORLD_MANAGER

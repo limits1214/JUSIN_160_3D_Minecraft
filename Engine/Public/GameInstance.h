@@ -285,6 +285,7 @@ public:
 	void AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt = 1);
 	void AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt = 1);
 	void AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt = 1);
 #pragma
 
 
