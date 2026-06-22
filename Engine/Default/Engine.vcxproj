@@ -314,6 +314,7 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UIChest2.h" />
     <ClInclude Include="..\public\UIController.h" />
     <ClInclude Include="..\public\UICraftingTable.h" />
+    <ClInclude Include="..\public\UIDeathScreen.h" />
     <ClInclude Include="..\public\UIEnchantingTable.h" />
     <ClInclude Include="..\public\UIExperienceBarGage.h" />
     <ClInclude Include="..\public\UIHealthBar.h" />
@@ -536,6 +537,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\CowEntity.cpp" />
     <ClCompile Include="..\private\CreeperEntity.cpp" />
+    <ClCompile Include="..\private\UIDeathScreen.cpp" />
     <ClCompile Include="..\private\DropBlock.cpp" />
     <ClCompile Include="..\private\DropItemObject.cpp" />
     <ClCompile Include="..\private\EnderDragonEntity.cpp" />
@@ -723,6 +725,10 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Crosshair\CrossHair.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\DeathScreenRedFilter\DeathScreenRedFilter.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

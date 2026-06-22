@@ -243,6 +243,7 @@ public:
 public:
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
 	void RendererDrawPlayerInvenUIPass();
+	void RendererSetFilterRed(_bool b);
 #pragma endregion
 
 #pragma region LIGHT_MANAGER
@@ -282,7 +283,7 @@ public:
 
 
 #pragma region PARTICLE_MANAGER
-	void AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderDestruct(_float3 pos, uint32_t iTexId, uint32_t iCnt = 1, _float4 vColor = {1.f, 1.f, 1.f, 1.f});
 	void AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt = 1);
 	void AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt = 1);
 	void AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt = 1);

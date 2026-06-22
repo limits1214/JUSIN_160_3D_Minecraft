@@ -67,7 +67,7 @@ CPlayerEntity::~CPlayerEntity()
 void CPlayerEntity::UpdateGUI()
 {
     CPlayerEntityObject::UpdateGUI();
-
+    ImGui::Text("PLAY: %i", m_ePlay);
     if (ImGui::TreeNode("Control"))
     {
         ImGui::Text("Control: %i", m_bControl);
@@ -445,13 +445,14 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
    
     //m_pCenterCollider = CCollSphere::Create({0.f, 0.3f, 0.f}, 0.3f);
     m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.25f, 0.9f, 0.25f });
+    m_pCenterCollider->SetInnerPointer(this);
+
     m_pMeleeAttackCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.5f, 0.5f, 0.5f });
 
     ReadyPlayerItem();
 
     // TEST
     CItemObject::RecipeInitialize();
-
 
     {
         {
@@ -536,25 +537,39 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_bMouseDownLeft = false;
         m_bMouseDownRight = false;
     }
+
 }
 
 void CPlayerEntity::Update(E::_float fTimeDelta)
 {
-    ProcessActionUpdate(fTimeDelta);
+    if (m_bDeath)
+    {
+        GetUIController()->GetDeathScreen()->SetRender(true);
+    }
+    else
+    {
+        JudgeDeathUpdate(fTimeDelta);
 
-    ProcessHungerTimer(fTimeDelta);
+        GetUIController()->GetDeathScreen()->SetRender(false);
 
-    ProcessThrowItem(fTimeDelta);
-    ProcessHandHeldItem(fTimeDelta);
+        ProcessActionUpdate(fTimeDelta);
 
-    ProcessLeftClick(fTimeDelta);
-    ProcessRightClick(fTimeDelta);
+        ProcessHungerTimer(fTimeDelta);
+        ProcessHealthRegenTimer(fTimeDelta);
+
+        ProcessThrowItem(fTimeDelta);
+        ProcessHandHeldItem(fTimeDelta);
+
+        ProcessLeftClick(fTimeDelta);
+        ProcessRightClick(fTimeDelta);
 
 
 
-    ProcessArmorEntities(fTimeDelta);
-    ProcessPlayerOpenInvenArmorEntities(fTimeDelta);
-    ProcessUI(fTimeDelta);
+        ProcessArmorEntities(fTimeDelta);
+        ProcessPlayerOpenInvenArmorEntities(fTimeDelta);
+        ProcessUI(fTimeDelta);
+    }
+    
 
 
 }
@@ -563,6 +578,10 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
 void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 {
+    if (m_bDeath)
+    {
+        return;
+    }
     CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
     
     GetTransform().Update();
@@ -663,6 +682,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
         }
         
     }
+
 }
 
 HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
@@ -867,12 +887,33 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
         }
         
         
-
-        CGameInstance::Get().AddParticleRenderDestruct(res.block.value(), { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f });
+        //res.block.value(), 
+        //texId = 
+        _float4 vColor = { 1.f, 1.f, 1.f, 1.f };
+        uint32_t baseColorABGR = CBlock3::GetBaseColor(res.block.value().GetType());
+        if (baseColorABGR != 0xFF)
+        {
+            _float4 blockTint;
+            blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
+            blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
+            blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
+            blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
+           vColor = blockTint;
+        }
+        uint32_t iPackedTexID = PackTexId(9, static_cast<uint32_t>(CBlock3::GetTexType(res.block.value().GetType(), FACE_DIR::POS_X)));
+        CGameInstance::Get().AddParticleRenderDestruct(
+            { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f },
+            iPackedTexID,
+            1,
+            vColor);
 
         if (pDestroyStage->GetFrameIndex() == 9)
         {
-            CGameInstance::Get().AddParticleRenderDestruct(res.block.value(), { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f }, 10);
+            CGameInstance::Get().AddParticleRenderDestruct(
+                { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f },
+                iPackedTexID,
+                1,
+                vColor);
 
             CBlock3 newBlock{};
             newBlock.SetType(CBlock3::TYPE::AIR);
@@ -3947,6 +3988,102 @@ void CPlayerEntity::ProcessUIChestOnCursor(_float fTimeDelta)
 //    }
 
 
+void CPlayerEntity::TakeDamage(int32_t iDamage)
+{
+    m_iHalfHealth = std::clamp(m_iHalfHealth - iDamage, 0, 20);
+    //Coll_PlayerCenter
+}
+
+void CPlayerEntity::JudgeDeathUpdate(int32_t iDamage)
+{
+    if (m_iHalfHealth == 0)
+    {
+        if (!m_bDeath)
+        {
+            int x = 0;
+            auto pos = GetTransform().GetPosition();
+
+            auto funcDropItems = [](std::optional<CItemObject::ItemInfo> itemInfo, _float3 pos)
+                
+                {
+                    if (itemInfo->block)
+                    {
+                        for (uint32_t i = 0; i < itemInfo->iCnt; ++i)
+                        {
+                            auto copy = itemInfo.value();
+                            copy.iCnt = 1;
+                            CItemObject::SpawnDropItemObject(copy, pos, { Randf(-5.f, 5.f), Randf(3.f, 5.f), Randf(-5.f, 5.f) });
+                        }
+                    }
+                    else
+                    {
+                        if (CItemObject::IsCountableItem(itemInfo->eItemType))
+                        {
+                            for (uint32_t i = 0; i < itemInfo->iCnt; ++i)
+                            {
+                                auto copy = itemInfo.value();
+                                copy.iCnt = 1;
+                                CItemObject::SpawnDropItemObject(copy, pos, { Randf(-5.f, 5.f), Randf(3.f, 5.f), Randf(-5.f, 5.f) });
+                            }
+                        }
+                        else
+                        {
+                            CItemObject::SpawnDropItemObject(itemInfo.value(), pos, { Randf(-5.f, 5.f), Randf(3.f, 5.f), Randf(-5.f, 5.f) });
+                        }
+                    }
+                
+                };
+
+            for (uint32_t i = 0; i < 9; ++i)
+            {
+                if (auto itemInfo = m_ItemArrHotbar[i])
+                {
+                    funcDropItems(itemInfo, pos);
+                }
+
+                m_ItemArrHotbar[i] = std::nullopt;
+            }
+
+            for (uint32_t i = 0; i < 9 * 3; ++i)
+            {
+                if (auto itemInfo = m_ItemArrInventory[i])
+                {
+                    funcDropItems(itemInfo, pos);
+                }
+
+                m_ItemArrInventory[i] = std::nullopt;
+            }
+
+            for (uint32_t i = 0; i < 4; ++i)
+            {
+                if (auto itemInfo = m_ItemArrArmor[i])
+                {
+                    funcDropItems(itemInfo, pos);
+                }
+
+                m_ItemArrArmor[i] = std::nullopt;
+            }
+            
+            //ProcessUIHotbar(0.f);
+            //CItemObject::SpawnDropItemObject(ItemInfo, pos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
+        }
+        GetUIController()->GetDeathScreen()->SetPlayer(GetHandle());
+        m_bDeath = true;
+    }
+    else
+    {
+        m_bDeath = false;
+    }
+}
+
+void CPlayerEntity::ReSpawnFromDeath()
+{
+    m_bDeath = false;
+    m_iHalfHealth = 20;
+    m_iHalfHunger = 20;
+    GetTransform().SetPosition(_float3{ 0.5f, 70.f, 0.5f });
+}
+
 void CPlayerEntity::ProcessUIStatus(_float fTimeDelta)
 {
     ProcessUIStatusHealth(fTimeDelta);
@@ -4054,13 +4191,26 @@ void CPlayerEntity::ProcessUIStatusBreath(_float fTimeDelta)
 void CPlayerEntity::ProcessHungerTimer(_float fTimeDelta)
 {
     m_fHungerTimer += fTimeDelta;
-    if (m_fHungerTimer > 10.f)
+    if (m_fHungerTimer > 5.f)
     {
         m_fHungerTimer = 0.f;
 
         if (m_iHalfHunger > 0)
         {
             m_iHalfHunger -= 1;
+        }
+    }
+}
+
+void CPlayerEntity::ProcessHealthRegenTimer(_float fTimeDelta)
+{
+    if (m_iHalfHunger >= 20)
+    {
+        m_fHealthRegenTimer += fTimeDelta;
+        if (m_fHealthRegenTimer > 1.f)
+        {
+            m_fHealthRegenTimer = 0.f;
+            m_iHalfHealth = std::clamp(m_iHalfHealth + 1, 0, 20);
         }
     }
 }
@@ -4857,9 +5007,33 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
 
                     XMMATRIX matFinalRotation = XMMatrixIdentity();
 
+
+                    //static bool  bIsSwinging = false;
+                    static float fSwingProgress = 0.f;
+                    static float fEatingProgress = 0.f;
+
+                   
+
                     if (auto pArm = Cast<CPlayerFPSArm>(pItem))
                     {
-
+                        if (m_bMousePressingLeft)
+                        {
+                            // normal swing
+                            if (m_ePlay != PLAY::NORMAL_SWING)
+                            {
+                                m_ePlay = PLAY::NORMAL_SWING;
+                                fSwingProgress = 0.f;
+                            }
+                        }
+                        else if (m_bMousePressingRight)
+                        {
+                            // normal swing
+                            if (m_ePlay != PLAY::NORMAL_SWING)
+                            {
+                                m_ePlay = PLAY::NORMAL_SWING;
+                                fSwingProgress = 0.f;
+                            }
+                        }
                     }
                     else if (auto pHandHeld = Cast<CHandHeldItem>(pItem))
                     {
@@ -4867,6 +5041,25 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                         {
                             if (pInfo->block)
                             {
+                                if (m_bMousePressingLeft)
+                                {
+                                    // normal swing
+                                    if (m_ePlay != PLAY::NORMAL_SWING)
+                                    {
+                                        m_ePlay = PLAY::NORMAL_SWING;
+                                        fSwingProgress = 0.f;
+                                    }
+                                }
+                                else if (m_bMousePressingRight)
+                                {
+                                    // normal swing
+                                    if (m_ePlay != PLAY::NORMAL_SWING)
+                                    {
+                                        m_ePlay = PLAY::NORMAL_SWING;
+                                        fSwingProgress = 0.f;
+                                    }
+                                }
+
                                 matFinalRotation = XMMatrixRotationRollPitchYaw(
                                     XMConvertToRadians(-15.f),
                                     XMConvertToRadians(35.f),
@@ -4875,6 +5068,71 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                             }
                             else
                             {
+                                if (auto icnt = CItemObject::IsEatableItem(pInfo->eItemType))
+                                {
+                                    if (m_bMousePressingLeft)
+                                    {
+                                        // normal swing
+                                        if (m_ePlay != PLAY::NORMAL_SWING)
+                                        {
+                                            m_ePlay = PLAY::NORMAL_SWING;
+                                            fSwingProgress = 0.f;
+                                        }
+                                    }
+                                    else if (m_bMousePressingRight)
+                                    {
+                                        // eating
+                                        if (m_ePlay != PLAY::EATING)
+                                        {
+                                            m_ePlay = PLAY::EATING;
+                                            fEatingProgress = 0.f;
+                                        }
+                                        
+                                    }
+                                }
+                                else if (
+                                    pInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby
+                                    || pInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0
+                                    || pInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1
+                                    || pInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
+                                    )
+                                {
+                                    if (m_bMousePressingLeft)
+                                    {
+                                        // normal swing
+                                        if (m_ePlay != PLAY::NORMAL_SWING)
+                                        {
+                                            m_ePlay = PLAY::NORMAL_SWING;
+                                            fSwingProgress = 0.f;
+                                        }
+                                    }
+                                    else if (m_bMousePressingRight)
+                                    {
+                                        // bow pulling
+                                        m_ePlay = PLAY::BOW_PULLING;
+                                    }
+                                }
+                                else
+                                {
+                                    if (m_bMousePressingLeft)
+                                    {
+                                        // normal swing
+                                        if (m_ePlay != PLAY::NORMAL_SWING)
+                                        {
+                                            m_ePlay = PLAY::NORMAL_SWING;
+                                            fSwingProgress = 0.f;
+                                        }
+                                    }
+                                    else if (m_bMousePressingRight)
+                                    {
+                                        // normal swing
+                                        if (m_ePlay != PLAY::NORMAL_SWING)
+                                        {
+                                            m_ePlay = PLAY::NORMAL_SWING;
+                                            fSwingProgress = 0.f;
+                                        }
+                                    }
+                                }
                                 XMMATRIX matToPivot = XMMatrixTranslation(0.f, 0.1f, 0.1f);
 
                                 XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
@@ -4888,59 +5146,159 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                         }
                     }
 
-
-
-                    static bool  bIsSwinging = false;
-                    static float fSwingProgress = 0.f;
-
-                    if (
-                        (CGameInstance::Get().MousePressing(MOUSEKEYSTATE::LB) || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
-                        && !bIsSwinging)
-                    {
-                        bIsSwinging = true;
-                        fSwingProgress = 0.f;
-                    }
-
-
                     XMMATRIX matGlobalSwing = XMMatrixIdentity();
+                    switch (m_ePlay)
+                    {
+                    case PLAY::IDLE:
 
-                    if (bIsSwinging)
+
+                        break;
+                    case PLAY::NORMAL_SWING:
                     {
                         fSwingProgress += fTimeDelta * 5.f;
 
                         if (fSwingProgress >= 1.f)
                         {
                             fSwingProgress = 1.f;
-                            bIsSwinging = false; //
+                            m_ePlay = PLAY::IDLE;
                         }
 
 
                         float fAngleFactor = sinf(fSwingProgress * XM_PI); // 0.0 -> 1.0 -> 0.0 
 
-                        if (false)
-                        {
-                            auto tmp = XMMatrixTranslation(-0.15f, -0.2f, 0.);
+                        matGlobalSwing = XMMatrixRotationRollPitchYaw(
+                            fAngleFactor * XMConvertToRadians(90.f),
+                            0.f,
+                            0.f
+                        );
+                    }
+                        break;
+                    case PLAY::EATING:
+                    {
+                        fEatingProgress += fTimeDelta * 1.f;
 
-                            auto tmp2 = XMMatrixRotationRollPitchYaw(
-                                0.f,
-                                XMConvertToRadians(-90.f),
-                                0.f
-                            );
+                        if (fEatingProgress >= 1.f)
+                        {
+                            fEatingProgress = 1.f;
+                            m_ePlay = PLAY::IDLE;
+
                             
-                            auto tmp3 = XMMatrixTranslation(-0, fAngleFactor * 0.1f, 0.);
+                            auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+                            if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
+                            {
+                                if (auto iCnt = CItemObject::IsEatableItem(hotbarItemInfo->eItemType))
+                                {
+                                    if (hotbarItemInfo->iCnt > 0)
+                                    {
+                                        m_fHungerTimer = 0.f;
+                                        m_iHalfHunger = std::clamp(m_iHalfHunger + (int32_t)iCnt, 0, 20);
+                                        hotbarItemInfo->iCnt -= 1;
 
-                            matGlobalSwing = tmp3 * tmp2 * tmp;
-                        }
-                        else
-                        {
-                            matGlobalSwing = XMMatrixRotationRollPitchYaw(
-                                fAngleFactor * XMConvertToRadians(90.f),
-                                0.f,
-                                0.f
-                            );
+                                        if (hotbarItemInfo->iCnt == 0)
+                                        {
+                                            hotbarItemInfo = std::nullopt;
+                                        }
+                                    }
+                                    
+                                }
+                            }
                         }
                         
+
+                        if (auto pHandHeld = Cast<CHandHeldItem>(pItem))
+                        {
+                            if (auto pInfo = pHandHeld->GetItemInfo())
+                            {
+                                if (CItemObject::IsEatableItem(pInfo->eItemType))
+                                {
+                                    _float3 startPos{};
+                                    XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 0.3f);
+                                    startPos.y += 1.5f;
+                                    //auto currpos = GetTransform().GetPosition();
+                                    //currpos.y += 1.8f;
+
+                                    auto iPackedTexID = CItemObject::GetPackedTexIdByType(pInfo->eItemType);
+                                    CGameInstance::Get().AddParticleRenderDestruct(
+                                        startPos,
+                                        iPackedTexID,
+                                        1);
+                                }
+                            }
+                        }
+
+                       
+
+                        //CGameInstance::Get().AddParticleRenderDestruct(res.block.value(), { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f });
+
+                        float fAngleFactor = sinf(fEatingProgress * XM_PI * 2.f * 4.f); // 0.0 -> 1.0 -> 0.0 
+                        auto tmp = XMMatrixTranslation(-0.15f, -0.2f, 0.);
+                        auto tmp2 = XMMatrixRotationRollPitchYaw(
+                            0.f,
+                            XMConvertToRadians(-90.f),
+                            0.f
+                        );
+
+                        auto tmp3 = XMMatrixTranslation(-0, fAngleFactor * 0.1f, 0.);
+                        matGlobalSwing = tmp3 * tmp2 * tmp;
                     }
+
+                        break;
+                    case PLAY::BOW_PULLING:
+
+
+                        break;
+                    }
+
+
+
+                    //if (
+                    //    (CGameInstance::Get().MousePressing(MOUSEKEYSTATE::LB) || CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB))
+                    //    && !bIsSwinging)
+                    //{
+                    //    bIsSwinging = true;
+                    //    fSwingProgress = 0.f;
+                    //}
+
+
+                    //XMMATRIX matGlobalSwing = XMMatrixIdentity();
+
+                    //if (bIsSwinging)
+                    //{
+                    //    fSwingProgress += fTimeDelta * 5.f;
+
+                    //    if (fSwingProgress >= 1.f)
+                    //    {
+                    //        fSwingProgress = 1.f;
+                    //        bIsSwinging = false; //
+                    //    }
+
+
+                    //    float fAngleFactor = sinf(fSwingProgress * XM_PI); // 0.0 -> 1.0 -> 0.0 
+
+                    //    if (false)
+                    //    {
+                    //        auto tmp = XMMatrixTranslation(-0.15f, -0.2f, 0.);
+
+                    //        auto tmp2 = XMMatrixRotationRollPitchYaw(
+                    //            0.f,
+                    //            XMConvertToRadians(-90.f),
+                    //            0.f
+                    //        );
+                    //        
+                    //        auto tmp3 = XMMatrixTranslation(-0, fAngleFactor * 0.1f, 0.);
+
+                    //        matGlobalSwing = tmp3 * tmp2 * tmp;
+                    //    }
+                    //    else
+                    //    {
+                    //        matGlobalSwing = XMMatrixRotationRollPitchYaw(
+                    //            fAngleFactor * XMConvertToRadians(90.f),
+                    //            0.f,
+                    //            0.f
+                    //        );
+                    //    }
+                    //    
+                    //}
 
 
 

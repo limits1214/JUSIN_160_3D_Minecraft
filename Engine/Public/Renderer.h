@@ -15,11 +15,18 @@ private:
 	~CRenderer() override;
 
 public:
+	void UpdateGUI();
+
+public:
 	HRESULT Initialize();
+private:
 	HRESULT InitializeOffscreen();
 	HRESULT InitializeShadow();
 	HRESULT InitializeFullscreen();
 	HRESULT InitializePlayerInvenUI();
+	HRESULT InitializeDeathScreenRedFilter();
+
+public:
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
 	HRESULT Draw();
 	void FrameEnd();
@@ -37,9 +44,22 @@ private:
 private:
 	SPtr<CResDynamicTexture2D> m_pOffScreenTex2D{};
 
+
+
+
 private:
 	SPtr<CResDynamicTexture2D> m_pShadowTex2D{};
 	SPtr<CResViewPort> m_pShadowVP{};
+
+private:
+	SPtr<CResDynamicTexture2D> m_pDeathScreenRedFilterTex2D{};
+	SPtr<CResVertexShader> m_pDeathScreenRedFilterVS{};
+	SPtr<CResPixelShader> m_pDeathScreenRedFilterPS{};
+
+public:
+	void SetFilterRed(_bool b) { m_bFilterRed = b; }
+private:
+	_bool m_bFilterRed{ false };
 
 private:
 	SPtr<CResDynamicTexture2D> m_pPlayerInvenUITex2D{};
@@ -52,6 +72,9 @@ private:
 	SPtr<CResViewPort> m_pBackBufferVP{};
 
 private:
+	SPtr<CResDynamicTexture2D> m_pLastTex2DBeforeFullScreenDraw{};
+
+private:
 	SPtr<CResVertexShader> m_pFullscreenVS{};
 	SPtr<CResPixelShader> m_pFullscreenPS{};
 	SPtr<CResVIBuffer> m_pFullscreenVIBuffer{};
@@ -60,6 +83,9 @@ private:
 
 private:
 	//_float4 m_SSAOOffsets[14]{};
+
+private:
+	HRESULT DrawPostProcessDeathScreenRedFilter();
 
 private:
 	HRESULT DrawFullscreen();
@@ -72,6 +98,7 @@ private:
 	HRESULT RenderCollider(const RENDER_CTX& ctx);
 	HRESULT RenderUI(const RENDER_CTX& ctx);
 	HRESULT RenderUIToolTip(const RENDER_CTX& ctx);
+	HRESULT RenderUITextAfterFilterRed(const RENDER_CTX& ctx);
 
 public:
 	static UPtr<CRenderer> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);

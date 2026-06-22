@@ -63,6 +63,15 @@ private:
 	_float3 m_vHeadRotation = { 0.f, 0.f, 0.f };
 	CAMERA_TYPE m_eCameraType{ CAMERA_TYPE ::FPS };
 	MODE_TYPE m_eModeType{ MODE_TYPE::GOD };
+	enum class PLAY
+	{
+		IDLE,
+		NORMAL_SWING,
+		BOW_PULLING,
+		EATING,
+	};
+
+	PLAY m_ePlay{ PLAY::IDLE };
 private:
 	CComEntityModel* m_pComEntityModel{};
 
@@ -224,6 +233,16 @@ private:
 private:
 	//void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
 
+public:
+	void TakeDamage(int32_t iDamage);
+
+private:
+	void JudgeDeathUpdate(int32_t iDamage);
+	_bool m_bDeath{ false };
+
+public:
+	void ReSpawnFromDeath();
+
 private:
 	void ProcessUIStatus(_float fTimeDelta);
 	void ProcessUIStatusHealth(_float fTimeDelta);
@@ -232,7 +251,9 @@ private:
 	void ProcessUIStatusLevel(_float fTimeDelta);
 	void ProcessUIStatusBreath(_float fTimeDelta);
 	void ProcessHungerTimer(_float fTimeDelta);
+	void ProcessHealthRegenTimer(_float fTimeDelta);
 	int32_t m_iHalfHealth{ 20 };// max: 20
+	_float m_fHealthRegenTimer{};
 	int32_t m_iHalfHunger{ 20 };// max: 20
 	_float m_fHungerTimer{};
 	int32_t m_iHalfArmor{ 0 };// max: 20

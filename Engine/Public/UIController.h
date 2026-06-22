@@ -17,6 +17,7 @@
 #include "UIArmorBar.h"
 #include "UIBreathBar.h"
 #include "UIExperienceBar.h"
+#include "UIDeathScreen.h"
 
 NS_BEGIN(Engine)
 
@@ -62,6 +63,8 @@ public:
 		DELEGATE_UI_DESC Chest2{};
 
 		DELEGATE_UI_DESC TextBg{};
+
+		DELEGATE_UI_DESC DeathScreen{};
 		
 	}DESC;
 public:
@@ -89,6 +92,7 @@ public:
 	CUIChest* GetChest() const;
 	CUIChest2* GetChest2() const;
 	CUITextBg* GetTextBg() const;
+	CUIDeathScreen* GetDeathScreen() const;
 
 private:
 	CHandle m_hHotBar{};
@@ -105,6 +109,7 @@ private:
 	CHandle m_hChest{};
 	CHandle m_hChest2{};
 	CHandle m_hTextBg{};
+	CHandle m_hDeathScreen{};
 
 public:
 	HRESULT Initialize(void* pArg) override;

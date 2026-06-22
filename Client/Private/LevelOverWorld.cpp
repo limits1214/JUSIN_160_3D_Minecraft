@@ -260,6 +260,11 @@ HRESULT CLevelOverWorld::Initialize()
 						.LayerID = "80_UI"
 					};
 
+					ControllerDesc.DeathScreen = {
+						.ProtoPairID = {"UI", "Prototype_GameObject_UIDeathScreen"},
+						.LayerID = "80_UI"
+					};
+
 					if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("UI", "Prototype_GameObject_UIController",
 						"79_UIController", &ControllerDesc))
 					{
@@ -283,6 +288,8 @@ HRESULT CLevelOverWorld::Initialize()
 			}
 		}
 	}
+
+
 
 	if(false)
 	{

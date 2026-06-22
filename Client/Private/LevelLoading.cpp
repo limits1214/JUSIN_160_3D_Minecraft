@@ -193,6 +193,8 @@ void CLevelLoading::LoadingCheck()
 
 #include "UIItem.h"
 
+#include "UIDeathScreen.h"
+
 #include "BlockOutline.h"
 #include "PlayerFPSArm.h"
 #include "DestroyStage.h"
@@ -377,6 +379,11 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 	}
 
 	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIItem", E::CUIItem::Create())))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(E::CGameInstance::Get().AddPrototype("UI", "Prototype_GameObject_UIDeathScreen", E::CUIDeathScreen::Create())))
 	{
 		return E_FAIL;
 	}
