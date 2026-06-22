@@ -21,6 +21,8 @@ CDropBlock::~CDropBlock()
 
 HRESULT CDropBlock::Initialize(void* pArg)
 {
+    m_vecInstancedData = {};
+    m_iNumElements = 3000;
     m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::SHADOW);
     if (FAILED(CDropItemObject::Initialize(pArg)))
     {
@@ -65,56 +67,125 @@ void CDropBlock::Update(E::_float fTimeDelta)
 {
     m_vecInstancedData.clear();
 
-    for (auto& item : m_vecDropItemObjects)
+    for (auto iter = m_vecDropItemObjects.begin(); iter != m_vecDropItemObjects.end();)
     {
-        if (m_vecInstancedData.size() > m_iNumElements)
-        {
-            break;
-        }
+        auto& item = *iter;
+        
         item.fElapsedTime += fTimeDelta;
+        if (item.fElapsedTime > 60.f)
+        {
+            iter = m_vecDropItemObjects.erase(iter);
+            continue;
+        }
+
 
         if (m_bGravity)    VelocityUpdate(item, fTimeDelta);
         if (m_bAnimation)  AnimateTransformUpdate(item, fTimeDelta);
 
-        // 최종 월드행렬
-       // _matrix matRot = XMMatrixRotationY(XMConvertToDegrees(item.fBobYRot));
-        _matrix matRot = XMMatrixRotationY(item.fBobYRot);
-        _matrix matBob = XMMatrixTranslation(0.f, item.fBobYOffset, 0.f);
-        _matrix matWorld = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
-        XMStoreFloat4x4(&item.matWorld, matRot * matBob * matWorld);
 
-        item.boxCollider->Transform(matWorld);
-        E::CGameInstance::Get().AddColliderGroup("Coll_DropItemObject", item.boxCollider.get());
-
-        VTX_DROP_BLOCK_INSTANCED_DATA inst{};
-
-        int32_t blockX = static_cast<int32_t>(std::floor(item.vPos.x));
-        int32_t blockY = static_cast<int32_t>(std::floor(item.vPos.y));
-        int32_t blockZ = static_cast<int32_t>(std::floor(item.vPos.z));
-        if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
-        {
-            inst.light = optCurrBlock->GetLight();
-        }
-
-        if (item.itemInfo.block)
-        {
-            uint32_t baseColorABGR = CBlock3::GetBaseColor(item.itemInfo.block->GetType());
-            if (baseColorABGR != 0xFF)
-            {
-                _float4 blockTint;
-                blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
-                blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
-                blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
-                blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
-                inst.vColor = blockTint;
-            }
-        }
         
-        inst.matWorld = item.matWorld;
-        //memcpy(&inst.texIndexs, item.texIndexs.data(), item.texIndexs.size());
-        memcpy(&inst.texIndexs, item.texIndexs.data(), sizeof(uint32_t) * item.texIndexs.size());
-        m_vecInstancedData.push_back(inst);
+
+
+        if (m_vecInstancedData.size() < m_iNumElements)
+        {
+            // 최종 월드행렬
+           // _matrix matRot = XMMatrixRotationY(XMConvertToDegrees(item.fBobYRot));
+            _matrix matRot = XMMatrixRotationY(item.fBobYRot);
+            _matrix matBob = XMMatrixTranslation(0.f, item.fBobYOffset, 0.f);
+            _matrix matWorld = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
+            XMStoreFloat4x4(&item.matWorld, matRot * matBob * matWorld);
+
+            item.boxCollider->Transform(matWorld);
+            E::CGameInstance::Get().AddColliderGroup("Coll_DropItemObject", item.boxCollider.get());
+
+
+            VTX_DROP_BLOCK_INSTANCED_DATA inst{};
+
+            int32_t blockX = static_cast<int32_t>(std::floor(item.vPos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(item.vPos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(item.vPos.z));
+            if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+            {
+                inst.light = optCurrBlock->GetLight();
+            }
+
+            if (item.itemInfo.block)
+            {
+                uint32_t baseColorABGR = CBlock3::GetBaseColor(item.itemInfo.block->GetType());
+                if (baseColorABGR != 0xFF)
+                {
+                    _float4 blockTint;
+                    blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
+                    blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
+                    blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
+                    blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
+                    inst.vColor = blockTint;
+                }
+            }
+
+            inst.matWorld = item.matWorld;
+            //memcpy(&inst.texIndexs, item.texIndexs.data(), item.texIndexs.size());
+            memcpy(&inst.texIndexs, item.texIndexs.data(), sizeof(uint32_t) * item.texIndexs.size());
+
+
+            m_vecInstancedData.push_back(inst);
+
+        }
+        ++iter;
     }
+
+    //if(false)
+    //for (auto& item : m_vecDropItemObjects)
+    //{
+    //    if (m_vecInstancedData.size() > m_iNumElements)
+    //    {
+    //        break;
+    //    }
+    //    item.fElapsedTime += fTimeDelta;
+
+
+    //    if (m_bGravity)    VelocityUpdate(item, fTimeDelta);
+    //    if (m_bAnimation)  AnimateTransformUpdate(item, fTimeDelta);
+
+    //    // 최종 월드행렬
+    //   // _matrix matRot = XMMatrixRotationY(XMConvertToDegrees(item.fBobYRot));
+    //    _matrix matRot = XMMatrixRotationY(item.fBobYRot);
+    //    _matrix matBob = XMMatrixTranslation(0.f, item.fBobYOffset, 0.f);
+    //    _matrix matWorld = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
+    //    XMStoreFloat4x4(&item.matWorld, matRot * matBob * matWorld);
+
+    //    item.boxCollider->Transform(matWorld);
+    //    E::CGameInstance::Get().AddColliderGroup("Coll_DropItemObject", item.boxCollider.get());
+
+    //    VTX_DROP_BLOCK_INSTANCED_DATA inst{};
+
+    //    int32_t blockX = static_cast<int32_t>(std::floor(item.vPos.x));
+    //    int32_t blockY = static_cast<int32_t>(std::floor(item.vPos.y));
+    //    int32_t blockZ = static_cast<int32_t>(std::floor(item.vPos.z));
+    //    if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+    //    {
+    //        inst.light = optCurrBlock->GetLight();
+    //    }
+
+    //    if (item.itemInfo.block)
+    //    {
+    //        uint32_t baseColorABGR = CBlock3::GetBaseColor(item.itemInfo.block->GetType());
+    //        if (baseColorABGR != 0xFF)
+    //        {
+    //            _float4 blockTint;
+    //            blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
+    //            blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
+    //            blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
+    //            blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
+    //            inst.vColor = blockTint;
+    //        }
+    //    }
+    //    
+    //    inst.matWorld = item.matWorld;
+    //    //memcpy(&inst.texIndexs, item.texIndexs.data(), item.texIndexs.size());
+    //    memcpy(&inst.texIndexs, item.texIndexs.data(), sizeof(uint32_t) * item.texIndexs.size());
+    //    m_vecInstancedData.push_back(inst);
+    //}
 }
 
 void CDropBlock::LateUpdate(E::_float fTimeDelta)

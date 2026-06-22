@@ -17,23 +17,28 @@ public:
 	void SetInnerPointer(CEngineBase* p) { m_pInner = p ; }
 	StringID GetInnerHint() const { return m_InnerHint; }
 	void SetInnerHint(StringID hint) { m_InnerHint = hint; }
-	void* GetInnerHint2() const { return m_pInnerHint2; }
-	void SetInnerHint2(void* p, size_t size) {
-		if (m_pInnerHint2) free(m_pInnerHint2);
-		m_pInnerHint2 = malloc(size);
-		m_InnerHint2Size = size;
-		memcpy(m_pInnerHint2, p, size);
-	}
-	_bool UpdateInnerHint2(void* p, size_t size)
+	std::shared_ptr<void> GetInnerHint2() const { return m_pInnerHint2; }
+	//void SetInnerHint2(void* p, size_t size) {
+	//	if (m_pInnerHint2) free(m_pInnerHint2);
+	//	m_pInnerHint2 = malloc(size);
+	//	m_InnerHint2Size = size;
+	//	memcpy(m_pInnerHint2, p, size);
+	//}
+	void SetInnerHint2(std::shared_ptr<void> p)
 	{
-		if (m_InnerHint2Size != size)
-		{
-			return false;
-		}
-
-		memcpy(m_pInnerHint2, p, size);
-		return true;
+		m_pInnerHint2 = p;
 	}
+	//_bool UpdateInnerHint2(void* p, size_t size)
+	//{
+	//	m_pInnerHint2.get();
+	//	//if (m_InnerHint2Size != size)
+	//	//{
+	//	//	return false;
+	//	//}
+
+	//	//memcpy(m_pInnerHint2, p, size);
+	//	return true;
+	//}
 	
 
 public:
@@ -54,8 +59,8 @@ protected:
 	const CollType m_eCollType{};
 	CEngineBase* m_pInner{};
 	StringID m_InnerHint{};
-	void* m_pInnerHint2{};
-	size_t m_InnerHint2Size{};
+	std::shared_ptr<void> m_pInnerHint2{};
+	//size_t m_InnerHint2Size{};
 
 protected:
 	_float4 m_vOriginalColor{ Colors::Green };

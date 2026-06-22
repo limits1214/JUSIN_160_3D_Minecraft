@@ -26,7 +26,7 @@ public:
 
 private:
 	std::vector<VTX_DROP_ITEM_INSTANCED_DATA> m_vecInstancedData{};
-	uint32_t m_iNumElements{ 100 };
+	uint32_t m_iNumElements{ 1000 };
 	SPtr<CResDynamicBuffer> m_pResInstancedBuffer{};
 
 public:

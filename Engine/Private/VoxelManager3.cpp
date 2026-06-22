@@ -342,13 +342,17 @@ void CVoxelManager3::ProcessExplodeBlock(float wbx, float wby, float wbz, float 
                             }
                             else
                             {
-                                CItemObject::ItemInfo ItemInfo{ currentBlock.value() , 1};
+                                if (Randf(0.f, 1.f) > 0.9f)
+                                {
+                                    CItemObject::ItemInfo ItemInfo{ currentBlock.value() , 1 };
 
-                                CItemObject::DestoryBlockAfterProcess(ItemInfo, XMINT3{ x, y, z });
-                                CItemObject::DestoryBlockItemConverter(ItemInfo);
+                                    CItemObject::DestoryBlockAfterProcess(ItemInfo, XMINT3{ x, y, z });
+                                    CItemObject::DestoryBlockItemConverter(ItemInfo);
 
 
-                                CItemObject::SpawnDropItemObject(ItemInfo, { (_float)x + 0.5f,  (_float)y + 0.5f,  (_float)z + 0.5f }, { 0.f, 2.f, 0.f });
+                                    CItemObject::SpawnDropItemObject(ItemInfo, { (_float)x + 0.5f,  (_float)y + 0.5f,  (_float)z + 0.5f }, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
+                                }
+                                
                             }
                         }
                     }

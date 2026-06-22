@@ -2,6 +2,13 @@
 
 namespace Engine
 {
+	inline float Randf(float min, float max)
+	{
+		return min +
+			(max - min) *
+			(rand() / (float)RAND_MAX);
+	}
+
 
 	template<typename T>
 	constexpr int32_t ETOI(T e)

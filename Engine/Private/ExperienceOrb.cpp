@@ -202,7 +202,8 @@ void CExperienceOrb::AddOrb(const _float3& vPos, const _float3& vVelocity, uint3
 	m_listOrbs.push_back(Desc);
 	CollHint hint{};
 	hint.iter = std::prev(m_listOrbs.end());
-	Desc.boxCollider->SetInnerHint2(&hint, sizeof(hint));
+	//Desc.boxCollider->SetInnerHint2(&hint, sizeof(hint));
+	Desc.boxCollider->SetInnerHint2(std::make_shared<CollHint>(hint));
 }
 
 void CExperienceOrb::VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDelta, _bool bMagnet, XMVECTOR vToPlayer)

@@ -13,6 +13,7 @@ public:
 		PARTICLES_ATLAS_DEATH_SMOKE,
 		PARTICLES_ATLAS_EXPLODE_SMOKE,
 		PARTICLES_ATLAS_TORCH,
+		PARTICLES_ATLAS_TNT_FUSING,
 		END
 	};
 
@@ -20,6 +21,7 @@ public:
 	void AddParticleRenderDestruct(CBlock3 block, _float3 pos, uint32_t iCnt = 1);
 	void AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt = 1);
 	void AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt = 1);
 
 
 	//enum class PARTICLE_TEX_TYPE
@@ -70,6 +72,7 @@ private:
 	void Update_PARTICLES_ATLAS_DEATH_SMOKE(_float fTimeDelta);
 	void Update_PARTICLES_ATLAS_EXPLODE_SMOKE(_float fTimeDelta);
 	void Update_PARTICLES_ATLAS_TORCH(_float fTimeDelta);
+	void Update_PARTICLES_ATLAS_TNT_FUSING(_float fTimeDelta);
 
 private:
 	HRESULT Initialize();
