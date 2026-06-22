@@ -175,6 +175,7 @@ private:
 	_bool m_bMousePressingRight{ false };
 	_bool m_bMouseDownLeft{ false };
 	_bool m_bMouseDownRight{ false };
+	_bool m_bMouseUpRight{ false };
 
 private:
 	UPtr<CCollider> m_pMeleeAttackCollider{};
