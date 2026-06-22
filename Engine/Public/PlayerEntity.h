@@ -231,8 +231,10 @@ private:
 	void ProcessUIStatusArmor(_float fTimeDelta);
 	void ProcessUIStatusLevel(_float fTimeDelta);
 	void ProcessUIStatusBreath(_float fTimeDelta);
+	void ProcessHungerTimer(_float fTimeDelta);
 	int32_t m_iHalfHealth{ 20 };// max: 20
 	int32_t m_iHalfHunger{ 20 };// max: 20
+	_float m_fHungerTimer{};
 	int32_t m_iHalfArmor{ 0 };// max: 20
 	int32_t m_iRealHealfArmor{ 0 };
 	int32_t m_iLevel{ 0 };
