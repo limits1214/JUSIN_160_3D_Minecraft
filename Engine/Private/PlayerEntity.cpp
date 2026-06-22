@@ -515,6 +515,7 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_bKeyDownQ = CGameInstance::Get().KeyDown(DIK_Q);
         m_bMouseDownLeft = CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB);
         m_bMouseDownRight = CGameInstance::Get().MouseDown(MOUSEKEYSTATE::RB);
+        m_bMouseUpRight = CGameInstance::Get().MouseUp(MOUSEKEYSTATE::RB);
     }
     else
     {
@@ -536,6 +537,7 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_bKeyDownQ = false;
         m_bMouseDownLeft = false;
         m_bMouseDownRight = false;
+        m_bMouseUpRight = false;
     }
 
 }
@@ -1073,7 +1075,7 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
 {
     if (!m_pActivePlayerCamera) return;
 
-    if (m_bMousePressingRight)
+    if (false && m_bMousePressingRight)
     {
         auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
         if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
@@ -1131,48 +1133,48 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
         auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
         if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
         {
-            if (
-                hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby
-                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0
-                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1
-                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
-                )
-            {
-                if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
-                {
-                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
-                }
-                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
-                {
-                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
-                }
-                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
-                {
-                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
-                }
-                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2)
-                {
-                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
+            //if (
+            //    hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby
+            //    || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0
+            //    || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1
+            //    || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
+            //    )
+            //{
+            //    if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
+            //    {
+            //        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
+            //    }
+            //    else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
+            //    {
+            //        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
+            //    }
+            //    else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
+            //    {
+            //        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
+            //    }
+            //    else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2)
+            //    {
+            //        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
 
-                    E::CArrowEntity::DESC Desc{};
-                    Desc.sObjectTag = "Arrow";
-                    if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArrowEntity",
-                        "49_ARROW", &Desc))
-                    {
-                        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CArrowEntity>(handle.value()))
-                        {
-                            const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
-                            //auto pos = GetTransform().GetState(STATE::POSITION);
-                            //auto look = GetTransform().GetState(STATE::LOOK);
-                            auto pos = XMLoadFloat3(&rayOrigin2);
-                            auto look = XMLoadFloat3(&rayDir2);
-                            pObj->Shoot(pos, look, 50.f);
-                        }
-                    }
-                }
+            //        E::CArrowEntity::DESC Desc{};
+            //        Desc.sObjectTag = "Arrow";
+            //        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArrowEntity",
+            //            "49_ARROW", &Desc))
+            //        {
+            //            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CArrowEntity>(handle.value()))
+            //            {
+            //                const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+            //                //auto pos = GetTransform().GetState(STATE::POSITION);
+            //                //auto look = GetTransform().GetState(STATE::LOOK);
+            //                auto pos = XMLoadFloat3(&rayOrigin2);
+            //                auto look = XMLoadFloat3(&rayDir2);
+            //                pObj->Shoot(pos, look, 50.f);
+            //            }
+            //        }
+            //    }
 
-                return;
-            }
+            //    return;
+            //}
         }
 
         
@@ -1758,6 +1760,11 @@ root
 */
 void CPlayerEntity::ProcessActionUpdate(_float fTimeDelta)
 {
+
+    //if (CGameInstance::Get().MouseUp(MOUSEKEYSTATE::RB))
+    //{
+    //    int x = 0;
+    //}
     
     ProcessPlayerOpenInvenAction(fTimeDelta);
     ProcessPlayerCameraAction(fTimeDelta);
@@ -5011,6 +5018,7 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                     //static bool  bIsSwinging = false;
                     static float fSwingProgress = 0.f;
                     static float fEatingProgress = 0.f;
+                    static float fBowPullingProgress = 0.f;
 
                    
 
@@ -5106,10 +5114,19 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                             fSwingProgress = 0.f;
                                         }
                                     }
-                                    else if (m_bMousePressingRight)
+                                    else if (m_bMousePressingRight || m_bMouseUpRight)
                                     {
                                         // bow pulling
+                                        if (m_ePlay != PLAY::BOW_PULLING)
+                                        {
+                                            m_ePlay = PLAY::BOW_PULLING;
+                                            fBowPullingProgress = 0.f;
+                                        }
+                                    }
+                                    else
+                                    {
                                         m_ePlay = PLAY::BOW_PULLING;
+                                        fBowPullingProgress = 0.f;
                                     }
                                 }
                                 else
@@ -5244,7 +5261,96 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
 
                         break;
                     case PLAY::BOW_PULLING:
+                        fBowPullingProgress += fTimeDelta * 1.f;
 
+
+                        auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+                        if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
+                        {
+                            if (
+                                hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby
+                                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0
+                                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1
+                                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
+                                )
+                            {
+                                auto funcShootArrow = [&](_float fSpeed)
+                                    {
+                                        {
+                                            E::CArrowEntity::DESC Desc{};
+                                            Desc.sObjectTag = "Arrow";
+                                            if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArrowEntity",
+                                                "49_ARROW", &Desc))
+                                            {
+                                                if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CArrowEntity>(handle.value()))
+                                                {
+                                                    const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+                                                    auto pos = GetTransform().GetPosition();
+                                                    pos.y += 1.8f;
+                                                    //auto look = GetTransform().GetState(STATE::LOOK);
+                                                    //auto pos = XMLoadFloat3(&rayOrigin2);
+                                                    auto look = XMLoadFloat3(&rayDir2);
+
+                                                    pObj->Shoot(XMLoadFloat3(&pos), look, fSpeed);
+                                                }
+                                            }
+                                        }
+                                    };
+                                if (fBowPullingProgress <= 0.1f)
+                                {
+                                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
+                                }
+                                else if (fBowPullingProgress <= 0.4f)
+                                {
+                                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
+                                    if (m_bMouseUpRight)
+                                    {
+                                        funcShootArrow(15.f);
+                                    }
+                                }
+                                else if (fBowPullingProgress <= 0.7f)
+                                {
+                                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
+                                    if (m_bMouseUpRight)
+                                    {
+                                        funcShootArrow(25.f);
+                                    }
+                                }
+                                else
+                                {
+                                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
+                                    if (m_bMouseUpRight)
+                                    {
+                                        funcShootArrow(45.f);
+                                    }
+                                }
+                                //else if (fBowPullingProgress <= 0.6f)
+                                //{
+
+                                //}
+
+                                //if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
+                                //{
+                                //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
+                                //}
+                                //else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
+                                //{
+                                //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
+                                //}
+                                //else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
+                                //{
+                                //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
+                                //}
+                                //else // ITEM_Bow_Pulling_2
+                                //{
+                                //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
+                                //}
+                            }
+                        }
+                        if (fBowPullingProgress >= 1.f)
+                        {
+                            
+                        }
 
                         break;
                     }
