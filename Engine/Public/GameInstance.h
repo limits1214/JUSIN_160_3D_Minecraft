@@ -262,6 +262,7 @@ public:
 	CChunk3* GetVoxelChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const;
 
 	void VoxelProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
+	void VoxelProcessExplodeBlock(float wx, float wy, float wz, float fRadius);
 	std::optional<CBlock3> GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
 	void SetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
 	_bool VoxelBlockRaycast(const _float3& rayOrigin,

@@ -104,6 +104,35 @@ void CParticleManager::AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt)
 
 void CParticleManager::AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt)
 {
+    for (uint32_t i = 0; i < iCnt; ++i)
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 0.05f * 15.f;
+        att.iTexId = PackTexId(10, 0);
+        att.vPos = pos;
+        att.vAcceleration = { 0.f, -1.8f, 0.f };
+
+        att.vUv = { 8.f * (15) / 128.f, 80.f / 128.f };
+        att.vUvSize = { 8.f / 128.f, 8.f / 128.f };
+        auto tmpSize = Randf(0.1f, 2.5f);
+        att.vSize = { tmpSize, tmpSize };
+        att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(-1.f, 1.f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(4.f, 8.f);
+        dir *= speed;
+
+        XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_EXPLODE_SMOKE, att);
+    }
 }
 
 CParticleManager::CParticleManager(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)

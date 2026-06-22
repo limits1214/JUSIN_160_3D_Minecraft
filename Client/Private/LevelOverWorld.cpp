@@ -283,7 +283,7 @@ HRESULT CLevelOverWorld::Initialize()
 		}
 	}
 
-
+	if(false)
 	{
 		//Prototype_GameObject_ArrowEntity
 		E::CArrowEntity::DESC Desc{};

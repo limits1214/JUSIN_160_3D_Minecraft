@@ -290,6 +290,53 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
     }
 }
 
+void CVoxelManager3::ProcessExplodeBlock(float wbx, float wby, float wbz, float fRadius)
+{
+    int cx = static_cast<int>(floor(wbx));
+    int cy = static_cast<int>(floor(wby));
+    int cz = static_cast<int>(floor(wbz));
+
+    int iRadius = static_cast<int>(ceil(fRadius));
+    float fRadiusSq = fRadius * fRadius; 
+
+    CBlock3 newBlock{};
+    newBlock.SetType(CBlock3::TYPE::AIR);
+
+    for (int x = cx - iRadius; x <= cx + iRadius; ++x)
+    {
+        for (int y = cy - iRadius; y <= cy + iRadius; ++y)
+        {
+            for (int z = cz - iRadius; z <= cz + iRadius; ++z)
+            {
+                float dx = static_cast<float>(x) - wbx;
+                float dy = static_cast<float>(y) - wby;
+                float dz = static_cast<float>(z) - wbz;
+                float distSq = dx * dx + dy * dy + dz * dz;
+
+                if (distSq <= fRadiusSq)
+                {
+                    auto currentBlock = CGameInstance::Get().GetVoxelBlock(x, y, z);
+                    if (currentBlock)
+                    {
+                        if ( currentBlock->GetType() == CBlock3::TYPE::BEDROCK
+                            || currentBlock->GetType() == CBlock3::TYPE::OBSIDIAN)
+                        {
+                            continue;
+                        }
+
+                        if ( currentBlock->GetType() != CBlock3::TYPE::AIR )
+                        {
+                            CGameInstance::Get().VoxelProcessPlayerBlockSet(x, y, z, newBlock);
+                        }
+                    }
+
+                    
+                }
+            }
+        }
+    }
+}
+
 HRESULT CVoxelManager3::QueuingInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& desc)
 {
     m_queueInRangeChunkCreate.clear();

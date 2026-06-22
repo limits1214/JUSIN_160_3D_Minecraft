@@ -141,6 +141,7 @@ public:
 
 public:
 	void ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
+	void ProcessExplodeBlock(float wbx, float wby, float wbz, float fRadius);
 
 public:
 	HRESULT QueuingInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& desc);
@@ -264,7 +265,7 @@ private:
 
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 1 };
+	int32_t m_iRenderDistance{ 20 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 //public:
