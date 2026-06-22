@@ -197,6 +197,7 @@ void CLevelLoading::LoadingCheck()
 #include "PlayerFPSArm.h"
 #include "DestroyStage.h"
 #include "FallingVoxel.h"
+#include "ActivatedTNT.h"
 
 #include "Skybox.h"
 #include "Cloud.h"
@@ -398,6 +399,12 @@ HRESULT CLevelLoading::LoadingOverWorldLevel()
 
 	//CFallingVoxel
 	if (FAILED(E::CGameInstance::Get().AddPrototype("FALLING_VOXEL", "Prototype_GameObject_FallingVoxel", E::CFallingVoxel::Create())))
+	{
+		return E_FAIL;
+	}
+
+	//ActivatedTNT
+	if (FAILED(E::CGameInstance::Get().AddPrototype("ACTIVATED_TNT", "Prototype_GameObject_ActivatedTNT", E::CActivatedTNT::Create())))
 	{
 		return E_FAIL;
 	}

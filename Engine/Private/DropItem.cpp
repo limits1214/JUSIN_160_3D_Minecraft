@@ -66,6 +66,12 @@ void CDropItem::Update(E::_float fTimeDelta)
 
     for (auto& item : m_vecDropItemObjects)
     {
+        if (m_vecInstancedData.size() > m_iNumElements)
+        {
+            break;
+        }
+        item.fElapsedTime += fTimeDelta;
+
         if (m_bGravity)    VelocityUpdate(item, fTimeDelta);
         if (m_bAnimation)  AnimateTransformUpdate(item, fTimeDelta);
 

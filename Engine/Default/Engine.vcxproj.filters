@@ -580,6 +580,12 @@
     <Filter Include="GameObject\Entity\Arrow">
       <UniqueIdentifier>{cdb3c769-c8bc-4d2e-bd9d-7a789d46724c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\Voxel\ActivatedTNT">
+      <UniqueIdentifier>{f0ba2d2f-89a9-4173-9246-4fe892367e8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\ActivatedTNT">
+      <UniqueIdentifier>{c70f1d6c-11f1-42db-b081-bb1048313642}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1128,6 +1134,9 @@
     <ClInclude Include="..\public\ArrowEntity.h">
       <Filter>GameObject\Entity\Arrow</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\ActivatedTNT.h">
+      <Filter>GameObject\Voxel\ActivatedTNT</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1664,6 +1673,9 @@
     <ClCompile Include="..\private\ArrowEntity.cpp">
       <Filter>GameObject\Entity\Arrow</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\ActivatedTNT.cpp">
+      <Filter>GameObject\Voxel\ActivatedTNT</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1737,6 +1749,9 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ExperienceOrb\ExperienceOrb.hlsl">
       <Filter>100.Shaders\ExperienceOrb</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ActivatedTNT\ActivatedTNT.hlsl">
+      <Filter>100.Shaders\ActivatedTNT</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

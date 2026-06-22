@@ -229,6 +229,7 @@ call CopyClient.bat</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\public\ActivatedTNT.h" />
     <ClInclude Include="..\public\AnimalEntityObject.h" />
     <ClInclude Include="..\public\ArmorEntity.h" />
     <ClInclude Include="..\public\ArrowEntity.h" />
@@ -509,6 +510,7 @@ call CopyClient.bat</Command>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
     </ClCompile>
+    <ClCompile Include="..\private\ActivatedTNT.cpp" />
     <ClCompile Include="..\private\AnimalEntityObject.cpp" />
     <ClCompile Include="..\private\ArmorEntity.cpp" />
     <ClCompile Include="..\private\ArrowEntity.cpp" />
@@ -684,6 +686,10 @@ call CopyClient.bat</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ActivatedTNT\ActivatedTNT.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\BlockOutline\BlockOutline.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

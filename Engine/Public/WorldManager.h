@@ -1,11 +1,12 @@
 ﻿#pragma once
 #include "Engine_Defines.h"
-
+#include "FurnaceStorage.h"
+#include "ChestStorage.h" 
 #include "Timer.h"
 
 NS_BEGIN(Engine)
-class CFurnaceStorage;
-class CChestStorage;
+//class CFurnaceStorage;
+//class CChestStorage;
 class ENGINE_DLL CWorldManager final: public CEngineBase
 {
 public:

@@ -599,6 +599,9 @@ public:
 
 
 	static void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
+
+	static void DestoryBlockAfterProcess(const CItemObject::ItemInfo& info, const XMINT3& wbLocatoin);
+	static void DestoryBlockItemConverter(CItemObject::ItemInfo& info);
 	
 public:
 	typedef struct tagDesc : GAMEOBJECT_DESC

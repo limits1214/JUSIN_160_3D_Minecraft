@@ -24,6 +24,16 @@ public:
 		m_InnerHint2Size = size;
 		memcpy(m_pInnerHint2, p, size);
 	}
+	_bool UpdateInnerHint2(void* p, size_t size)
+	{
+		if (m_InnerHint2Size != size)
+		{
+			return false;
+		}
+
+		memcpy(m_pInnerHint2, p, size);
+		return true;
+	}
 	
 
 public:
