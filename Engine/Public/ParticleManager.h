@@ -65,6 +65,7 @@ public:
 public:
 	HRESULT AddParticle(PARTICLE_TYPE eType, const ATTRIBUTE& particle);
 	void Update(_float fTimeDelta);
+private:
 	void Update_BLOCK_DESTRUCT(_float fTimeDelta);
 	void Update_PARTICLES_ATLAS_DEATH_SMOKE(_float fTimeDelta);
 	void Update_PARTICLES_ATLAS_EXPLODE_SMOKE(_float fTimeDelta);

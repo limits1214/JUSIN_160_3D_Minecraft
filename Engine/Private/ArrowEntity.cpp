@@ -92,6 +92,7 @@ void CArrowEntity::Update(E::_float fTimeDelta)
 
 void CArrowEntity::LateUpdate(E::_float fTimeDelta)
 {
+
     if (auto pColls = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
     {
         for (auto& pigColl : *pColls)
@@ -114,6 +115,28 @@ void CArrowEntity::LateUpdate(E::_float fTimeDelta)
             };
         }
     }
+
+    if (false)
+    {
+        if (m_bOnGround)
+        {
+            static _float fTmp = 0;
+            fTmp += fTimeDelta;
+
+            fTmp = 0.f;
+            auto pos = GetTransform().GetPosition();
+            CGameInstance::Get().VoxelProcessExplodeBlock(pos.x, pos.y, pos.z, 10.f);
+
+            if (fTmp > 0.1f)
+            {
+            }
+
+            SetPendingDestroyCascade();
+        }
+        auto pos = GetTransform().GetPosition();
+        CGameInstance::Get().AddParticleRenderExplodeSmoke(pos, 5);
+    }
+
     UpdateArrowLiftTime(fTimeDelta);
     UpdateArrowVelocity2(fTimeDelta);
 
@@ -352,10 +375,8 @@ void CArrowEntity::UpdateArrowVelocity2(_float fTimeDelta)
 
 void CArrowEntity::Shoot(const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed)
 {
-    // 시작 위치 설정
-    GetTransform().SetPosition(vStartPos); // 엔진의 위치 세팅 함수에 맞게 수정
+    GetTransform().SetPosition(vStartPos);
 
-    // 초기 속도 벡터 설정 (방향 * 속력)
     DirectX::XMVECTOR vVelocity = DirectX::XMVector3Normalize(vDirection) * fSpeed;
     DirectX::XMStoreFloat3(&m_vVelocity, vVelocity);
     m_fSpeed = fSpeed;

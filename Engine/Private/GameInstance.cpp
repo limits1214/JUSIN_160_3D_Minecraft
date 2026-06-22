@@ -3250,6 +3250,11 @@ void CGameInstance::VoxelProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t
 	return m_pVoxelManager3->ProcessPlayerBlockSet(wbx, wby, wbz, block);
 }
 
+void CGameInstance::VoxelProcessExplodeBlock(float wx, float wy, float wz, float fRadius)
+{
+	m_pVoxelManager3->ProcessExplodeBlock(wx, wy, wz, fRadius);
+}
+
 std::optional<CBlock3> CGameInstance::GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const
 {
 	return m_pVoxelManager3->GetBlock(wbx, wby, wbz);

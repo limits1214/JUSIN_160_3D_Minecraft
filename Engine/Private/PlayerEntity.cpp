@@ -858,6 +858,8 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             CBlock3 newBlock{};
             newBlock.SetType(CBlock3::TYPE::AIR);
             CGameInstance::Get().VoxelProcessPlayerBlockSet(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, newBlock);
+
+            //CGameInstance::Get().VoxelProcessExplodeBlock(res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ, 3.f);
         
 
             CItemObject::ItemInfo ItemInfo{};
@@ -1189,7 +1191,6 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                         }
                     }
                         break;
-                    
                     }
                 }
             }
