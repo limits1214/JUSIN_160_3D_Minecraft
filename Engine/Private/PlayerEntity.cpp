@@ -542,6 +542,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 {
     ProcessActionUpdate(fTimeDelta);
 
+    ProcessHungerTimer(fTimeDelta);
 
     ProcessThrowItem(fTimeDelta);
     ProcessHandHeldItem(fTimeDelta);
@@ -4050,6 +4051,20 @@ void CPlayerEntity::ProcessUIStatusBreath(_float fTimeDelta)
     }
 }
 
+void CPlayerEntity::ProcessHungerTimer(_float fTimeDelta)
+{
+    m_fHungerTimer += fTimeDelta;
+    if (m_fHungerTimer > 10.f)
+    {
+        m_fHungerTimer = 0.f;
+
+        if (m_iHalfHunger > 0)
+        {
+            m_iHalfHunger -= 1;
+        }
+    }
+}
+
 void CPlayerEntity::ProcessArmorEntities(_float fTimeDelta)
 {
     size_t HelmetIdx = 0;
@@ -4902,11 +4917,29 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
 
                         float fAngleFactor = sinf(fSwingProgress * XM_PI); // 0.0 -> 1.0 -> 0.0 
 
-                        matGlobalSwing = XMMatrixRotationRollPitchYaw(
-                            fAngleFactor * XMConvertToRadians(90.f),
-                            0.f,
-                            0.f
-                        );
+                        if (false)
+                        {
+                            auto tmp = XMMatrixTranslation(-0.15f, -0.2f, 0.);
+
+                            auto tmp2 = XMMatrixRotationRollPitchYaw(
+                                0.f,
+                                XMConvertToRadians(-90.f),
+                                0.f
+                            );
+                            
+                            auto tmp3 = XMMatrixTranslation(-0, fAngleFactor * 0.1f, 0.);
+
+                            matGlobalSwing = tmp3 * tmp2 * tmp;
+                        }
+                        else
+                        {
+                            matGlobalSwing = XMMatrixRotationRollPitchYaw(
+                                fAngleFactor * XMConvertToRadians(90.f),
+                                0.f,
+                                0.f
+                            );
+                        }
+                        
                     }
 
 

@@ -138,7 +138,8 @@ void CParticleManager::AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt)
         att.fLifeTime = 0.7f;
         att.iTexId = PackTexId(10, 0);
         att.vPos = { pos };
-        att.vVelocity = { 0.f, +0.8f, 0.f };
+        
+        att.vVelocity = { Randf(-0.1f, 0.1f), +0.8f, Randf(-0.1f, 0.1f) };
         //att.vAcceleration = { 0.f, 0.f, 0.f };
 
         //auto tmp = rand() % 10 / 10.f;
