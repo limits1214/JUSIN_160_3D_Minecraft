@@ -125,7 +125,7 @@ void CPlayerEntity::UpdateGUI()
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCowEntity>(handle.value()))
                 {
                     pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-                    //pObj->SetPlayer(GetHandle());
+                    pObj->SetPlayer(GetHandle());
                 }
             }
         }
@@ -142,7 +142,7 @@ void CPlayerEntity::UpdateGUI()
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CChickenEntity>(handle.value()))
                 {
                     pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-                    //pObj->SetPlayer(GetHandle());
+                    pObj->SetPlayer(GetHandle());
                 }
             }
         }
@@ -445,7 +445,7 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
     m_pCenterCollider = CCollBox::Create({ 0.f, 1.f, 0.f }, { 0.25f, 0.9f, 0.25f });
     m_pCenterCollider->SetInnerPointer(this);
 
-    m_pMeleeAttackCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.5f, 0.5f, 0.5f });
+    m_pMeleeAttackCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.75f, 0.75f, 0.75f });
 
     ReadyPlayerItem();
 
@@ -697,69 +697,7 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     //}
     ProcessItemColliding(fTimeDelta);
     ProcessExpOrbColliding(fTimeDelta);
-
-    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
-    {
-        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
-        {
-            auto meleecoll = pMeleeCollGroup->front();
-            for (auto& pColl : *pCollGroup)
-            {
-                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
-                {
-                    if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
-                    {
-                        pObj->TakeDamage(1);
-                        //auto pHint = static_cast<CDropBlock::CollHint*>(pColl->GetInnerHint2());
-                        //const auto& itemInfo = pHint->iter->itemInfo;
-                        //auto* pUIController = GetUIController();
-
-                        ////if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
-                        ////{
-                        ////    pObj->GetDropItemObjects().erase(pHint->iter);
-                        ////}
-
-                        //if (SUCCEEDED(ProcessItemGain(itemInfo)))
-                        //{
-                        //    pObj->GetDropItemObjects().erase(pHint->iter);
-                        //}
-                    }
-                }
-            }
-        }
-    }
-
-    //Coll_CreeperCenter
-    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_CreeperCenter"))
-    {
-        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
-        {
-            auto meleecoll = pMeleeCollGroup->front();
-            for (auto& pColl : *pCollGroup)
-            {
-                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
-                {
-                    if (auto pObj = Cast<CCreeperEntity>(pColl->GetInnerPointer()))
-                    {
-                        pObj->TakeDamage(1);
-                        //auto pHint = static_cast<CDropBlock::CollHint*>(pColl->GetInnerHint2());
-                        //const auto& itemInfo = pHint->iter->itemInfo;
-                        //auto* pUIController = GetUIController();
-
-                        ////if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
-                        ////{
-                        ////    pObj->GetDropItemObjects().erase(pHint->iter);
-                        ////}
-
-                        //if (SUCCEEDED(ProcessItemGain(itemInfo)))
-                        //{
-                        //    pObj->GetDropItemObjects().erase(pHint->iter);
-                        //}
-                    }
-                }
-            }
-        }
-    }
+    ProcessMeleeAttackColliding(fTimeDelta);
 }
 
 HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
@@ -1933,6 +1871,126 @@ void CPlayerEntity::ProcessExpOrbColliding(_float fTimeDelta)
             }
         }
     }
+}
+
+void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
+{
+    // Coll_PigCenter
+    // Coll_CowCenter
+    // Coll_ChickenCenter
+    // Coll_ZombieCenter
+    // Coll_CreeperCenter
+    // Coll_SkeletonCenter
+
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
+    {
+        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
+        {
+            auto meleecoll = pMeleeCollGroup->front();
+            for (auto& pColl : *pCollGroup)
+            {
+                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
+                {
+                    if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
+                    {
+                        pObj->TakeDamage(1);
+                    }
+                }
+            }
+        }
+    }
+
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_CowCenter"))
+    {
+        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
+        {
+            auto meleecoll = pMeleeCollGroup->front();
+            for (auto& pColl : *pCollGroup)
+            {
+                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
+                {
+                    if (auto pObj = Cast<CCowEntity>(pColl->GetInnerPointer()))
+                    {
+                        pObj->TakeDamage(1);
+                    }
+                }
+            }
+        }
+    }
+
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_ChickenCenter"))
+    {
+        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
+        {
+            auto meleecoll = pMeleeCollGroup->front();
+            for (auto& pColl : *pCollGroup)
+            {
+                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
+                {
+                    if (auto pObj = Cast<CChickenEntity>(pColl->GetInnerPointer()))
+                    {
+                        pObj->TakeDamage(1);
+                    }
+                }
+            }
+        }
+    }
+
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_ZombieCenter"))
+    {
+        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
+        {
+            auto meleecoll = pMeleeCollGroup->front();
+            for (auto& pColl : *pCollGroup)
+            {
+                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
+                {
+                    if (auto pObj = Cast<CZombieEntity>(pColl->GetInnerPointer()))
+                    {
+                        pObj->TakeDamage(1);
+                    }
+                }
+            }
+        }
+    }
+
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_CreeperCenter"))
+    {
+        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
+        {
+            auto meleecoll = pMeleeCollGroup->front();
+            for (auto& pColl : *pCollGroup)
+            {
+                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
+                {
+                    if (auto pObj = Cast<CCreeperEntity>(pColl->GetInnerPointer()))
+                    {
+                        pObj->TakeDamage(1);
+                    }
+                }
+            }
+        }
+    }
+
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_SkeletonCenter"))
+    {
+        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
+        {
+            auto meleecoll = pMeleeCollGroup->front();
+            for (auto& pColl : *pCollGroup)
+            {
+                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
+                {
+                    if (auto pObj = Cast<CSkeletonEntity>(pColl->GetInnerPointer()))
+                    {
+                        pObj->TakeDamage(1);
+                    }
+                }
+            }
+        }
+    }
+
+    
 }
 
 //void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)

@@ -754,7 +754,46 @@ void CSkeletonEntity::Update(E::_float fTimeDelta)
         break;
 
     case SKELETON_STATE::DIE:
-        // ... (기존 사망 로직 유지되므로 가독성을 위해 생략) ...
+        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CHandHeldItemObject>(m_hHandHeld))
+        {
+            pObj->SetPendingDestroyCascade();
+        }
+
+        m_fDeathTimer += fTimeDelta;
+
+        m_pComEntityModel->ResetBonesChannel();
+        m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
+
+        constexpr float FALL_DURATION = 0.5f;
+        constexpr float TOTAL_DURATION = 1.5f;
+
+        float fFallT = std::min(m_fDeathTimer / FALL_DURATION, 1.0f);
+        float fEased = 1.f - (1.f - fFallT) * (1.f - fFallT);
+        float fRoll = XMConvertToRadians(90.f) * fEased;
+
+        // 1. Yaw 쿼터니언 (바라보는 방향 고정)
+        _vector qYaw = XMQuaternionRotationAxis(
+            XMVectorSet(0.f, 1.f, 0.f, 0.f), m_fRootRotRadY);
+
+        // 2. Yaw 적용 후 실제 Look 방향(월드 Z를 Yaw로 회전)
+        _vector vLook = XMVector3Rotate(
+            XMVectorSet(0.f, 0.f, 1.f, 0.f), qYaw);
+
+        // 3. 그 Look축을 기준으로 Roll
+        _vector qRoll = XMQuaternionRotationAxis(vLook, fRoll);
+
+        // 4. Roll * Yaw 순서로 결합 (Roll이 월드 공간에서 먼저)
+        _vector qFinal = XMQuaternionMultiply(qYaw, qRoll);
+
+        GetTransform().SetQuaternion(qFinal);
+
+        VelocityUpdate(fTimeDelta, XMVectorZero());
+
+        E::CGameInstance::Get().AddColliderGroup("Coll_SkeletonCenter", m_pCenterCollider.get());
+        m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
+
+        if (m_fDeathTimer >= TOTAL_DURATION)
+            ProcessDestroy(fTimeDelta);
         return;
     }
 
@@ -944,20 +983,44 @@ void CSkeletonEntity::LateUpdate(E::_float fTimeDelta)
 HRESULT CSkeletonEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
     {
-        auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
-        D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-        if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+        E::CB_PER_OBJECT cbPerObject{};
+        cbPerObject.matWorld = *GetTransform().GetCombinedWorldMatrix();
+        XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+
+        if (m_eCurrentState == SKELETON_STATE::DIE)
         {
+            _float fProgress = m_fDeathTimer / 1.0f; // 0.0f ~ 1.0f
 
-            E::CB_PER_OBJECT cbPerObject{};
-            cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
-            XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
-
-            memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
-            pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
+            // 시간이 흐를수록 완전히 시뻘개지도록 RGB 제어 (알파 채널을 깎으면 시각적 디스폰 효과)
+            cbPerObject.vBaseColor = _float4(1.0f, 0.05f, 0.05f, 1.0f - fProgress);
         }
-        pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-        pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
+        else if (m_bIsHit)
+        {
+            cbPerObject.vBaseColor = _float4(1.f, 0.2f, 0.2f, 1.f); // 피격 깜빡임
+        }
+        else
+        {
+            cbPerObject.vBaseColor = _float4(1.f, 1.f, 1.f, 1.f);
+        }
+
+
+        // 복셀 라이팅 값 바인딩 로직
+        auto pos = GetTransform().GetPosition();
+        int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+        int32_t blockY = static_cast<int32_t>(std::floor(pos.y));
+        int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+        blockY += 1.8f;
+        if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+        {
+            cbPerObject.light = optCurrBlock->GetLight();
+        }
+
+        if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+        {
+            return E_FAIL;
+        }
+        pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+        pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
     }
 
     m_pComEntityModel->BindBoneMatrix(pContext);
@@ -1117,6 +1180,8 @@ void CSkeletonEntity::TakeDamage(uint32_t iDamage)
 void CSkeletonEntity::ProcessDestroy(_float fTimeDelta)
 {
     SetPendingDestroyCascade();
+    
+
     if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CExperienceOrb>("56_ExperienceOrb"))
     {
         auto pos = GetTransform().GetPosition();

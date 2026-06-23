@@ -6,9 +6,145 @@
 #include "CollSphere.h"
 #include "PigEntity.h"
 #include "PlayerEntity.h"
+#include "SkeletonEntity.h"
+#include "CreeperEntity.h"
+#include "ChickenEntity.h"
+#include "ZombieEntity.h"
+#include "CowEntity.h"
+
+
 NS_USING(Engine)
 CActivatedTNT::CActivatedTNT()
 {
+}
+
+
+void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadius, uint32_t iExplodeSmokeParticleCnt)
+{
+	CGameInstance::Get().VoxelProcessExplodeBlock(vPos.x, vPos.y, vPos.z, fExplodeRadius);
+	CGameInstance::Get().AddParticleRenderExplodeSmoke(vPos, iExplodeSmokeParticleCnt);
+
+	auto tmpColl = CCollSphere::Create({ vPos.x, vPos.y, vPos.z }, fExplodeRadius);
+	{
+		if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
+		{
+			for (auto& pColl : *pCollGroup)
+			{
+				if (pColl->Intersect(*tmpColl))
+				{
+					if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
+					{
+						pObj->TakeDamage(10);
+					}
+				}
+
+			}
+		}
+	}
+
+	{
+		//Coll_PlayerCenter
+		if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerCenter"))
+		{
+			for (auto& pColl : *pCollGroup)
+			{
+				if (pColl->Intersect(*tmpColl))
+				{
+					if (auto pObj = Cast<CPlayerEntity>(pColl->GetInnerPointer()))
+					{
+						pObj->TakeDamage(10);
+					}
+				}
+
+			}
+		}
+	}
+
+	{
+		if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_ChickenCenter"))
+		{
+			for (auto& pColl : *pCollGroup)
+			{
+				if (pColl->Intersect(*tmpColl))
+				{
+					if (auto pObj = Cast<CChickenEntity>(pColl->GetInnerPointer()))
+					{
+						pObj->TakeDamage(10);
+					}
+				}
+
+			}
+		}
+	}
+
+	{
+		if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_CowCenter"))
+		{
+			for (auto& pColl : *pCollGroup)
+			{
+				if (pColl->Intersect(*tmpColl))
+				{
+					if (auto pObj = Cast<CCowEntity>(pColl->GetInnerPointer()))
+					{
+						pObj->TakeDamage(10);
+					}
+				}
+
+			}
+		}
+	}
+
+	{
+		if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_ZombieCenter"))
+		{
+			for (auto& pColl : *pCollGroup)
+			{
+				if (pColl->Intersect(*tmpColl))
+				{
+					if (auto pObj = Cast<CZombieEntity>(pColl->GetInnerPointer()))
+					{
+						pObj->TakeDamage(10);
+					}
+				}
+
+			}
+		}
+	}
+
+	{
+		if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_CreeperCenter"))
+		{
+			for (auto& pColl : *pCollGroup)
+			{
+				if (pColl->Intersect(*tmpColl))
+				{
+					if (auto pObj = Cast<CCreeperEntity>(pColl->GetInnerPointer()))
+					{
+						pObj->TakeDamage(10);
+					}
+				}
+
+			}
+		}
+	}
+
+	{
+		if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_SkeletonCenter"))
+		{
+			for (auto& pColl : *pCollGroup)
+			{
+				if (pColl->Intersect(*tmpColl))
+				{
+					if (auto pObj = Cast<CSkeletonEntity>(pColl->GetInnerPointer()))
+					{
+						pObj->TakeDamage(10);
+					}
+				}
+
+			}
+		}
+	}
+
 }
 
 CActivatedTNT::CActivatedTNT(const CActivatedTNT& rhs)
@@ -116,46 +252,7 @@ void CActivatedTNT::LateUpdate(E::_float fTimeDelta)
 
 		if (block.fElapsedTime > block.fTargetFuseTime)
 		{
-			CGameInstance::Get().VoxelProcessExplodeBlock(block.vPos.x, block.vPos.y, block.vPos.z, 4.f);
-			CGameInstance::Get().AddParticleRenderExplodeSmoke(block.vPos, 25);
-
-
-			{
-				if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
-				{
-					for (auto& pColl : *pCollGroup)
-					{
-						auto tmpColl = CCollSphere::Create({ block.vPos.x, block.vPos.y, block.vPos.z }, 4);
-						if (pColl->Intersect(*tmpColl))
-						{
-							if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
-							{
-								pObj->TakeDamage(10);
-							}
-						}
-
-					}
-				}
-			}
-
-			{
-				//Coll_PlayerCenter
-				if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerCenter"))
-				{
-					for (auto& pColl : *pCollGroup)
-					{
-						auto tmpColl = CCollSphere::Create({ block.vPos.x, block.vPos.y, block.vPos.z }, 4);
-						if (pColl->Intersect(*tmpColl))
-						{
-							if (auto pObj = Cast<CPlayerEntity>(pColl->GetInnerPointer()))
-							{
-								pObj->TakeDamage(10);
-							}
-						}
-
-					}
-				}
-			}
+			ExplodeAndDamageColliding(block.vPos, 4.f, 25);
 
 			// tnt 밀어내기
 			{

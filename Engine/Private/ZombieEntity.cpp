@@ -9,6 +9,9 @@
 
 #include "CollBox.h"
 
+#include "ExperienceOrb.h"
+#include "ItemObject.h"
+
 NS_USING(Engine)
 
 
@@ -336,12 +339,12 @@ void CZombieEntity::Update(E::_float fTimeDelta)
 
         VelocityUpdate(fTimeDelta, XMVectorZero());
 
-        E::CGameInstance::Get().AddColliderGroup("Coll_PigCenter", m_pCenterCollider.get());
+        E::CGameInstance::Get().AddColliderGroup("Coll_ZombieCenter", m_pCenterCollider.get());
         m_pCenterCollider->Transform(GetTransform().GetLoadedWorldMatrix());
 
         if (m_fDeathTimer >= TOTAL_DURATION)
             ProcessDestroy(fTimeDelta);
-        break;
+        return;
     }
 
     m_pComEntityModel->ResetBonesChannel();
@@ -536,20 +539,44 @@ void CZombieEntity::LateUpdate(E::_float fTimeDelta)
 HRESULT CZombieEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
     {
-        auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
-        D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-        if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+        E::CB_PER_OBJECT cbPerObject{};
+        cbPerObject.matWorld = *GetTransform().GetCombinedWorldMatrix();
+        XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
+
+        if (m_eCurrentState == ZOMBIE_STATE::DIE)
         {
+            _float fProgress = m_fDeathTimer / 1.0f; // 0.0f ~ 1.0f
 
-            E::CB_PER_OBJECT cbPerObject{};
-            cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
-            XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
-
-            memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
-            pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
+            // 시간이 흐를수록 완전히 시뻘개지도록 RGB 제어 (알파 채널을 깎으면 시각적 디스폰 효과)
+            cbPerObject.vBaseColor = _float4(1.0f, 0.05f, 0.05f, 1.0f - fProgress);
         }
-        pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
-        pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
+        else if (m_bIsHit)
+        {
+            cbPerObject.vBaseColor = _float4(1.f, 0.2f, 0.2f, 1.f); // 피격 깜빡임
+        }
+        else
+        {
+            cbPerObject.vBaseColor = _float4(1.f, 1.f, 1.f, 1.f);
+        }
+
+
+        // 복셀 라이팅 값 바인딩 로직
+        auto pos = GetTransform().GetPosition();
+        int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+        int32_t blockY = static_cast<int32_t>(std::floor(pos.y));
+        int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+        blockY += 1.8f;
+        if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+        {
+            cbPerObject.light = optCurrBlock->GetLight();
+        }
+
+        if (FAILED(m_pComCBufferPerObject->MapDiscard(pContext, &cbPerObject, sizeof(cbPerObject))))
+        {
+            return E_FAIL;
+        }
+        pContext->VSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
+        pContext->PSSetConstantBuffers(0, 1, m_pComCBufferPerObject->GetAdressOfBuffer());
     }
 
     m_pComEntityModel->BindBoneMatrix(pContext);
@@ -668,10 +695,59 @@ void CZombieEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
 
 void CZombieEntity::TakeDamage(uint32_t iDamage)
 {
+    if (m_eCurrentState == ZOMBIE_STATE::DIE) return; // 이미 죽었거나 피격 쿨타임 중이면 무시
+
+    m_bIsHit = true;
+    m_fHitTimer = 0.3f; // 0.3초간 빨갛게 물듦
+
+    // 마크 고증: 맞으면 살짝 위+바깥으로 팅겨나가는 넉백 추가
+    XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
+    vVel = XMVectorSetY(vVel, 5.0f); // 수직 점프 넉백
+    XMStoreFloat3(&m_vVelocity, vVel);
+
+    m_bOnGround = false;
+
+    m_iHeart -= iDamage;
+
+    if (m_iHeart <= 0)
+    {
+        m_eCurrentState = ZOMBIE_STATE::DIE;
+        m_fDeathTimer = 0.f;
+
+
+        m_fTargetYaw = m_fRootRotRadY;
+
+
+        auto pHeadBone = m_pComEntityModel->GetBone("head");
+        if (pHeadBone)
+        {
+            pHeadBone->SetRotation({ 0.f, 0.f, 0.f });
+        }
+
+        // 만약 CComAnimator 내부에 머리 회전용 쿼터니언 변수(m_vCurrentHeadRotQuat)를 쓰신다면
+        // 여기서 함께 XMQuaternionIdentity() 등으로 초기화해주면 더욱 안전합니다.
+    }
 }
 
 void CZombieEntity::ProcessDestroy(_float fTimeDelta)
 {
+    SetPendingDestroyCascade();
+    if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CExperienceOrb>("56_ExperienceOrb"))
+    {
+        auto pos = GetTransform().GetPosition();
+        pos.x += 0.f;
+        pos.y += 0.55f;
+        pObj->AddOrb(pos, {}, rand() % 16, 0.3f);
+    }
+
+    CGameInstance::Get().AddParticleRenderDeathSmoke(GetTransform().GetPosition(), 10);
+
+    //CItemObject::ItemInfo info{};
+//info.eItemType = CItemObject::ITEM_TYPE::ITEM_Gunpowder;
+//info.iCnt = 1;
+//_float3 startPos{ GetTransform().GetPosition() };
+//startPos.y += 1.f;
+//CItemObject::SpawnDropItemObject(info, startPos, { 0.f, 2.f, 0.f });
 }
 
 UPtr<CZombieEntity> CZombieEntity::Create()

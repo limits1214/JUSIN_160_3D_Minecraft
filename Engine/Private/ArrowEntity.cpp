@@ -8,6 +8,15 @@
 #include "CollBox.h"
 
 #include "PigEntity.h"
+#include "PlayerEntity.h"
+#include "SkeletonEntity.h"
+#include "CreeperEntity.h"
+#include "ChickenEntity.h"
+#include "ZombieEntity.h"
+#include "CowEntity.h"
+
+#include "ActivatedTNT.h"
+
 NS_USING(Engine)
 
 CArrowEntity::CArrowEntity()
@@ -92,29 +101,8 @@ void CArrowEntity::Update(E::_float fTimeDelta)
 
 void CArrowEntity::LateUpdate(E::_float fTimeDelta)
 {
-
-    if (auto pColls = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
-    {
-        for (auto& pigColl : *pColls)
-        {
-            if (CGameInstance::Get().IntersectColl(pigColl, m_pHeadCollider.get()))
-            {
-               
-                if (auto pPigEntity = Cast<CPigEntity>(pigColl->GetInnerPointer()))
-                {
-                   //GetTransform().SetPosition(pPigEntity->GetTransform().GetLoadedPostion());
-                    //GetTransform().SetParentWorldMatrix(*pPigEntity->GetTransform().GetCombinedWorldMatrix());
-                  
-                   if (!m_bOnGround)
-                   {
-                       pPigEntity->TakeDamage(3);
-                   }
-                }
-
-                //m_bOnGround = true;
-            };
-        }
-    }
+    ProcessArrowDamage(fTimeDelta);
+    
 
     if (true)
     {
@@ -125,12 +113,14 @@ void CArrowEntity::LateUpdate(E::_float fTimeDelta)
 
             fTmp = 0.f;
             auto pos = GetTransform().GetPosition();
-            CGameInstance::Get().VoxelProcessExplodeBlock(pos.x, pos.y, pos.z, 5.f);
 
-            if (fTmp > 0.1f)
-            {
-            }
-            CGameInstance::Get().AddParticleRenderExplodeSmoke(pos, 5);
+            CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, 15.f);
+            //CGameInstance::Get().VoxelProcessExplodeBlock(pos.x, pos.y, pos.z, 5.f);
+
+            //if (fTmp > 0.1f)
+            //{
+            //}
+            //CGameInstance::Get().AddParticleRenderExplodeSmoke(pos, 5);
             SetPendingDestroyCascade();
         }
         auto pos = GetTransform().GetPosition();
@@ -172,6 +162,130 @@ HRESULT CArrowEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 
     m_pComEntityModel->Render(pContext, ctx);
     return S_OK;
+}
+
+void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
+{
+    // Coll_PigCenter
+    // Coll_CowCenter
+    // Coll_ChickenCenter
+    // Coll_ZombieCenter
+    // Coll_CreeperCenter
+    // Coll_SkeletonCenter
+
+    if (auto pColls = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
+    {
+        for (auto& pigColl : *pColls)
+        {
+            if (CGameInstance::Get().IntersectColl(pigColl, m_pHeadCollider.get()))
+            {
+
+                if (auto pPigEntity = Cast<CPigEntity>(pigColl->GetInnerPointer()))
+                {
+
+                    if (!m_bOnGround)
+                    {
+                        pPigEntity->TakeDamage(3);
+                    }
+                }
+            };
+        }
+    }
+
+    if (auto pColls = CGameInstance::Get().GetColliderGroup("Coll_ChickenCenter"))
+    {
+        for (auto& pigColl : *pColls)
+        {
+            if (CGameInstance::Get().IntersectColl(pigColl, m_pHeadCollider.get()))
+            {
+
+                if (auto pPigEntity = Cast<CChickenEntity>(pigColl->GetInnerPointer()))
+                {
+
+                    if (!m_bOnGround)
+                    {
+                        pPigEntity->TakeDamage(3);
+                    }
+                }
+            };
+        }
+    }
+
+    if (auto pColls = CGameInstance::Get().GetColliderGroup("Coll_CowCenter"))
+    {
+        for (auto& pigColl : *pColls)
+        {
+            if (CGameInstance::Get().IntersectColl(pigColl, m_pHeadCollider.get()))
+            {
+
+                if (auto pPigEntity = Cast<CCowEntity>(pigColl->GetInnerPointer()))
+                {
+
+                    if (!m_bOnGround)
+                    {
+                        pPigEntity->TakeDamage(3);
+                    }
+                }
+            };
+        }
+    }
+
+    if (auto pColls = CGameInstance::Get().GetColliderGroup("Coll_ZombieCenter"))
+    {
+        for (auto& pigColl : *pColls)
+        {
+            if (CGameInstance::Get().IntersectColl(pigColl, m_pHeadCollider.get()))
+            {
+
+                if (auto pPigEntity = Cast<CZombieEntity>(pigColl->GetInnerPointer()))
+                {
+
+                    if (!m_bOnGround)
+                    {
+                        pPigEntity->TakeDamage(3);
+                    }
+                }
+            };
+        }
+    }
+
+    if (auto pColls = CGameInstance::Get().GetColliderGroup("Coll_CreeperCenter"))
+    {
+        for (auto& pigColl : *pColls)
+        {
+            if (CGameInstance::Get().IntersectColl(pigColl, m_pHeadCollider.get()))
+            {
+
+                if (auto pPigEntity = Cast<CCreeperEntity>(pigColl->GetInnerPointer()))
+                {
+
+                    if (!m_bOnGround)
+                    {
+                        pPigEntity->TakeDamage(3);
+                    }
+                }
+            };
+        }
+    }
+
+    if (auto pColls = CGameInstance::Get().GetColliderGroup("Coll_SkeletonCenter"))
+    {
+        for (auto& pigColl : *pColls)
+        {
+            if (CGameInstance::Get().IntersectColl(pigColl, m_pHeadCollider.get()))
+            {
+
+                if (auto pPigEntity = Cast<CSkeletonEntity>(pigColl->GetInnerPointer()))
+                {
+
+                    if (!m_bOnGround)
+                    {
+                        pPigEntity->TakeDamage(3);
+                    }
+                }
+            };
+        }
+    }
 }
 
 void CArrowEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
