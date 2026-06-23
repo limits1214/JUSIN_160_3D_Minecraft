@@ -159,7 +159,7 @@ void CPlayerEntity::UpdateGUI()
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CSkeletonEntity>(handle.value()))
                 {
                     pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-                    //pObj->SetPlayer(GetHandle());
+                    pObj->SetPlayer(GetHandle());
                 }
             }
         }
@@ -176,7 +176,7 @@ void CPlayerEntity::UpdateGUI()
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CZombieEntity>(handle.value()))
                 {
                     pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-                    //pObj->SetPlayer(GetHandle());
+                    pObj->SetPlayer(GetHandle());
                 }
             }
         }
@@ -193,7 +193,7 @@ void CPlayerEntity::UpdateGUI()
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCreeperEntity>(handle.value()))
                 {
                     pObj->GetTransform().SetPosition(GetTransform().GetLoadedPostion());
-                    //pObj->SetPlayer(GetHandle());
+                    pObj->SetPlayer(GetHandle());
                 }
             }
         }
@@ -727,9 +727,39 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
                 }
             }
         }
-        
     }
 
+    //Coll_CreeperCenter
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_CreeperCenter"))
+    {
+        if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
+        {
+            auto meleecoll = pMeleeCollGroup->front();
+            for (auto& pColl : *pCollGroup)
+            {
+                if (CGameInstance::Get().IntersectColl(pColl, meleecoll))
+                {
+                    if (auto pObj = Cast<CCreeperEntity>(pColl->GetInnerPointer()))
+                    {
+                        pObj->TakeDamage(1);
+                        //auto pHint = static_cast<CDropBlock::CollHint*>(pColl->GetInnerHint2());
+                        //const auto& itemInfo = pHint->iter->itemInfo;
+                        //auto* pUIController = GetUIController();
+
+                        ////if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
+                        ////{
+                        ////    pObj->GetDropItemObjects().erase(pHint->iter);
+                        ////}
+
+                        //if (SUCCEEDED(ProcessItemGain(itemInfo)))
+                        //{
+                        //    pObj->GetDropItemObjects().erase(pHint->iter);
+                        //}
+                    }
+                }
+            }
+        }
+    }
 }
 
 HRESULT CPlayerEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
@@ -1738,7 +1768,7 @@ void CPlayerEntity::ProcessHandHeldItem(float fTimeDelta)
                 pHandHeldObj->SetVIBufferID({ "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(hotbarItemInfo.value()) });
 
                 pHandHeldObj->SetLight(iLight);
-                pHandHeldObj->SetPlayerHandle(GetHandle());
+                //pHandHeldObj->SetPlayerHandle(GetHandle());
 
             }
             else
@@ -1786,7 +1816,7 @@ void CPlayerEntity::ProcessHandHeldItem(float fTimeDelta)
                 pHandHeldObj->SetVIBufferID({ "MC_ITEM_VIBuffer",  CDropItemObject::GetVIBufferName(hotbarItemInfo.value()) });
 
                 pHandHeldObj->SetLight(iLight);
-                pHandHeldObj->SetPlayerHandle(GetHandle());
+                //pHandHeldObj->SetPlayerHandle(GetHandle());
 
             }
             else
