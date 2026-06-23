@@ -13,6 +13,8 @@
 
 #include "ExperienceOrb.h"
 #include "ItemObject.h"
+
+#include "ActivatedTNT.h"
 NS_USING(Engine)
 
 
@@ -309,7 +311,7 @@ void CCreeperEntity::Update(E::_float fTimeDelta)
 
         if (m_fDeathTimer >= TOTAL_DURATION)
             ProcessDestroy(fTimeDelta);
-        break;
+        return;
     }
 
     m_pComEntityModel->ResetBonesChannel();
@@ -767,8 +769,10 @@ void CCreeperEntity::ExplodeUpdate(_float fTimeDelta)
     SetPendingDestroyCascade();
     auto pos = GetTransform().GetPosition();
     //pos.y += 1.8f;
-    CGameInstance::Get().VoxelProcessExplodeBlock(pos.x, pos.y, pos.z, 10.f);
-    CGameInstance::Get().AddParticleRenderExplodeSmoke(pos, 25);
+    //CGameInstance::Get().VoxelProcessExplodeBlock(pos.x, pos.y, pos.z, 10.f);
+    //CGameInstance::Get().AddParticleRenderExplodeSmoke(pos, 25);
+   
+    CActivatedTNT::ExplodeAndDamageColliding(pos, 10, 100);
 }
 
 void CCreeperEntity::TakeDamage(uint32_t iDamage)

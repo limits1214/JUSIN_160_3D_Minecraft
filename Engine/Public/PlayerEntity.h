@@ -124,6 +124,7 @@ private:
 private:
 	void ProcessItemColliding(_float fTimeDelta);
 	void ProcessExpOrbColliding(_float fTimeDelta);
+	void ProcessMeleeAttackColliding(_float fTimeDelta);
 
 private:
 	void PlayerCameraTrace(_float fTimeDelta);

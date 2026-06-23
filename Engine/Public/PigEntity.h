@@ -43,6 +43,7 @@ protected:
 	_float m_fSpeed{5.f};
 	_bool m_bOnGround{};
 	_float m_fRootRotY{ 0.f };
+
 private:
 	CComEntityModel* m_pComEntityModel{};
 	CComAnimator* m_pComAnimator{ };

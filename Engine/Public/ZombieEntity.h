@@ -74,7 +74,7 @@ private:
 public:
 	void TakeDamage(uint32_t iDamage);
 private:
-	uint32_t m_iHeart{ 5 };
+	int32_t m_iHeart{ 5 };
 	_float m_fDeathTimer{};
 
 private:
