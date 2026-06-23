@@ -63,12 +63,12 @@ public:
 		m_viBufferID = id;
 	}
 	void SetRender(_bool b) { m_bRender = b; }
-	void SetPlayerHandle(CHandle h) { m_hPlayerHandle = h; }
+	//void SetPlayerHandle(CHandle h) { m_hPlayerHandle = h; }
 	void SetLight(uint8_t l) { m_iLight = l; }
 protected:
 	//CItemObject::ItemInfo m_ItemInfo{};
 	_bool m_bRender{ false };
-	CHandle m_hPlayerHandle{};
+	//CHandle m_hPlayerHandle{};
 	uint8_t m_iLight{0xFF};
 
 

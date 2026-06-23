@@ -116,7 +116,7 @@ void CArrowEntity::LateUpdate(E::_float fTimeDelta)
         }
     }
 
-    if (false)
+    if (true)
     {
         if (m_bOnGround)
         {
@@ -125,16 +125,16 @@ void CArrowEntity::LateUpdate(E::_float fTimeDelta)
 
             fTmp = 0.f;
             auto pos = GetTransform().GetPosition();
-            CGameInstance::Get().VoxelProcessExplodeBlock(pos.x, pos.y, pos.z, 10.f);
+            CGameInstance::Get().VoxelProcessExplodeBlock(pos.x, pos.y, pos.z, 5.f);
 
             if (fTmp > 0.1f)
             {
             }
-
+            CGameInstance::Get().AddParticleRenderExplodeSmoke(pos, 5);
             SetPendingDestroyCascade();
         }
         auto pos = GetTransform().GetPosition();
-        CGameInstance::Get().AddParticleRenderExplodeSmoke(pos, 5);
+        
     }
 
     UpdateArrowLiftTime(fTimeDelta);

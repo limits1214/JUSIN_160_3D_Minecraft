@@ -113,10 +113,10 @@ void CHandHeldItem::LateUpdate(E::_float fTimeDelta)
         E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
     }
    
-    if (auto pPlayer = CGameInstance::Get().GetGameObjectByHandleT<CPlayerEntity>(m_hPlayerHandle))
-    {
-        //GetTransform().SetParentWorldMatrix(*pPlayer->GetTransform().GetWorldMatrix());
-    }
+    //if (auto pPlayer = CGameInstance::Get().GetGameObjectByHandleT<CPlayerEntity>(m_hPlayerHandle))
+    //{
+    //    //GetTransform().SetParentWorldMatrix(*pPlayer->GetTransform().GetWorldMatrix());
+    //}
     GetTransform().Update();
 }
 
