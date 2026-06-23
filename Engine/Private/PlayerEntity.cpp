@@ -4453,7 +4453,7 @@ void CPlayerEntity::ProcessHungerTimer(_float fTimeDelta)
     if (!m_bDeath)
     {
         m_fHungerTimer += fTimeDelta;
-        if (m_fHungerTimer > 0.5f)
+        if (m_fHungerTimer > 5.f)
         {
             m_fHungerTimer = 0.f;
 
@@ -4466,7 +4466,7 @@ void CPlayerEntity::ProcessHungerTimer(_float fTimeDelta)
         {
             m_fHungerDamageTimer += fTimeDelta;
 
-            if (m_fHungerDamageTimer > 0.5f)
+            if (m_fHungerDamageTimer > 1.f)
             {
                 m_fHungerDamageTimer = 0.f;
                 TakeDamage(1);
