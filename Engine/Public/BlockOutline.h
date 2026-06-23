@@ -28,6 +28,12 @@ private:
 private:
 	_bool m_bRender{ true };
 
+
+public:
+	void SetPlayer(CHandle h) { m_hPlayer = h; }
+private:
+	CHandle m_hPlayer{};
+
 public:
 	static UPtr<CBlockOutline> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

@@ -315,7 +315,7 @@ void CPigEntity::ProcessDestroy(_float fTimeDelta)
         auto pos = GetTransform().GetPosition();
         pos.x += 0.f;
         pos.y += 0.55f;
-        pObj->AddOrb(pos, {}, rand() % 16);
+        pObj->AddOrb(pos, {}, rand() % 16, 0.3f);
     }
 
     CGameInstance::Get().AddParticleRenderDeathSmoke(GetTransform().GetPosition(), 10);

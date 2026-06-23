@@ -140,11 +140,21 @@ HRESULT CLevelOverWorld::Initialize()
 		{
 			if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CPlayerEntity>(playerHandle.value()))
 			{
-				
+				//block outline
+				{
+					//CBlockOutline
+					E::CGameObject::GAMEOBJECT_DESC Desc{};
+					Desc.sObjectTag = "BlockOutline";
 
-
-				
-
+					if (auto outlineHandle = E::CGameInstance::Get().AddGameObjectToLayer("BLOCK_OUTLINE", "Prototype_GameObject_BlockOutline",
+						"81_BlockOutline", &Desc))
+					{
+						if (auto pOutlineObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CBlockOutline>(outlineHandle.value()))
+						{
+							pOutlineObj->SetPlayer(playerHandle.value());
+						}
+					}
+				}
 
 				{
 					// destroy stage
@@ -285,6 +295,9 @@ HRESULT CLevelOverWorld::Initialize()
 					{
 					}
 				}
+
+
+
 			}
 		}
 	}
@@ -425,17 +438,7 @@ HRESULT CLevelOverWorld::Initialize()
 		//E::CGameInstance::Get().getga
 	}
 
-	//block outline
-	{
-		//CBlockOutline
-		E::CGameObject::GAMEOBJECT_DESC Desc{};
-		Desc.sObjectTag = "BlockOutline";
 
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("BLOCK_OUTLINE", "Prototype_GameObject_BlockOutline",
-			"81_BlockOutline", &Desc))
-		{
-		}
-	}
 
 	
 	//skybox

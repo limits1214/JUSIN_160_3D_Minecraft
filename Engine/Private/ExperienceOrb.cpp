@@ -4,6 +4,7 @@
 #include "CameraObject.h"
 #include "CollBox.h"
 #include "ComConstantBuffer.h"
+#include "PlayerEntity.h"
 NS_USING(Engine)
 
 CExperienceOrb::CExperienceOrb()
@@ -60,9 +61,8 @@ void CExperienceOrb::PriorityUpdate(E::_float fTimeDelta)
 
 void CExperienceOrb::Update(E::_float fTimeDelta)
 {
-	CGameObject* pPlayerObj = CGameInstance::Get().GetGameObjectByHandle(m_hPlayer);
+	CPlayerEntity* pPlayerObj = CGameInstance::Get().GetGameObjectByHandleT<CPlayerEntity>(m_hPlayer);
 
-	//  발밑이 아닌 가슴/몸통 쪽으로 날아오도록 Y축을 살짝 올려줍니다.
 	_float3 playerPos = pPlayerObj->GetTransform().GetPosition();
 	playerPos.y += 1.0f;
 	XMVECTOR vTargetPos = XMLoadFloat3(&playerPos);
@@ -86,22 +86,25 @@ void CExperienceOrb::Update(E::_float fTimeDelta)
 		float fDist = XMVectorGetX(XMVector3Length(vToPlayer));
 
 		// 자석 거리 판정 (예: 6블록 이내면 끌려감)
-		_bool bMagnet = (fDist < 6.0f);
+		_bool bMagnet = pPlayerObj->GetDeath() ? false : (fDist < 6.0f);
 
-		// 3. 물리 및 이동 업데이트 (다가가는 로직 실행)
+		// 물리 및 이동 업데이트 (다가가는 로직 실행)
 		VelocityUpdate(item, fTimeDelta, bMagnet, vToPlayer);
 
 		// 개별 오브 타이머 진행
 		item.fBobTime += fTimeDelta;
 
+		
+
 		// 빌보드 행렬 조립
 		_matrix matBillboard = XMMatrixIdentity();
-		matBillboard.r[0] = XMVectorSetW(vCamRight * scale.x, 0.f);
-		matBillboard.r[1] = XMVectorSetW(vCamUp * scale.y, 0.f);
-		matBillboard.r[2] = XMVectorSetW(vCamLook * scale.z, 0.f);
+		matBillboard.r[0] = XMVectorSetW(vCamRight * scale.x * item.fExp, 0.f);
+		matBillboard.r[1] = XMVectorSetW(vCamUp * scale.y * item.fExp, 0.f);
+		matBillboard.r[2] = XMVectorSetW(vCamLook * scale.z * item.fExp, 0.f);
 
 		//_matrix matBob = XMMatrixTranslation(0.f, item.fBobYOffset, 0.f);
 		_matrix matTranslation = XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z);
+		//_matrix matScale = XMMatrixScaling(0.1f, 0.1f, 0.1f);
 
 		XMStoreFloat4x4(&item.matWorld, matBillboard *  matTranslation);
 
@@ -190,12 +193,13 @@ HRESULT CExperienceOrb::Render(ID3D11DeviceContext* pContext, const E::RENDER_CT
 	return S_OK;
 }
 
-void CExperienceOrb::AddOrb(const _float3& vPos, const _float3& vVelocity, uint32_t iType)
+void CExperienceOrb::AddOrb(const _float3& vPos, const _float3& vVelocity, uint32_t iType, _float fExp)
 {
 	InstancedExpOrbDesc Desc{};
 	Desc.vPos = vPos;
 	Desc.vVelocity = vVelocity;
 	Desc.iType = iType;
+	Desc.fExp = fExp;
 	Desc.boxCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.25f, 0.25f, 0.25f });
 	Desc.boxCollider->SetInnerPointer(this);
 	Desc.boxCollider->SetInnerHint("CDropBlock");
@@ -215,14 +219,14 @@ void CExperienceOrb::VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDe
 		//  자석 모드: 기존 물리(중력/마찰) 무시하고 플레이어를 향해 가속
 		XMVECTOR vDir = XMVector3Normalize(vToPlayer);
 
-		// 점점 빨라지도록 가속도 부여 (수치는 취향껏 조절, 현재 초당 35.0f 가속)
+		// 점점 빨라지도록 가속도
 		vVel += vDir * 35.0f * fTimeDelta;
 
-		// 너무 총알처럼 날아가지 않게 최대 속도 제한
+		// 최대 속도 제한
 		float fSpeed = XMVectorGetX(XMVector3Length(vVel));
-		if (fSpeed > 15.0f)
+		if (fSpeed > 10.0f)
 		{
-			vVel = vDir * 15.0f;
+			vVel = vDir * 10.0f;
 		}
 		item.bOnGround = false; // 끌려갈 때는 공중에 뜸
 	}

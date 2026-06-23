@@ -22,6 +22,17 @@ public:
 	void Update(E::_float fTimeDelta) override;
 	void LateUpdate(E::_float fTimeDelta) override;
 
+	void TriggerCameraShake(_float fDuration, _float fIntensity)
+	{
+		m_fShakeTimer = fDuration;
+		m_fShakeDuration = fDuration;
+		m_fShakeIntensity = fIntensity;
+	}
+private:
+	_float m_fShakeTimer = 0.f;     // 현재 남은 흔들림 시간
+	_float m_fShakeDuration = 0.f;  // 전체 흔들림 시간 (감쇠 비율 계산용)
+	_float m_fShakeIntensity = 0.f; // 흔들림의 최대 강도
+
 //private:
 //	void MouseFix() const;
 //private:
