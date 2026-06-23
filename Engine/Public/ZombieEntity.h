@@ -55,6 +55,7 @@ protected:
 
 	_float m_fLifeTime{};
 	_float m_fAttackTime{};
+	_float m_fAttackDelay{};
 	_bool m_bAttack{false};
 
 private:
