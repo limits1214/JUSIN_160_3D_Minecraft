@@ -193,7 +193,7 @@ void CZombieEntity::Update(E::_float fTimeDelta)
         }
     }
 
-
+    m_bAttack = false;
     _float fDistToPlayer = pPlayer ? XMVectorGetX(XMVector3Length(vPlayerPos - vCreeperPos)) : 999.f;
     switch (m_eCurrentState)
     {
@@ -261,13 +261,13 @@ void CZombieEntity::Update(E::_float fTimeDelta)
     case ZOMBIE_STATE::CHASE_PLAYER:
         m_fSpeed = 3.5f;
 
-        m_fWalkTime += fTimeDelta * 7.0f;
-        m_fWalkWeight += (1.0f - m_fWalkWeight) * fTimeDelta * 8.0f;
+
 
         if (fDistToPlayer >= fPlayerDetectDist) {
             m_eCurrentState = ZOMBIE_STATE::IDLE;
             m_fStateTimer = 1.f + (rand() % 30) * 0.1f; // 1~4초 쉬기
 
+            m_fAttackTime = 0.f;
         }
         else
         {
@@ -279,7 +279,11 @@ void CZombieEntity::Update(E::_float fTimeDelta)
 
                 m_fAttackTime += fTimeDelta;
 
-
+                m_fWalkWeight += (0.0f - m_fWalkWeight) * fTimeDelta * 8.0f;
+                if (m_fWalkWeight < 0.001f) {
+                    m_fWalkWeight = 0.0f;
+                    m_fWalkTime = 0.0f;
+                }
             }
             else
             {
@@ -287,6 +291,8 @@ void CZombieEntity::Update(E::_float fTimeDelta)
                 m_fWalkWeight += (1.0f - m_fWalkWeight) * fTimeDelta * 8.0f;
                 // 다가가기
                 m_fSpeed = 3.5f;
+
+                m_fAttackTime = 0.f;
             }
 
             {
@@ -406,6 +412,36 @@ void CZombieEntity::Update(E::_float fTimeDelta)
     }
 
 
+    //if (CGameInstance::Get().KeyPressing(DIK_SPACE)) // (기존 코드에 있던 키 입력 변수 가정)
+    //{
+    //    s_fAttackTime += fTimeDelta * 2.f; // 공격 속도
+    //    if (s_fAttackTime > 1.0f) s_fAttackTime = 1.0f;
+    //}
+    //else
+    //{
+    //    s_fAttackTime -= fTimeDelta * 2.f; // 되돌아가기
+    //    if (s_fAttackTime < 0.0f) s_fAttackTime = 0.0f;
+    //}
+
+    if (m_bAttack)
+    {
+        m_fAttackTime += fTimeDelta * 2.f; // 공격 속도
+        //if (m_fAttackTime > 1.0f) m_fAttackTime = 1.0f;
+
+        if (m_fAttackTime > 1.0f)
+        {
+            m_fAttackTime = 1.0;
+
+            m_fAttackDelay += fTimeDelta;
+
+            if (m_fAttackDelay > 1.f)
+            {
+                m_fAttackDelay = 0.f;
+                m_fAttackTime = 0.f;
+            }
+        }
+    }
+    else
     {
         m_fAttackTime -= fTimeDelta * 2.f; // 되돌아가기
         if (m_fAttackTime < 0.0f) m_fAttackTime = 0.0f;
