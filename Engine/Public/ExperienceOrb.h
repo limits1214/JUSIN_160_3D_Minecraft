@@ -15,6 +15,7 @@ public:
 		//_float  fBobYRot{};
 		_float  fBobTime{};
 		uint32_t iType{};
+		_float fExp{};
 		SPtr<CCollider> boxCollider{};
 		_float4x4 matWorld{};
 	};
@@ -50,7 +51,7 @@ private:
 	int m_iFrameRow{};
 
 public:
-	void AddOrb(const _float3& vPos, const _float3& vVelocity, uint32_t iType);
+	void AddOrb(const _float3& vPos, const _float3& vVelocity, uint32_t iType, _float fExp);
 
 private:
 	//void VelocityUpdate(InstancedExpOrbDesc& item, E::_float fTimeDelta);

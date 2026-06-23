@@ -4,6 +4,8 @@
 #include "CameraObject.h"
 
 #include "Block3.h"
+
+#include "PlayerEntity.h"
 NS_USING(Engine)
 
 CBlockOutline::CBlockOutline()
@@ -86,13 +88,31 @@ void CBlockOutline::LateUpdate(E::_float fTimeDelta)
 HRESULT CBlockOutline::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
 
-	auto pGameCam = CGameInstance::Get().GetActiveGameCamera();
+	auto pGameCam = CGameInstance::Get().GetActiveGameCamera("Player");
 	if (pGameCam)
 	{
+		CPlayerEntity::CAMERA_TYPE ePlayerCameraType{};
+		_float3 vPlayerPos{};
+		if (auto pPlayerObj = CGameInstance::Get().GetGameObjectByHandleT<CPlayerEntity>(m_hPlayer))
+		{
+			ePlayerCameraType = pPlayerObj->GetCameraType();
+			vPlayerPos = pPlayerObj->GetTransform().GetPosition();
+		}
+
+
+
 		const auto& [rayOrigin, rayDir] = pGameCam->GetRay();
+		auto pos = rayOrigin;
+		if (ePlayerCameraType != CPlayerEntity::CAMERA_TYPE::FPS)
+		{
+			vPlayerPos.y += 1.8f;
+			//pos
+			pos = vPlayerPos;
+		}
+
 		CVoxelManager3::BLOCK_RAY_RESULT res{};
 
-		if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin, rayDir, 5, res))
+		if (CGameInstance::Get().VoxelBlockRaycast(pos, rayDir, 5, res))
 		{
 			if (auto pChunk = CGameInstance::Get().GetVoxelChunk(res.iChunkX, res.iChunkY, res.iChunkZ))
 			{

@@ -59,6 +59,8 @@ public:
 
 	void AddRenderPassPlayerInvenUIPass();
 
+public:
+	CAMERA_TYPE GetCameraType() const { return m_eCameraType; }
 private:
 	_float3 m_vHeadRotation = { 0.f, 0.f, 0.f };
 	CAMERA_TYPE m_eCameraType{ CAMERA_TYPE ::FPS };
@@ -184,8 +186,8 @@ private:
 	UPtr<CCollider> m_pCenterCollider{};
 
 private:
-	CCameraObject* m_pActivePlayerCamera{};
-	CCameraObject* m_pPlayerCamera{};
+	CPlayerCamera* m_pActivePlayerCamera{};
+	CPlayerCamera* m_pPlayerCamera{};
 	_bool m_bPlayerCameraLookBack{false};
 
 private:
@@ -237,9 +239,12 @@ private:
 public:
 	void TakeDamage(int32_t iDamage);
 
+public:
+	_bool GetDeath() const { return m_bDeath; }
 private:
 	void JudgeDeathUpdate(int32_t iDamage);
 	_bool m_bDeath{ false };
+	_float m_fDeathAnimTimer{};
 
 public:
 	void ReSpawnFromDeath();
@@ -257,6 +262,7 @@ private:
 	_float m_fHealthRegenTimer{};
 	int32_t m_iHalfHunger{ 20 };// max: 20
 	_float m_fHungerTimer{};
+	_float m_fHungerDamageTimer{};
 	int32_t m_iHalfArmor{ 0 };// max: 20
 	int32_t m_iRealHealfArmor{ 0 };
 	int32_t m_iLevel{ 0 };

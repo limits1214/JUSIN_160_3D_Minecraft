@@ -272,12 +272,10 @@ void CPlayerEntity::UpdateGUI()
         //56_ExperienceOrb
         if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CExperienceOrb>("56_ExperienceOrb"))
         {
-
             auto pos = GetTransform().GetPosition();
-            pos.x += 1.f;
-            pos.y += 1.f;
-            ;
-            pObj->AddOrb(pos, {}, rand() % 16);
+            pos.x += 7.f + Randf(-1.f, 1.f);
+            pos.z += 7.f + Randf(-1.f, 1.f);
+            pObj->AddOrb(pos, {}, rand() % 16, Randf(0.3f, 1.f));
         }
     }
 
@@ -483,8 +481,9 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
 
 void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
 {
-    m_pPlayerCamera = CGameInstance::Get().GetGameCamera("Player");
-    m_pActivePlayerCamera = CGameInstance::Get().GetActiveGameCamera("Player");
+    
+    m_pPlayerCamera = Cast<CPlayerCamera>(CGameInstance::Get().GetGameCamera("Player"));
+    m_pActivePlayerCamera = Cast<CPlayerCamera>(CGameInstance::Get().GetActiveGameCamera("Player"));
     m_bControl = CGameInstance::Get().GetMouseFix() && m_pActivePlayerCamera;
     if (m_bControl)
     {
@@ -547,24 +546,69 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
     if (m_bDeath)
     {
         GetUIController()->GetDeathScreen()->SetRender(true);
+
+        //m_fDeathAnimTimer
+
+        {
+
+            m_fDeathAnimTimer += fTimeDelta;
+
+            m_pComEntityModel->ResetBonesChannel();
+            m_pComEntityModel->UpdateBoneMatrix(fTimeDelta);
+
+            constexpr float FALL_DURATION = 0.5f;
+            constexpr float TOTAL_DURATION = 1.5f;
+
+            float fFallT = std::min(m_fDeathAnimTimer / FALL_DURATION, 1.0f);
+            float fEased = 1.f - (1.f - fFallT) * (1.f - fFallT);
+            float fRoll = XMConvertToRadians(90.f) * fEased;
+
+            // 1. Yaw 쿼터니언 (바라보는 방향 고정)
+            _vector qYaw = XMQuaternionRotationAxis(
+                XMVectorSet(0.f, 1.f, 0.f, 0.f), m_fRootRotRadY);
+
+            // 2. Yaw 적용 후 실제 Look 방향(월드 Z를 Yaw로 회전)
+            _vector vLook = XMVector3Rotate(
+                XMVectorSet(0.f, 0.f, 1.f, 0.f), qYaw);
+
+            // 3. 그 Look축을 기준으로 Roll
+            _vector qRoll = XMQuaternionRotationAxis(vLook, fRoll);
+
+            // 4. Roll * Yaw 순서로 결합 (Roll이 월드 공간에서 먼저)
+            _vector qFinal = XMQuaternionMultiply(qYaw, qRoll);
+
+            GetTransform().SetQuaternion(qFinal);
+
+            //PlayerMove(fTimeDelta);
+            if (m_fDeathAnimTimer <= TOTAL_DURATION)
+            {
+                CGameInstance::Get().AddRenderObject(RENDERGROUP::NONBLEND, this);
+            }
+            
+            GetTransform().Update();
+            //VelocityUpdate(fTimeDelta, XMVectorZero());
+            if (m_fDeathAnimTimer >= TOTAL_DURATION && m_fDeathAnimTimer <= TOTAL_DURATION + 0.02f)
+            {
+                CGameInstance::Get().AddParticleRenderDeathSmoke(GetTransform().GetPosition(), 10);
+            }
+        }
     }
     else
     {
+        ProcessHealthRegenTimer(fTimeDelta);
+        ProcessHungerTimer(fTimeDelta);
+
         JudgeDeathUpdate(fTimeDelta);
 
         GetUIController()->GetDeathScreen()->SetRender(false);
 
         ProcessActionUpdate(fTimeDelta);
 
-        ProcessHungerTimer(fTimeDelta);
-        ProcessHealthRegenTimer(fTimeDelta);
-
         ProcessThrowItem(fTimeDelta);
         ProcessHandHeldItem(fTimeDelta);
 
         ProcessLeftClick(fTimeDelta);
         ProcessRightClick(fTimeDelta);
-
 
 
         ProcessArmorEntities(fTimeDelta);
@@ -580,6 +624,7 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
 
 void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
 {
+    //JudgeDeathUpdate(fTimeDelta);
     if (m_bDeath)
     {
         return;
@@ -789,11 +834,18 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
     //
     
     //CGameInstance::Get().VoxelBlockRaycast()
-
+    
     const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+    auto pos = rayOrigin2;
+    if (m_eCameraType != CAMERA_TYPE::FPS)
+    {
+        pos = GetTransform().GetPosition();
+        pos.y += 1.8f;
+    }
+
     std::optional<std::pair<XMINT3, uint8_t>> currDestoryTarget{};
     CVoxelManager3::BLOCK_RAY_RESULT res;
-    if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin2, rayDir2, 5.f, res))
+    if (CGameInstance::Get().VoxelBlockRaycast(pos, rayDir2, 5.f, res))
     {
         if (res.block)
         {
@@ -1179,10 +1231,16 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
 
         
 
-
         const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
+        auto pos = rayOrigin2;
+        if (m_eCameraType != CAMERA_TYPE::FPS)
+        {
+            pos = GetTransform().GetPosition();
+            pos.y += 1.8f;
+        }
+
         CVoxelManager3::BLOCK_RAY_RESULT res;
-        if (CGameInstance::Get().VoxelBlockRaycast(rayOrigin2, rayDir2, 5.f, res))
+        if (CGameInstance::Get().VoxelBlockRaycast(pos, rayDir2, 5.f, res))
         {
             if (res.block)
             {
@@ -1570,12 +1628,16 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
                 }
 
                 {
-                    _float3 startPos{};
-                    XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
-                    startPos.y += 1.f;
+                    auto vStart = GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 0.5f;
+                    auto vDir = XMVector3Normalize(vStart - GetTransform().GetState(STATE::POSITION)) * 3.f;
 
+                    _float3 startPos{};
+                    XMStoreFloat3(&startPos, vStart);
+                    startPos.y += 1.5f;
+                    _float3 startDir{};
+                    XMStoreFloat3(&startDir, vDir);
                     
-                    CItemObject::SpawnDropItemObject(newInfo, startPos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
+                    CItemObject::SpawnDropItemObject(newInfo, startPos, startDir);
                 }
             }
             else // not block
@@ -1605,11 +1667,17 @@ void CPlayerEntity::ProcessThrowItem(float fTimeDelta)
 
 
                 {
-                    _float3 startPos{};
-                    XMStoreFloat3(&startPos, GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 2.f);
-                    startPos.y += 1.f;
 
-                    CItemObject::SpawnDropItemObject(newInfo, startPos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
+                    auto vStart = GetTransform().GetState(STATE::POSITION) + m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK) * 0.5f;
+                    auto vDir = XMVector3Normalize(vStart - GetTransform().GetState(STATE::POSITION)) * 3.f;
+
+                    _float3 startPos{};
+                    XMStoreFloat3(&startPos, vStart);
+                    startPos.y += 1.5f;
+                    _float3 startDir{};
+                    XMStoreFloat3(&startDir, vDir);
+
+                    CItemObject::SpawnDropItemObject(newInfo, startPos, startDir);
                 }
             }
            
@@ -1785,17 +1853,22 @@ void CPlayerEntity::ProcessItemColliding(_float fTimeDelta)
                     if (pColl->GetInnerHint2())
                     {
                         auto pHint = static_cast<CDropBlock::CollHint*>(pColl->GetInnerHint2().get());
-                        const auto& itemInfo = pHint->iter->itemInfo;
-                        auto* pUIController = GetUIController();
-
-                        //if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
-                        //{
-                        //    pObj->GetDropItemObjects().erase(pHint->iter);
-                        //}
-
-                        if (SUCCEEDED(ProcessItemGain(itemInfo)))
+                        if (pHint)
                         {
-                            pObj->GetDropItemObjects().erase(pHint->iter);
+                            const auto& itemInfo = pHint->iter->itemInfo;
+                            auto* pUIController = GetUIController();
+
+                            //if (SUCCEEDED(pUIController->Getinventory()->AddItemToInventory(itemInfo)))
+                            //{
+                            //    pObj->GetDropItemObjects().erase(pHint->iter);
+                            //}
+                            if (pHint->iter->fElapsedTime > 0.3f)
+                            {
+                                if (SUCCEEDED(ProcessItemGain(itemInfo)))
+                                {
+                                    pObj->GetDropItemObjects().erase(pHint->iter);
+                                }
+                            }
                         }
                     }
                 }
@@ -1818,21 +1891,99 @@ void CPlayerEntity::ProcessExpOrbColliding(_float fTimeDelta)
                     //const auto& itemInfo = pHint->iter->itemInfo;
                     //auto* pUIController = GetUIController();
                    // auto a = *pHint->iter;
-
-                    if (SUCCEEDED(ProcessExpOrbGain(0.3)))
+                    if (pHint)
                     {
-                        pObj->GetExpOrbObjects().erase(pHint->iter);
+                        if (SUCCEEDED(ProcessExpOrbGain(pHint->iter->fExp)))
+                        {
+                            pObj->GetExpOrbObjects().erase(pHint->iter);
+                        }
                     }
+                    
                 }
             }
         }
     }
 }
 
+//void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)
+//{
+//    if (m_pActivePlayerCamera)
+//    {
+//        //?
+//        const auto& [rayOrigin, rayDir] = m_pActivePlayerCamera->GetRay();
+//        CVoxelManager3::BLOCK_RAY_RESULT result;
+//        if (auto rayResult = CGameInstance::Get().VoxelBlockRaycast(rayOrigin, rayDir, 5.f, result))
+//        {
+//
+//        }
+//
+//        _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+//        m_pActivePlayerCamera->GetTransform().AddRotation(vUp, fTimeDelta * 10.f * m_iMouseMoveX);
+//
+//        _float3 euler = m_pActivePlayerCamera->GetTransform().GetRotationEuler();
+//
+//        float delta = fTimeDelta * 10.f * m_iMouseMoveY;
+//        if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
+//        {
+//            delta *= -1.f;
+//        }
+//        float next = euler.x + delta;
+//
+//        if (next <= 89.f && next >= -89.f)
+//        {
+//            _vector vRight = m_pActivePlayerCamera->GetTransform().GetState(STATE::RIGHT);
+//            m_pActivePlayerCamera->GetTransform().AddRotation(vRight, delta);
+//        }
+//
+//        if (m_eCameraType == CAMERA_TYPE::FPS)
+//        {
+//            if (m_bPlayerCameraLookBack)
+//            {
+//                m_bPlayerCameraLookBack = false;
+//                m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+//            }
+//
+//            auto playerPos = GetTransform().GetPosition();
+//            m_pActivePlayerCamera->GetTransform().SetPosition(XMVectorSet(playerPos.x, playerPos.y + 1.62f, playerPos.z + 0.f, 1.f));
+//        }
+//        else if (m_eCameraType == CAMERA_TYPE::TPS)
+//        {
+//            if (m_bPlayerCameraLookBack)
+//            {
+//                m_bPlayerCameraLookBack = false;
+//                m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+//            }
+//
+//            auto playerLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+//            auto playerPos = GetTransform().GetLoadedPostion();
+//
+//            auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
+//
+//            m_pActivePlayerCamera->GetTransform().SetPosition(tmp);
+//        }
+//        else
+//        {
+//            if (!m_bPlayerCameraLookBack)
+//            {
+//                m_bPlayerCameraLookBack = true;
+//                m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+//            }
+//
+//            auto playerLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+//            auto playerPos = GetTransform().GetLoadedPostion();
+//
+//            auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
+//
+//            m_pActivePlayerCamera->GetTransform().SetPosition(tmp);
+//        }
+//    }
+//}
+
 void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)
 {
     if (m_pActivePlayerCamera)
     {
+        // --- [카메라 회전 처리 (기존 유지)] ---
         _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
         m_pActivePlayerCamera->GetTransform().AddRotation(vUp, fTimeDelta * 10.f * m_iMouseMoveX);
 
@@ -1851,6 +2002,7 @@ void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)
             m_pActivePlayerCamera->GetTransform().AddRotation(vRight, delta);
         }
 
+        // --- [카메라 위치 및 충돌 처리] ---
         if (m_eCameraType == CAMERA_TYPE::FPS)
         {
             if (m_bPlayerCameraLookBack)
@@ -1862,38 +2014,61 @@ void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)
             auto playerPos = GetTransform().GetPosition();
             m_pActivePlayerCamera->GetTransform().SetPosition(XMVectorSet(playerPos.x, playerPos.y + 1.62f, playerPos.z + 0.f, 1.f));
         }
-        else if (m_eCameraType == CAMERA_TYPE::TPS)
+        else // TPS 및 TPS_BACK 공통 처리
         {
-            if (m_bPlayerCameraLookBack)
+            if (m_eCameraType == CAMERA_TYPE::TPS)
             {
-                m_bPlayerCameraLookBack = false;
-                m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+                if (m_bPlayerCameraLookBack)
+                {
+                    m_bPlayerCameraLookBack = false;
+                    m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+                }
+            }
+            else // TPS_BACK
+            {
+                if (!m_bPlayerCameraLookBack)
+                {
+                    m_bPlayerCameraLookBack = true;
+                    m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+                }
             }
 
-            auto playerLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+            // 1. 레이캐스트 시작점 (플레이어 머리 위치)
             auto playerPos = GetTransform().GetLoadedPostion();
+            auto vTargetPivot = playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f);
 
-            auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
+            // 2. 카메라가 향할 방향 및 최대 거리
+            auto playerLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
+            _float fMaxDistance = 5.f;
+            auto vRayDir = playerLook * -1.f; // 카메라가 바라보는 방향의 반대 (뒤통수 방향)
 
-            m_pActivePlayerCamera->GetTransform().SetPosition(tmp);
-        }
-        else
-        {
-            if (!m_bPlayerCameraLookBack)
+            // 이상적인 카메라 위치 (충돌이 없을 경우)
+            auto vIdealPos = vTargetPivot + (vRayDir * fMaxDistance);
+            auto vFinalPos = vIdealPos;
+
+            // [수정된 부분] vIdealPos가 아니라 레이캐스트 시작점인 vTargetPivot을 _float3로 변환해야 합니다.
+            _float3 v3TargetPivot;
+            _float3 v3RayDir;
+            XMStoreFloat3(&v3TargetPivot, vTargetPivot);
+            XMStoreFloat3(&v3RayDir, vRayDir);
+
+            // 3. 지형 충돌 레이캐스트 (머리에서 카메라 쪽으로 쏜다)
+            CVoxelManager3::BLOCK_RAY_RESULT result{};
+            // 시작점을 v3TargetPivot으로 변경!
+            if (CGameInstance::Get().VoxelBlockRaycast(v3TargetPivot, v3RayDir, fMaxDistance, result))
             {
-                m_bPlayerCameraLookBack = true;
-                m_pActivePlayerCamera->GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), 180.f);
+                // 부딪혔다면: 충돌 지점(result.fDist)에서 Near Plane 파먹기 방지용 여백(0.2f)을 빼줍니다.
+                _float fSafeDistance = std::max(0.f, result.fDist - 0.35f);
+                vFinalPos = vTargetPivot + (vRayDir * fSafeDistance);
             }
 
-            auto playerLook = m_pActivePlayerCamera->GetTransform().GetState(STATE::LOOK);
-            auto playerPos = GetTransform().GetLoadedPostion();
-
-            auto tmp = (playerPos + XMVectorSet(0.f, 1.8f, 0.f, 0.f)) + (playerLook * -5.f);
-
-            m_pActivePlayerCamera->GetTransform().SetPosition(tmp);
+            // 4. 최종 위치 적용
+            m_pActivePlayerCamera->GetTransform().SetPosition(vFinalPos);
         }
     }
 }
+
+
 
 void CPlayerEntity::PlayerMove(_float fTimeDelta)
 {
@@ -1969,35 +2144,76 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
         float velY = XMVectorGetY(vVel);
         float prevY = c.y;  // 이동 전 저장
         c.y += velY * fTimeDelta;
+
         if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
         {
             if (velY < 0.f)  // 내려가다 충돌 → 땅
             {
-                c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;// + 0.001f 딱붙어서 안움직이는현상
+                c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;
                 m_bOnGround = true;
             }
             else  // 올라가다 천장
             {
-                c.y = prevY;  // ← 그냥 이전 위치로 복구
+                c.y = prevY;
             }
             vVel = XMVectorSetY(vVel, 0.f);
         }
-        else m_bOnGround = false;
+        else
+        {
+            // [수정] 단순히 겹치지 않는다고 false로 만들면 0.001f 오차 때문에 진동이 발생함.
+            // 바닥 쪽으로 살짝(-0.05f) 내린 가상 박스로 진짜 바닥이 없는지 확실히 검사!
+            XMFLOAT3 checkGround = { c.x, c.y - 0.05f, c.z };
+            if (!CGameInstance::Get().VoxelAABBOverlap(checkGround, halfExtents))
+            {
+                m_bOnGround = false;
+            }
+        }
 
         // X
         float px = c.x;
         c.x += XMVectorGetX(vVel) * fTimeDelta;
-        if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+
+        bool bHitXWall = CGameInstance::Get().VoxelAABBOverlap(c, halfExtents);
+        bool bFallX = false;
+
+        if (!bHitXWall && m_bKeyPressingShift && m_bOnGround)
         {
-            c.x = px; vVel = XMVectorSetX(vVel, 0.f);
+            // [수정] 플레이어 몸통 중심(Core)이 블록 위에 있도록 검사 박스 크기를 대폭 줄임
+            XMFLOAT3 floorExtents = { halfExtents.x , halfExtents.y, halfExtents.z };
+            XMFLOAT3 checkFloor = { c.x, c.y - 0.05f, c.z };
+            if (!CGameInstance::Get().VoxelAABBOverlap(checkFloor, floorExtents))
+            {
+                bFallX = true;
+            }
         }
 
-        // Z
+        if (bHitXWall || bFallX)
+        {
+            c.x = px;
+            vVel = XMVectorSetX(vVel, 0.f);
+        }
+
+        // Z (X와 동일한 원리 적용)
         float pz = c.z;
         c.z += XMVectorGetZ(vVel) * fTimeDelta;
-        if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+
+        bool bHitZWall = CGameInstance::Get().VoxelAABBOverlap(c, halfExtents);
+        bool bFallZ = false;
+
+        if (!bHitZWall && m_bKeyPressingShift && m_bOnGround)
         {
-            c.z = pz; vVel = XMVectorSetZ(vVel, 0.f);
+            XMFLOAT3 floorExtents = { halfExtents.x , halfExtents.y, halfExtents.z  };
+            XMFLOAT3 checkFloor = { c.x, c.y - 0.05f, c.z };
+            if (!CGameInstance::Get().VoxelAABBOverlap(checkFloor, floorExtents))
+            {
+                bFallZ = true;
+            }
+        }
+
+        if (bHitZWall || bFallZ)
+        {
+            c.z = pz;
+            vVel = XMVectorSetZ(vVel, 0.f);
         }
 
         GetTransform().SetPosition(_float3{ c.x, c.y - 1.f, c.z });
@@ -3999,6 +4215,12 @@ void CPlayerEntity::TakeDamage(int32_t iDamage)
 {
     m_iHalfHealth = std::clamp(m_iHalfHealth - iDamage, 0, 20);
     //Coll_PlayerCenter
+    if (m_pActivePlayerCamera)
+    {
+        m_pActivePlayerCamera->TriggerCameraShake(0.1f, 0.1f);
+    }
+
+
 }
 
 void CPlayerEntity::JudgeDeathUpdate(int32_t iDamage)
@@ -4007,8 +4229,10 @@ void CPlayerEntity::JudgeDeathUpdate(int32_t iDamage)
     {
         if (!m_bDeath)
         {
+            m_eCameraType = CAMERA_TYPE::TPS;
             int x = 0;
             auto pos = GetTransform().GetPosition();
+            pos.y += 1.5f;
 
             auto funcDropItems = [](std::optional<CItemObject::ItemInfo> itemInfo, _float3 pos)
                 
@@ -4070,6 +4294,28 @@ void CPlayerEntity::JudgeDeathUpdate(int32_t iDamage)
 
                 m_ItemArrArmor[i] = std::nullopt;
             }
+
+            if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CExperienceOrb>("56_ExperienceOrb"))
+            {
+                for (uint32_t i = 0; i < m_iLevel; ++i)
+                {
+                    auto pos = GetTransform().GetPosition();
+                    pos.x += Randf(-4.f, 4.f);
+                    pos.z += Randf(-4.f, 4.f);
+                    pObj->AddOrb(pos, {}, rand() % 16, 1.f);
+                }
+                if (m_fExperienceGage > 0.f)
+                {
+                    auto pos = GetTransform().GetPosition();
+                    pos.x += Randf(-4.f, 4.f);
+                    pos.z += Randf(-4.f, 4.f);
+                    pObj->AddOrb(pos, {}, rand() % 16, m_fExperienceGage);
+                }
+            }
+            
+            m_iLevel = 0;
+            m_fExperienceGage = 0.f;
+            //while(m_f)
             
             //ProcessUIHotbar(0.f);
             //CItemObject::SpawnDropItemObject(ItemInfo, pos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
@@ -4089,6 +4335,12 @@ void CPlayerEntity::ReSpawnFromDeath()
     m_iHalfHealth = 20;
     m_iHalfHunger = 20;
     GetTransform().SetPosition(_float3{ 0.5f, 70.f, 0.5f });
+
+    GetTransform().SetQuaternion(XMVectorSet(0.f, 0.f, 0.f, 1.f));
+
+    m_fDeathAnimTimer = 0.f;
+
+    m_eCameraType = CAMERA_TYPE::FPS;
 }
 
 void CPlayerEntity::ProcessUIStatus(_float fTimeDelta)
@@ -4197,20 +4449,36 @@ void CPlayerEntity::ProcessUIStatusBreath(_float fTimeDelta)
 
 void CPlayerEntity::ProcessHungerTimer(_float fTimeDelta)
 {
-    m_fHungerTimer += fTimeDelta;
-    if (m_fHungerTimer > 5.f)
+    if (!m_pActivePlayerCamera) return;
+    if (!m_bDeath)
     {
-        m_fHungerTimer = 0.f;
-
-        if (m_iHalfHunger > 0)
+        m_fHungerTimer += fTimeDelta;
+        if (m_fHungerTimer > 0.5f)
         {
-            m_iHalfHunger -= 1;
+            m_fHungerTimer = 0.f;
+
+            if (m_iHalfHunger > 0)
+            {
+                m_iHalfHunger -= 1;
+            }
+        }
+        if (m_iHalfHunger == 0)
+        {
+            m_fHungerDamageTimer += fTimeDelta;
+
+            if (m_fHungerDamageTimer > 0.5f)
+            {
+                m_fHungerDamageTimer = 0.f;
+                TakeDamage(1);
+            }
         }
     }
+    
 }
 
 void CPlayerEntity::ProcessHealthRegenTimer(_float fTimeDelta)
 {
+    if (!m_pActivePlayerCamera) return;
     if (m_iHalfHunger >= 20)
     {
         m_fHealthRegenTimer += fTimeDelta;
