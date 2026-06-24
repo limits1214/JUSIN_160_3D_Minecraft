@@ -118,6 +118,11 @@ private:
 	_bool m_bRender{ true };
 
 public:
+	void SetIsOnCursor() { m_bOnCursor = true; }
+private:
+	_bool m_bOnCursor{ false };
+
+public:
 	void SetCnt(uint8_t i) { m_iCnt = std::clamp(i, (uint8_t)1, (uint8_t)64); }
 	uint8_t GetCnt() const { return m_iCnt; }
 private:

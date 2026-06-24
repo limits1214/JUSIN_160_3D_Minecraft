@@ -678,6 +678,12 @@ m_pContext->Unmap(pCbPerFrame->GetCBuffer().Get(), 0);
                 return E_FAIL;
             }
 
+            if (FAILED(RenderUIOnCursor(ctx)))
+            {
+                return E_FAIL;
+            }
+
+
             if (FAILED(RenderUIToolTip(ctx)))
             {
                 return E_FAIL;
@@ -917,6 +923,22 @@ HRESULT CRenderer::RenderUI(const RENDER_CTX& ctx)
 
     {
         E::CGameInstance::Get().FontLateDraw(RENDERGROUP::UI);
+    }
+
+    return S_OK;
+}
+HRESULT CRenderer::RenderUIOnCursor(const RENDER_CTX& ctx)
+{
+    for (auto& pRenderObject : m_RenderObject[ETOUI(RENDERGROUP::UI_ONCURSOR)])
+    {
+        if (pRenderObject->HasRenderPass(ctx.pass))
+        {
+            pRenderObject->Render(m_pContext.Get(), ctx);
+        }
+    }
+
+    {
+        E::CGameInstance::Get().FontLateDraw(RENDERGROUP::UI_ONCURSOR);
     }
 
     return S_OK;

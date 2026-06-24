@@ -550,7 +550,6 @@ void CPlayerEntity::Update(E::_float fTimeDelta)
         //m_fDeathAnimTimer
 
         {
-
             m_fDeathAnimTimer += fTimeDelta;
 
             m_pComEntityModel->ResetBonesChannel();
@@ -1492,6 +1491,25 @@ CUIController* CPlayerEntity::GetUIController() const
 
 void CPlayerEntity::ProcessUI(float fTimeDelta)
 {
+    {
+        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hChestUIItemOnCursor))
+        {
+            pObj->SetIsOnCursor();
+        }
+        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hFurnaceUIItemOnCursor))
+        {
+            pObj->SetIsOnCursor();
+        }
+        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hCraftingTableUIItemOnCursor))
+        {
+            pObj->SetIsOnCursor();
+        }
+        if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CUIItem>(m_hInventoryUIItemOnCursor))
+        {
+            pObj->SetIsOnCursor();
+        }
+    }
+
     if (m_bKeyDownE)
     {
         _bool bInvenRender = GetUIController()->Getinventory()->GetRender();

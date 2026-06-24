@@ -114,6 +114,7 @@ HRESULT CUIItem::Initialize(void* pArg)
 
 void CUIItem::PriorityUpdate(E::_float fTimeDelta)
 {
+	m_bOnCursor = false;
 }
 
 void CUIItem::Update(E::_float fTimeDelta)
@@ -136,7 +137,30 @@ void CUIItem::LateUpdate(E::_float fTimeDelta)
 
 	if (m_bRender)
 	{
-		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
+		if (m_bOnCursor)
+		{
+			{
+				auto pos = GetTransform().GetPosition();
+				pos.z = -0.03f;
+				GetTransform().SetPosition(pos);
+				m_fSizeX = 20.f * MC_UI_SCALE;
+				m_fSizeY = 20.f * MC_UI_SCALE;
+				//GetTransform().SetScale(_float3{ 2.f, 2.f, 2.f });
+			}
+			{
+				auto pos = m_pComDurabilityBgTransform->GetPosition();
+				pos.z = -0.031f;
+				m_pComDurabilityBgTransform->SetPosition(pos);
+
+				//GetTransform().SetScale(_float3{ 2.f, 2.f, 2.f });
+			}
+			CalcUICoord();
+			E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI_ONCURSOR, this);
+		}
+		else
+		{
+			E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::UI, this);
+		}
 	}
 
 	GetTransform().Update();
@@ -231,11 +255,11 @@ HRESULT CUIItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 					if (m_ItemInfo->iCnt < 10)
 					{
 						auto spaced = L"  " + std::to_wstring(m_ItemInfo->iCnt);
-						E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_10px", spaced, { m_fX + 1.f , m_fY + 3.f });
+						E::CGameInstance::Get().FontAddLateDraw(m_bOnCursor ? RENDERGROUP::UI_ONCURSOR : RENDERGROUP::UI, "NeoDGM_10px", spaced, { m_fX + 1.f , m_fY + 3.f });
 					}
 					else
 					{
-						E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_10px", std::to_wstring(m_ItemInfo->iCnt), { m_fX + 1.f , m_fY + 3.f });
+						E::CGameInstance::Get().FontAddLateDraw(m_bOnCursor ? RENDERGROUP::UI_ONCURSOR : RENDERGROUP::UI, "NeoDGM_10px", std::to_wstring(m_ItemInfo->iCnt), { m_fX + 1.f , m_fY + 3.f });
 					}
 					
 				}
