@@ -59,6 +59,7 @@ public:
 private:
 	HRESULT InitializeResources();
 	HRESULT InitializeMCResource();
+	HRESULT InitializeMCSoundResource();
 	HRESULT InitializePrototype();
 
 public:
@@ -99,6 +100,14 @@ public:
 #pragma region SOUND_MANAGER
 public:
 	HRESULT CreateSound(const _string& sPath, FMOD_SOUND** ppSound);
+
+	HRESULT SoundAddChannel(const StringID& channelTag, const std::pair<StringID, StringID>& soundResources);
+	HRESULT SoundPlay(const StringID& channelTag);
+	void SoundStop(const StringID& channelTag);
+	void SoundPause(const StringID& channelTag, _bool bPause);
+	_bool SoundGetVolume(const StringID& channelTag, _float& fVolume);
+	_bool SoundSetVolume(const StringID& channelTag, _float fVolume);
+	_bool SoundIsPlaying(const StringID& channelTag) const;
 #pragma endregion
 
 #pragma region DINPUT_MANAGER
