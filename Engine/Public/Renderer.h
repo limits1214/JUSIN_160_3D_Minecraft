@@ -97,6 +97,7 @@ private:
 	HRESULT RenderSkybox(const RENDER_CTX& ctx);
 	HRESULT RenderCollider(const RENDER_CTX& ctx);
 	HRESULT RenderUI(const RENDER_CTX& ctx);
+	HRESULT RenderUIOnCursor(const RENDER_CTX& ctx);
 	HRESULT RenderUIToolTip(const RENDER_CTX& ctx);
 	HRESULT RenderUITextAfterFilterRed(const RENDER_CTX& ctx);
 
