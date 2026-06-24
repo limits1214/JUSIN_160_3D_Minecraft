@@ -949,20 +949,17 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             ItemInfo.iCnt = 1;
 
             CItemObject::DestoryBlockAfterProcess(ItemInfo, XMINT3{ res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ });
-            CItemObject::DestoryBlockItemConverter(ItemInfo);
-/*            DestroyStageEndAfterProcess(ItemInfo, XMINT3{ res.iWorldBlockX, res.iWorldBlockY, res.iWorldBlockZ });
-            DestroyStageEndItemConverter(ItemInfo);*/
+
+            if (CItemObject::DestoryBlockItemConverter(ItemInfo))
+            {
+                auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
+                pos.x += 0.5f;
+                pos.y += 0.5f;
+                pos.z += 0.5f;
+
+                CItemObject::SpawnDropItemObject(ItemInfo, pos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
+            }
             
-
-        
-            
-
-            auto pos = _float3{ (float)res.iWorldBlockX, (float)res.iWorldBlockY,  (float)res.iWorldBlockZ };
-            pos.x += 0.5f;
-            pos.y += 0.5f;
-            pos.z += 0.5f;
-
-            CItemObject::SpawnDropItemObject(ItemInfo, pos, { Randf(-1.f, 1.f), Randf(0.5f, 2.f), Randf(-1.f, 1.f) });
         }
     }
     else
@@ -1283,7 +1280,6 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                     {
                     case CItemObject::ITEM_TYPE::ITEM_Torch:
                     {
-
                         auto newBlock = CBlock3(CBlock3::TYPE::TORCH_ON);
                         newBlock.SetBlockLight(CBlock3::GetBlockLightByType(newBlock.GetType()));
 
@@ -1298,7 +1294,189 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                             hotbarItemInfo->iCnt -= 1;
                         }
                     }
-                        break;
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Allium:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_ALLIUM));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Blue_Orchid:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_BLUE_ORCHID));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_CornFlower:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_CORNFLOWER));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Dandelion:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_DANDELION));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Houstonia:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_HOUSTONIA));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Lily_Of_The_Valley:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_LILY_OF_THE_VALLEY));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Oxeye_Daisy:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_OXEYE_DAISY));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Paeonia:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_PAEONIA));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Rose:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_ROSE));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Rose_Blue:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_ROSE_BLUE));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Orange:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_TULIP_ORANGE));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Pink:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_TULIP_PINK));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Red:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_TULIP_RED));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
+                    case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_WIther_Rose:
+                    {
+                        CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, CBlock3(CBlock3::TYPE::FLOWER_WITHER_ROSE));
+                        if (hotbarItemInfo->iCnt <= 1)
+                        {
+                            hotbarItemInfo = std::nullopt;
+                        }
+                        else
+                        {
+                            hotbarItemInfo->iCnt -= 1;
+                        }
+                    }
+                    break;
                     }
                 }
             }

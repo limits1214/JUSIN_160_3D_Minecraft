@@ -119,7 +119,24 @@ public:
 		ITEM_Apple,
 		ITEM_Wheat,
 		ITEM_Bread,
-		END
+
+		ITEM_Flower_Allium,
+		ITEM_Flower_Blue_Orchid,
+		ITEM_Flower_CornFlower,
+		ITEM_Flower_Dandelion,
+		ITEM_Flower_Houstonia,
+		ITEM_Flower_Lily_Of_The_Valley,
+		ITEM_Flower_Oxeye_Daisy,
+		ITEM_Flower_Paeonia,
+		ITEM_Flower_Rose,
+		ITEM_Flower_Rose_Blue,
+		ITEM_Flower_Tulip_Orange,
+		ITEM_Flower_Tulip_Pink,
+		ITEM_Flower_Tulip_Red,
+		ITEM_Flower_WIther_Rose,
+
+		ITEM_Seeds_Wheat,
+		END,
 	};
 	struct ItemInfo
 	{
@@ -602,6 +619,38 @@ public:
 
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Bread:
 			return  PackTexId(6, 91);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Allium:
+			return  PackTexId(6, 92);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Blue_Orchid:
+			return  PackTexId(6, 93);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_CornFlower:
+			return  PackTexId(6, 94);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Dandelion:
+			return  PackTexId(6, 95);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Houstonia:
+			return  PackTexId(6, 96);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Lily_Of_The_Valley:
+			return  PackTexId(6, 97);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Oxeye_Daisy:
+			return  PackTexId(6, 98);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Paeonia:
+			return  PackTexId(6, 99);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Rose:
+			return  PackTexId(6, 100);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Rose_Blue:
+			return  PackTexId(6, 101);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Orange:
+			return  PackTexId(6, 102);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Pink:
+			return  PackTexId(6, 103);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Red:
+			return  PackTexId(6, 104);
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Flower_WIther_Rose:
+			return  PackTexId(6, 105);
+
+		case Engine::CItemObject::ITEM_TYPE::ITEM_Seeds_Wheat:
+			return PackTexId(6, 106);
 		}
 		return 0;
 	}
@@ -610,7 +659,7 @@ public:
 	static void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
 
 	static void DestoryBlockAfterProcess(const CItemObject::ItemInfo& info, const XMINT3& wbLocatoin);
-	static void DestoryBlockItemConverter(CItemObject::ItemInfo& info);
+	static _bool DestoryBlockItemConverter(CItemObject::ItemInfo& info);
 	
 public:
 	typedef struct tagDesc : GAMEOBJECT_DESC
