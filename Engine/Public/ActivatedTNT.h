@@ -8,7 +8,7 @@ class CResDynamicBuffer;
 class ENGINE_DLL CActivatedTNT : public CVoxelObject
 {
 public:
-	static void ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadisu, uint32_t iExplodeSmokeParticleCnt);
+	static void ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadisu, uint32_t iDamage, uint32_t iExplodeSmokeParticleCnt);
 public:
 	typedef struct tagDesc : CVoxelObject::DESC
 	{

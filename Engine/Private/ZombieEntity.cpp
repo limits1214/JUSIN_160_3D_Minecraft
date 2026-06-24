@@ -201,6 +201,10 @@ void CZombieEntity::Update(E::_float fTimeDelta)
     switch (m_eCurrentState)
     {
     case ZOMBIE_STATE::IDLE:
+        if (m_bIsHit)
+        {
+            break;
+        }
         m_fSpeed = 0.f; // 정지
 
         m_fWalkWeight += (0.0f - m_fWalkWeight) * fTimeDelta * 8.0f;
@@ -243,6 +247,10 @@ void CZombieEntity::Update(E::_float fTimeDelta)
 
         break;
     case ZOMBIE_STATE::WANDER:
+        if (m_bIsHit)
+        {
+            break;
+        }
         m_fSpeed = 1.5f; // 평화롭게 걷는 속도
 
         m_fWalkTime += fTimeDelta * 7.0f;
@@ -262,6 +270,10 @@ void CZombieEntity::Update(E::_float fTimeDelta)
 
         break;
     case ZOMBIE_STATE::CHASE_PLAYER:
+        if (m_bIsHit)
+        {
+            break;
+        }
         m_fSpeed = 3.5f;
 
 
@@ -693,20 +705,55 @@ void CZombieEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
     XMStoreFloat3(&m_vVelocity, vVel);
 }
 
-void CZombieEntity::TakeDamage(uint32_t iDamage)
+void CZombieEntity::TakeDamage(uint32_t iDamage, _vector vAttackerPos)
 {
     if (m_eCurrentState == ZOMBIE_STATE::DIE) return; // 이미 죽었거나 피격 쿨타임 중이면 무시
 
+    m_fSpeed = 3.f;
     m_bIsHit = true;
     m_fHitTimer = 0.3f; // 0.3초간 빨갛게 물듦
 
-    // 마크 고증: 맞으면 살짝 위+바깥으로 팅겨나가는 넉백 추가
-    XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
-    vVel = XMVectorSetY(vVel, 5.0f); // 수직 점프 넉백
-    XMStoreFloat3(&m_vVelocity, vVel);
+    // ---------------------------------------------------------
+    // 마크 고증: 맞으면 살짝 위 + 공격자 반대 방향으로 튕겨나가는 넉백
+    // ---------------------------------------------------------
+
+    // 1. 내 위치 가져오기 (Y축 무시하여 수평 방향만 계산)
+    XMFLOAT3 myPosFloat = GetTransform().GetPosition();
+    XMVECTOR vMyPosXZ = XMVectorSetY(XMLoadFloat3(&myPosFloat), 0.f);
+    XMVECTOR vAttackerPosXZ = XMVectorSetY(vAttackerPos, 0.f);
+
+    // 2. 밀려날 방향 (내 위치 - 공격자 위치)
+    XMVECTOR vKnockbackDir = vMyPosXZ - vAttackerPosXZ;
+
+    // 만약 완전히 겹쳐서 벡터 길이가 0이라면 랜덤한 수평 방향으로 밀치기
+    if (XMVectorGetX(XMVector3LengthSq(vKnockbackDir)) < 0.0001f)
+    {
+        vKnockbackDir = XMVectorSet(
+            ((rand() % 100) - 50) * 0.01f,
+            0.f,
+            ((rand() % 100) - 50) * 0.01f,
+            0.f
+        );
+    }
+
+    // 방향 정규화
+    vKnockbackDir = XMVector3Normalize(vKnockbackDir);
+
+    // 3. 수평 넉백 힘 적용 (수치는 테스트하며 조절하세요)
+    float fKnockbackPower = 13.5f;
+    XMVECTOR vFinalKnockback = vKnockbackDir * fKnockbackPower;
+
+    // 4. 작성하신 수직 점프 넉백(5.0f) 합치기
+    vFinalKnockback = XMVectorSetY(vFinalKnockback, 5.0f);
+
+    // 최종 속도로 적용
+    XMStoreFloat3(&m_vVelocity, vFinalKnockback);
 
     m_bOnGround = false;
 
+    // ---------------------------------------------------------
+    // 체력 감소 및 사망 처리
+    // ---------------------------------------------------------
     m_iHeart -= iDamage;
 
     if (m_iHeart <= 0)
@@ -714,9 +761,7 @@ void CZombieEntity::TakeDamage(uint32_t iDamage)
         m_eCurrentState = ZOMBIE_STATE::DIE;
         m_fDeathTimer = 0.f;
 
-
         m_fTargetYaw = m_fRootRotRadY;
-
 
         auto pHeadBone = m_pComEntityModel->GetBone("head");
         if (pHeadBone)

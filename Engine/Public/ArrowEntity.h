@@ -41,6 +41,9 @@ private:
 private:
 	UPtr<CCollider> m_pHeadCollider{};
 
+private:
+	_float m_fElapsed{};
+
 public:
 	void SetRender(_bool b) { m_bRender = b; }
 private:
@@ -48,18 +51,26 @@ private:
 
 private:
 	void UpdateArrowLiftTime(_float fTimeDelta);
-	void UpdateArrowVelocity(_float fTimeDelta);
+	//void UpdateArrowVelocity(_float fTimeDelta);
 	void UpdateArrowVelocity2(_float fTimeDelta);
 	void VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir);
-
+	bool m_bStuck = false;
+	XMFLOAT3 m_vStuckDir;
+	XMFLOAT3 m_vLookDir = { 0.f, 0.f, 1.f };
 private:
 	_float m_fSpeed{ 5.f };
 	_bool m_bOnGround{ false };
 	_float m_fArrowLiftTime{ 15.f };
 
+private:
+	_float3 m_vStartPos{};
+
+private:
+	_bool m_bArrowBomb{ false };
+
 public:
 	// 화살 발사 초기화 함수 (발사 위치, 방향, 속도 지정)
-	void Shoot(const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed);
+	void Shoot(const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed, _bool bArrowBomb = false);
 
 private:
 	// 물리 이동을 위한 변수들

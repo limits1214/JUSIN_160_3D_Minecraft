@@ -72,7 +72,7 @@ private:
 	_float m_fWalkTime{};
 
 public:
-	void TakeDamage(uint32_t iDamage);
+	void TakeDamage(uint32_t iDamage, _vector vAttackerPos);
 private:
 	int32_t m_iHeart{ 5 };
 	_float m_fDeathTimer{};

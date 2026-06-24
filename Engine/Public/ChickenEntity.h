@@ -65,7 +65,7 @@ private:
 public:
 	enum class CHICKEN_STATE { IDLE, WANDER, FLEE, LOOK_AT_PLAYER, DIE };
 
-	void TakeDamage(uint32_t iDam);
+	void TakeDamage(uint32_t iDamage, _vector vAttackerPos);
 
 private:
 	void ProcessDropDropItem(_float fTimeDelta);
