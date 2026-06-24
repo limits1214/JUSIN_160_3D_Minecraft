@@ -65,6 +65,12 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
+	m_pSoundManager = CSoundManager::Create();
+	if (m_pSoundManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
 	if (FAILED(m_pGraphicDevice->ReadyDevice(EngineDesc.hWnd, EngineDesc.eWinMode, EngineDesc.iWinSizeX, EngineDesc.iWinSizeY)))
 	{
 		return E_FAIL;
@@ -76,6 +82,10 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 	if (FAILED(InitializeMCResource()))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(InitializeMCSoundResource()))
 	{
 		return E_FAIL;
 	}
@@ -219,6 +229,8 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 		MouseFix();
 	}
 
+	m_pSoundManager->Update();
+
 	m_pVoxelManager3->Update(fTimeDelta);
 
 	m_pParticleManager->Update(fTimeDelta);
@@ -276,6 +288,8 @@ void CGameInstance::UpdateGUI()
 	m_pVoxelManager3->UpdateGUI();
 
 	m_pRenderer->UpdateGUI();
+
+	m_pSoundManager->UpdateGUI();
 
 	if (ImGui::Button("ShaderRebuild"))
 	{
@@ -2932,6 +2946,23 @@ HRESULT CGameInstance::InitializeMCResource()
 	return S_OK;
 }
 
+HRESULT CGameInstance::InitializeMCSoundResource()
+{
+	if (auto pRes = CGameInstance::Get().AddResource("MC_SOUND", "minecraft", CResFmodSound::Create("./Resources/Sound/minecraft.ogg")))
+	{
+		if (FAILED(pRes->Load()))
+		{
+			return E_FAIL;
+		}
+
+		if (FAILED(SoundAddChannel("BGM_MINECRAFT", { "MC_SOUND", "minecraft" })))
+		{
+			return E_FAIL;
+		}
+	}
+	return S_OK;
+}
+
 
 HRESULT CGameInstance::InitializePrototype()
 {
@@ -3028,6 +3059,41 @@ void CGameInstance::DelResource(const StringID& sGroupTag, const StringID& sResT
 HRESULT CGameInstance::CreateSound(const _string& sPath, FMOD_SOUND** ppSound)
 {
 	return m_pSoundManager->CreateSound(sPath, ppSound);
+}
+
+HRESULT CGameInstance::SoundAddChannel(const StringID& channelTag, const std::pair<StringID, StringID>& soundResources)
+{
+	return m_pSoundManager->AddChannel(channelTag, soundResources);
+}
+
+HRESULT CGameInstance::SoundPlay(const StringID& channelTag)
+{
+	return m_pSoundManager->Play(channelTag);
+}
+
+void CGameInstance::SoundStop(const StringID& channelTag)
+{
+	m_pSoundManager->Stop(channelTag);
+}
+
+void CGameInstance::SoundPause(const StringID& channelTag, _bool bPause)
+{
+	m_pSoundManager->Pause(channelTag, bPause);
+}
+
+_bool CGameInstance::SoundGetVolume(const StringID& channelTag, _float& fVolume)
+{
+	return m_pSoundManager->GetVolume(channelTag, fVolume);
+}
+
+_bool CGameInstance::SoundSetVolume(const StringID& channelTag, _float fVolume)
+{
+	return m_pSoundManager->SetVolume(channelTag, fVolume);
+}
+
+_bool CGameInstance::SoundIsPlaying(const StringID& channelTag) const
+{
+	return m_pSoundManager->IsPlaying(channelTag);
 }
 
 

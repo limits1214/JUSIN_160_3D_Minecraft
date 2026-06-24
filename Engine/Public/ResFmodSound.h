@@ -20,6 +20,9 @@ public:
 	HRESULT Load(const std::any& arg = {}) override;
 	HRESULT Unload(const std::any& arg = {}) override;
 
+public:
+	FMOD_SOUND* GetSound() const { return m_pFmodSound; }
+
 private:
 	FMOD_SOUND* m_pFmodSound{};
 
