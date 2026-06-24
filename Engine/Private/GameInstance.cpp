@@ -2843,7 +2843,76 @@ HRESULT CGameInstance::InitializeMCResource()
 			AddTexItem16_16("./Resources/Texture/Item/bread.png", "Bread");
 		}
 
+		// 92: flower_allium.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_allium.png", "FlowerAllium");
+		}
 
+		// 93: flower_blue_orchid.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_blue_orchid.png", "FlowerBlueOrchid");
+		}
+
+		// 94: flower_cornflower.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_cornflower.png", "FlowerCornflower");
+		}
+
+		// 95: flower_dandelion.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_dandelion.png", "FlowerDandelion");
+		}
+
+		// 96: flower_houstonia.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_houstonia.png", "FlowerHoustonia");
+		}
+
+		// 97: flower_lily_of_the_valley.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_lily_of_the_valley.png", "FlowerLilyOfTheValley");
+		}
+
+		// 98: flower_oxeye_daisy.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_oxeye_daisy.png", "FlowerOxeyeDaisy");
+		}
+		// 99: flower_paeonia.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_paeonia.png", "FlowePaeonia");
+		}
+		// 100: flower_rose.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_rose.png", "FlowerRose");
+		}
+		// 101: flower_rose_blue.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_rose_blue.png", "FlowerRoseBlue");
+		}
+		// 102: flower_tulip_orange.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_tulip_orange.png", "FlowerTulipOrange");
+		}
+
+		// 103: flower_tulip_pink.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_tulip_pink.png", "FlowerTulipPink");
+		}
+
+		// 104: flower_tulip_red.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_tulip_red.png", "FlowerTulipRed");
+		}
+
+		// 105: flower_wither_rose.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_wither_rose.png", "FlowerWitherRose");
+		}
+
+		// 106: flower_wither_rose.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/seeds_wheat.png", "SeedsWheat");
+		}
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
 		{

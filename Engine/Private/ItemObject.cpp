@@ -717,40 +717,131 @@ void CItemObject::DestoryBlockAfterProcess(const CItemObject::ItemInfo& info, co
     }
 }
 
-void CItemObject::DestoryBlockItemConverter(CItemObject::ItemInfo& info)
-{    switch (info.block->GetType())
+_bool CItemObject::DestoryBlockItemConverter(CItemObject::ItemInfo& info)
+{    
+    switch (info.block->GetType())
     {
     case CBlock3::TYPE::GRASS:
         info.block->SetType(CBlock3::TYPE::DIRT);
-        return;
+        return true;
     case CBlock3::TYPE::STONE:
         info.block->SetType(CBlock3::TYPE::COBBLESTONE);
-        return;
+        return true;
     case CBlock3::TYPE::STONE_COAL_ORE:
         info.block = std::nullopt;
         info.eItemType = CItemObject::ITEM_TYPE::ITEM_Coal;
-        return;
+        return true;
     case CBlock3::TYPE::STONE_COPPER_ORE:
         info.block = std::nullopt;
         info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Copper;
-        return;
+        return true;
     case CBlock3::TYPE::STONE_IRON_ORE:
         info.block = std::nullopt;
         info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Iron;
-        return;
+        return true;
     case CBlock3::TYPE::STONE_GOLD_ORE:
         info.block = std::nullopt;
         info.eItemType = CItemObject::ITEM_TYPE::ITEM_Raw_Gold;
-        return;
+        return true;
     case CBlock3::TYPE::STONE_DIAMOND_ORE:
         info.block = std::nullopt;
         info.eItemType = CItemObject::ITEM_TYPE::ITEM_Diamond;
-        return;
+        return true;
     case CBlock3::TYPE::TORCH_ON:
         info.block = std::nullopt;
         info.eItemType = CItemObject::ITEM_TYPE::ITEM_Torch;
-        return;
+        return true;
+
+    case CBlock3::TYPE::LEAVES_ACACIA:
+    case CBlock3::TYPE::LEAVES_BIRCH:
+    case CBlock3::TYPE::LEAVES_CHERRY:
+    case CBlock3::TYPE::LEAVES_OAK:
+        if (Randf(0.f, 1.f) > 0.6f)
+        {
+            info.block = std::nullopt;
+            info.eItemType = CItemObject::ITEM_TYPE::ITEM_Apple;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    case CBlock3::TYPE::FIJI_SHORT_DRY_GRASS:
+    case CBlock3::TYPE::FIJI_SHORT_GRASS:
+    case CBlock3::TYPE::FIJI_TALL_DRY_GRASS:
+    case CBlock3::TYPE::FIJI_TALL_GRASS_BOTTOM:
+    case CBlock3::TYPE::FIJI_TALL_GRASS_TOP:
+        if (Randf(0.f, 1.f) > 0.8f)
+        {
+            info.block = std::nullopt;
+            info.eItemType = CItemObject::ITEM_TYPE::ITEM_Seeds_Wheat;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    case CBlock3::TYPE::FLOWER_ALLIUM:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Allium;
+        return true;
+    case CBlock3::TYPE::FLOWER_BLUE_ORCHID:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Blue_Orchid;
+        return true;
+    case CBlock3::TYPE::FLOWER_CORNFLOWER:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_CornFlower;
+        return true;
+    case CBlock3::TYPE::FLOWER_DANDELION:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Dandelion;
+        return true;
+    case CBlock3::TYPE::FLOWER_HOUSTONIA:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Houstonia;
+        return true;
+    case CBlock3::TYPE::FLOWER_LILY_OF_THE_VALLEY:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Lily_Of_The_Valley;
+        return true;
+    case CBlock3::TYPE::FLOWER_OXEYE_DAISY:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Oxeye_Daisy;
+        return true;
+    case CBlock3::TYPE::FLOWER_PAEONIA:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Paeonia;
+        return true;
+    case CBlock3::TYPE::FLOWER_ROSE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Rose;
+        return true;
+    case CBlock3::TYPE::FLOWER_ROSE_BLUE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Rose_Blue;
+        return true;
+    case CBlock3::TYPE::FLOWER_TULIP_ORANGE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Orange;
+        return true;
+    case CBlock3::TYPE::FLOWER_TULIP_PINK:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Pink;
+        return true;
+    case CBlock3::TYPE::FLOWER_TULIP_RED:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_Tulip_Red;
+        return true;
+    case CBlock3::TYPE::FLOWER_WITHER_ROSE:
+        info.block = std::nullopt;
+        info.eItemType = CItemObject::ITEM_TYPE::ITEM_Flower_WIther_Rose;
+        return true;
     }
+
+    return true;
 }
 
 CItemObject::CItemObject()

@@ -12,6 +12,8 @@
 #include "ExperienceOrb.h"
 #include "ItemObject.h"
 
+#include "PlayerEntity.h"
+
 NS_USING(Engine)
 
 
@@ -155,7 +157,7 @@ void CZombieEntity::Update(E::_float fTimeDelta)
 {
     m_fStateTimer -= fTimeDelta;
     XMVECTOR vWishDir = XMVectorZero();
-    auto pPlayer = CGameInstance::Get().GetGameObjectByHandle(m_hPlayer);
+    auto pPlayer = CGameInstance::Get().GetGameObjectByHandleT<CPlayerEntity>(m_hPlayer);
 
     _float fPlayerDetectDist = 10.f;
 
@@ -176,9 +178,6 @@ void CZombieEntity::Update(E::_float fTimeDelta)
     auto pRightArm = m_pComEntityModel->GetBone("rightArm");
     auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg");
     auto pRightLeg = m_pComEntityModel->GetBone("rightLeg");
-
-
-    //m_fSwellingProgress;
 
     if (m_bIsHit)
     {
@@ -447,8 +446,12 @@ void CZombieEntity::Update(E::_float fTimeDelta)
         {
             m_fAttackTime = 1.0;
 
-            m_fAttackDelay += fTimeDelta;
+            if (m_fAttackDelay == 0.f && m_fAttackTime == 1.0f)
+            {
+                pPlayer->TakeDamage(1.f);
+            }
 
+            m_fAttackDelay += fTimeDelta;
             if (m_fAttackDelay > 1.f)
             {
                 m_fAttackDelay = 0.f;
