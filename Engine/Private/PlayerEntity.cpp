@@ -1882,6 +1882,8 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
     // Coll_CreeperCenter
     // Coll_SkeletonCenter
 
+    auto vPos = GetTransform().GetPosition();
+    vPos.y += 1.8f;
     if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PigCenter"))
     {
         if (auto pMeleeCollGroup = CGameInstance::Get().GetColliderGroup("Coll_PlayerMeleeAttack"))
@@ -1893,7 +1895,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1);
+                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -1911,7 +1913,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CCowEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1);
+                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -1929,7 +1931,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CChickenEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1);
+                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -1947,7 +1949,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CZombieEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1);
+                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -1965,7 +1967,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CCreeperEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1);
+                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -1983,7 +1985,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CSkeletonEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1);
+                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -5647,7 +5649,7 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                                     //auto pos = XMLoadFloat3(&rayOrigin2);
                                                     auto look = XMLoadFloat3(&rayDir2);
 
-                                                    pObj->Shoot(XMLoadFloat3(&pos), look, fSpeed);
+                                                    pObj->Shoot(XMLoadFloat3(&pos), look, fSpeed, true);
                                                 }
                                             }
                                         }

@@ -79,7 +79,8 @@ private:
 	void ExplodeUpdate(_float fTimeDelta);
 
 public:
-	void TakeDamage(uint32_t iDamage);
+
+	void TakeDamage(uint32_t iDamage, _vector vAttackerPos);
 private:
 	int32_t m_iHeart{5};
 	_float m_fDeathTimer{};

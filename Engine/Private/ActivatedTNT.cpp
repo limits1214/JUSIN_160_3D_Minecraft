@@ -19,7 +19,7 @@ CActivatedTNT::CActivatedTNT()
 }
 
 
-void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadius, uint32_t iExplodeSmokeParticleCnt)
+void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadius, uint32_t iDamage, uint32_t iExplodeSmokeParticleCnt)
 {
 	CGameInstance::Get().VoxelProcessExplodeBlock(vPos.x, vPos.y, vPos.z, fExplodeRadius);
 	CGameInstance::Get().AddParticleRenderExplodeSmoke(vPos, iExplodeSmokeParticleCnt);
@@ -34,7 +34,7 @@ void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadiu
 				{
 					if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
 					{
-						pObj->TakeDamage(10);
+						pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
 					}
 				}
 
@@ -52,7 +52,7 @@ void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadiu
 				{
 					if (auto pObj = Cast<CPlayerEntity>(pColl->GetInnerPointer()))
 					{
-						pObj->TakeDamage(10);
+						pObj->TakeDamage(iDamage);
 					}
 				}
 
@@ -69,7 +69,7 @@ void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadiu
 				{
 					if (auto pObj = Cast<CChickenEntity>(pColl->GetInnerPointer()))
 					{
-						pObj->TakeDamage(10);
+						pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
 					}
 				}
 
@@ -86,7 +86,7 @@ void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadiu
 				{
 					if (auto pObj = Cast<CCowEntity>(pColl->GetInnerPointer()))
 					{
-						pObj->TakeDamage(10);
+						pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
 					}
 				}
 
@@ -103,7 +103,7 @@ void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadiu
 				{
 					if (auto pObj = Cast<CZombieEntity>(pColl->GetInnerPointer()))
 					{
-						pObj->TakeDamage(10);
+						pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
 					}
 				}
 
@@ -120,7 +120,7 @@ void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadiu
 				{
 					if (auto pObj = Cast<CCreeperEntity>(pColl->GetInnerPointer()))
 					{
-						pObj->TakeDamage(10);
+						pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
 					}
 				}
 
@@ -137,7 +137,7 @@ void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadiu
 				{
 					if (auto pObj = Cast<CSkeletonEntity>(pColl->GetInnerPointer()))
 					{
-						pObj->TakeDamage(10);
+						pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
 					}
 				}
 
@@ -252,7 +252,14 @@ void CActivatedTNT::LateUpdate(E::_float fTimeDelta)
 
 		if (block.fElapsedTime > block.fTargetFuseTime)
 		{
-			ExplodeAndDamageColliding(block.vPos, 4.f, 25);
+			{
+				auto copyPos = block.vPos;
+				copyPos.x += 0.5f;
+				copyPos.z += 0.5f;
+				copyPos.y += 1.f;
+				ExplodeAndDamageColliding(copyPos, 4.f, 1, 25);
+			}
+			
 
 			// tnt 밀어내기
 			{
