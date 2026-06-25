@@ -430,8 +430,8 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 
 void CArrowEntity::UpdateArrowLiftTime(_float fTimeDelta)
 {
-    m_fArrowLiftTime -= fTimeDelta;
-    if (m_fArrowLiftTime < 0)
+    m_fArrowLifeTime -= fTimeDelta;
+    if (m_fArrowLifeTime < 0)
     {
         SetPendingDestroyCascade();
     }

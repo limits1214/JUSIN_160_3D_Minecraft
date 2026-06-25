@@ -343,6 +343,13 @@ private:
 
 private:
 	void MouseFix() const;
+
+public:
+	uint32_t GetGameBlessLevel() const { return m_iGameBlessLevel; }
+	void SetGameBlessLevel(uint32_t i) { m_iGameBlessLevel = i; }
+
+private:
+	uint32_t m_iGameBlessLevel{};
 };
 
 NS_END

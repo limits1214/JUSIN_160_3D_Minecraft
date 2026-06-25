@@ -136,6 +136,13 @@ public:
 		ITEM_Flower_WIther_Rose,
 
 		ITEM_Seeds_Wheat,
+
+		ITEM_Bless_Lv_0,
+		ITEM_Bless_Lv_2,
+		ITEM_Bless_Lv_4,
+		ITEM_Bless_Lv_6,
+		ITEM_Bless_Lv_8,
+		ITEM_Bless_Lv_10,
 		END,
 	};
 	struct ItemInfo
@@ -299,6 +306,18 @@ public:
 				return L"석탄";
 			case ITEM_TYPE::ITEM_Stick:
 				return L"막대";
+			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0:
+				return L"???의 가호 LV0 \n\n          : ???";
+			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_2:
+				return L"160기의 가호 LV 2\n\n무한의화살: 화살을 소비 하지 않습니다.\n                 : ???";
+			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_4:
+				return L"자습실의 가호 LV 4\n\n무한의화살: 화살을 소비 하지 않습니다.\n폭풍의 시  : 빠르게 화살을 쏩니다.\n                 : ???";
+			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_6:
+				return L"아지트의 가호 LV 6\n\n무한의화살: 화살을 소비 하지 않습니다.\n에로우 밤  : 화살이 폭발합니다.\n                 : ???";
+			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_8:
+				return L"포트폴리오실의 가호 LV 8\n\n무한의화살: 화살을 소비 하지 않습니다.\n폭풍의 시  : 빠르게 화살을 쏩니다.\n에로우 밤  : 화살이 폭발합니다.\n                 : ???";
+			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_10:
+				return L"쥬신의 가호 LV 10\n\n무한의화살: 화살을 소비 하지 않습니다.\n폭풍의 시: 빠르게 화살을 쏩니다.\n에로우 밤: 화살이 폭발합니다.\nTHE GOD        : 신이 되어 날아다닙니다.";
 			};
 		}
 
@@ -383,6 +402,13 @@ public:
 		case CItemObject::ITEM_TYPE::ITEM_Bucket_Lava:
 
 		case CItemObject::ITEM_TYPE::ITEM_FlintAndSteel:
+
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_2:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_4:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_6:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_8:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_10:
 			return false;
 		}
 		return true;
@@ -651,6 +677,14 @@ public:
 
 		case Engine::CItemObject::ITEM_TYPE::ITEM_Seeds_Wheat:
 			return PackTexId(6, 106);
+
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_2:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_4:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_6:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_8:
+		case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_10:
+			return PackTexId(6, 107);
 		}
 		return 0;
 	}
