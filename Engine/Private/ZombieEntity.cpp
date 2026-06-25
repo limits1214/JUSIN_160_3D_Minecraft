@@ -772,8 +772,45 @@ void CZombieEntity::TakeDamage(uint32_t iDamage, _vector vAttackerPos)
             pHeadBone->SetRotation({ 0.f, 0.f, 0.f });
         }
 
-        // 만약 CComAnimator 내부에 머리 회전용 쿼터니언 변수(m_vCurrentHeadRotQuat)를 쓰신다면
-        // 여기서 함께 XMQuaternionIdentity() 등으로 초기화해주면 더욱 안전합니다.
+        if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+        {
+            _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
+            _vector vCurrPos = GetTransform().GetLoadedPostion();
+
+            // 거리 계산
+            float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
+            constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
+
+            // 볼륨 감쇄 (0.0 ~ 1.0)
+            float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
+            //float fVol = (1.f - (ratio * ratio)) * 0.5f;
+
+            float fMaxVol = 0.1f;
+            float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+
+            CGameInstance::Get().SoundPlay("ZOMBIE_DEATH", fVol);
+        }
+    }
+
+    if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+    {
+        _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
+        _vector vCurrPos = GetTransform().GetLoadedPostion();
+
+        // 거리 계산
+        float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
+        constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
+
+        // 볼륨 감쇄 (0.0 ~ 1.0)
+        float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
+        //float fVol = (1.f - (ratio * ratio)) * 0.5f;
+
+        float fMaxVol = 0.1f;
+        float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+
+        // 랜덤 재생
+        const char* sounds[] = { "ZOMBIE_HURT_1", "ZOMBIE_HURT_2" };
+        CGameInstance::Get().SoundPlay(sounds[RandInt(0, 1)], fVol);
     }
 }
 
