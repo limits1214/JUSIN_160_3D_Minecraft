@@ -54,12 +54,8 @@ public:
 
 
 public:
-	HRESULT AddBlock( SActivatedTNTData& data)
-	{
-		data.fTargetFuseTime = 3.5f + (rand() % 100 / 100.f);
-		m_vecActivatedTNT.push_back(data);
-		return S_OK;
-	}
+	HRESULT AddBlock(SActivatedTNTData& data);
+	
 
 private:
 	void VelocityUpdate(_float fTimeDelta, SActivatedTNTData& data);

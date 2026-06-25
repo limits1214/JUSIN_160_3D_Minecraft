@@ -448,6 +448,7 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
     m_pMeleeAttackCollider = CCollBox::Create({ 0.f, 0.f, 0.f }, { 0.75f, 0.75f, 0.75f });
 
     ReadyPlayerItem();
+    ReadySoundTimer();
 
     // TEST
     CItemObject::RecipeInitialize();
@@ -861,6 +862,18 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             fElapsed = 0;
         }
 
+        {
+            auto hitSound = CBlock3::GetSoundHit(res.block->GetType());
+            if (hitSound != "")
+            {
+                m_TimerDestorystageSoundPlay.AppendCurrTime(fTimeDelta);
+                if (m_TimerDestorystageSoundPlay.Get_Finished())
+                {
+                    CGameInstance::Get().SoundPlay(hitSound, 0.5f);
+                    m_TimerDestorystageSoundPlay.Reset();
+                }
+            }
+        }
         fElapsed += fTimeDelta;
 
         float blockDestroyRate = 1.f;
@@ -1147,53 +1160,6 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
     if (m_bMouseDownRight)
     {
         auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
-        if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
-        {
-            //if (
-            //    hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby
-            //    || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0
-            //    || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1
-            //    || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
-            //    )
-            //{
-            //    if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
-            //    {
-            //        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
-            //    }
-            //    else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
-            //    {
-            //        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
-            //    }
-            //    else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
-            //    {
-            //        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
-            //    }
-            //    else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2)
-            //    {
-            //        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
-
-            //        E::CArrowEntity::DESC Desc{};
-            //        Desc.sObjectTag = "Arrow";
-            //        if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ArrowEntity",
-            //            "49_ARROW", &Desc))
-            //        {
-            //            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CArrowEntity>(handle.value()))
-            //            {
-            //                const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
-            //                //auto pos = GetTransform().GetState(STATE::POSITION);
-            //                //auto look = GetTransform().GetState(STATE::LOOK);
-            //                auto pos = XMLoadFloat3(&rayOrigin2);
-            //                auto look = XMLoadFloat3(&rayDir2);
-            //                pObj->Shoot(pos, look, 50.f);
-            //            }
-            //        }
-            //    }
-
-            //    return;
-            //}
-        }
-
-        
 
         const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
         auto pos = rayOrigin2;
@@ -2030,6 +1996,8 @@ void CPlayerEntity::ProcessItemColliding(_float fTimeDelta)
                             {
                                 if (SUCCEEDED(ProcessItemGain(itemInfo)))
                                 {
+                                    const float pitches[] = { 0.6f, 0.7f, 0.8f };
+                                    CGameInstance::Get().SoundPlay("POP", 0.5f, pitches[RandInt(0, 2)]);
                                     pObj->GetDropItemObjects().erase(pHint->iter);
                                 }
                             }
@@ -2059,6 +2027,8 @@ void CPlayerEntity::ProcessExpOrbColliding(_float fTimeDelta)
                     {
                         if (SUCCEEDED(ProcessExpOrbGain(pHint->iter->fExp)))
                         {
+                            const float pitches[] = { 1.f, 0.7f, 0.8f };
+                            CGameInstance::Get().SoundPlay("EX_ORB_HIT", 0.5f, pitches[RandInt(0, 2)]);
                             pObj->GetExpOrbObjects().erase(pHint->iter);
                         }
                     }
@@ -2358,6 +2328,7 @@ void CPlayerEntity::PlayerCameraTrace(_float fTimeDelta)
 
 void CPlayerEntity::PlayerMove(_float fTimeDelta)
 {
+    _bool bSoundPlay{ false };
     XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
 
     // 1. 수평 입력 → wishDir
@@ -2436,6 +2407,13 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
             if (velY < 0.f)  // 내려가다 충돌 → 땅
             {
                 c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;
+
+                if (!m_bOnGround)
+                {
+                    bSoundPlay = true;
+                    m_TimerStepSondPlay.Reset();
+                }
+
                 m_bOnGround = true;
             }
             else  // 올라가다 천장
@@ -2503,6 +2481,38 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
         }
 
         GetTransform().SetPosition(_float3{ c.x, c.y - 1.f, c.z });
+
+        {
+            if (
+                m_bKeyPressingW
+                || m_bKeyPressingA
+                || m_bKeyPressingS
+                || m_bKeyPressingD
+                )
+            {
+                
+                if (m_TimerStepSondPlay.Get_Resetted())
+                {
+                    bSoundPlay = true;
+                }
+                m_TimerStepSondPlay.AppendCurrTime(fTimeDelta);
+                if (m_TimerStepSondPlay.Get_Finished())
+                {
+                    m_TimerStepSondPlay.Reset();
+                }
+                    
+            }
+
+            if (bSoundPlay)
+            {
+                auto vPos = GetTransform().GetPosition();
+                if (auto stepBlock = CGameInstance::Get().GetVoxelBlock(std::floor(vPos.x), std::floor(vPos.y), std::floor(vPos.z)))
+                {
+                    CGameInstance::Get().SoundPlay(CBlock3::GetSoundStep(stepBlock.value().GetType()), 0.5f);
+                }
+            }
+            
+        }
     }
     else  // GOD - 마찰/가속 없이 즉시 이동
     {
@@ -2532,6 +2542,13 @@ void CPlayerEntity::ReadyPlayerItem()
     m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bread, 64 };
     m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Mutton, 64 };
     m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bow_Standby };
+}
+
+void CPlayerEntity::ReadySoundTimer()
+{
+    m_TimerEatingSoundPlay.Set_GoalTime(0.2f);
+    m_TimerDestorystageSoundPlay.Set_GoalTime(0.2f);
+    m_TimerStepSondPlay.Set_GoalTime(0.4f);
 }
 
 HRESULT CPlayerEntity::ProcessItemGain(const CItemObject::ItemInfo& newItemInfo)
@@ -2664,6 +2681,7 @@ HRESULT CPlayerEntity::ProcessExpOrbGain(_float fGage)
     {
         m_fExperienceGage -= 1.f;
         m_iLevel += 1;
+        CGameInstance::Get().SoundPlay("LEVELUP", 0.5f);
     }
 
 
@@ -4499,14 +4517,15 @@ void CPlayerEntity::ProcessUIChestOnCursor(_float fTimeDelta)
 
 void CPlayerEntity::TakeDamage(int32_t iDamage)
 {
+    const char* sounds[] = { "HIT_1", "HIT_2", "HIT_3" };
+    CGameInstance::Get().SoundPlay(sounds[RandInt(0, 2)], 0.5f);
+
     m_iHalfHealth = std::clamp(m_iHalfHealth - iDamage, 0, 20);
     //Coll_PlayerCenter
     if (m_pActivePlayerCamera)
     {
         m_pActivePlayerCamera->TriggerCameraShake(0.1f, 0.1f);
     }
-
-
 }
 
 void CPlayerEntity::JudgeDeathUpdate(int32_t iDamage)
@@ -5746,11 +5765,23 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                         break;
                     case PLAY::EATING:
                     {
+                        if (m_TimerEatingSoundPlay.Get_Resetted())
+                        {
+                            const char* sounds[] = { "EAT_1", "EAT_2", "EAT_3" };
+                            CGameInstance::Get().SoundPlay(sounds[RandInt(0, 2)], 0.5f);
+                        }
+                        m_TimerEatingSoundPlay.AppendCurrTime(fTimeDelta);
+                        
+                        if (m_TimerEatingSoundPlay.Get_Finished())
+                            m_TimerEatingSoundPlay.Reset();
+
                         fEatingProgress += fTimeDelta * 1.f;
 
                         if (fEatingProgress >= 1.f)
                         {
                             fEatingProgress = 1.f;
+                            const float pitches[] = { 1.f, 0.9f, 0.95f };
+                            CGameInstance::Get().SoundPlay("BURP", 0.1f, pitches[RandInt(0, 2)]);
                             m_ePlay = PLAY::IDLE;
 
                             
@@ -5846,6 +5877,8 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                                     auto look = XMLoadFloat3(&rayDir2);
 
                                                     pObj->Shoot(XMLoadFloat3(&pos), look, fSpeed, true);
+
+
                                                 }
                                             }
                                         }

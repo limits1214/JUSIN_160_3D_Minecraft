@@ -255,6 +255,16 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
         TriggerLavaUpdateAround(wbx, wby, wbz);
 
         RuntimeOnBlockRemovedLighting(wbx, wby, wbz, oldBlock);
+
+
+        // break sound
+        {
+            auto breakSound = CBlock3::GetSoundBreak(oldBlock.GetType());
+            if (breakSound != "")
+            {
+                CGameInstance::Get().SoundPlay(breakSound, 0.5f);
+            }
+        }
     }
     else
     {
@@ -289,6 +299,16 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
         SetBlock(wbx, wby, wbz, block);
 
         RuntimeOnBlockPlacedLighting(wbx, wby, wbz, oldBlock);
+
+        // place sound
+
+        {
+            auto placeSound = CBlock3::GetSoundPlace(block.GetType());
+            if (placeSound != "")
+            {
+                CGameInstance::Get().SoundPlay(placeSound, 0.5f);
+            }
+        }
     }
 }
 

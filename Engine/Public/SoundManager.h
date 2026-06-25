@@ -36,11 +36,15 @@ public:
 	const SChannel* GetChannel(const StringID& channelTag) const;
 	HRESULT AddChannel(const StringID& channelTag, const std::pair<StringID, StringID>& soundResources);
 	HRESULT Play(const StringID& channelTag);
+	HRESULT Play(const StringID& channelTag, _float fVolume);
+	HRESULT Play(const StringID& channelTag, _float fVolume, _float fPitch);
+	HRESULT PlayLoop(const StringID& channelTag);
 	void Stop(const StringID& channelTag);
 	void Pause(const StringID& channelTag, _bool bPause);
 	_bool GetVolume(const StringID& channelTag, _float& fVolume);
 	_bool SetVolume(const StringID& channelTag, _float fVolume);
 	_bool IsPlaying(const StringID& channelTag) const;
+	void SetPitch(const StringID& channelTag, float fPitchRatio);
 
 private:
 	std::unordered_map<StringID, SChannel> m_mapChannels{};

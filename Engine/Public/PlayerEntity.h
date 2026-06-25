@@ -3,7 +3,7 @@
 #include "PlayerCamera.h"
 
 #include "Item.h"
-
+#include "Timer.h"
 NS_BEGIN(Engine)
 class CComEntityModel;
 class CDestroyStage;
@@ -197,6 +197,7 @@ private:
 
 private:
 	void ReadyPlayerItem();
+	void ReadySoundTimer();
 
 	HRESULT ProcessItemGain(const CItemObject::ItemInfo& info);
 	HRESULT ProcessExpOrbGain(_float fGage);
@@ -281,6 +282,11 @@ private:
 	void ProcessPlayerOpenInvenAction(_float fTimeDelta);
 	void ProcessPlayerCameraAction(_float fTimeDelta);
 
+
+private:
+	CTimer m_TimerDestorystageSoundPlay{};
+	CTimer m_TimerEatingSoundPlay{};
+	CTimer m_TimerStepSondPlay{};
 
 public:
 	static UPtr<CPlayerEntity> Create();

@@ -2948,18 +2948,88 @@ HRESULT CGameInstance::InitializeMCResource()
 
 HRESULT CGameInstance::InitializeMCSoundResource()
 {
-	if (auto pRes = CGameInstance::Get().AddResource("MC_SOUND", "minecraft", CResFmodSound::Create("./Resources/Sound/minecraft.ogg")))
-	{
-		if (FAILED(pRes->Load()))
-		{
-			return E_FAIL;
-		}
 
-		if (FAILED(SoundAddChannel("BGM_MINECRAFT", { "MC_SOUND", "minecraft" })))
+	auto funcSoundAdd = [&](StringID channelID, const _string& path)
 		{
+			if (auto pRes = CGameInstance::Get().AddResource("MC_SOUND", channelID, CResFmodSound::Create(path)))
+			{
+				if (FAILED(pRes->Load()))
+				{
+					return E_FAIL;
+				}
+				if (FAILED(SoundAddChannel(channelID, { "MC_SOUND", channelID })))
+				{
+					return E_FAIL;
+				}
+				return S_OK;
+			}
 			return E_FAIL;
-		}
-	}
+		};
+	if (FAILED(funcSoundAdd("minecraft", "./Resources/Sound/minecraft.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("HIT_1", "./Resources/Sound/hit/hit1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("HIT_2", "./Resources/Sound/hit/hit2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("HIT_3", "./Resources/Sound/hit/hit3.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("POP", "./Resources/Sound/pop/pop.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_GRASS_1", "./Resources/Sound/dig/grass1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EAT_1", "./Resources/Sound/eat/eat1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EAT_2", "./Resources/Sound/eat/eat2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EAT_3", "./Resources/Sound/eat/eat3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EXPLODE_1", "./Resources/Sound/explode/explode1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EXPLODE_2", "./Resources/Sound/explode/explode2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EXPLODE_3", "./Resources/Sound/explode/explode3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EXPLODE_4", "./Resources/Sound/explode/explode4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("LEVELUP", "./Resources/Sound/levelup/levelup.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("FUSE", "./Resources/Sound/fuse/fuse.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EX_ORB_DROP", "./Resources/Sound/orb/orb.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EX_ORB_HIT", "./Resources/Sound/orb/successful_hit.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("TOOL_BREAK", "./Resources/Sound/toolbreak/break.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("BOW", "./Resources/Sound/bow/bow.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BOW_HIT_1", "./Resources/Sound/bow/bowhit1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BOW_HIT_2", "./Resources/Sound/bow/bowhit2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BOW_HIT_3", "./Resources/Sound/bow/bowhit3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BOW_HIT_4", "./Resources/Sound/bow/bowhit4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("BURP", "./Resources/Sound/burp/burp.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_STONE_1", "./Resources/Sound/step/stone1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_2", "./Resources/Sound/step/stone2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_3", "./Resources/Sound/step/stone3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_4", "./Resources/Sound/step/stone4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_5", "./Resources/Sound/step/stone5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_6", "./Resources/Sound/step/stone6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_WOOD_1", "./Resources/Sound/step/wood1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_2", "./Resources/Sound/step/wood2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_3", "./Resources/Sound/step/wood3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_4", "./Resources/Sound/step/wood4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_5", "./Resources/Sound/step/wood5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_6", "./Resources/Sound/step/wood6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_GRASS_1", "./Resources/Sound/step/grass1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_2", "./Resources/Sound/step/grass2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_3", "./Resources/Sound/step/grass3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_4", "./Resources/Sound/step/grass4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_5", "./Resources/Sound/step/grass5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_6", "./Resources/Sound/step/grass6.ogg"))) return E_FAIL;
+
+
+	if (FAILED(funcSoundAdd("DIG_STONE_1", "./Resources/Sound/dig/stone1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_STONE_2", "./Resources/Sound/dig/stone2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_STONE_3", "./Resources/Sound/dig/stone3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_STONE_4", "./Resources/Sound/dig/stone4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("DIG_WOOD_1", "./Resources/Sound/dig/wood1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_WOOD_2", "./Resources/Sound/dig/wood2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_WOOD_3", "./Resources/Sound/dig/wood3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_WOOD_4", "./Resources/Sound/dig/wood4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("DIG_GRASS_1", "./Resources/Sound/dig/grass1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_GRASS_2", "./Resources/Sound/dig/grass2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_GRASS_3", "./Resources/Sound/dig/grass3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_GRASS_4", "./Resources/Sound/dig/grass4.ogg"))) return E_FAIL;
+
 	return S_OK;
 }
 
@@ -3066,9 +3136,9 @@ HRESULT CGameInstance::SoundAddChannel(const StringID& channelTag, const std::pa
 	return m_pSoundManager->AddChannel(channelTag, soundResources);
 }
 
-HRESULT CGameInstance::SoundPlay(const StringID& channelTag)
+HRESULT CGameInstance::SoundPlay(const StringID& channelTag, _float fVolume, _float fPitch)
 {
-	return m_pSoundManager->Play(channelTag);
+	return m_pSoundManager->Play(channelTag, fVolume, fPitch);
 }
 
 void CGameInstance::SoundStop(const StringID& channelTag)
@@ -3094,6 +3164,11 @@ _bool CGameInstance::SoundSetVolume(const StringID& channelTag, _float fVolume)
 _bool CGameInstance::SoundIsPlaying(const StringID& channelTag) const
 {
 	return m_pSoundManager->IsPlaying(channelTag);
+}
+
+void CGameInstance::SoundSetPitch(const StringID& channelTag, float fPitchRatio)
+{
+	m_pSoundManager->SetPitch(channelTag, fPitchRatio);
 }
 
 

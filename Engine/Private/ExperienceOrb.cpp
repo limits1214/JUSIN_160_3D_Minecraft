@@ -195,6 +195,26 @@ HRESULT CExperienceOrb::Render(ID3D11DeviceContext* pContext, const E::RENDER_CT
 
 void CExperienceOrb::AddOrb(const _float3& vPos, const _float3& vVelocity, uint32_t iType, _float fExp)
 {
+	if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+	{
+		_vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
+		_vector vCurrPos = XMLoadFloat3(&vPos);
+
+		// 거리 계산
+		float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
+		constexpr float MaxDistance = 32.f * 2.f; // 32 * 5
+
+		// 볼륨 감쇄 (0.0 ~ 1.0)
+		float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
+		//float fVol = (1.f - (ratio * ratio)) * 0.5f;
+
+		float fMaxVol = 0.1f;
+		float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+
+		// 랜덤 재생
+		const _float pitches[] = { 1.f, 0.9f, 0.8f };
+		CGameInstance::Get().SoundPlay("EX_ORB_DROP", fVol, pitches[RandInt(0, 2)]);
+	}
 	InstancedExpOrbDesc Desc{};
 	Desc.vPos = vPos;
 	Desc.vVelocity = vVelocity;

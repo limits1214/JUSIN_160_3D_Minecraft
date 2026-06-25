@@ -259,7 +259,28 @@ void CCreeperEntity::Update(E::_float fTimeDelta)
 
             if (fDistToPlayer < 3.f)
             {
-                m_fSwellingProgress += fTimeDelta * 0.8f;
+                if (m_fSwellingProgress == 0.f)
+                {
+                    if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+                    {
+                        _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
+                        _vector vCurrPos = GetTransform().GetLoadedPostion();
+
+                        // 거리 계산
+                        float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
+                        constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
+
+                        // 볼륨 감쇄 (0.0 ~ 1.0)
+                        float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
+                        //float fVol = (1.f - (ratio * ratio)) * 0.5f;
+
+                        float fMaxVol = 0.1f;
+                        float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+
+                        CGameInstance::Get().SoundPlay("FUSE", fVol);
+                    }
+                }
+                m_fSwellingProgress += fTimeDelta * 0.5f;
                 if (m_fSwellingProgress > 1.0f) m_fSwellingProgress = 1.0f;
                 
                 //m_fIgniteTimer += fTimeDelta;
