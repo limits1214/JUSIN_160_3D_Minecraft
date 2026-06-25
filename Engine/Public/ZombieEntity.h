@@ -87,6 +87,8 @@ private:
 	CComConstantBuffer* m_pComCBufferPerObject{};
 private:
 	CTimer m_TimerAmbientSoundPlay{};
+	_float3 m_vBeforePos{};
+	_float m_fAccMovedSqLen{};
 public:
 	static UPtr<CZombieEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

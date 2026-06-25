@@ -68,7 +68,7 @@ HRESULT CPigEntity::Initialize(void* pArg)
     m_pCenterCollider->SetInnerPointer(this);
 
     m_TimerAmbientSoundPlay.Set_GoalTime(2.f + Randf(0.f, 1.f));
-
+    //m_TimerStepSondPlay.Set_GoalTime(0.4f);
 	return S_OK;
 }
 
@@ -418,6 +418,8 @@ void CPigEntity::LateUpdate(E::_float fTimeDelta)
 
 void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
 {
+    _bool bSoundPlay{ false };
+
     XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
     //XMVECTOR vWishDir = XMVectorZero();
 
@@ -476,12 +478,23 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
         if (velY < 0.f)
         {
             c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;
+
+            if (!m_bOnGround)
+            {
+                //bSoundPlay = true;
+                //m_TimerStepSondPlay.Reset();
+            }
+
             m_bOnGround = true;
         }
         else c.y = prevY;
         vVel = XMVectorSetY(vVel, 0.f);
     }
-    else m_bOnGround = false;
+    else
+    {
+        m_bOnGround = false;
+        //bSoundPlay = false;
+    }
 
     _bool bHitWall = false; // 이번 프레임에 벽에 막혔는가?
 
@@ -517,11 +530,56 @@ void CPigEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
         // 마인크래프트 고증 점프 속도 (상황에 따라 5.0f ~ 6.0f 사이 조절)
         vVel = XMVectorSetY(vVel, 6.5f);
         m_bOnGround = false; // 공중에 떴으므로 상태 변경
+        bSoundPlay = false;
+    }
+
+    {
+        auto beforePos = GetTransform().GetPosition();
+        m_vBeforePos = _float3{ beforePos.x, beforePos.y, beforePos.z };
     }
 
     // 최종 좌표 적용 및 속도 백업
     GetTransform().SetPosition(_float3{ c.x, c.y - fAddY, c.z });
     XMStoreFloat3(&m_vVelocity, vVel);
+
+    {
+        //
+        auto befldPos = XMLoadFloat3(&m_vBeforePos);
+        auto curldPos = GetTransform().GetLoadedPostion();
+
+        m_fAccMovedSqLen += fabsf(XMVectorGetX(XMVector3Length(curldPos - befldPos)));
+    }
+    
+
+
+    {
+        if (m_fAccMovedSqLen > 1.f)
+        {
+            bSoundPlay = true;
+            m_fAccMovedSqLen = 0.f;
+        }
+
+        if (bSoundPlay)
+        {
+            auto vPos = GetTransform().GetPosition();
+            if (auto stepBlock = CGameInstance::Get().GetVoxelBlock(std::floor(vPos.x), std::floor(vPos.y )-1, std::floor(vPos.z)))
+            {
+                if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+                {
+                    _vector vDistVec = GetTransform().GetLoadedPostion() - pCam->GetTransform().GetLoadedPostion();
+                    float fDistSq = XMVectorGetX(XMVector3LengthSq(vDistVec));
+                    constexpr float MaxDistance = 32.f;
+                    constexpr float MaxDistanceSq = MaxDistance * MaxDistance;
+                    float ratioSq = std::clamp(fDistSq / MaxDistanceSq, 0.f, 1.f);
+                    float fMaxVol = 0.1f;
+                    float fVol = (1.f - ratioSq) * fMaxVol;
+
+                    CGameInstance::Get().SoundPlay(CBlock3::GetSoundStep(stepBlock.value().GetType()), fVol);
+                }
+            }
+        }
+
+    }
 }
 
 HRESULT CPigEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)

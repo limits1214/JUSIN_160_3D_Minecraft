@@ -206,6 +206,10 @@ HRESULT CSoundManager::Play(const StringID& channelTag, _float fVolume)
 
 HRESULT CSoundManager::Play(const StringID& channelTag, _float fVolume, _float fPitch)
 {
+	if (fVolume == 0.f)
+	{
+		return S_OK;
+	}
 	auto iter = m_mapChannels.find(channelTag);
 	if (iter == m_mapChannels.end())
 	{
