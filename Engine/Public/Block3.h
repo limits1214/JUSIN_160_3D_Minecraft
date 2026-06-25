@@ -219,6 +219,7 @@ public:
 	static inline StringID GetSoundHit(CBlock3::TYPE eType);
 	static inline StringID GetSoundPlace(CBlock3::TYPE eType);
 	static inline StringID GetSoundStep(CBlock3::TYPE eType);
+	static inline _bool IsDirectBreakBlock(CBlock3::TYPE eType);
 
 	static inline GEO_TYPE GetGeoType(TYPE e);
 	static inline uint32_t GetBaseColor(CBlock3::TYPE eType);
@@ -661,9 +662,16 @@ inline _bool CBlock3::IsFlower(TYPE eType)
 static StringID soundDigStone[] =	{ "DIG_STONE_1", "DIG_STONE_2", "DIG_STONE_3", "DIG_STONE_4" };
 static StringID soundDigWood[] =	{ "DIG_WOOD_1", "DIG_WOOD_2", "DIG_WOOD_3", "DIG_WOOD_4" };
 static StringID soundDigGrass[] =	{ "DIG_GRASS_1", "DIG_GRASS_2", "DIG_GRASS_3", "DIG_GRASS_4" };
+static StringID soundDigSand[] =	{ "DIG_SAND_1", "DIG_SAND_2", "DIG_SAND_3", "DIG_SAND_4" };
 static StringID soundStepStone[] =	{ "STEP_STONE_1", "STEP_STONE_2", "STEP_STONE_3", "STEP_STONE_4", "STEP_STONE_5", "STEP_STONE_6" };
 static StringID soundStepWood[] =	{ "STEP_WOOD_1", "STEP_WOOD_2", "STEP_WOOD_3", "STEP_WOOD_4", "STEP_WOOD_5", "STEP_WOOD_6" };
 static StringID soundStepGrass[] =	{ "STEP_GRASS_1", "STEP_GRASS_2", "STEP_GRASS_3", "STEP_GRASS_4", "STEP_GRASS_5", "STEP_GRASS_6" };
+static StringID soundStepSand[] =	{ "STEP_SAND_1", "STEP_SAND_2", "STEP_SAND_3", "STEP_SAND_4", "STEP_SAND_5", "STEP_SAND_6" };
+static StringID soundBreakRoots[] = { "BREAK_ROOTS_1", "BREAK_ROOTS_2" , "BREAK_ROOTS_3" , "BREAK_ROOTS_4" , "BREAK_ROOTS_5" , "BREAK_ROOTS_6" };
+
+static StringID soundBreakCherryLeaves[] = { "BREAK_CHERRY_LEAVES_1", "BREAK_CHERRY_LEAVES_2" , "BREAKCHERRY_LEAVES_3" , "BREAK_CHERRY_LEAVES_4" , "BREAK_CHERRY_LEAVES_5" , "BREAK_CHERRY_LEAVES_6" };
+static StringID soundStepCherryLeaves[] = { "STEP_CHERRY_LEAVES_1", "STEP_CHERRY_LEAVES_2" , "STEP_CHERRY_LEAVES_3" , "STEP_CHERRY_LEAVES_4" , "STEP_CHERRY_LEAVES_5" , "STEP_CHERRY_LEAVES_6" };
+
 
 inline StringID CBlock3::GetSoundBreak(CBlock3::TYPE eType)
 {
@@ -673,8 +681,50 @@ inline StringID CBlock3::GetSoundBreak(CBlock3::TYPE eType)
 	{
 	case TYPE::STONE:
 	case TYPE::COBBLESTONE:
+	case TYPE::FURNACE:
+	case TYPE::STONE_COAL_ORE:
+	case TYPE::STONE_COPPER_ORE:
+	case TYPE::STONE_DIAMOND_ORE:
+	case TYPE::STONE_EMERALD_ORE:
+	case TYPE::STONE_GOLD_ORE:
+	case TYPE::STONE_IRON_ORE:
+	case TYPE::STONE_LAPIS_ORE:
+	case TYPE::STONE_REDSTONE_ORE:
+	case TYPE::TNT:
 		return soundDigStone[idx];
+
+	case TYPE::DIRT:
+	case TYPE::GRASS:
+		return soundDigGrass[idx];
+
+	case TYPE::SAND:
+		return soundDigSand[idx];
+
+	case TYPE::LOG_ACACIA:
+	case TYPE::LOG_BIRCH:
+	case TYPE::LOG_OAK:
+	case TYPE::LOG_CHERRY:
+	case TYPE::PLANK_ACACIA:
+	case TYPE::PLANK_BIRCH:
+	case TYPE::PLANK_OAK:
+	case TYPE::PLANK_CHERRY:
+	case TYPE::CRAFTING_TABLE:
+	case TYPE::CHEST:
+		return soundDigWood[idx];
+
+	case TYPE::LEAVES_CHERRY:
+	case TYPE::LEAVES_OAK:
+	case TYPE::LEAVES_BIRCH:
+	case TYPE::LEAVES_ACACIA:
+		return soundBreakCherryLeaves[idx];
 	}
+
+
+	if (IsDirectBreakBlock(eType))
+	{
+		return soundDigGrass[idx];
+	}
+
 	return "";
 }
 
@@ -685,8 +735,45 @@ inline StringID CBlock3::GetSoundHit(CBlock3::TYPE eType)
 	{
 	case TYPE::STONE:
 	case TYPE::COBBLESTONE:
+	case TYPE::FURNACE:
+	case TYPE::STONE_COAL_ORE:
+	case TYPE::STONE_COPPER_ORE:
+	case TYPE::STONE_DIAMOND_ORE:
+	case TYPE::STONE_EMERALD_ORE:
+	case TYPE::STONE_GOLD_ORE:
+	case TYPE::STONE_IRON_ORE:
+	case TYPE::STONE_LAPIS_ORE:
+	case TYPE::STONE_REDSTONE_ORE:
+	case TYPE::TNT:
 		return soundStepStone[idx];
+
+	case TYPE::DIRT:
+	case TYPE::GRASS:
+		return soundStepGrass[idx];
+
+	case TYPE::SAND:
+		return soundStepSand[idx];
+
+	case TYPE::LOG_ACACIA:
+	case TYPE::LOG_BIRCH:
+	case TYPE::LOG_OAK:
+	case TYPE::LOG_CHERRY:
+	case TYPE::PLANK_ACACIA:
+	case TYPE::PLANK_BIRCH:
+	case TYPE::PLANK_OAK:
+	case TYPE::PLANK_CHERRY:
+	case TYPE::CRAFTING_TABLE:
+	case TYPE::CHEST:
+		return soundStepWood[idx];
+
+	case TYPE::LEAVES_CHERRY:
+	case TYPE::LEAVES_OAK:
+	case TYPE::LEAVES_BIRCH:
+	case TYPE::LEAVES_ACACIA:
+		return soundStepCherryLeaves[idx];
 	}
+
+
 	return "";
 }
 
@@ -697,7 +784,42 @@ inline StringID CBlock3::GetSoundPlace(CBlock3::TYPE eType)
 	{
 	case TYPE::STONE:
 	case TYPE::COBBLESTONE:
+	case TYPE::FURNACE:
+	case TYPE::STONE_COAL_ORE:
+	case TYPE::STONE_COPPER_ORE:
+	case TYPE::STONE_DIAMOND_ORE:
+	case TYPE::STONE_EMERALD_ORE:
+	case TYPE::STONE_GOLD_ORE:
+	case TYPE::STONE_IRON_ORE:
+	case TYPE::STONE_LAPIS_ORE:
+	case TYPE::STONE_REDSTONE_ORE:
+	case TYPE::TNT:
 		return soundDigStone[idx];
+
+	case TYPE::DIRT:
+	case TYPE::GRASS:
+		return soundDigGrass[idx];
+
+	case TYPE::SAND:
+		return soundDigSand[idx];
+
+	case TYPE::LOG_ACACIA:
+	case TYPE::LOG_BIRCH:
+	case TYPE::LOG_OAK:
+	case TYPE::LOG_CHERRY:
+	case TYPE::PLANK_ACACIA:
+	case TYPE::PLANK_BIRCH:
+	case TYPE::PLANK_OAK:
+	case TYPE::PLANK_CHERRY:
+	case TYPE::CRAFTING_TABLE:
+	case TYPE::CHEST:
+		return soundDigWood[idx];
+
+	case TYPE::LEAVES_CHERRY:
+	case TYPE::LEAVES_OAK:
+	case TYPE::LEAVES_BIRCH:
+	case TYPE::LEAVES_ACACIA:
+		return soundBreakCherryLeaves[idx];
 	}
 	return "";
 }
@@ -709,9 +831,69 @@ inline StringID CBlock3::GetSoundStep(CBlock3::TYPE eType)
 	{
 	case TYPE::STONE:
 	case TYPE::COBBLESTONE:
+	case TYPE::FURNACE:
+	case TYPE::STONE_COAL_ORE:
+	case TYPE::STONE_COPPER_ORE:
+	case TYPE::STONE_DIAMOND_ORE:
+	case TYPE::STONE_EMERALD_ORE:
+	case TYPE::STONE_GOLD_ORE:
+	case TYPE::STONE_IRON_ORE:
+	case TYPE::STONE_LAPIS_ORE:
+	case TYPE::STONE_REDSTONE_ORE:
+	case TYPE::TNT:
 		return soundStepStone[idx];
+
+	case TYPE::DIRT:
+	case TYPE::GRASS:
+		return soundStepGrass[idx];
+
+	case TYPE::LOG_ACACIA:
+	case TYPE::LOG_BIRCH:
+	case TYPE::LOG_OAK:
+	case TYPE::LOG_CHERRY:
+	case TYPE::PLANK_ACACIA:
+	case TYPE::PLANK_BIRCH:
+	case TYPE::PLANK_OAK:
+	case TYPE::PLANK_CHERRY:
+	case TYPE::CRAFTING_TABLE:
+	case TYPE::CHEST:
+		return soundStepSand[idx];
+
+	case TYPE::LEAVES_CHERRY:
+	case TYPE::LEAVES_OAK:
+	case TYPE::LEAVES_BIRCH:
+	case TYPE::LEAVES_ACACIA:
+		return soundStepCherryLeaves[idx];
 	}
 	return "";
+}
+
+inline _bool CBlock3::IsDirectBreakBlock(CBlock3::TYPE eType)
+{
+	switch (eType)
+	{
+		case TYPE::FLOWER_ALLIUM:
+		case TYPE::FLOWER_BLUE_ORCHID:
+		case TYPE::FLOWER_CORNFLOWER:
+		case TYPE::FLOWER_DANDELION:
+		case TYPE::FLOWER_HOUSTONIA:
+		case TYPE::FLOWER_LILY_OF_THE_VALLEY:
+		case TYPE::FLOWER_OXEYE_DAISY:
+		case TYPE::FLOWER_PAEONIA:
+		case TYPE::FLOWER_ROSE:
+		case TYPE::FLOWER_ROSE_BLUE:
+		case TYPE::FLOWER_TULIP_ORANGE:
+		case TYPE::FLOWER_TULIP_PINK:
+		case TYPE::FLOWER_TULIP_RED:
+		case TYPE::FLOWER_WITHER_ROSE:
+		case TYPE::FIJI_SHORT_DRY_GRASS:
+		case TYPE::FIJI_SHORT_GRASS:
+		case TYPE::FIJI_TALL_DRY_GRASS:
+		case TYPE::FIJI_TALL_GRASS_BOTTOM:
+		case TYPE::FIJI_TALL_GRASS_TOP:
+			return true;
+	}
+	return false;
 }
 
 inline CBlock3::GEO_TYPE CBlock3::GetGeoType(TYPE e)

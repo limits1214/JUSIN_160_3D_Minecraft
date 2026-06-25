@@ -74,7 +74,8 @@ public:
 					auto block = GetBlock(x, y, z);
 					if (block
 						&& block->GetType() != CBlock3::TYPE::AIR
-						&& !CBlock3::IsWater(block-> GetType())
+						&& !CBlock3::IsDirectBreakBlock(block->GetType())
+						&& !CBlock3::IsWater(block->GetType())
 						)
 						return true;
 				}
@@ -140,7 +141,7 @@ public:
 	}
 
 public:
-	void ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound = true);
+	void ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound = true, std::optional<CBlock3> rayCastedBlock = std::nullopt);
 	void ProcessExplodeBlock(float wbx, float wby, float wbz, float fRadius);
 
 public:

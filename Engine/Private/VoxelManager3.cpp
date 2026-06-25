@@ -241,7 +241,7 @@ _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayD
 }
 
 
-void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound)
+void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound, std::optional<CBlock3> raycastedBlock)
 {
     auto optOldBlock = GetBlock(wbx, wby, wbz);
     if (!optOldBlock.has_value()) return;
@@ -313,6 +313,17 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
                 if (placeSound != "")
                 {
                     CGameInstance::Get().SoundPlay(placeSound, 0.5f);
+                }
+                else
+                {
+                    if (raycastedBlock)
+                    {
+                        auto oldplaceSound = CBlock3::GetSoundPlace(raycastedBlock->GetType());
+                        if (oldplaceSound != "")
+                        {
+                            CGameInstance::Get().SoundPlay(oldplaceSound, 0.5f);
+                        }
+                    }
                 }
             }
         }

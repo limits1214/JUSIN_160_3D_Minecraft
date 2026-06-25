@@ -3013,6 +3013,27 @@ HRESULT CGameInstance::InitializeMCSoundResource()
 	if (FAILED(funcSoundAdd("STEP_GRASS_5", "./Resources/Sound/step/grass5.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("STEP_GRASS_6", "./Resources/Sound/step/grass6.ogg"))) return E_FAIL;
 
+	if (FAILED(funcSoundAdd("STEP_ROOTS_1", "./Resources/Sound/block/roots/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_2", "./Resources/Sound/block/roots/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_3", "./Resources/Sound/block/roots/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_4", "./Resources/Sound/block/roots/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_5", "./Resources/Sound/block/roots/step5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_6", "./Resources/Sound/block/roots/step6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_SAND_1", "./Resources/Sound/step/sand1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_2", "./Resources/Sound/step/sand2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_3", "./Resources/Sound/step/sand3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_4", "./Resources/Sound/step/sand4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_5", "./Resources/Sound/step/sand5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_6", "./Resources/Sound/step/sand6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_1", "./Resources/Sound/block/cherry_leaves/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_2", "./Resources/Sound/block/cherry_leaves/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_3", "./Resources/Sound/block/cherry_leaves/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_4", "./Resources/Sound/block/cherry_leaves/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_5", "./Resources/Sound/block/cherry_leaves/step5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_6", "./Resources/Sound/block/cherry_leaves/step6.ogg"))) return E_FAIL;
+
 	if (FAILED(funcSoundAdd("DIG_STONE_1", "./Resources/Sound/dig/stone1.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("DIG_STONE_2", "./Resources/Sound/dig/stone2.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("DIG_STONE_3", "./Resources/Sound/dig/stone3.ogg"))) return E_FAIL;
@@ -3027,6 +3048,25 @@ HRESULT CGameInstance::InitializeMCSoundResource()
 	if (FAILED(funcSoundAdd("DIG_GRASS_2", "./Resources/Sound/dig/grass2.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("DIG_GRASS_3", "./Resources/Sound/dig/grass3.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("DIG_GRASS_4", "./Resources/Sound/dig/grass4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("DIG_SAND_1", "./Resources/Sound/dig/sand1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_SAND_2", "./Resources/Sound/dig/sand2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_SAND_3", "./Resources/Sound/dig/sand3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_SAND_4", "./Resources/Sound/dig/sand4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_1", "./Resources/Sound/block/roots/break1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_2", "./Resources/Sound/block/roots/break2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_3", "./Resources/Sound/block/roots/break3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_4", "./Resources/Sound/block/roots/break4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_5", "./Resources/Sound/block/roots/break5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_6", "./Resources/Sound/block/roots/break6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_1", "./Resources/Sound/block/cherry_leaves/break1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_2", "./Resources/Sound/block/cherry_leaves/break2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_3", "./Resources/Sound/block/cherry_leaves/break3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_4", "./Resources/Sound/block/cherry_leaves/break4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_5", "./Resources/Sound/block/cherry_leaves/break5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_6", "./Resources/Sound/block/cherry_leaves/break6.ogg"))) return E_FAIL;
 
 	if (FAILED(funcSoundAdd("PIG_STEP_1", "./Resources/Sound/mob/pig/step1.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("PIG_STEP_2", "./Resources/Sound/mob/pig/step2.ogg"))) return E_FAIL;
@@ -3563,9 +3603,9 @@ CChunk3* CGameInstance::GetVoxelChunkByWorldBlockCoord(int32_t x, int32_t y, int
 	return m_pVoxelManager3->GetChunkByWorldBlockCoord(x, y, z);
 }
 
-void CGameInstance::VoxelProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block)
+void CGameInstance::VoxelProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound , std::optional<CBlock3> rayCastedBlock)
 {
-	return m_pVoxelManager3->ProcessPlayerBlockSet(wbx, wby, wbz, block);
+	return m_pVoxelManager3->ProcessPlayerBlockSet(wbx, wby, wbz, block, bPlaySound, rayCastedBlock);
 }
 
 void CGameInstance::VoxelProcessExplodeBlock(float wx, float wy, float wz, float fRadius)
