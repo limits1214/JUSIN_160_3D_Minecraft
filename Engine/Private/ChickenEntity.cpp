@@ -306,6 +306,8 @@ void CChickenEntity::Update(E::_float fTimeDelta)
             break;
         }
         m_fSpeed = 4.5f; // 겁먹고 뛰어가는 빠른 속도 (마크 고증)
+        m_fWalkTime += fTimeDelta * 7.0f;
+        m_fWalkWeight += (1.0f - m_fWalkWeight) * fTimeDelta * 8.0f;
         if (pPlayer)
         {
             // 플레이어 반대 방향(도망 방향) 벡터 구하기
