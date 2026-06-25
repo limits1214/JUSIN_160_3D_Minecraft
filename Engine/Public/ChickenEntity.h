@@ -1,5 +1,6 @@
 #pragma once
 #include "AnimalEntityObject.h"
+#include "Timer.h"
 
 NS_BEGIN(Engine)
 class CComEntityModel;
@@ -60,6 +61,9 @@ private:
 	CComEntityModel* m_pComEntityModel{};
 	CComAnimator* m_pComAnimator{ };
 	CComConstantBuffer* m_pComCBufferPerObject{};
+
+private:
+	CTimer m_TimerAmbientSoundPlay{};
 
 
 public:

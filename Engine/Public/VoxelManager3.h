@@ -140,7 +140,7 @@ public:
 	}
 
 public:
-	void ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
+	void ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound = true);
 	void ProcessExplodeBlock(float wbx, float wby, float wbz, float fRadius);
 
 public:

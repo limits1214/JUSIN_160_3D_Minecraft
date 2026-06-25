@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "AnimalEntityObject.h"
+#include "Timer.h"
 
 NS_BEGIN(Engine)
 class CComEntityModel;
@@ -70,6 +71,9 @@ private:
 	// 피격 처리용 변수
 	_bool     m_bIsHit = false;
 	_float    m_fHitTimer = 0.f;
+
+private:
+	CTimer m_TimerAmbientSoundPlay{};
 
 public:
 	static UPtr<CPigEntity> Create();
