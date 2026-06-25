@@ -854,14 +854,6 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
     m_pActivePlayerCamera->GetRay();
     if (m_bMousePressingLeft)
     {
-        if (!m_bDestoryStageStart)
-        {
-            m_bDestoryStageStart = true;
-
-            pDestroyStage->SetRender(true);
-            fElapsed = 0;
-        }
-
         {
             auto hitSound = CBlock3::GetSoundHit(res.block->GetType());
             if (hitSound != "")
@@ -874,51 +866,70 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
                 }
             }
         }
-        fElapsed += fTimeDelta;
 
-        float blockDestroyRate = 1.f;
-        float blockDestroyTime = 0.5f;
-        float goal = blockDestroyTime * blockDestroyRate;
 
-        pDestroyStage->SetFrameIndex(uint32_t(fElapsed / (goal / 9.f)));
-
-        if (res.block)
+        if (!m_bDestoryStageStart)
         {
-            auto currX = res.iWorldBlockX;
-            auto currY = res.iWorldBlockY;
-            auto currZ = res.iWorldBlockZ;
-            switch (res.eHitFace)
-            {
-            case FACE_DIR::POS_X:  currX += 1; break; // +X 면을 쳤으니 오른쪽 공기 칸
-            case FACE_DIR::NEG_X:  currX -= 1; break; // -X 면을 쳤으니 왼쪽 공기 칸
-            case FACE_DIR::POS_Y:  currY += 1; break; // +Y 면(윗면)을 쳤으니 위쪽 공기 칸
-            case FACE_DIR::NEG_Y:  currY -= 1; break; // -Y 면(밑면)을 쳤으니 아래쪽 공기 칸
-            case FACE_DIR::POS_Z:  currZ += 1; break; // +Z 면(앞면)을 쳤으니 앞쪽 공기 칸
-            case FACE_DIR::NEG_Z:  currZ -= 1; break; // -Z 면(뒷면)을 쳤으니 뒤쪽 공기 칸
-            default: break;
-            }
+            m_bDestoryStageStart = true;
 
-            if (auto optLightBlock = CGameInstance::Get().GetVoxelBlock(currX, currY, currZ))
-            {
-                pDestroyStage->SetLight(optLightBlock->GetLight());
-            }
-
-            const auto&[off, halfExt] = CBlock3::GetOutlineExtents(res.block->GetType());
-
-            _float3 vOri = {
-                0.5f + off.x - halfExt.x,
-                0.5f + off.y - halfExt.y,
-                0.5f + off.z - halfExt.z,
-            };
-            _float3 vExt = {
-                halfExt.x * 2.f,
-                halfExt.y * 2.f,
-                halfExt.z * 2.f,
-            };
-
-            //MakeCubeQuads(vOri, vExt);
-            pDestroyStage->MakeCubeQuads(vOri, vExt);
+            pDestroyStage->SetRender(true);
+            fElapsed = 0;
         }
+
+        _bool bISDirectBreakBlock = CBlock3::IsDirectBreakBlock(res.block->GetType());
+        if (bISDirectBreakBlock)
+        {
+            
+        }
+        else
+        {
+            fElapsed += fTimeDelta;
+
+            float blockDestroyRate = 1.f;
+            float blockDestroyTime = 0.5f;
+            float goal = blockDestroyTime * blockDestroyRate;
+
+
+            pDestroyStage->SetFrameIndex(uint32_t(fElapsed / (goal / 9.f)));
+            if (res.block)
+            {
+                auto currX = res.iWorldBlockX;
+                auto currY = res.iWorldBlockY;
+                auto currZ = res.iWorldBlockZ;
+                switch (res.eHitFace)
+                {
+                case FACE_DIR::POS_X:  currX += 1; break; // +X 면을 쳤으니 오른쪽 공기 칸
+                case FACE_DIR::NEG_X:  currX -= 1; break; // -X 면을 쳤으니 왼쪽 공기 칸
+                case FACE_DIR::POS_Y:  currY += 1; break; // +Y 면(윗면)을 쳤으니 위쪽 공기 칸
+                case FACE_DIR::NEG_Y:  currY -= 1; break; // -Y 면(밑면)을 쳤으니 아래쪽 공기 칸
+                case FACE_DIR::POS_Z:  currZ += 1; break; // +Z 면(앞면)을 쳤으니 앞쪽 공기 칸
+                case FACE_DIR::NEG_Z:  currZ -= 1; break; // -Z 면(뒷면)을 쳤으니 뒤쪽 공기 칸
+                default: break;
+                }
+
+                if (auto optLightBlock = CGameInstance::Get().GetVoxelBlock(currX, currY, currZ))
+                {
+                    pDestroyStage->SetLight(optLightBlock->GetLight());
+                }
+
+                const auto& [off, halfExt] = CBlock3::GetOutlineExtents(res.block->GetType());
+
+                _float3 vOri = {
+                    0.5f + off.x - halfExt.x,
+                    0.5f + off.y - halfExt.y,
+                    0.5f + off.z - halfExt.z,
+                };
+                _float3 vExt = {
+                    halfExt.x * 2.f,
+                    halfExt.y * 2.f,
+                    halfExt.z * 2.f,
+                };
+
+                //MakeCubeQuads(vOri, vExt);
+                pDestroyStage->MakeCubeQuads(vOri, vExt);
+            }
+        }
+        
         
         
         //res.block.value(), 
@@ -941,12 +952,12 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             1,
             vColor);
 
-        if (pDestroyStage->GetFrameIndex() == 9)
+        if (pDestroyStage->GetFrameIndex() == 9 || bISDirectBreakBlock)
         {
             CGameInstance::Get().AddParticleRenderDestruct(
                 { (float)res.iWorldBlockX + 0.5f, (float)res.iWorldBlockY + 0.5f, (float)res.iWorldBlockZ + 0.5f },
                 iPackedTexID,
-                1,
+                bISDirectBreakBlock ? 60 : 2,
                 vColor);
 
             CBlock3 newBlock{};
@@ -1226,7 +1237,7 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
             {
                 if (hotbarItemInfo->block)
                 {
-                    CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, hotbarItemInfo->block.value());
+                    CGameInstance::Get().VoxelProcessPlayerBlockSet(worldBX, worldBY, worldBZ, hotbarItemInfo->block.value(), true, res.block);
 
                     if (hotbarItemInfo->iCnt <= 1)
                     {
