@@ -241,7 +241,7 @@ _bool CVoxelManager3::BlockRaycast(const _float3& rayOrigin, const _float3& rayD
 }
 
 
-void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block)
+void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound)
 {
     auto optOldBlock = GetBlock(wbx, wby, wbz);
     if (!optOldBlock.has_value()) return;
@@ -259,11 +259,15 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
 
         // break sound
         {
-            auto breakSound = CBlock3::GetSoundBreak(oldBlock.GetType());
-            if (breakSound != "")
+            if (bPlaySound)
             {
-                CGameInstance::Get().SoundPlay(breakSound, 0.5f);
+                auto breakSound = CBlock3::GetSoundBreak(oldBlock.GetType());
+                if (breakSound != "")
+                {
+                    CGameInstance::Get().SoundPlay(breakSound, 0.5f);
+                }
             }
+            
         }
     }
     else
@@ -303,10 +307,13 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
         // place sound
 
         {
-            auto placeSound = CBlock3::GetSoundPlace(block.GetType());
-            if (placeSound != "")
+            if (bPlaySound)
             {
-                CGameInstance::Get().SoundPlay(placeSound, 0.5f);
+                auto placeSound = CBlock3::GetSoundPlace(block.GetType());
+                if (placeSound != "")
+                {
+                    CGameInstance::Get().SoundPlay(placeSound, 0.5f);
+                }
             }
         }
     }
@@ -348,7 +355,7 @@ void CVoxelManager3::ProcessExplodeBlock(float wbx, float wby, float wbz, float 
 
                         if ( currentBlock->GetType() != CBlock3::TYPE::AIR )
                         {
-                            CGameInstance::Get().VoxelProcessPlayerBlockSet(x, y, z, newBlock);
+                            ProcessPlayerBlockSet(x, y, z, newBlock, false);
 
                             if (currentBlock->GetType() == CBlock3::TYPE::TNT)
                             {

@@ -1,6 +1,6 @@
 #pragma once
 #include "MonsterEntityObject.h"
-
+#include "Timer.h"
 NS_BEGIN(Engine)
 class CComEntityModel;
 class CComAnimator;
@@ -93,6 +93,9 @@ private:
 
 private:
 	CHandle m_hHandHeld{};
+
+private:
+	CTimer m_TimerAmbientSoundPlay{};
 
 public:
 	static UPtr<CSkeletonEntity> Create();

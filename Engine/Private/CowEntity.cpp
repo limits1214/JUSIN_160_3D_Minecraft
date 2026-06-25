@@ -66,6 +66,8 @@ HRESULT CCowEntity::Initialize(void* pArg)
     m_pCenterCollider = CCollBox::Create({ 0.f, 0.49f, 0.f }, { 0.49f, 0.99f, 0.49f });
     m_pCenterCollider->SetInnerPointer(this);
 
+    m_TimerAmbientSoundPlay.Set_GoalTime(2.f + Randf(0.f, 1.f));
+
     return S_OK;
 }
 
@@ -75,7 +77,30 @@ void CCowEntity::PriorityUpdate(E::_float fTimeDelta)
 
 void CCowEntity::Update(E::_float fTimeDelta)
 {
+    if (m_eCurrentState != COW_STATE::DIE)
+    {
+        m_TimerAmbientSoundPlay.AppendCurrTime(fTimeDelta);
+        if (m_TimerAmbientSoundPlay.Get_Finished())
+        {
+            m_TimerAmbientSoundPlay.Set_GoalTime(Randf(3.f, 6.f));
+            if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+            {
+                _vector vDistVec = GetTransform().GetLoadedPostion() - pCam->GetTransform().GetLoadedPostion();
+                float fDistSq = XMVectorGetX(XMVector3LengthSq(vDistVec));
+                constexpr float MaxDistance = 32.f;
+                constexpr float MaxDistanceSq = MaxDistance * MaxDistance;
+                float ratioSq = std::clamp(fDistSq / MaxDistanceSq, 0.f, 1.f);
+                float fMaxVol = 0.1f;
+                float fVol = (1.f - ratioSq) * fMaxVol;
 
+                // 랜덤 재생
+                const char* sounds[] = { "COW_SAY_1", "COW_SAY_2" , "COW_SAY_3", "COW_SAY_4" };
+                CGameInstance::Get().SoundPlay(sounds[RandInt(0, 3)], fVol);
+            }
+
+            m_TimerAmbientSoundPlay.Reset();
+        }
+    }
 
 
     if (m_eCurrentState == COW_STATE::DIE)
@@ -509,19 +534,14 @@ void CCowEntity::TakeDamage(uint32_t iDamage, _vector vAttackerPos)
 
         if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
         {
-            _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
-            _vector vCurrPos = GetTransform().GetLoadedPostion();
-
-            // 거리 계산
-            float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
-            constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
-
-            // 볼륨 감쇄 (0.0 ~ 1.0)
-            float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
-            //float fVol = (1.f - (ratio * ratio)) * 0.5f;
-
+            _vector vDistVec = GetTransform().GetLoadedPostion() - pCam->GetTransform().GetLoadedPostion();
+            float fDistSq = XMVectorGetX(XMVector3LengthSq(vDistVec));
+            constexpr float MaxDistance = 32.f;
+            constexpr float MaxDistanceSq = MaxDistance * MaxDistance;
+            float ratioSq = std::clamp(fDistSq / MaxDistanceSq, 0.f, 1.f);
             float fMaxVol = 0.1f;
-            float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+            float fVol = (1.f - ratioSq) * fMaxVol;
+
             // 랜덤 재생
             const char* sounds[] = { "COW_HURT_1", "COW_HURT_2", "COW_HURT_3" };
             CGameInstance::Get().SoundPlay(sounds[RandInt(0, 2)], fVol);
@@ -530,19 +550,14 @@ void CCowEntity::TakeDamage(uint32_t iDamage, _vector vAttackerPos)
 
     if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
     {
-        _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
-        _vector vCurrPos = GetTransform().GetLoadedPostion();
-
-        // 거리 계산
-        float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
-        constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
-
-        // 볼륨 감쇄 (0.0 ~ 1.0)
-        float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
-        //float fVol = (1.f - (ratio * ratio)) * 0.5f;
-
+        _vector vDistVec = GetTransform().GetLoadedPostion() - pCam->GetTransform().GetLoadedPostion();
+        float fDistSq = XMVectorGetX(XMVector3LengthSq(vDistVec));
+        constexpr float MaxDistance = 32.f;
+        constexpr float MaxDistanceSq = MaxDistance * MaxDistance;
+        float ratioSq = std::clamp(fDistSq / MaxDistanceSq, 0.f, 1.f);
         float fMaxVol = 0.1f;
-        float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+        float fVol = (1.f - ratioSq) * fMaxVol;
+
         // 랜덤 재생
         const char* sounds[] = { "COW_HURT_1", "COW_HURT_2", "COW_HURT_3" };
         CGameInstance::Get().SoundPlay(sounds[RandInt(0, 2)], fVol);

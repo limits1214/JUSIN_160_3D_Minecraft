@@ -1,5 +1,6 @@
 #pragma once
 #include "MonsterEntityObject.h"
+#include "Timer.h"
 
 NS_BEGIN(Engine)
 class CComEntityModel;
@@ -84,7 +85,8 @@ private:
 	CComEntityModel* m_pComEntityModel{};
 	CComAnimator* m_pComAnimator{ };
 	CComConstantBuffer* m_pComCBufferPerObject{};
-
+private:
+	CTimer m_TimerAmbientSoundPlay{};
 public:
 	static UPtr<CZombieEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

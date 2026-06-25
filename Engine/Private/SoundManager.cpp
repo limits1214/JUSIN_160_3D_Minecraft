@@ -117,7 +117,7 @@ HRESULT CSoundManager::CreateSound(const _string& sPath, FMOD_SOUND** ppSound)
 	FMOD_RESULT eRes = FMOD_System_CreateSound(
 		m_pSystem,
 		sPath.c_str(),
-		FMOD_CREATESTREAM, 0, ppSound);
+		FMOD_CREATESAMPLE, 0, ppSound);
 
 	if (eRes != FMOD_OK)
 	{

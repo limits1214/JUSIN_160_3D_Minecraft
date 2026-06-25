@@ -879,19 +879,13 @@ void CCreeperEntity::TakeDamage(uint32_t iDamage, _vector vAttackerPos)
 
         if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
         {
-            _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
-            _vector vCurrPos = GetTransform().GetLoadedPostion();
-
-            // 거리 계산
-            float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
-            constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
-
-            // 볼륨 감쇄 (0.0 ~ 1.0)
-            float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
-            //float fVol = (1.f - (ratio * ratio)) * 0.5f;
-
+            _vector vDistVec = GetTransform().GetLoadedPostion() - pCam->GetTransform().GetLoadedPostion();
+            float fDistSq = XMVectorGetX(XMVector3LengthSq(vDistVec));
+            constexpr float MaxDistance = 32.f;
+            constexpr float MaxDistanceSq = MaxDistance * MaxDistance;
+            float ratioSq = std::clamp(fDistSq / MaxDistanceSq, 0.f, 1.f);
             float fMaxVol = 0.1f;
-            float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+            float fVol = (1.f - ratioSq) * fMaxVol;
 
             // 랜덤 재생
             CGameInstance::Get().SoundPlay("CREEPER_DEATH", fVol);
@@ -903,19 +897,13 @@ void CCreeperEntity::TakeDamage(uint32_t iDamage, _vector vAttackerPos)
 
     if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
     {
-        _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
-        _vector vCurrPos = GetTransform().GetLoadedPostion();
-
-        // 거리 계산
-        float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
-        constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
-
-        // 볼륨 감쇄 (0.0 ~ 1.0)
-        float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
-        //float fVol = (1.f - (ratio * ratio)) * 0.5f;
-
+        _vector vDistVec = GetTransform().GetLoadedPostion() - pCam->GetTransform().GetLoadedPostion();
+        float fDistSq = XMVectorGetX(XMVector3LengthSq(vDistVec));
+        constexpr float MaxDistance = 32.f;
+        constexpr float MaxDistanceSq = MaxDistance * MaxDistance;
+        float ratioSq = std::clamp(fDistSq / MaxDistanceSq, 0.f, 1.f);
         float fMaxVol = 0.1f;
-        float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+        float fVol = (1.f - ratioSq) * fMaxVol;
 
         // 랜덤 재생
         const char* sounds[] = { "CREEPER_SAY_1", "CREEPER_SAY_2", "CREEPER_SAY_3", "CREEPER_SAY_4" };
