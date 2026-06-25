@@ -102,12 +102,13 @@ public:
 	HRESULT CreateSound(const _string& sPath, FMOD_SOUND** ppSound);
 
 	HRESULT SoundAddChannel(const StringID& channelTag, const std::pair<StringID, StringID>& soundResources);
-	HRESULT SoundPlay(const StringID& channelTag);
+	HRESULT SoundPlay(const StringID& channelTag, _float fVolume = 1.f, _float fPitch = 1.f);
 	void SoundStop(const StringID& channelTag);
 	void SoundPause(const StringID& channelTag, _bool bPause);
 	_bool SoundGetVolume(const StringID& channelTag, _float& fVolume);
 	_bool SoundSetVolume(const StringID& channelTag, _float fVolume);
 	_bool SoundIsPlaying(const StringID& channelTag) const;
+	void SoundSetPitch(const StringID& channelTag, float fPitchRatio);
 #pragma endregion
 
 #pragma region DINPUT_MANAGER

@@ -215,6 +215,11 @@ public:
 	CBlock3() = default;
 	CBlock3(TYPE type) : m_eType{ type } {};
 
+	static inline StringID GetSoundBreak(CBlock3::TYPE eType);
+	static inline StringID GetSoundHit(CBlock3::TYPE eType);
+	static inline StringID GetSoundPlace(CBlock3::TYPE eType);
+	static inline StringID GetSoundStep(CBlock3::TYPE eType);
+
 	static inline GEO_TYPE GetGeoType(TYPE e);
 	static inline uint32_t GetBaseColor(CBlock3::TYPE eType);
 	static inline TEX_TYPE GetTexType(TYPE blockType, FACE_DIR faceDir, uint8_t iFlag = 0);
@@ -653,6 +658,61 @@ inline _bool CBlock3::IsFlower(TYPE eType)
 	return false;
 }
 
+static StringID soundDigStone[] =	{ "DIG_STONE_1", "DIG_STONE_2", "DIG_STONE_3", "DIG_STONE_4" };
+static StringID soundDigWood[] =	{ "DIG_WOOD_1", "DIG_WOOD_2", "DIG_WOOD_3", "DIG_WOOD_4" };
+static StringID soundDigGrass[] =	{ "DIG_GRASS_1", "DIG_GRASS_2", "DIG_GRASS_3", "DIG_GRASS_4" };
+static StringID soundStepStone[] =	{ "STEP_STONE_1", "STEP_STONE_2", "STEP_STONE_3", "STEP_STONE_4", "STEP_STONE_5", "STEP_STONE_6" };
+static StringID soundStepWood[] =	{ "STEP_WOOD_1", "STEP_WOOD_2", "STEP_WOOD_3", "STEP_WOOD_4", "STEP_WOOD_5", "STEP_WOOD_6" };
+static StringID soundStepGrass[] =	{ "STEP_GRASS_1", "STEP_GRASS_2", "STEP_GRASS_3", "STEP_GRASS_4", "STEP_GRASS_5", "STEP_GRASS_6" };
+
+inline StringID CBlock3::GetSoundBreak(CBlock3::TYPE eType)
+{
+	auto idx = RandInt(0, 3);
+	
+	switch (eType)
+	{
+	case TYPE::STONE:
+	case TYPE::COBBLESTONE:
+		return soundDigStone[idx];
+	}
+	return "";
+}
+
+inline StringID CBlock3::GetSoundHit(CBlock3::TYPE eType)
+{
+	auto idx = RandInt(0, 5);
+	switch (eType)
+	{
+	case TYPE::STONE:
+	case TYPE::COBBLESTONE:
+		return soundStepStone[idx];
+	}
+	return "";
+}
+
+inline StringID CBlock3::GetSoundPlace(CBlock3::TYPE eType)
+{
+	auto idx = RandInt(0, 3);
+	switch (eType)
+	{
+	case TYPE::STONE:
+	case TYPE::COBBLESTONE:
+		return soundDigStone[idx];
+	}
+	return "";
+}
+
+inline StringID CBlock3::GetSoundStep(CBlock3::TYPE eType)
+{
+	auto idx = RandInt(0, 5);
+	switch (eType)
+	{
+	case TYPE::STONE:
+	case TYPE::COBBLESTONE:
+		return soundStepStone[idx];
+	}
+	return "";
+}
 
 inline CBlock3::GEO_TYPE CBlock3::GetGeoType(TYPE e)
 {

@@ -319,114 +319,114 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
         }
     }
 }
-
-void CArrowEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
-{
-    XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
-    //XMVECTOR vWishDir = XMVectorZero();
-
-    // 가속
-    float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
-    float fAddSpeed = m_fSpeed - fCurrSpeed;
-    if (fAddSpeed > 0.f)
-    {
-        float fAccelSpeed = std::min(18.f * m_fSpeed * fTimeDelta, fAddSpeed);
-        vVel += vWishDir * fAccelSpeed;
-    }
-
-    // 수평 속도 제한
-    XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
-    float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
-    if (fHorizSpeed > m_fSpeed)
-    {
-        vHoriz = XMVector3Normalize(vHoriz) * m_fSpeed;
-        vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
-    }
-
-    // 마찰
-    if (m_bOnGround)
-    {
-        float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
-        if (fSpeed > 0.f)
-        {
-            // 의지 방향이 없거나(IDLE 등), 현재 속도가 가고 싶은 속도보다 빠르면 마찰 적용
-            if (XMVectorGetX(XMVector3Length(vWishDir)) < 0.01f || fSpeed > m_fSpeed)
-            {
-                float fNewSpeed = std::max(fSpeed - fSpeed * 15.f * fTimeDelta, 0.f);
-                float vy = XMVectorGetY(vVel);
-                vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
-            }
-        }
-    }
-
-    // 중력
-    if (!m_bOnGround)
-        vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
-
-    // AABB 충돌
-    const XMFLOAT3 halfExtents = { 0.49f, 0.49f, 0.49f };
-    XMFLOAT3 pos = GetTransform().GetPosition();
-
-    _float fAddY = 0.49f;
-    XMFLOAT3 c = { pos.x, pos.y + fAddY, pos.z };
-
-
-    // Y
-    float velY = XMVectorGetY(vVel);
-    float prevY = c.y;
-    c.y += velY * fTimeDelta;
-    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
-    {
-        if (velY < 0.f)
-        {
-            c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;
-            m_bOnGround = true;
-        }
-        else c.y = prevY;
-        vVel = XMVectorSetY(vVel, 0.f);
-    }
-    else m_bOnGround = false;
-
-    _bool bHitWall = false; // 이번 프레임에 벽에 막혔는가?
-
-    // [X 축 충돌 검사]
-    float px = c.x;
-    c.x += XMVectorGetX(vVel) * fTimeDelta;
-    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
-    {
-        c.x = px;
-        vVel = XMVectorSetX(vVel, 0.f);
-
-        //  움직이려는 의지(vWishDir)가 있는데 X축이 막혔다면 벽에 박은 것!
-        if (fabsf(XMVectorGetX(vWishDir)) > 0.01f)
-            bHitWall = true;
-    }
-
-    // [Z 축 충돌 검사]
-    float pz = c.z;
-    c.z += XMVectorGetZ(vVel) * fTimeDelta;
-    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
-    {
-        c.z = pz;
-        vVel = XMVectorSetZ(vVel, 0.f);
-
-        //  움직이려는 의지(vWishDir)가 있는데 Z축이 막혔다면 벽에 박은 것!
-        if (fabsf(XMVectorGetZ(vWishDir)) > 0.01f)
-            bHitWall = true;
-    }
-
-
-    if (m_bOnGround && bHitWall)
-    {
-        // 마인크래프트 고증 점프 속도 (상황에 따라 5.0f ~ 6.0f 사이 조절)
-        vVel = XMVectorSetY(vVel, 6.5f);
-        m_bOnGround = false; // 공중에 떴으므로 상태 변경
-    }
-
-    // 최종 좌표 적용 및 속도 백업
-    GetTransform().SetPosition(_float3{ c.x, c.y - fAddY, c.z });
-    XMStoreFloat3(&m_vVelocity, vVel);
-}
+//
+//void CArrowEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
+//{
+//    XMVECTOR vVel = XMLoadFloat3(&m_vVelocity);
+//    //XMVECTOR vWishDir = XMVectorZero();
+//
+//    // 가속
+//    float fCurrSpeed = XMVectorGetX(XMVector3Dot(XMVectorSetY(vVel, 0.f), vWishDir));
+//    float fAddSpeed = m_fSpeed - fCurrSpeed;
+//    if (fAddSpeed > 0.f)
+//    {
+//        float fAccelSpeed = std::min(18.f * m_fSpeed * fTimeDelta, fAddSpeed);
+//        vVel += vWishDir * fAccelSpeed;
+//    }
+//
+//    // 수평 속도 제한
+//    XMVECTOR vHoriz = XMVectorSetY(vVel, 0.f);
+//    float fHorizSpeed = XMVectorGetX(XMVector3Length(vHoriz));
+//    if (fHorizSpeed > m_fSpeed)
+//    {
+//        vHoriz = XMVector3Normalize(vHoriz) * m_fSpeed;
+//        vVel = XMVectorSetY(vHoriz, XMVectorGetY(vVel));
+//    }
+//
+//    // 마찰
+//    if (m_bOnGround)
+//    {
+//        float fSpeed = XMVectorGetX(XMVector3Length(XMVectorSetY(vVel, 0.f)));
+//        if (fSpeed > 0.f)
+//        {
+//            // 의지 방향이 없거나(IDLE 등), 현재 속도가 가고 싶은 속도보다 빠르면 마찰 적용
+//            if (XMVectorGetX(XMVector3Length(vWishDir)) < 0.01f || fSpeed > m_fSpeed)
+//            {
+//                float fNewSpeed = std::max(fSpeed - fSpeed * 15.f * fTimeDelta, 0.f);
+//                float vy = XMVectorGetY(vVel);
+//                vVel = XMVectorSetY(vVel * (fNewSpeed / fSpeed), vy);
+//            }
+//        }
+//    }
+//
+//    // 중력
+//    if (!m_bOnGround)
+//        vVel = XMVectorSetY(vVel, XMVectorGetY(vVel) - 20.f * fTimeDelta);
+//
+//    // AABB 충돌
+//    const XMFLOAT3 halfExtents = { 0.49f, 0.49f, 0.49f };
+//    XMFLOAT3 pos = GetTransform().GetPosition();
+//
+//    _float fAddY = 0.49f;
+//    XMFLOAT3 c = { pos.x, pos.y + fAddY, pos.z };
+//
+//
+//    // Y
+//    float velY = XMVectorGetY(vVel);
+//    float prevY = c.y;
+//    c.y += velY * fTimeDelta;
+//    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+//    {
+//        if (velY < 0.f)
+//        {
+//            c.y = floorf(c.y - halfExtents.y) + 1.f + halfExtents.y + 0.001f;
+//            m_bOnGround = true;
+//        }
+//        else c.y = prevY;
+//        vVel = XMVectorSetY(vVel, 0.f);
+//    }
+//    else m_bOnGround = false;
+//
+//    _bool bHitWall = false; // 이번 프레임에 벽에 막혔는가?
+//
+//    // [X 축 충돌 검사]
+//    float px = c.x;
+//    c.x += XMVectorGetX(vVel) * fTimeDelta;
+//    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+//    {
+//        c.x = px;
+//        vVel = XMVectorSetX(vVel, 0.f);
+//
+//        //  움직이려는 의지(vWishDir)가 있는데 X축이 막혔다면 벽에 박은 것!
+//        if (fabsf(XMVectorGetX(vWishDir)) > 0.01f)
+//            bHitWall = true;
+//    }
+//
+//    // [Z 축 충돌 검사]
+//    float pz = c.z;
+//    c.z += XMVectorGetZ(vVel) * fTimeDelta;
+//    if (CGameInstance::Get().VoxelAABBOverlap(c, halfExtents))
+//    {
+//        c.z = pz;
+//        vVel = XMVectorSetZ(vVel, 0.f);
+//
+//        //  움직이려는 의지(vWishDir)가 있는데 Z축이 막혔다면 벽에 박은 것!
+//        if (fabsf(XMVectorGetZ(vWishDir)) > 0.01f)
+//            bHitWall = true;
+//    }
+//
+//
+//    if (m_bOnGround && bHitWall)
+//    {
+//        // 마인크래프트 고증 점프 속도 (상황에 따라 5.0f ~ 6.0f 사이 조절)
+//        vVel = XMVectorSetY(vVel, 6.5f);
+//        m_bOnGround = false; // 공중에 떴으므로 상태 변경
+//    }
+//
+//    // 최종 좌표 적용 및 속도 백업
+//    GetTransform().SetPosition(_float3{ c.x, c.y - fAddY, c.z });
+//    XMStoreFloat3(&m_vVelocity, vVel);
+//}
 
 void CArrowEntity::UpdateArrowLiftTime(_float fTimeDelta)
 {
@@ -470,6 +470,7 @@ void CArrowEntity::UpdateArrowLiftTime(_float fTimeDelta)
 
 void CArrowEntity::UpdateArrowVelocity2(_float fTimeDelta)
 {
+    _bool bBeforeOnGround = m_bOnGround;
     //if (m_bOnGround)
     //{
     //    auto pos = GetTransform().GetPosition();
@@ -525,9 +526,14 @@ void CArrowEntity::UpdateArrowVelocity2(_float fTimeDelta)
     // 충돌 시 화살은 멈추거나 박혀야 함
     if (CGameInstance::Get().VoxelAABBOverlap(nextPos, halfExtents))
     {
+        
+
+
         // 벽/바닥 충돌 시 화살 속도 초기화 (박힌 상태)
         //vVel *= fTimeDelta;
         m_bOnGround = true; // 박혔음을 지면 상태로 간주
+
+
     }
     else
     {
@@ -553,6 +559,31 @@ void CArrowEntity::UpdateArrowVelocity2(_float fTimeDelta)
     }
 
     XMStoreFloat3(&m_vVelocity, vVel);
+
+
+    if (!bBeforeOnGround && m_bOnGround)
+    {
+        if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+        {
+            _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
+            _vector vCurrPos = GetTransform().GetLoadedPostion();
+
+            // 거리 계산
+            float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
+            constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
+
+            // 볼륨 감쇄 (0.0 ~ 1.0)
+            float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
+            //float fVol = (1.f - (ratio * ratio)) * 0.5f;
+
+            float fMaxVol = 0.1f;
+            float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+
+            // 랜덤 재생
+            const char* explodeSounds[] = { "BOW_HIT_1", "BOW_HIT_2", "BOW_HIT_3", "BOW_HIT_4" };
+            CGameInstance::Get().SoundPlay(explodeSounds[RandInt(0, 3)], fVol);
+        }
+    }
 }
 
 void CArrowEntity::Shoot(const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed, _bool bArrowBomb)
@@ -565,6 +596,25 @@ void CArrowEntity::Shoot(const DirectX::XMVECTOR& vStartPos, const DirectX::XMVE
     DirectX::XMStoreFloat3(&m_vVelocity, vVelocity);
     m_fSpeed = fSpeed;
     m_bArrowBomb = bArrowBomb;
+
+    if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+    {
+        _vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
+        _vector vCurrPos = GetTransform().GetLoadedPostion();
+
+        // 거리 계산
+        float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
+        constexpr float MaxDistance = 32.f * 1.f; // 32 * 5
+
+        // 볼륨 감쇄 (0.0 ~ 1.0)
+        float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
+        //float fVol = (1.f - (ratio * ratio)) * 0.5f;
+
+        float fMaxVol = 0.1f;
+        float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+
+        CGameInstance::Get().SoundPlay("BOW", fVol);
+    }
 }
 
 UPtr<CArrowEntity> CArrowEntity::Create()

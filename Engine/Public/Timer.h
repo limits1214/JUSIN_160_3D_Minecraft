@@ -15,12 +15,19 @@ public:
 	_bool Get_Finished() const { return m_bFinished; }
 	_bool Get_JustFinished() const { return m_bJustFinished; }
 
-	void Reset() { m_currTime = 0.f; m_bFinished = false; m_bJustFinished = false; }
-	void Reset(float fResetTime) { m_currTime = fResetTime; m_bFinished = false; m_bJustFinished = false; }
+	_bool Get_Resetted() const { return m_bResetted; }
+
+	void Reset() { m_currTime = 0.f; m_bFinished = false; m_bJustFinished = false; m_bResetted = true; }
+	void Reset(float fResetTime) { m_currTime = fResetTime; m_bFinished = false; m_bJustFinished = false;  m_bResetted = true;
+	}
 
 public:
 	void AppendCurrTime(float time)
 	{
+		if (m_bResetted)
+		{
+			m_bResetted = false;
+		}
 		if (m_bHasGoalTime)
 		{
 			float cachedCurrTime = m_currTime;
@@ -53,6 +60,7 @@ private:
 	_bool m_bJustFinished{ false };
 	_bool m_bFinished{ false };
 	_bool m_bHasGoalTime{ false };
+	_bool m_bResetted{ true };
 };
 
 NS_END

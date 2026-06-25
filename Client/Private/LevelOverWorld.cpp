@@ -136,7 +136,7 @@ HRESULT CLevelOverWorld::Initialize()
 		E::CPlayerEntity::DESC Desc{};
 		Desc.sObjectTag = "Player";
 		if (auto playerHandle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PlayerEntity",
-			"01_ENTITY", &Desc))
+			"01_PLAYER", &Desc))
 		{
 			if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CPlayerEntity>(playerHandle.value()))
 			{

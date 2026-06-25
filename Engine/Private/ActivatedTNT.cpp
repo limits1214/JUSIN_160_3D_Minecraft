@@ -21,6 +21,30 @@ CActivatedTNT::CActivatedTNT()
 
 void CActivatedTNT::ExplodeAndDamageColliding(_float3 vPos, _float fExplodeRadius, uint32_t iDamage, uint32_t iExplodeSmokeParticleCnt)
 {
+	{
+		if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+		{
+			_vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
+			_vector vCurrPos = XMLoadFloat3(&vPos);
+
+			// 거리 계산
+			float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
+			constexpr float MaxDistance = 32.f * 2.f; // 32 * 5
+
+			// 볼륨 감쇄 (0.0 ~ 1.0)
+			float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
+			//float fVol = (1.f - (ratio * ratio)) * 0.5f;
+
+			float fMaxVol = 0.1f;
+			float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+
+			// 랜덤 재생
+			const char* explodeSounds[] = { "EXPLODE_1", "EXPLODE_2", "EXPLODE_3", "EXPLODE_4" };
+			auto iasdfnt = RandInt(0, 3);
+			CGameInstance::Get().SoundPlay(explodeSounds[iasdfnt], fVol);
+		}
+			
+	}
 	CGameInstance::Get().VoxelProcessExplodeBlock(vPos.x, vPos.y, vPos.z, fExplodeRadius);
 	CGameInstance::Get().AddParticleRenderExplodeSmoke(vPos, iExplodeSmokeParticleCnt);
 
@@ -408,6 +432,31 @@ HRESULT CActivatedTNT::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 	}
 
 	pContext->DrawIndexedInstanced((UINT)viBuffer->GetNumIndices(), (UINT)m_vecInstancedBlockTransform.size(), 0, 0, 0);
+	return S_OK;
+}
+HRESULT CActivatedTNT::AddBlock(SActivatedTNTData& data)
+{
+	data.fTargetFuseTime = 3.5f + (rand() % 100 / 100.f);
+	m_vecActivatedTNT.push_back(data);
+	
+	if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+	{
+		_vector vCamPos = XMLoadFloat3(&pCam->GetTransform().GetPosition());
+		_vector vCurrPos = XMLoadFloat3(&data.vPos);
+
+		// 거리 계산
+		float fDist = XMVectorGetX(XMVector3Length(vCurrPos - vCamPos));
+		constexpr float MaxDistance = 32.f * 2.f; // 32 * 5
+
+		// 볼륨 감쇄 (0.0 ~ 1.0)
+		float ratio = std::clamp(fDist / MaxDistance, 0.f, 1.f);
+		//float fVol = (1.f - (ratio * ratio)) * 0.5f;
+
+		float fMaxVol = 0.1f;
+		float fVol = (1.f - (ratio * ratio)) * fMaxVol;
+
+		CGameInstance::Get().SoundPlay("FUSE", fVol);
+	}
 	return S_OK;
 }
 void CActivatedTNT::VelocityUpdate(E::_float fTimeDelta, SActivatedTNTData& tntData)

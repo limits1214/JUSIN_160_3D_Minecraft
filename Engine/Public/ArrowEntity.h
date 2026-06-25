@@ -53,7 +53,7 @@ private:
 	void UpdateArrowLiftTime(_float fTimeDelta);
 	//void UpdateArrowVelocity(_float fTimeDelta);
 	void UpdateArrowVelocity2(_float fTimeDelta);
-	void VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir);
+	//void VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir);
 	bool m_bStuck = false;
 	XMFLOAT3 m_vStuckDir;
 	XMFLOAT3 m_vLookDir = { 0.f, 0.f, 1.f };

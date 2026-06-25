@@ -22,57 +22,69 @@ void CSoundManager::UpdateGUI()
 		
 		for (const auto& [k, v] : m_mapChannels)
 		{
-			ImGui::Separator();
-			
-			// 1. 음량 가져오기
-			float fVolume = 0.0f;
-			FMOD_Channel_GetVolume(v.pChannel, &fVolume);
+			if (ImGui::TreeNode(k.GetDbgStr()))
+			{
+				// 1. 음량 가져오기
+				float fVolume = 0.0f;
+				FMOD_Channel_GetVolume(v.pChannel, &fVolume);
 
-			// 2. 일시정지 상태 확인
-			FMOD_BOOL bPaused = false;
-			FMOD_Channel_GetPaused(v.pChannel, &bPaused);
+				// 2. 일시정지 상태 확인
+				FMOD_BOOL bPaused = false;
+				FMOD_Channel_GetPaused(v.pChannel, &bPaused);
 
-			// 3. 현재 재생 위치 가져오기 (단위: 밀리초)
-			unsigned int nMs = 0;
-			FMOD_Channel_GetPosition(v.pChannel, &nMs, FMOD_TIMEUNIT_MS);
+				// 3. 현재 재생 위치 가져오기 (단위: 밀리초)
+				unsigned int nMs = 0;
+				FMOD_Channel_GetPosition(v.pChannel, &nMs, FMOD_TIMEUNIT_MS);
 
-			// 4. 주파수(피치) 가져오기
-			float fFrequency = 0.0f;
-			FMOD_Channel_GetFrequency(v.pChannel, &fFrequency);
+				// 4. 주파수(피치) 가져오기
+				float fFrequency = 0.0f;
+				FMOD_Channel_GetFrequency(v.pChannel, &fFrequency);
 
-			ImGui::Text(k.GetDbgStr());
-			ImGui::Text("isPlayer: %i", IsPlaying(k));
-			ImGui::Text("fVolume: %f", fVolume);
-			ImGui::Text("bPaused: %i", bPaused);
-			ImGui::Text("nMs: %i", nMs);
-			ImGui::Text("fFrequency: %f", fFrequency);
-			if (ImGui::Button("Play"))
-			{
-				Play(k);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Stop"))
-			{
-				Stop(k);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Pause"))
-			{
-				Pause(k, true);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Resume"))
-			{
-				Pause(k, false);
-			}
-			_float fCurrVol;
-			if (GetVolume(k, fCurrVol))
-			{
-				if (ImGui::DragFloat("Vol", &fCurrVol, 0.1f, 0.f, 1.f))
+				ImGui::Text(k.GetDbgStr());
+				ImGui::Text("isPlayer: %i", IsPlaying(k));
+				ImGui::Text("fVolume: %f", fVolume);
+				ImGui::Text("bPaused: %i", bPaused);
+				ImGui::Text("nMs: %i", nMs);
+				ImGui::Text("fFrequency: %f", fFrequency);
+				if (ImGui::Button("Play"))
 				{
-					SetVolume(k, fCurrVol);
+					Play(k);
 				}
+				ImGui::SameLine();
+				if (ImGui::Button("Stop"))
+				{
+					Stop(k);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Pause"))
+				{
+					Pause(k, true);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Resume"))
+				{
+					Pause(k, false);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("PlayLoop"))
+				{
+					PlayLoop(k);
+				}
+				_float fCurrVol;
+				if (GetVolume(k, fCurrVol))
+				{
+					if (ImGui::DragFloat("Vol", &fCurrVol, 0.1f, 0.f, 1.f))
+					{
+						SetVolume(k, fCurrVol);
+					}
+				}
+
+
+				ImGui::TreePop();
 			}
+			//ImGui::Separator();
+			
+			
 		}
 
 		ImGui::TreePop();
@@ -169,6 +181,83 @@ HRESULT CSoundManager::Play(const StringID& channelTag)
 	return S_OK;
 }
 
+HRESULT CSoundManager::Play(const StringID& channelTag, _float fVolume)
+{
+	auto iter = m_mapChannels.find(channelTag);
+	if (iter == m_mapChannels.end())
+	{
+		return E_FAIL;
+	}
+
+	for (auto& [_, __, pSound] : iter->second.vecRes)
+	{
+		FMOD_System_PlaySound(
+			m_pSystem,
+			pSound->GetSound(),
+			NULL,
+			false,
+			&iter->second.pChannel
+		);
+		FMOD_Channel_SetVolume(iter->second.pChannel, fVolume);
+	}
+
+	return S_OK;
+}
+
+HRESULT CSoundManager::Play(const StringID& channelTag, _float fVolume, _float fPitch)
+{
+	auto iter = m_mapChannels.find(channelTag);
+	if (iter == m_mapChannels.end())
+	{
+		return E_FAIL;
+	}
+
+	for (auto& [_, __, pSound] : iter->second.vecRes)
+	{
+		FMOD_System_PlaySound(
+			m_pSystem,
+			pSound->GetSound(),
+			NULL,
+			false,
+			&iter->second.pChannel
+		);
+		FMOD_Channel_SetVolume(iter->second.pChannel, fVolume);
+
+		// 1. 해당 채널의 기본 주파수(Frequency)를 가져옵니다.
+		float fBaseFrequency = 0.0f;
+		FMOD_Channel_GetFrequency(iter->second.pChannel, &fBaseFrequency);
+
+		// 2. 비율을 곱하여 새로운 주파수 설정
+		// fPitchRatio가 1.2면 20% 상승, 0.8이면 20% 하락
+		FMOD_Channel_SetFrequency(iter->second.pChannel, fBaseFrequency * fPitch);
+	}
+
+	return S_OK;
+}
+
+HRESULT CSoundManager::PlayLoop(const StringID& channelTag)
+{
+	auto iter = m_mapChannels.find(channelTag);
+	if (iter == m_mapChannels.end())
+	{
+		return E_FAIL;
+	}
+
+	for (auto& [_, __, pSound] : iter->second.vecRes)
+	{
+		FMOD_System_PlaySound(
+			m_pSystem,
+			pSound->GetSound(),
+			NULL,
+			false,
+			&iter->second.pChannel
+		);
+		FMOD_Channel_SetMode(iter->second.pChannel, FMOD_LOOP_NORMAL);
+	}
+
+	return S_OK;
+}
+
 void CSoundManager::Stop(const StringID& channelTag)
 {
 	auto iter = m_mapChannels.find(channelTag);
@@ -225,6 +314,21 @@ _bool CSoundManager::IsPlaying(const StringID& channelTag) const
 	FMOD_Channel_IsPlaying(iter->second.pChannel, &bIsPlaying);
 
 	return (bIsPlaying == true);
+}
+
+void CSoundManager::SetPitch(const StringID& channelTag, float fPitchRatio)
+{
+	auto iter = m_mapChannels.find(channelTag);
+	if (iter != m_mapChannels.end() && iter->second.pChannel != nullptr)
+	{
+		// 1. 해당 채널의 기본 주파수(Frequency)를 가져옵니다.
+		float fBaseFrequency = 0.0f;
+		FMOD_Channel_GetFrequency(iter->second.pChannel, &fBaseFrequency);
+
+		// 2. 비율을 곱하여 새로운 주파수 설정
+		// fPitchRatio가 1.2면 20% 상승, 0.8이면 20% 하락
+		FMOD_Channel_SetFrequency(iter->second.pChannel, fBaseFrequency * fPitchRatio);
+	}
 }
 
 UPtr<CSoundManager> CSoundManager::Create()
