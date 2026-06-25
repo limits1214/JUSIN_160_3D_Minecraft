@@ -72,6 +72,17 @@ void CPlayerCamera::Update(E::_float fTimeDelta)
         vFinalPos += XMVectorSet(fOffsetX, fOffsetY, fOffsetZ, 0.f);
         GetTransform().SetPosition(vFinalPos);
     }
+
+
+    if (CGameInstance::Get().KeyPressing(DIK_LEFT))
+    {
+        GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(360.f) * fTimeDelta);
+    }
+
+    if (CGameInstance::Get().KeyPressing(DIK_RIGHT))
+    {
+        GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -XMConvertToRadians(360.f) * fTimeDelta);
+    }
 }
 
 void CPlayerCamera::LateUpdate(E::_float fTimeDelta)

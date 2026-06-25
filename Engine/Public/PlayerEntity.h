@@ -245,6 +245,9 @@ private:
 public:
 	void TakeDamage(int32_t iDamage, _bool bIsNoArmor = false);
 
+private:
+	_float3 m_vLastDeathPos{};
+
 public:
 	_bool GetDeath() const { return m_bDeath; }
 private:

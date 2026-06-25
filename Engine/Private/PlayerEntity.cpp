@@ -544,6 +544,36 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
 
     SyncBless();
 
+
+    if (CGameInstance::Get().KeyDown(DIK_G))
+    {
+        if (m_eModeType == MODE_TYPE::GOD)
+        {
+            m_eModeType = MODE_TYPE::GRAVITY;
+        }
+        else if (m_eModeType == MODE_TYPE::GRAVITY)
+        {
+            m_eModeType = MODE_TYPE::GOD;
+        }
+    }
+
+    if (CGameInstance::Get().KeyDown(DIK_C))
+    {
+        if (m_eCameraType == CAMERA_TYPE::FPS)
+        {
+            m_eCameraType = CAMERA_TYPE::TPS;
+        }
+        else if (m_eCameraType == CAMERA_TYPE::TPS)
+        {
+            m_eCameraType = CAMERA_TYPE::FPS;
+        }
+    }
+
+    if (CGameInstance::Get().KeyDown(DIK_I))
+    {
+        ReadyPlayerItem();
+    }
+
 }
 
 void CPlayerEntity::Update(E::_float fTimeDelta)
@@ -1948,6 +1978,15 @@ void CPlayerEntity::ProcessHandHeldItem(float fTimeDelta)
                 if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CHandHeldItem>(pLayer->front()))
                 {
                     pHandHeldObj = pObj;
+
+                    auto pos = GetTransform().GetPosition();
+                    int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+                    int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1.8));
+                    int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+                    if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+                    {
+                        pHandHeldObj->SetLight(optCurrBlock->GetLight());
+                    }
                     //pObj->AddDropItemObject(info, pos, vel, { CItemObject::GetPackedTexIdByType(info.eItemType) });
                 }
             }
@@ -4797,6 +4836,7 @@ void CPlayerEntity::JudgeDeathUpdate(int32_t iDamage)
         }
         GetUIController()->GetDeathScreen()->SetPlayer(GetHandle());
         m_bDeath = true;
+        m_vLastDeathPos = GetTransform().GetPosition();
     }
     else
     {
@@ -4809,13 +4849,21 @@ void CPlayerEntity::ReSpawnFromDeath()
     m_bDeath = false;
     m_iHalfHealth = 20;
     m_iHalfHunger = 20;
-    GetTransform().SetPosition(_float3{ 0.5f, 70.f, 0.5f });
+
+    _float3 newPos = m_vLastDeathPos;
+    newPos.y += 5.f;
+
+    //GetTransform().SetPosition(_float3{ 0.5f, 70.f, 0.5f });
+    GetTransform().SetPosition(m_vLastDeathPos);
 
     GetTransform().SetQuaternion(XMVectorSet(0.f, 0.f, 0.f, 1.f));
 
     m_fDeathAnimTimer = 0.f;
 
     m_eCameraType = CAMERA_TYPE::FPS;
+    m_eModeType = MODE_TYPE::GRAVITY;
+
+    ;
 }
 
 void CPlayerEntity::ProcessUIStatus(_float fTimeDelta)

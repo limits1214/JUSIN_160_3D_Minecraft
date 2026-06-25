@@ -48,7 +48,7 @@ std::optional<CBlock3> CVoxelManager3::GetBlock(int32_t wbx, int32_t wby, int32_
     return GetBlockByChunkCoord(encodeChunkCoord(cx, cy, cz), cbx, cby, cbz);
 }
 
-void CVoxelManager3::SetBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block)
+void CVoxelManager3::SetBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bRecord)
 {
     int32_t cx = FloorDiv(wbx, (int32_t)VOXEL_CHUNK_X_SIZE3);
     int32_t cy = FloorDiv(wby, (int32_t)VOXEL_CHUNK_Y_SIZE3);
@@ -62,6 +62,15 @@ void CVoxelManager3::SetBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 blo
     uint64_t chunkIdx = encodeChunkCoord(cx, cy, cz);
 
     m_EditShadow[chunkIdx][blockIdx] = block;  // unordered_map은 []로 한번에 처리 가능
+
+    
+    if (bRecord)
+    {
+        std::unique_lock<std::shared_mutex> lock(m_editMutex); // 쓰기 잠금
+        m_mapEditedBlock[chunkIdx][blockIdx] = block;
+    }
+    //m_mapEditedBlock[chunkIdx][blockIdx] = block;
+   
 }
 
 void CVoxelManager3::SetBlocks(std::vector<std::tuple<int32_t, int32_t, int32_t, CBlock3>> blocks)
@@ -249,7 +258,7 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
 
     if (block.GetType() == CBlock3::TYPE::AIR)
     {
-        SetBlock(wbx, wby, wbz, block);
+        SetBlock(wbx, wby, wbz, block, true);
 
         TriggerWaterUpdateAround(wbx, wby, wbz);
         TriggerLavaUpdateAround(wbx, wby, wbz);
@@ -300,7 +309,7 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
         TriggerWaterUpdateAround(wbx, wby, wbz);
         TriggerLavaUpdateAround(wbx, wby, wbz);
 
-        SetBlock(wbx, wby, wbz, block);
+        SetBlock(wbx, wby, wbz, block, true);
 
         RuntimeOnBlockPlacedLighting(wbx, wby, wbz, oldBlock);
 
@@ -328,6 +337,7 @@ void CVoxelManager3::ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz
             }
         }
     }
+
 }
 
 void CVoxelManager3::ProcessExplodeBlock(float wbx, float wby, float wbz, float fRadius)
@@ -617,7 +627,7 @@ void CVoxelManager3::RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int3
     // ----------------------------------------------------
     block.SetSkyLight(0);
     block.SetBlockLight(placedBlockEmitLight); // 광원이면 자신의 밝기, 일반 블록이면 0
-    SetBlock(wbx, wby, wbz, block);
+    SetBlock(wbx, wby, wbz, block, true);
 
     // ----------------------------------------------------
     // 2. SkyLight 처리 (빛 차단 및 사방 전파)
@@ -708,7 +718,7 @@ void CVoxelManager3::RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int
                 if (maxSkyLight > 1)
                 {
                     block.SetSkyLight(maxSkyLight - 1);
-                    SetBlock(wbx, wby, wbz, block);
+                    SetBlock(wbx, wby, wbz, block, true);
                     skyLightQ.push({ XMINT3{wbx, wby, wbz}, maxSkyLight - 1 });
                 }
             }
@@ -801,7 +811,7 @@ void CVoxelManager3::RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uin
             if (nLight != 0 && nLight == light - 1)
             {
                 nBlock.SetBlockLight(0);
-                SetBlock(nx, ny, nz, nBlock);
+                SetBlock(nx, ny, nz, nBlock, true);
                 q.push({ XMINT3{nx, ny, nz}, nLight });
             }
             // 나를 밝혀주던 다른 독립적인 광원 줄기를 만나면 재전파 큐에 백업
@@ -851,7 +861,7 @@ void CVoxelManager3::RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, 
             if (newLight > nBlock.GetBlockLight())
             {
                 nBlock.SetBlockLight(newLight);
-                SetBlock(nx, ny, nz, nBlock);
+                SetBlock(nx, ny, nz, nBlock, true);
                 q.push({ XMINT3{nx, ny, nz} , newLight });
             }
         }
@@ -908,7 +918,7 @@ void CVoxelManager3::RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, ui
             if (newLight > nBlock.GetSkyLight())
             {
                 nBlock.SetSkyLight(newLight);
-                SetBlock(nx, ny, nz, nBlock);
+                SetBlock(nx, ny, nz, nBlock, true);
                 q.push({ XMINT3{nx, ny, nz} , newLight });
             }
         }
@@ -956,7 +966,7 @@ void CVoxelManager3::RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8
             if (nLight == expectedLight || bIsSkyColumn)
             {
                 nBlock.SetSkyLight(0);
-                SetBlock(nx, ny, nz, nBlock);
+                SetBlock(nx, ny, nz, nBlock, true);
                 q.push({ XMINT3{nx, ny, nz}, nLight });
             }
         }
@@ -1604,6 +1614,61 @@ void CVoxelManager3::Update(_float fTimeDelta)
         }
     }
 
+
+    static float fTmp1 = 0.f;
+    fTmp1 += fTimeDelta;
+
+    if (fTmp1 > 0.5f * 0.1f)
+    {
+        fTmp1 = 0.f;
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
+        {
+            float fx = cam->GetTransform().GetPosition().x;
+            float fy = cam->GetTransform().GetPosition().y;
+            float fz = cam->GetTransform().GetPosition().z;
+            auto ix = (int32_t)floor(fx / VOXEL_CHUNK_X_SIZE3);
+            auto iy = (int32_t)floor(fy / VOXEL_CHUNK_Y_SIZE3);
+            auto iz = (int32_t)floor(fz / VOXEL_CHUNK_Z_SIZE3);
+
+            int32_t cx = FloorDiv((int32_t)fx, (int32_t)VOXEL_CHUNK_X_SIZE3);
+            int32_t cy = FloorDiv((int32_t)fy, (int32_t)VOXEL_CHUNK_Y_SIZE3);
+            int32_t cz = FloorDiv((int32_t)fz, (int32_t)VOXEL_CHUNK_Z_SIZE3);
+
+            IN_RANGE_CHUNK_CREATE_DESC desc{};
+            desc.iCenterX = ix;
+            desc.iCenterY = 0;
+            desc.iCenterZ = iz;
+            QueuingInRangeChunkCreate(desc);
+        }
+    }
+    static float fTmp2 = 0.f;
+    fTmp2 += fTimeDelta;
+
+    if ( fTmp2 > 0.7f * 0.1f)
+    {
+        fTmp2 = 0.f;
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
+        {
+            float fx = cam->GetTransform().GetPosition().x;
+            float fy = cam->GetTransform().GetPosition().y;
+            float fz = cam->GetTransform().GetPosition().z;
+            auto ix = (int32_t)floor(fx / VOXEL_CHUNK_X_SIZE3);
+            auto iy = (int32_t)floor(fy / VOXEL_CHUNK_Y_SIZE3);
+            auto iz = (int32_t)floor(fz / VOXEL_CHUNK_Z_SIZE3);
+
+            int32_t cx = FloorDiv((int32_t)fx, (int32_t)VOXEL_CHUNK_X_SIZE3);
+            int32_t cy = FloorDiv((int32_t)fy, (int32_t)VOXEL_CHUNK_Y_SIZE3);
+            int32_t cz = FloorDiv((int32_t)fz, (int32_t)VOXEL_CHUNK_Z_SIZE3);
+
+            OUT_RANGE_CHUNK_RELEASE_DESC desc{};
+            desc.iCenterX = ix;
+            desc.iCenterY = 0;
+            desc.iCenterZ = iz;
+            QueuingOutRangeChunkRelease(desc);
+        }
+    }
+
+
     // Chunk Update
     {
         for (auto& [idx, pChunk] : m_mapChunks)
@@ -1632,18 +1697,35 @@ void CVoxelManager3::Update(_float fTimeDelta)
     _bool bHasOutRangeChunkRelease= !m_queueOutRangeChunkRelease.empty();
     if (bHasInRangeChuneCreate)
     {
-        IN_RANGE_CHUNK_CREATE_DESC createDesc = m_queueInRangeChunkCreate.front();
-        m_queueInRangeChunkCreate.pop_front();
+        if (m_queueFutBlockFilling.empty()
+            && m_queuedQuadMessingChunks.empty()
+            && !m_futLighting.valid()
+            && m_queueFutQuadMessing.empty()
+            )
+        {
+            IN_RANGE_CHUNK_CREATE_DESC createDesc = m_queueInRangeChunkCreate.front();
+            m_queueInRangeChunkCreate.pop_front();
 
-        StartProcessInRangeChunkCreate(createDesc);
+            StartProcessInRangeChunkCreate(createDesc);
+        }
+        
     }
 
     if (bHasOutRangeChunkRelease)
     {
-        OUT_RANGE_CHUNK_RELEASE_DESC releaseDesc = m_queueOutRangeChunkRelease.front();
-        m_queueOutRangeChunkRelease.pop_front();
+        if (m_queueFutBlockFilling.empty()
+            && m_queuedQuadMessingChunks.empty()
+            && !m_futLighting.valid()
+            && m_queueFutQuadMessing.empty()
+            )
+        {
+            
+            OUT_RANGE_CHUNK_RELEASE_DESC releaseDesc = m_queueOutRangeChunkRelease.front();
+            m_queueOutRangeChunkRelease.pop_front();
 
-        StartProcessOutRangeChunkRelease(releaseDesc);
+            StartProcessOutRangeChunkRelease(releaseDesc);
+        }
+        
     }
 
     UpdateCheckBlockFillingFutures();
@@ -1654,6 +1736,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
 
     if (m_queueFutBlockFilling.empty()
         && m_queuedQuadMessingChunks.empty()
+        && !m_futLighting.valid()
         && m_queueFutQuadMessing.empty()
         )
     {
@@ -1710,6 +1793,10 @@ void CVoxelManager3::UpdateGUI()
             QueuingInRangeChunkCreate(desc);
         }
     }
+
+   
+
+
 
     if (ImGui::Button("Release Cam"))
     {
@@ -2999,7 +3086,7 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
     {
         return S_OK;
     }
-    CGameInstance::Get().ChunkLoadWorkerEnqueue("TMP", [=]() {
+    //CGameInstance::Get().ChunkLoadWorkerEnqueue("TMP", [=]() {
         
         
 
@@ -3018,27 +3105,75 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
             int dist; // 거리 (맨해튼 or 제곱 거리)
         };
 
-        std::vector<ChunkPos> list;
+        int32_t iLimit = 1;
 
-        for (int32_t x = minX; x <= maxX; ++x)
-            for (int32_t y = minY; y <= maxY; ++y)
-                for (int32_t z = minZ; z <= maxZ; ++z)
-                {
+        std::vector<ChunkPos> listDst;
+        // 1. 먼저 가능한 모든 범위의 청크를 리스트에 담는다
+        for (int32_t x = minX; x <= maxX; ++x) {
+            for (int32_t y = minY; y <= maxY; ++y) {
+                for (int32_t z = minZ; z <= maxZ; ++z) {
                     int dx = x - createDesc.iCenterX;
+                    int dy = y - createDesc.iCenterY;
                     int dz = z - createDesc.iCenterZ;
 
-                    // XZ 평면 원 밖이면 스킵
+                    // XZ 평면 원 범위 체크
                     if (dx * dx + dz * dz > m_iRenderDistance * m_iRenderDistance)
                         continue;
 
+                    // 이미 로드된 청크는 제외
                     uint64_t chunkCoord = encodeChunkCoord(x, y, z);
                     if (m_mapChunks.find(chunkCoord) != m_mapChunks.end())
                         continue;
 
-                    int dy = y - createDesc.iCenterY;
+                    // 거리 계산 (제곱 거리)
                     int dist = dx * dx + dy * dy + dz * dz;
-                    list.push_back({ x, y, z, dist });
+                    listDst.push_back({ x, y, z, dist });
                 }
+            }
+        }
+
+        // 2. 거리가 가까운 순(오름차순)으로 정렬
+        std::sort(listDst.begin(), listDst.end(), [](const ChunkPos& a, const ChunkPos& b) {
+            return a.dist < b.dist;
+            });
+        //auto tmp = listDst.begin() += 5;
+        //std::vector<ChunkPos> list{ listDst.begin() , tmp};
+        std::vector<ChunkPos> list{};
+        if (!listDst.empty())
+        {
+            list.push_back(listDst.front());
+        }
+       
+
+        
+
+        if (false)
+        {
+            std::vector<ChunkPos> list;
+            for (int32_t x = minX; x <= maxX; ++x)
+                for (int32_t y = minY; y <= maxY; ++y)
+                    for (int32_t z = minZ; z <= maxZ; ++z)
+                    {
+                        if (list.size() > iLimit)
+                        {
+                            break;
+                        }
+                        int dx = x - createDesc.iCenterX;
+                        int dz = z - createDesc.iCenterZ;
+
+                        // XZ 평면 원 밖이면 스킵
+                        if (dx * dx + dz * dz > m_iRenderDistance * m_iRenderDistance)
+                            continue;
+
+                        uint64_t chunkCoord = encodeChunkCoord(x, y, z);
+                        if (m_mapChunks.find(chunkCoord) != m_mapChunks.end())
+                            continue;
+
+                        int dy = y - createDesc.iCenterY;
+                        int dist = dx * dx + dy * dy + dz * dz;
+                        list.push_back({ x, y, z, dist });
+                    }
+        }
 
         //for (int32_t x = minX; x <= maxX; ++x)
         //    for (int32_t y = minY; y <= maxY; ++y)
@@ -3059,7 +3194,7 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
         //            list.push_back({ x, y, z, dist });
         //        }
 
-        // 중심부터 가까운 순으로 정렬
+        // 중심부터 가까운 순으로 정렬      
         //std::sort(list.begin(), list.end(), [](const ChunkPos& a, const ChunkPos& b) {
         //    return a.dist < b.dist;
         //    });
@@ -3102,41 +3237,78 @@ HRESULT CVoxelManager3::StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREA
         
         
         m_bCreating = false;
-        });
+        //});
     
     return S_OK;
 }
 
 HRESULT CVoxelManager3::StartProcessOutRangeChunkRelease(const OUT_RANGE_CHUNK_RELEASE_DESC& releaseDesc)
 {
-    std::vector<uint64_t> delQ;
-    {
-        int32_t minX = releaseDesc.iCenterX - m_iRenderDistance;
-        int32_t maxX = releaseDesc.iCenterX + m_iRenderDistance;
-        int32_t minZ = releaseDesc.iCenterZ - m_iRenderDistance;
-        int32_t maxZ = releaseDesc.iCenterZ + m_iRenderDistance;
+    //std::vector<uint64_t> delQ;
+    //{
+    //    int32_t minX = releaseDesc.iCenterX - m_iRenderDistance;
+    //    int32_t maxX = releaseDesc.iCenterX + m_iRenderDistance;
+    //    int32_t minZ = releaseDesc.iCenterZ - m_iRenderDistance;
+    //    int32_t maxZ = releaseDesc.iCenterZ + m_iRenderDistance;
 
-        //// Y축 범위 (Vertical Render Distance)
-        //int32_t verticalDistance = m_iVerticalRenderDistance;  // 새로 추가 추천
+    //    //// Y축 범위 (Vertical Render Distance)
+    //    //int32_t verticalDistance = m_iVerticalRenderDistance;  // 새로 추가 추천
+    //    int32_t minY = releaseDesc.iCenterY - m_iVerticalRenderDistance;
+    //    int32_t maxY = releaseDesc.iCenterY + m_iVerticalRenderDistance;
+
+    //    for (const auto& [coord, pChunk] : m_mapChunks)
+    //    {
+    //        if (!pChunk->GetDead())
+    //        {
+    //            auto [x, y, z] = decodeChunkCoord(coord);
+
+    //            // X, Z, Y 모두 체크
+    //            if (x < minX || x > maxX ||
+    //                z < minZ || z > maxZ ||
+    //                y < minY || y > maxY)
+    //            {
+    //                delQ.push_back(coord);
+    //                pChunk->SetDead();
+    //            }
+    //        }
+    //        
+    //    }
+    //}
+
+    std::vector<uint64_t> delQ;
+    uint32_t iLimit = 1;
+    {
+        // Y축 범위 (Vertical Render Distance)
         int32_t minY = releaseDesc.iCenterY - m_iVerticalRenderDistance;
         int32_t maxY = releaseDesc.iCenterY + m_iVerticalRenderDistance;
 
+        // 매번 곱셈을 방지하기 위해 렌더 거리 제곱값을 미리 계산
+        int32_t renderDistSq = (m_iRenderDistance + 1) * (m_iRenderDistance + 1);
+
         for (const auto& [coord, pChunk] : m_mapChunks)
         {
+            if (delQ.size() > iLimit)
+            {
+                break;
+            }
             if (!pChunk->GetDead())
             {
                 auto [x, y, z] = decodeChunkCoord(coord);
 
-                // X, Z, Y 모두 체크
-                if (x < minX || x > maxX ||
-                    z < minZ || z > maxZ ||
-                    y < minY || y > maxY)
+                int32_t dx = x - releaseDesc.iCenterX;
+                int32_t dz = z - releaseDesc.iCenterZ;
+
+                // 1. Y축(수직) 범위를 벗어났거나
+                // 2. XZ 평면에서 중심 기준 렌더 거리(원)를 벗어났다면 삭제
+                if (y < minY || y > maxY ||
+                    (dx * dx + dz * dz > renderDistSq))
                 {
-                    delQ.push_back(coord);
-                    pChunk->SetDead();
+                    
+                        delQ.push_back(coord);
+                        pChunk->SetDead();
+                   
                 }
             }
-            
         }
     }
 
@@ -3241,7 +3413,7 @@ HRESULT CVoxelManager3::UpdateCheckBlockFillingFutures()
 
                 for (const auto& pChunk : adjChunks)
                 {
-                    if (pChunk)
+                    if (pChunk && !pChunk->GetDead())
                     {
                         setIdx.insert(pChunk->GetCoordIdx());
                     }
