@@ -101,6 +101,10 @@ private:
 public:
 	static UPtr<CSkeletonEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
+
+
+private:
+	void Free() override;
 };
 
 NS_END

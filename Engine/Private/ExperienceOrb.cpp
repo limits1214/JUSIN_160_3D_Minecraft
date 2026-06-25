@@ -94,8 +94,6 @@ void CExperienceOrb::Update(E::_float fTimeDelta)
 		// 개별 오브 타이머 진행
 		item.fBobTime += fTimeDelta;
 
-		
-
 		// 빌보드 행렬 조립
 		_matrix matBillboard = XMMatrixIdentity();
 		matBillboard.r[0] = XMVectorSetW(vCamRight * scale.x * item.fExp, 0.f);
@@ -111,31 +109,35 @@ void CExperienceOrb::Update(E::_float fTimeDelta)
 		item.boxCollider->Transform(XMMatrixTranslation(item.vPos.x, item.vPos.y, item.vPos.z));
 		E::CGameInstance::Get().AddColliderGroup("Coll_ExpOrb", item.boxCollider.get());
 
-		// --- 인스턴스 데이터 세팅 ---
-		VTX_EXP_ORB_INSTANCED_DATA inst{};
-		inst.matWorld = item.matWorld;
 
-		uint32_t safeType = item.iType % 16;
-		int col = safeType % 4;
-		int row = safeType / 4;
-		inst.uvOffset = { col * frameSize, row * frameSize };
-
-		float fSine = sinf(item.fBobTime * 12.0f) * 0.5f + 0.5f;
-		XMVECTOR vColorA = XMVectorSet(0.0f, 1.0f, 0.1f, 1.0f);
-		XMVECTOR vColorB = XMVectorSet(0.8f, 1.0f, 0.0f, 1.0f);
-		XMVECTOR vFinalColor = XMVectorLerp(vColorA, vColorB, fSine);
-		XMStoreFloat4(&inst.vColor, vFinalColor);
-
-		// 라이트 처리
-		int32_t blockX = static_cast<int32_t>(std::floor(item.vPos.x));
-		int32_t blockY = static_cast<int32_t>(std::floor(item.vPos.y));
-		int32_t blockZ = static_cast<int32_t>(std::floor(item.vPos.z));
-		if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+		if (m_vecInstancedData.size() < m_iNumElements)
 		{
-			inst.light = optCurrBlock->GetLight();
-		}
+			// --- 인스턴스 데이터 세팅 ---
+			VTX_EXP_ORB_INSTANCED_DATA inst{};
+			inst.matWorld = item.matWorld;
 
-		m_vecInstancedData.push_back(inst);
+			uint32_t safeType = item.iType % 16;
+			int col = safeType % 4;
+			int row = safeType / 4;
+			inst.uvOffset = { col * frameSize, row * frameSize };
+
+			float fSine = sinf(item.fBobTime * 12.0f) * 0.5f + 0.5f;
+			XMVECTOR vColorA = XMVectorSet(0.0f, 1.0f, 0.1f, 1.0f);
+			XMVECTOR vColorB = XMVectorSet(0.8f, 1.0f, 0.0f, 1.0f);
+			XMVECTOR vFinalColor = XMVectorLerp(vColorA, vColorB, fSine);
+			XMStoreFloat4(&inst.vColor, vFinalColor);
+
+			// 라이트 처리
+			int32_t blockX = static_cast<int32_t>(std::floor(item.vPos.x));
+			int32_t blockY = static_cast<int32_t>(std::floor(item.vPos.y));
+			int32_t blockZ = static_cast<int32_t>(std::floor(item.vPos.z));
+			if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+			{
+				inst.light = optCurrBlock->GetLight();
+			}
+
+			m_vecInstancedData.push_back(inst);
+		}
 	}
 }
 

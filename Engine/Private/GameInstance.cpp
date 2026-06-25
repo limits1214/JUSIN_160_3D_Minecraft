@@ -335,16 +335,17 @@ void CGameInstance::Release_Engine()
 	m_pDInputManager.reset();
 	m_pWorldManager.reset();
 	m_pGameObjectManager->AllReset();
-	m_pGameObjectManager.reset();
 	m_pLevelManager.reset();
 	m_pColliderManager.reset();
 	m_pParticleManager.reset();
 	m_pWorkerManager.reset();
 	m_pChunkLoadWorkerManager.reset();
-	m_pPrototypeManager.reset();
 	m_pLightManager.reset();
 	//m_pVoxelManager.reset();
 	m_pVoxelManager3.reset();
+
+	m_pPrototypeManager.reset();
+	m_pGameObjectManager.reset();
 	m_pRenderer.reset();
 	m_pFontManager.reset();
 	m_pResourceManager.reset();
@@ -3145,6 +3146,13 @@ HRESULT CGameInstance::InitializeMCSoundResource()
 	if (FAILED(funcSoundAdd("CREEPER_SAY_2", "./Resources/Sound/mob/creeper/say2.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("CREEPER_SAY_3", "./Resources/Sound/mob/creeper/say3.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("CREEPER_SAY_4", "./Resources/Sound/mob/creeper/say4.ogg"))) return E_FAIL;
+
+
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_1", "./Resources/Sound/armor_block/block1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_2", "./Resources/Sound/armor_block/block2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_3", "./Resources/Sound/armor_block/block3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_4", "./Resources/Sound/armor_block/block4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_5", "./Resources/Sound/armor_block/block5.ogg"))) return E_FAIL;
 	return S_OK;
 }
 
@@ -3694,6 +3702,14 @@ _float CGameInstance::GetWorldDayFactor() const
 _float CGameInstance::GetWorldSkyRotation() const
 {
 	return m_pWorldManager->GetSkyRotation();
+}
+HRESULT CGameInstance::WorldRandomMonsterGeneration(_float3 vCenterPos, _float fRadius, uint32_t iCnt)
+{
+	return m_pWorldManager->WorldRandomMonsterGeneration(vCenterPos, fRadius, iCnt);
+}
+void CGameInstance::WorldSetPlayer(CHandle h)
+{
+	m_pWorldManager->SetPlayer(h);
 }
 #pragma endregion
 

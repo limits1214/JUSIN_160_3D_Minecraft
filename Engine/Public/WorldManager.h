@@ -51,6 +51,9 @@ private:
 	UPtr<CFurnaceStorage> m_pFurnaceStorage{};
 	UPtr<CChestStorage> m_pChestStorage{};
 
+private:
+	CTimer m_TimerMobSpawn{};
+
 public:
 	_float GetElapsedTime() const { return m_fElapsedTime; };
 	_float GetDayFactor() const
@@ -83,6 +86,14 @@ private:
 private:
 	_float m_fShadowSnapTimer = 0.f;
 	_vector m_vShadowEye = XMVectorZero();
+
+public:
+	HRESULT WorldRandomMonsterGeneration(_float3 vCenterPos, _float fRadius, uint32_t iCnt);
+
+public:
+	void SetPlayer(CHandle h) { m_hPlayer = h; }
+private:
+	CHandle m_hPlayer{};
 
 public:
 	static UPtr<CWorldManager> Create(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext);

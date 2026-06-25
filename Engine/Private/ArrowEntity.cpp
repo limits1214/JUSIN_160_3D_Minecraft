@@ -82,24 +82,21 @@ void CArrowEntity::PriorityUpdate(E::_float fTimeDelta)
 void CArrowEntity::Update(E::_float fTimeDelta)
 {
 
-    if (m_fElapsed > 0.07f)
-    {
-        E::CGameInstance::Get().AddColliderGroup("Coll_ArrowHead", m_pHeadCollider.get());
-        auto matWorld = GetTransform().GetWorldMatrix();
+    E::CGameInstance::Get().AddColliderGroup("Coll_ArrowHead", m_pHeadCollider.get());
+    auto matWorld = GetTransform().GetWorldMatrix();
 
-        auto asisScaleX = XMVectorGetX(XMVector3Length(XMLoadFloat3((_float3*)&matWorld->m[0][0])));
-        auto asisScaleY = XMVectorGetX(XMVector3Length(XMLoadFloat3((_float3*)&matWorld->m[1][0])));
-        auto asisScaleZ = XMVectorGetX(XMVector3Length(XMLoadFloat3((_float3*)&matWorld->m[2][0])));
-        auto asisTranslation = XMLoadFloat3((_float3*)&matWorld->m[3][0]);
+    auto asisScaleX = XMVectorGetX(XMVector3Length(XMLoadFloat3((_float3*)&matWorld->m[0][0])));
+    auto asisScaleY = XMVectorGetX(XMVector3Length(XMLoadFloat3((_float3*)&matWorld->m[1][0])));
+    auto asisScaleZ = XMVectorGetX(XMVector3Length(XMLoadFloat3((_float3*)&matWorld->m[2][0])));
+    auto asisTranslation = XMLoadFloat3((_float3*)&matWorld->m[3][0]);
 
-        _float4x4 todo{};
-        XMStoreFloat4((_float4*)&todo.m[0][0], XMVectorSet(1.f, 0.f, 0.f, 0.f) * asisScaleX);
-        XMStoreFloat4((_float4*)&todo.m[1][0], XMVectorSet(0.f, 1.f, 0.f, 0.f) * asisScaleY);
-        XMStoreFloat4((_float4*)&todo.m[2][0], XMVectorSet(0.f, 0.f, 1.f, 0.f) * asisScaleZ);
-        XMStoreFloat4((_float4*)&todo.m[3][0], XMVectorSetW(asisTranslation, 1.f));
+    _float4x4 todo{};
+    XMStoreFloat4((_float4*)&todo.m[0][0], XMVectorSet(1.f, 0.f, 0.f, 0.f) * asisScaleX);
+    XMStoreFloat4((_float4*)&todo.m[1][0], XMVectorSet(0.f, 1.f, 0.f, 0.f) * asisScaleY);
+    XMStoreFloat4((_float4*)&todo.m[2][0], XMVectorSet(0.f, 0.f, 1.f, 0.f) * asisScaleZ);
+    XMStoreFloat4((_float4*)&todo.m[3][0], XMVectorSetW(asisTranslation, 1.f));
 
-        m_pHeadCollider->Transform(XMLoadFloat4x4(&todo));
-    }
+    m_pHeadCollider->Transform(XMLoadFloat4x4(&todo));
 
 }
 
@@ -112,23 +109,10 @@ void CArrowEntity::LateUpdate(E::_float fTimeDelta)
     {
         if (m_bOnGround)
         {
-            static _float fTmp = 0;
-            fTmp += fTimeDelta;
-
-            fTmp = 0.f;
             auto pos = GetTransform().GetPosition();
-
-            CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, 1, 15.f);
-            //CGameInstance::Get().VoxelProcessExplodeBlock(pos.x, pos.y, pos.z, 5.f);
-
-            //if (fTmp > 0.1f)
-            //{
-            //}
-            //CGameInstance::Get().AddParticleRenderExplodeSmoke(pos, 5);
+            CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
             SetPendingDestroyCascade();
         }
-        auto pos = GetTransform().GetPosition();
-        
     }
 
     UpdateArrowLiftTime(fTimeDelta);
@@ -170,6 +154,7 @@ HRESULT CArrowEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 
 void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 {
+    uint32_t iDamage = 1;
     // Coll_PigCenter
     // Coll_CowCenter
     // Coll_ChickenCenter
@@ -185,14 +170,44 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
         {
             if (CGameInstance::Get().IntersectColl(pigColl, m_pHeadCollider.get()))
             {
-
                 if (auto pPigEntity = Cast<CPlayerEntity>(pigColl->GetInnerPointer()))
                 {
-
                     if (!m_bOnGround)
                     {
-                        pPigEntity->TakeDamage(1);
-                        SetPendingDestroyCascade();
+                        if (m_bArrowBomb)
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    //auto pos = GetTransform().GetPosition();
+                                    //CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                    //SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                //auto pos = GetTransform().GetPosition();
+                                //CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                //SetPendingDestroyCascade();
+                            }
+                        }
+                        else
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    pPigEntity->TakeDamage(iDamage);
+                                    SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                pPigEntity->TakeDamage(iDamage);
+                                SetPendingDestroyCascade();
+                            }
+                        }
                     }
                 }
             };
@@ -211,8 +226,40 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 
                     if (!m_bOnGround)
                     {
-                        pPigEntity->TakeDamage(1, XMLoadFloat3(&m_vStartPos));
-                        SetPendingDestroyCascade();
+                        if (m_bArrowBomb)
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    //auto pos = GetTransform().GetPosition();
+                                    //CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                    //SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                auto pos = GetTransform().GetPosition();
+                                CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                SetPendingDestroyCascade();
+                            }
+                        }
+                        else
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                    SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                SetPendingDestroyCascade();
+                            }
+                        }
                     }
                 }
             };
@@ -231,8 +278,40 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 
                     if (!m_bOnGround)
                     {
-                        pPigEntity->TakeDamage(1, XMLoadFloat3(&m_vStartPos));
-                        SetPendingDestroyCascade();
+                        if (m_bArrowBomb)
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    //auto pos = GetTransform().GetPosition();
+                                    //CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                    //SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                auto pos = GetTransform().GetPosition();
+                                CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                SetPendingDestroyCascade();
+                            }
+                        }
+                        else
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                    SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                SetPendingDestroyCascade();
+                            }
+                        }
                     }
                 }
             };
@@ -251,8 +330,40 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 
                     if (!m_bOnGround)
                     {
-                        pPigEntity->TakeDamage(1, XMLoadFloat3(&m_vStartPos));
-                        SetPendingDestroyCascade();
+                        if (m_bArrowBomb)
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    //auto pos = GetTransform().GetPosition();
+                                    //CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                    //SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                auto pos = GetTransform().GetPosition();
+                                CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                SetPendingDestroyCascade();
+                            }
+                        }
+                        else
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                    SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                SetPendingDestroyCascade();
+                            }
+                        }
                     }
                 }
             };
@@ -271,8 +382,40 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 
                     if (!m_bOnGround)
                     {
-                        pPigEntity->TakeDamage(1, XMLoadFloat3(&m_vStartPos));
-                        SetPendingDestroyCascade();
+                        if (m_bArrowBomb)
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    //auto pos = GetTransform().GetPosition();
+                                    //CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                    //SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                auto pos = GetTransform().GetPosition();
+                                CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                SetPendingDestroyCascade();
+                            }
+                        }
+                        else
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                    SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                SetPendingDestroyCascade();
+                            }
+                        }
                     }
                 }
             };
@@ -291,8 +434,40 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 
                     if (!m_bOnGround)
                     {
-                        pPigEntity->TakeDamage(1, XMLoadFloat3(&m_vStartPos));
-                        SetPendingDestroyCascade();
+                        if (m_bArrowBomb)
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    //auto pos = GetTransform().GetPosition();
+                                    //CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                    //SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                auto pos = GetTransform().GetPosition();
+                                CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                SetPendingDestroyCascade();
+                            }
+                        }
+                        else
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                    SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                SetPendingDestroyCascade();
+                            }
+                        }
                     }
                 }
             };
@@ -311,8 +486,40 @@ void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 
                     if (!m_bOnGround)
                     {
-                        pPigEntity->TakeDamage(3, XMLoadFloat3(&m_vStartPos));
-                        SetPendingDestroyCascade();
+                        if (m_bArrowBomb)
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    //auto pos = GetTransform().GetPosition();
+                                    //CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                    //SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                auto pos = GetTransform().GetPosition();
+                                CActivatedTNT::ExplodeAndDamageColliding(pos, 5.f, m_iExplodeDamage, 15.f);
+                                SetPendingDestroyCascade();
+                            }
+                        }
+                        else
+                        {
+                            if (m_hSootBy == pPigEntity->GetHandle())
+                            {
+                                if (m_fElapsed > 1.f)
+                                {
+                                    pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                    SetPendingDestroyCascade();
+                                }
+                            }
+                            else
+                            {
+                                pPigEntity->TakeDamage(iDamage, XMLoadFloat3(&m_vStartPos));
+                                SetPendingDestroyCascade();
+                            }
+                        }
                     }
                 }
             };
@@ -581,8 +788,10 @@ void CArrowEntity::UpdateArrowVelocity2(_float fTimeDelta)
     }
 }
 
-void CArrowEntity::Shoot(const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed, _bool bArrowBomb)
+void CArrowEntity::Shoot(CHandle hShootBy, const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed, _bool bArrowBomb)
 {
+    m_hSootBy = hShootBy;
+
     auto safeStartPos = vStartPos + XMVector3Normalize(vDirection) * 0.3f;
     GetTransform().SetPosition(safeStartPos);
     XMStoreFloat3(&m_vStartPos, safeStartPos);

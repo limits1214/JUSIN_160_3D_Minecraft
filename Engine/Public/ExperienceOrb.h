@@ -67,7 +67,7 @@ private:
 	CComConstantBuffer* m_pComCBufferPerObject{};
 	std::list<InstancedExpOrbDesc> m_listOrbs{};
 	std::vector<VTX_EXP_ORB_INSTANCED_DATA> m_vecInstancedData{};
-	uint32_t m_iNumElements{ 100 };
+	uint32_t m_iNumElements{ 500 };
 	SPtr<CResDynamicBuffer> m_pResInstancedBuffer{};
 
 

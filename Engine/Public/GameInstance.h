@@ -305,6 +305,8 @@ public:
 	CChestStorage* GetWorldChestStorage();
 	_float GetWorldDayFactor() const;
 	_float GetWorldSkyRotation() const;
+	HRESULT WorldRandomMonsterGeneration(_float3 vCenterPos, _float fRadius, uint32_t iCnt);
+	void WorldSetPlayer(CHandle h);
 #pragma
 
 
