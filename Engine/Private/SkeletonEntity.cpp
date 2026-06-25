@@ -769,7 +769,7 @@ void CSkeletonEntity::Update(E::_float fTimeDelta)
                                 //auto pos = XMLoadFloat3(&rayOrigin2);
                                 //auto look = XMLoadFloat3(&rayDir2);
 
-                                pObj->Shoot(XMLoadFloat3(&pos), vDir, 30.f);
+                                pObj->Shoot(GetHandle(), XMLoadFloat3(&pos), vDir, 30.f);
                             }
                         }
                     }
@@ -1394,4 +1394,14 @@ UPtr<CPrototype> CSkeletonEntity::Clone(void* pArg)
     }
 
     return pInstance;
+}
+
+void CSkeletonEntity::Free()
+{
+    if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CHandHeldItemObject>(m_hHandHeld))
+    {
+        pObj->SetPendingDestroyCascade();
+    }
+
+    CMonsterEntityObject::Free();
 }

@@ -745,7 +745,8 @@ inline StringID CBlock3::GetSoundHit(CBlock3::TYPE eType)
 	case TYPE::STONE_LAPIS_ORE:
 	case TYPE::STONE_REDSTONE_ORE:
 	case TYPE::TNT:
-		return soundStepStone[idx];
+		return soundDigStone[idx];
+		//return soundStepStone[idx];
 
 	case TYPE::DIRT:
 	case TYPE::GRASS:
@@ -841,7 +842,8 @@ inline StringID CBlock3::GetSoundStep(CBlock3::TYPE eType)
 	case TYPE::STONE_LAPIS_ORE:
 	case TYPE::STONE_REDSTONE_ORE:
 	case TYPE::TNT:
-		return soundStepStone[idx];
+		return soundDigStone[idx];
+		//return soundStepStone[idx];
 
 	case TYPE::DIRT:
 	case TYPE::GRASS:

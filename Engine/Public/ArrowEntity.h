@@ -41,8 +41,14 @@ private:
 private:
 	UPtr<CCollider> m_pHeadCollider{};
 
+public:
+	_float GetElapsed() const { return m_fElapsed; }
 private:
 	_float m_fElapsed{};
+
+private:
+	uint32_t m_iExplodeDamage{ 3 };
+
 
 public:
 	void SetRender(_bool b) { m_bRender = b; }
@@ -75,7 +81,12 @@ private:
 
 public:
 	// 화살 발사 초기화 함수 (발사 위치, 방향, 속도 지정)
-	void Shoot(const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed, _bool bArrowBomb = false);
+	void Shoot(CHandle hShootBy, const DirectX::XMVECTOR& vStartPos, const DirectX::XMVECTOR& vDirection, E::_float fSpeed, _bool bArrowBomb = false);
+
+public:
+	CHandle GetShootBy() const { return m_hSootBy; }
+private:
+	CHandle m_hSootBy{};
 
 private:
 	// 물리 이동을 위한 변수들

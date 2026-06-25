@@ -169,7 +169,7 @@ void CPlayerEntity::UpdateGUI()
     {
         {
             E::CZombieEntity::DESC Desc{};
-            Desc.sObjectTag = "Skeleton";
+            Desc.sObjectTag = "Zombie";
             if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ZombieEntity",
                 "02_TEST_ENTITY", &Desc))
             {
@@ -477,6 +477,8 @@ HRESULT CPlayerEntity::Initialize(void* pArg)
             }
         }
     }
+
+    CGameInstance::Get().WorldSetPlayer(GetHandle());
     return S_OK;
 }
 
@@ -699,7 +701,10 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     //}
 
     ProcessItemColliding(fTimeDelta);
-    ProcessArrowHeadColliding(fTimeDelta);
+    if (CGameInstance::Get().GetGameBlessLevel() < 2)
+    {
+        ProcessArrowHeadColliding(fTimeDelta);
+    }
     ProcessExpOrbColliding(fTimeDelta);
     ProcessMeleeAttackColliding(fTimeDelta);
 }
@@ -801,7 +806,7 @@ void CPlayerEntity::SyncBless()
     auto iBlessLevel = CGameInstance::Get().GetGameBlessLevel();
     if (m_iLevel > iBlessLevel)
     {
-        CGameInstance::Get().SetGameBlessLevel(iBlessLevel);
+        CGameInstance::Get().SetGameBlessLevel(m_iLevel);
         if (m_iLevel >= 0 && m_iLevel < 2)
         {
             if (m_ItemShiled && m_ItemShiled->eItemType != CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0)
@@ -844,6 +849,11 @@ void CPlayerEntity::SyncBless()
                 m_ItemShiled->eItemType = CItemObject::ITEM_TYPE::ITEM_Bless_Lv_10;
             }
         }
+    }
+
+    if (iBlessLevel >= 10)
+    {
+        m_eModeType = MODE_TYPE::GOD;
     }
 }
 
@@ -1215,7 +1225,7 @@ void CPlayerEntity::ProcessRightClick(float fTimeDelta)
                                 //auto pos = XMLoadFloat3(&rayOrigin2);
                                 auto look = XMLoadFloat3(&rayDir2);
                                 
-                                pObj->Shoot(XMLoadFloat3(&pos), look, 30.f);
+                                pObj->Shoot(GetHandle(), XMLoadFloat3(&pos), look, 30.f);
                             }
                         }
                     }
@@ -2627,11 +2637,11 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
 
 void CPlayerEntity::ReadyPlayerItem()
 {
-    m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_WoodPickaxe };
+    m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondBoots };
     //m_ItemArrHotbar[0]->fDurability = 0.95f;
     m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondHelmet };
-    m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_IronChestplate };
-    m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_GoldLeggings };
+    m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondChestplate };
+    m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondLeggings };
     m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::TNT), 64};
     m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
     m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Arrow, 64 };
@@ -4614,15 +4624,40 @@ void CPlayerEntity::ProcessUIChestOnCursor(_float fTimeDelta)
 
 void CPlayerEntity::TakeDamage(int32_t iDamage)
 {
-    const char* sounds[] = { "HIT_1", "HIT_2", "HIT_3" };
-    CGameInstance::Get().SoundPlay(sounds[RandInt(0, 2)], 0.5f);
-
-    m_iHalfHealth = std::clamp(m_iHalfHealth - iDamage, 0, 20);
-    //Coll_PlayerCenter
-    if (m_pActivePlayerCamera)
+    // half armor * 4.75;
+    _bool bBlocked{ false };
+    auto blockPercent = (m_iHalfArmor * 4.75f);
+    if (Randf(0.f, 100.f) > blockPercent)
     {
-        m_pActivePlayerCamera->TriggerCameraShake(0.1f, 0.1f);
+        bBlocked = false;
     }
+    else
+    {
+        bBlocked = true;
+    }
+
+    if (bBlocked)
+    {
+        const char* sounds[] = { "ARMOR_BLOCK_1", "ARMOR_BLOCK_2", "ARMOR_BLOCK_3", "ARMOR_BLOCK_4", "ARMOR_BLOCK_5"};
+        CGameInstance::Get().SoundPlay(sounds[RandInt(0, 4)], 0.5f);
+
+    }
+    else
+    {
+        const char* sounds[] = { "HIT_1", "HIT_2", "HIT_3" };
+        CGameInstance::Get().SoundPlay(sounds[RandInt(0, 2)], 0.5f);
+
+        m_iHalfHealth = std::clamp(m_iHalfHealth - iDamage, 0, 20);
+        //Coll_PlayerCenter
+        if (m_pActivePlayerCamera)
+        {
+            m_pActivePlayerCamera->TriggerCameraShake(0.1f, 0.1f);
+        }
+    }
+
+
+
+   
 }
 
 void CPlayerEntity::JudgeDeathUpdate(int32_t iDamage)
@@ -5877,8 +5912,11 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                         if (fEatingProgress >= 1.f)
                         {
                             fEatingProgress = 1.f;
-                            const float pitches[] = { 1.f, 0.9f, 0.95f };
-                            CGameInstance::Get().SoundPlay("BURP", 0.1f, pitches[RandInt(0, 2)]);
+                            if (Randf(0.f, 1.f) > 0.5)
+                            {
+                                const float pitches[] = { 1.f, 0.9f, 0.95f };
+                                CGameInstance::Get().SoundPlay("BURP", 0.1f, pitches[RandInt(0, 2)]);
+                            }
                             m_ePlay = PLAY::IDLE;
 
                             
@@ -5956,40 +5994,45 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                 || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
                                 )
                             {
+                                _bool bInfinityArrow = CGameInstance::Get().GetGameBlessLevel() >= 2;
+                                _bool bUseStormArrow = CGameInstance::Get().GetGameBlessLevel() >= 4 && CGameInstance::Get().GetGameBlessLevel() < 6
+                                    || CGameInstance::Get().GetGameBlessLevel() >= 8;
                                 std::optional<CItemObject::ItemInfo>* pTarget{};
+                                _bool bUseArrowBomb = CGameInstance::Get().GetGameBlessLevel() >= 6;
 
-                                for (uint32_t i = 0; i < 9; ++i)
+                                if (!bInfinityArrow)
                                 {
-                                    if (m_ItemArrHotbar[i])
+                                    for (uint32_t i = 0; i < 9; ++i)
                                     {
-                                        if (m_ItemArrHotbar[i]->eItemType == CItemObject::ITEM_TYPE::ITEM_Arrow)
+                                        if (m_ItemArrHotbar[i])
                                         {
-                                            pTarget = &m_ItemArrHotbar[i];
-                                            break;
+                                            if (m_ItemArrHotbar[i]->eItemType == CItemObject::ITEM_TYPE::ITEM_Arrow)
+                                            {
+                                                pTarget = &m_ItemArrHotbar[i];
+                                                break;
+                                            }
                                         }
                                     }
-                                }
 
-                                for (uint32_t i = 0; i < 9 * 3; ++i)
-                                {
-                                    if (m_ItemArrInventory[i])
+                                    for (uint32_t i = 0; i < 9 * 3; ++i)
                                     {
-                                        if (m_ItemArrInventory[i]->eItemType == CItemObject::ITEM_TYPE::ITEM_Arrow)
+                                        if (m_ItemArrInventory[i])
                                         {
-                                            pTarget = &m_ItemArrInventory[i];
-                                            break;
+                                            if (m_ItemArrInventory[i]->eItemType == CItemObject::ITEM_TYPE::ITEM_Arrow)
+                                            {
+                                                pTarget = &m_ItemArrInventory[i];
+                                                break;
+                                            }
                                         }
                                     }
-                                }
 
-                                if (!pTarget)
-                                {
-                                    break;
+                                    if (!pTarget)
+                                    {
+                                        break;
+                                    }
                                 }
                                 auto funcShootArrow = [&](_float fSpeed)
                                     {
-                                        
-                                        _bool bInfinityArrow = true;
                                         if (bInfinityArrow || (pTarget && pTarget->has_value()))
                                         {
                                             E::CArrowEntity::DESC Desc{};
@@ -6003,8 +6046,11 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                                     auto pos = GetTransform().GetPosition();
                                                     pos.y += 1.8f;
                                                     auto look = XMLoadFloat3(&rayDir2);
-                                                    pObj->Shoot(XMLoadFloat3(&pos), look, fSpeed, true);
-                                                    pObj->SetArrowLifeTime(5.f);
+                                                    pObj->Shoot(GetHandle(), XMLoadFloat3(&pos), look, fSpeed, bUseArrowBomb);
+                                                    if (bUseStormArrow)
+                                                    {
+                                                        pObj->SetArrowLifeTime(5.f);
+                                                    }
                                                 }
                                             }
 
@@ -6033,7 +6079,33 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                         }
                                     };
 
-                                if (false)
+
+                                if (bUseStormArrow)
+                                {
+                                    if (m_bMousePressingRight)
+                                    {
+                                        if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
+                                        {
+                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
+
+                                        }
+                                        else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
+                                        {
+                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
+                                        }
+                                        else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
+                                        {
+                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
+                                        }
+                                        else
+                                        {
+                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
+
+                                            funcShootArrow(45.f);
+                                        }
+                                    }
+                                }
+                                else
                                 {
                                     if (fBowPullingProgress <= 0.1f)
                                     {
@@ -6064,60 +6136,10 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                         }
                                     }
                                 }
-                                else
-                                {
-                                    if (m_bMousePressingRight)
-                                    {
-                                        if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
-                                        {
-                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
-                                        
-                                        }
-                                        else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
-                                        {
-                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
-                                        }
-                                        else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
-                                        {
-                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
-                                        }
-                                        else
-                                        {
-                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
-                                        
-                                            funcShootArrow(45.f);
-                                        }
-                                    }
-                                }
-                                
-                                //else if (fBowPullingProgress <= 0.6f)
-                                //{
-
-                                //}
-
-                                //if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
-                                //{
-                                //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
-                                //}
-                                //else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
-                                //{
-                                //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
-                                //}
-                                //else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
-                                //{
-                                //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
-                                //}
-                                //else // ITEM_Bow_Pulling_2
-                                //{
-                                //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
-                                //}
                             }
-
-                            
                         }
 
                         break;
-
 
                     }
 

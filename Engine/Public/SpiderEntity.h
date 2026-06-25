@@ -37,6 +37,7 @@ private:
 public:
 	static UPtr<CSpiderEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
+
 };
 
 NS_END
