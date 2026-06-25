@@ -65,6 +65,8 @@ private:
 private:
 	CTimer m_TimerAmbientSoundPlay{};
 
+	_float3 m_vBeforePos{};
+	_float m_fAccMovedSqLen{};
 
 public:
 	enum class CHICKEN_STATE { IDLE, WANDER, FLEE, LOOK_AT_PLAYER, DIE };

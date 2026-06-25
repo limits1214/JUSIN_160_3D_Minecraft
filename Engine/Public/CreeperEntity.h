@@ -49,6 +49,10 @@ private:
 	CComConstantBuffer* m_pComCBufferPerObject{};
 
 private:
+	_float3 m_vBeforePos{};
+	_float m_fAccMovedSqLen{};
+
+private:
 	UPtr<CCollider> m_pCenterCollider{};
 	void VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir);
 	_float3 m_vVelocity{};

@@ -74,7 +74,8 @@ private:
 
 private:
 	CTimer m_TimerAmbientSoundPlay{};
-
+	_float3 m_vBeforePos{};
+	_float m_fAccMovedSqLen{};
 public:
 	static UPtr<CCowEntity> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

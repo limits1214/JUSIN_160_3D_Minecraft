@@ -311,13 +311,13 @@ void CZombieEntity::Update(E::_float fTimeDelta)
         }
         else
         {
-            if (fDistToPlayer <= 1.f)
+            if (fDistToPlayer <= 2.5f)
             {
                 // 조준 상태 변환
                 m_fSpeed = 0.f;
                 m_bAttack = true;
 
-                m_fAttackTime += fTimeDelta;
+                //m_fAttackTime += fTimeDelta;
 
                 m_fWalkWeight += (0.0f - m_fWalkWeight) * fTimeDelta * 8.0f;
                 if (m_fWalkWeight < 0.001f) {
@@ -465,20 +465,19 @@ void CZombieEntity::Update(E::_float fTimeDelta)
 
     if (m_bAttack)
     {
-        m_fAttackTime += fTimeDelta * 2.f; // 공격 속도
-        //if (m_fAttackTime > 1.0f) m_fAttackTime = 1.0f;
+        m_fAttackTime += fTimeDelta * 4.f; // 공격 속도
 
-        if (m_fAttackTime > 1.0f)
+        if (m_fAttackTime >= 1.0f)
         {
             m_fAttackTime = 1.0;
 
-            if (m_fAttackDelay == 0.f && m_fAttackTime == 1.0f)
+            if (m_fAttackDelay == 0.f && m_fAttackTime >=1.0f)
             {
                 pPlayer->TakeDamage(1.f);
             }
 
             m_fAttackDelay += fTimeDelta;
-            if (m_fAttackDelay > 1.f)
+            if (m_fAttackDelay >= 0.5f)
             {
                 m_fAttackDelay = 0.f;
                 m_fAttackTime = 0.f;
@@ -487,8 +486,12 @@ void CZombieEntity::Update(E::_float fTimeDelta)
     }
     else
     {
-        m_fAttackTime -= fTimeDelta * 2.f; // 되돌아가기
-        if (m_fAttackTime < 0.0f) m_fAttackTime = 0.0f;
+        m_fAttackTime -= fTimeDelta * 4.f; // 되돌아가기
+        if (m_fAttackTime <= 0.0f)
+        {
+            m_fAttackTime = 0.0f;
+            m_fAttackDelay = 0.f;
+        }
     }
 
     {
@@ -729,9 +732,47 @@ void CZombieEntity::VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir)
         m_bOnGround = false; // 공중에 떴으므로 상태 변경
     }
 
+    {
+        auto beforePos = GetTransform().GetPosition();
+        m_vBeforePos = _float3{ beforePos.x, beforePos.y, beforePos.z };
+    }
+
     // 최종 좌표 적용 및 속도 백업
     GetTransform().SetPosition(_float3{ c.x, c.y - fAddY, c.z });
     XMStoreFloat3(&m_vVelocity, vVel);
+
+    {
+        //
+        auto befldPos = XMLoadFloat3(&m_vBeforePos);
+        auto curldPos = GetTransform().GetLoadedPostion();
+
+        m_fAccMovedSqLen += fabsf(XMVectorGetX(XMVector3Length(curldPos - befldPos)));
+    }
+
+    {
+        if (m_fAccMovedSqLen > 1.f)
+        {
+            m_fAccMovedSqLen = 0.f;
+
+            auto vPos = GetTransform().GetPosition();
+            auto stepBlock2 = CGameInstance::Get().GetVoxelBlock(vPos.x, vPos.y - 1, vPos.z);
+            if (auto stepBlock = CGameInstance::Get().GetVoxelBlock(std::floor(vPos.x), std::floor(vPos.y) - 1, std::floor(vPos.z)))
+            {
+                if (auto pCam = CGameInstance::Get().GetActiveGameCamera())
+                {
+                    _vector vDistVec = GetTransform().GetLoadedPostion() - pCam->GetTransform().GetLoadedPostion();
+                    float fDistSq = XMVectorGetX(XMVector3LengthSq(vDistVec));
+                    constexpr float MaxDistance = 32.f;
+                    constexpr float MaxDistanceSq = MaxDistance * MaxDistance;
+                    float ratioSq = std::clamp(fDistSq / MaxDistanceSq, 0.f, 1.f);
+                    float fMaxVol = 0.1f;
+                    float fVol = (1.f - ratioSq) * fMaxVol;
+
+                    CGameInstance::Get().SoundPlay(CBlock3::GetSoundStep(stepBlock.value().GetType()), fVol);
+                }
+            }
+        }
+    }
 }
 
 void CZombieEntity::TakeDamage(uint32_t iDamage, _vector vAttackerPos)
