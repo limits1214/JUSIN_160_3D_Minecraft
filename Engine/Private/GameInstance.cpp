@@ -2948,7 +2948,6 @@ HRESULT CGameInstance::InitializeMCResource()
 
 HRESULT CGameInstance::InitializeMCSoundResource()
 {
-
 	auto funcSoundAdd = [&](StringID channelID, const _string& path)
 		{
 			if (auto pRes = CGameInstance::Get().AddResource("MC_SOUND", channelID, CResFmodSound::Create(path)))
@@ -3014,7 +3013,6 @@ HRESULT CGameInstance::InitializeMCSoundResource()
 	if (FAILED(funcSoundAdd("STEP_GRASS_5", "./Resources/Sound/step/grass5.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("STEP_GRASS_6", "./Resources/Sound/step/grass6.ogg"))) return E_FAIL;
 
-
 	if (FAILED(funcSoundAdd("DIG_STONE_1", "./Resources/Sound/dig/stone1.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("DIG_STONE_2", "./Resources/Sound/dig/stone2.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("DIG_STONE_3", "./Resources/Sound/dig/stone3.ogg"))) return E_FAIL;
@@ -3030,6 +3028,78 @@ HRESULT CGameInstance::InitializeMCSoundResource()
 	if (FAILED(funcSoundAdd("DIG_GRASS_3", "./Resources/Sound/dig/grass3.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("DIG_GRASS_4", "./Resources/Sound/dig/grass4.ogg"))) return E_FAIL;
 
+	if (FAILED(funcSoundAdd("PIG_STEP_1", "./Resources/Sound/mob/pig/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_STEP_2", "./Resources/Sound/mob/pig/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_STEP_3", "./Resources/Sound/mob/pig/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_STEP_4", "./Resources/Sound/mob/pig/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_STEP_5", "./Resources/Sound/mob/pig/step5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_DEATH",  "./Resources/Sound/mob/pig/death.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_SAY_1",  "./Resources/Sound/mob/pig/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_SAY_2", "./Resources/Sound/mob/pig/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_SAY_3", "./Resources/Sound/mob/pig/say3.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("COW_STEP_1", "./Resources/Sound/mob/cow/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_STEP_2", "./Resources/Sound/mob/cow/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_STEP_3", "./Resources/Sound/mob/cow/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_STEP_4", "./Resources/Sound/mob/cow/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_SAY_1",  "./Resources/Sound/mob/cow/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_SAY_2",  "./Resources/Sound/mob/cow/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_SAY_3",  "./Resources/Sound/mob/cow/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_SAY_4",  "./Resources/Sound/mob/cow/say4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_HURT_1", "./Resources/Sound/mob/cow/hurt1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_HURT_2", "./Resources/Sound/mob/cow/hurt2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_HURT_3", "./Resources/Sound/mob/cow/hurt3.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("CHICKEN_STEP_1", "./Resources/Sound/mob/chicken/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_STEP_2", "./Resources/Sound/mob/chicken/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_SAY_1",  "./Resources/Sound/mob/chicken/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_SAY_2",  "./Resources/Sound/mob/chicken/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_SAY_3",  "./Resources/Sound/mob/chicken/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_HURT_1", "./Resources/Sound/mob/chicken/hurt1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_HURT_2", "./Resources/Sound/mob/chicken/hurt2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_PLOP", "./Resources/Sound/mob/chicken/plop.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("ZOMBIE_DEATH",			"./Resources/Sound/mob/zombie/death.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_HURT_1",		"./Resources/Sound/mob/zombie/hurt1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_HURT_2",		"./Resources/Sound/mob/zombie/hurt2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_INFECT",		"./Resources/Sound/mob/zombie/infect.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_METAL_1",		"./Resources/Sound/mob/zombie/metal1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_METAL_2",		"./Resources/Sound/mob/zombie/metal2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_METAL_3",		"./Resources/Sound/mob/zombie/metal3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_REMEDY",		"./Resources/Sound/mob/zombie/remedy.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_SAY_1",			"./Resources/Sound/mob/zombie/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_SAY_2",			"./Resources/Sound/mob/zombie/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_SAY_3",			"./Resources/Sound/mob/zombie/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_1",		"./Resources/Sound/mob/zombie/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_2",		"./Resources/Sound/mob/zombie/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_3",		"./Resources/Sound/mob/zombie/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_4",		"./Resources/Sound/mob/zombie/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_5",		"./Resources/Sound/mob/zombie/step5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_UNFECT",		"./Resources/Sound/mob/zombie/unfect.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_1",		"./Resources/Sound/mob/zombie/wood1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_2",		"./Resources/Sound/mob/zombie/wood2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_3",		"./Resources/Sound/mob/zombie/wood3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_4",		"./Resources/Sound/mob/zombie/wood4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_BREAK",	"./Resources/Sound/mob/zombie/woodbreak.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("SKELETON_DEATH", "./Resources/Sound/mob/skeleton/death.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_HURT_1", "./Resources/Sound/mob/skeleton/hurt1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_HURT_2", "./Resources/Sound/mob/skeleton/hurt2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_HURT_3", "./Resources/Sound/mob/skeleton/hurt3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_HURT_4", "./Resources/Sound/mob/skeleton/hurt4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_SAY_1", "./Resources/Sound/mob/skeleton/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_SAY_2", "./Resources/Sound/mob/skeleton/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_SAY_3", "./Resources/Sound/mob/skeleton/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_STEP_1", "./Resources/Sound/mob/skeleton/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_STEP_2", "./Resources/Sound/mob/skeleton/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_STEP_3", "./Resources/Sound/mob/skeleton/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_STEP_4", "./Resources/Sound/mob/skeleton/step4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("CREEPER_DEATH", "./Resources/Sound/mob/creeper/death.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CREEPER_SAY_1", "./Resources/Sound/mob/creeper/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CREEPER_SAY_2", "./Resources/Sound/mob/creeper/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CREEPER_SAY_3", "./Resources/Sound/mob/creeper/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CREEPER_SAY_4", "./Resources/Sound/mob/creeper/say4.ogg"))) return E_FAIL;
 	return S_OK;
 }
 
