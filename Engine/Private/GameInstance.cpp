@@ -3608,6 +3608,14 @@ HRESULT CGameInstance::SetDirectionalLight(const StringID& iStr, const std::opti
 
 
 #pragma region VOXEL_MANAGER
+std::shared_mutex& CGameInstance::GetVoxelEditMutex()
+{
+	return m_pVoxelManager3->GetEditMutex();
+}
+std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>>* CGameInstance::GetVoxelEdited()
+{
+	return m_pVoxelManager3->GetEditedBlock();
+}
 void CGameInstance::VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc)
 {
 	//m_pVoxelManager->StateUpdate(desc);

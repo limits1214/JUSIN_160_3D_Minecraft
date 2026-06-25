@@ -18,33 +18,33 @@ void CWorkerManager::UpdateGUI()
     std::string s = m_sName + "_Workers";
     ImGui::Begin(s.c_str());
 
-    if (ImGui::Button("TEST1"))
-    {
-        Enqueue("TEST_SLEEP1", []() {std::this_thread::sleep_for(std::chrono::milliseconds(2000)); });
-    }
+    //if (ImGui::Button("TEST1"))
+    //{
+    //    Enqueue("TEST_SLEEP1", []() {std::this_thread::sleep_for(std::chrono::milliseconds(2000)); });
+    //}
 
-    if (ImGui::Button("TEST2"))
-    {
-        m_TestFuture = WorkerEnqueueWithFuture("TEST_SLEEP2", []() {
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-            thread_local std::mt19937 gen(std::random_device{}());
-            std::uniform_int_distribution<int> dist(0, 100);
+    //if (ImGui::Button("TEST2"))
+    //{
+    //    m_TestFuture = WorkerEnqueueWithFuture("TEST_SLEEP2", []() {
+    //        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    //        thread_local std::mt19937 gen(std::random_device{}());
+    //        std::uniform_int_distribution<int> dist(0, 100);
 
-            return  dist(gen);
-            });
-    }
+    //        return  dist(gen);
+    //        });
+    //}
 
 
-    if (m_TestFuture.valid())
-    {
-        if (m_TestFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-        {
-            m_iTest = m_TestFuture.get();
-            //auto asdf = future.get();
-        }
-    }
+    //if (m_TestFuture.valid())
+    //{
+    //    if (m_TestFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    //    {
+    //        m_iTest = m_TestFuture.get();
+    //        //auto asdf = future.get();
+    //    }
+    //}
 
-    ImGui::Text("Test: %i", m_iTest);
+    //ImGui::Text("Test: %i", m_iTest);
 
     if (ImGui::TreeNode("Workers"))
     {

@@ -1017,6 +1017,18 @@ void CSkeletonEntity::LateUpdate(E::_float fTimeDelta)
         _float4x4 asdf;
         XMStoreFloat4x4(&asdf, matResult);
         pItem->GetTransform().SetParentWorldMatrix(asdf);
+
+
+        {
+            auto pos = GetTransform().GetPosition();
+            int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1.8));
+            int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+            if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+            {
+                pItem->SetLight(optCurrBlock->GetLight());
+            }
+        }
     }
 }
 

@@ -3,6 +3,8 @@
 #include "FlyCamera.h"
 #include "GameInstance.h"
 #include "CollFrustum.h"
+
+#include "PlayerEntity.h"
 NS_USING(Engine)
 
 CFlyCamera::CFlyCamera()
@@ -128,6 +130,23 @@ void CFlyCamera::Update(E::_float fTimeDelta)
 
 void CFlyCamera::LateUpdate(E::_float fTimeDelta)
 {
+    if (auto pLayer = CGameInstance::Get().GetGameObjectLayer("01_PLAYER"))
+    {
+        if (!pLayer->empty())
+        {
+            if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CPlayerEntity>(pLayer->front()))
+            {
+                auto playerPos = pObj->GetTransform().GetPosition();
+                _float3 newPos{};
+
+                newPos.x = playerPos.x;
+                newPos.z = playerPos.z;
+                newPos.y = 800.f;
+                GetTransform().SetPosition(newPos);
+            }
+        }
+   }
+
 
     m_pComTransform->Update();
 
@@ -156,6 +175,8 @@ void CFlyCamera::LateUpdate(E::_float fTimeDelta)
     //        }
     //    }
     //}
+
+
 }
 
 void CFlyCamera::MouseFix() const

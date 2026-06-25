@@ -50,7 +50,7 @@ public:
 public:
 	std::optional< CBlock3> GetBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
 	std::optional< CBlock3> GetBlockByChunkCoord(uint64_t chunkIdx ,int32_t cbx, int32_t cby, int32_t cbz) const;
-	void SetBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
+	void SetBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bRecord = false);
 	void SetBlocks(std::vector<std::tuple<int32_t, int32_t, int32_t, CBlock3>>);
 	_bool BlockRaycast(const _float3& rayOrigin,
 		const _float3& rayDir,     // normalized
@@ -75,6 +75,7 @@ public:
 					if (block
 						&& block->GetType() != CBlock3::TYPE::AIR
 						&& !CBlock3::IsDirectBreakBlock(block->GetType())
+						&& block->GetType() != CBlock3::TYPE::TORCH_ON
 						&& !CBlock3::IsWater(block->GetType())
 						)
 						return true;
@@ -264,10 +265,18 @@ private:
 private:
 	HRESULT Initialize();
 
+public:
+	std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>>* GetEditedBlock()  { return &m_mapEditedBlock; }
+	std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>> m_mapEditedBlock{};
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 5 };
+	int32_t m_iRenderDistance{ 20 };
 	int32_t m_iVerticalRenderDistance{ 0 };
+
+public:
+	std::shared_mutex& GetEditMutex() { return m_editMutex; }
+private:
+	std::shared_mutex m_editMutex;
 
 //public:
 //	_float GetHeightNoise(_float x, _float z) const { return  m_NoiseHeight.GetNoise(x, z); }

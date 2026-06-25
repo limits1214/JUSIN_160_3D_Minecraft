@@ -264,6 +264,8 @@ public:
 
 #pragma region VOXEL_MANAGER
 public:
+	std::shared_mutex& GetVoxelEditMutex();
+	std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>>* GetVoxelEdited();
 	void VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
 	//_float GetVoxelHeightNoise(_float x, _float z) const;
 	FastNoiseLite& GetVoxelNoiseByType(NOISE_TYPE eNoiseType);
@@ -282,6 +284,8 @@ public:
 		CVoxelManager3::BLOCK_RAY_RESULT& outResult) const;
 
 	bool VoxelAABBOverlap(const _float3& pos, const _float3& halfExtents) const;
+
+
 #pragma endregion
 	
 #pragma region FONT_MANAGER

@@ -60,8 +60,12 @@ void CChunk3::SpawnTree(int32_t baseI, int32_t baseK, int32_t baseJ, CBlock3::TY
 		m_arrBlocks[BlockIndexing(baseI, currentK, baseJ)].SetType(eLogType);
 	}
 }
+
+
+// 
 HRESULT CChunk3::BlockFilling()
 {
+	std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>>*  edited = CGameInstance::Get().GetVoxelEdited();
 	m_eBlockFillingState = BLOCKFILLING_STATE::ING;
 
 	constexpr float NOISE_OFFSET = 100000.f;
@@ -268,6 +272,29 @@ HRESULT CChunk3::BlockFilling()
 	{
 		SpawnTree(tree.i, tree.k, tree.j, tree.logType, tree.leafType);
 	}
+
+
+	// 1. 현재 청크의 유니크 ID 계산 (x, z 좌표 기반)
+	uint64_t chunkID = GetCoordIdx();
+	//CVoxelManager3::encodeChunkCoord(m_iX, 0,)
+	
+	std::shared_lock<std::shared_mutex> lock(CGameInstance::Get().GetVoxelEditMutex());
+	// 2. 수정된 데이터가 있는지 맵에서 검색
+	auto it = edited->find(chunkID);
+	if (it != edited->end())
+	{
+		const auto& editedArray = it->second;
+
+		// 3. 배열 전체를 순회하며 수정된(has_value) 블록만 덮어쓰기
+		for (size_t idx = 0; idx < editedArray.size(); ++idx)
+		{
+			if (editedArray[idx].has_value())
+			{
+				m_arrBlocks[idx] = editedArray[idx].value();
+			}
+		}
+	}
+
 
 	m_eBlockFillingState = BLOCKFILLING_STATE::DONE;
 	return S_OK;
