@@ -1768,5 +1768,11 @@
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\DeathScreenRedFilter\DeathScreenRedFilter.hlsl">
       <Filter>100.Shaders\DeathScreenRedFilter</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Cloud\Shadow_Cloud.hlsl">
+      <Filter>100.Shaders\Cloud</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Shadow_Entity.hlsl">
+      <Filter>100.Shaders\Entity</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

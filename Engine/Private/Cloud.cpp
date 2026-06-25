@@ -22,7 +22,7 @@ HRESULT CCloud::Initialize(void* pArg)
     {
         return E_FAIL;
     }
-
+    m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::SHADOW);
     m_iNumElements = 20000;
 
     if (auto res = CResDynamicBuffer::Create())
@@ -163,8 +163,15 @@ HRESULT CCloud::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
     if (m_InstanceData.empty())
         return S_OK;
 
-    const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Cloud");
-    const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Cloud");
+
+    StringID vsStrID = ctx.pass == RENDERPASS::SHADOW ? "VS_Shadow_Cloud" : "VS_Cloud";
+    StringID psStrID = ctx.pass == RENDERPASS::SHADOW ? "PS_Shadow_Cloud" : "PS_Cloud";
+
+    const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, vsStrID);
+    const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, psStrID);
+
+    //const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Cloud");
+    //const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Cloud");
     const auto& viBuffer = m_pResVIBuffer;
 
     // 데이터 갱신

@@ -137,6 +137,17 @@ HRESULT CArrowEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 
             E::CB_PER_OBJECT cbPerObject{};
             cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
+
+            // 복셀 라이팅 값 바인딩 로직
+            auto pos = GetTransform().GetPosition();
+            int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(pos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+            if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+            {
+                cbPerObject.light = optCurrBlock->GetLight();
+            }
+
             XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
 
             memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));

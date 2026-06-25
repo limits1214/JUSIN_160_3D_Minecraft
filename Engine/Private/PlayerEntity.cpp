@@ -410,7 +410,7 @@ void CPlayerEntity::UpdateGUI()
 
 HRESULT CPlayerEntity::Initialize(void* pArg)
 {
-    m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::PLAYER_INVEN_UI);
+    m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::PLAYER_INVEN_UI) | ETOUI(RENDERPASS::SHADOW);
 
     auto* pDesc = static_cast<DESC*>(pArg);
     if (FAILED(CPlayerEntityObject::Initialize(pArg)))
@@ -735,10 +735,19 @@ HRESULT CPlayerEntity::RenderDefault(ID3D11DeviceContext* pContext, const E::REN
             D3D11_MAPPED_SUBRESOURCE mappedSubResource;
             if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
             {
-
                 E::CB_PER_OBJECT cbPerObject{};
                 cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
                 XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
+
+                // 복셀 라이팅 값 바인딩 로직
+                auto pos = GetTransform().GetPosition();
+                int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+                int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
+                int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+                if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+                {
+                    cbPerObject.light = optCurrBlock->GetLight();
+                }
 
                 memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
                 pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
@@ -757,6 +766,35 @@ HRESULT CPlayerEntity::RenderDefault(ID3D11DeviceContext* pContext, const E::REN
 
 HRESULT CPlayerEntity::RenderShadow(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
+{
+            auto pCbPerObject = E::CGameInstance::Get().GetResourceFirst<E::CResCBuffer>(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerObject");
+            D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+            if (SUCCEEDED(pContext->Map(pCbPerObject->GetCBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubResource)))
+            {
+                E::CB_PER_OBJECT cbPerObject{};
+                cbPerObject.matWorld = *GetTransform().GetWorldMatrix();
+                XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedWorldMatrix() * ctx.matViewProj);
+
+                // 복셀 라이팅 값 바인딩 로직
+                auto pos = GetTransform().GetPosition();
+                int32_t blockX = static_cast<int32_t>(std::floor(pos.x));
+                int32_t blockY = static_cast<int32_t>(std::floor(pos.y + 1));
+                int32_t blockZ = static_cast<int32_t>(std::floor(pos.z));
+                if (auto optCurrBlock = E::CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ))
+                {
+                    cbPerObject.light = optCurrBlock->GetLight();
+                }
+
+                memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
+                pContext->Unmap(pCbPerObject->GetCBuffer().Get(), 0);
+            }
+            pContext->VSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
+            pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
+        }
+
+        m_pComEntityModel->BindBoneMatrix(pContext);
+
+        m_pComEntityModel->Render(pContext, ctx);
     return S_OK;
 }
 
@@ -2637,7 +2675,7 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
 
 void CPlayerEntity::ReadyPlayerItem()
 {
-    m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondBoots };
+    m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Torch, 64 };
     //m_ItemArrHotbar[0]->fDurability = 0.95f;
     m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondHelmet };
     m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondChestplate };
@@ -4622,12 +4660,12 @@ void CPlayerEntity::ProcessUIChestOnCursor(_float fTimeDelta)
 //    }
 
 
-void CPlayerEntity::TakeDamage(int32_t iDamage)
+void CPlayerEntity::TakeDamage(int32_t iDamage, _bool bIsNoArmor)
 {
     // half armor * 4.75;
     _bool bBlocked{ false };
     auto blockPercent = (m_iHalfArmor * 4.75f);
-    if (Randf(0.f, 100.f) > blockPercent)
+    if (bIsNoArmor || Randf(0.f, 100.f) > blockPercent)
     {
         bBlocked = false;
     }
@@ -4906,7 +4944,7 @@ void CPlayerEntity::ProcessHungerTimer(_float fTimeDelta)
             if (m_fHungerDamageTimer > 1.f)
             {
                 m_fHungerDamageTimer = 0.f;
-                TakeDamage(1);
+                TakeDamage(1, true);
             }
         }
     }
@@ -6204,6 +6242,334 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                 }
             }
         }
+
+
+
+
+
+        /////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////
+        
+        
+        /*
+        머리 돌리기
+        카메라 위치로 머리를 돌려야함
+        이때 머리는 루트의 영향을 받아버림
+        머리가 45도 이상 돌릴때는 머리가 아니라 루트를 돌려야함
+        y축을 돌릴때는 머리와 루트를 두개 고려해야하지만
+        x축을 돌리는건 오직 머리만 고려함
+    */
+    {
+        if (m_pActivePlayerCamera)
+        {
+            auto pHeadBone = m_pComEntityModel->GetBone("head");
+            auto pRootBone = m_pComEntityModel->GetBone("root");
+
+            if (pHeadBone && pRootBone)
+            {
+                _float adjustY = 0.f;
+                _float adjustX = 1.f;
+                if (m_eCameraType == CAMERA_TYPE::TPS_BACK)
+                {
+                    adjustY = XMConvertToRadians(180.f);
+                    adjustX = -1.f;
+                }
+
+                // 목표는 카메라가 돌린 x,y 값
+                float targetRotYRad = XMConvertToRadians(m_pActivePlayerCamera->GetTransform().GetRotationEuler().y);
+                float targetRotXRad = XMConvertToRadians(m_pActivePlayerCamera->GetTransform().GetRotationEuler().x);
+
+                bool bMovingLeftRight = m_bKeyPressingA || m_bKeyPressingD;
+                bool bMovingForwardBackward = m_bKeyPressingW || m_bKeyPressingS;
+
+
+
+                // 왼쪽 오른쪽로 움직이고 있으면 Root는 각 45도 방향으로
+                if (bMovingLeftRight)
+                {
+                    float sign;
+                    if (m_bKeyPressingA)
+                    {
+                        sign = -1.f;
+                    }
+                    else
+                    {
+                        sign = 1.f;
+                    }
+
+                    float threshold = XMConvertToRadians(45.f);
+
+                    float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;;
+
+                    while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                    while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                    //(sign * threshold)
+
+                    float delta = (toRotYRadDiff + (threshold * sign)) * 5.f * fTimeDelta;
+                    m_fRootRotRadY += delta;
+                    //pHeadBone->GetRotation()->y += (threshold * sign);
+                    pHeadBone->GetRotation()->y += toRotYRadDiff;
+                    pHeadBone->GetRotation()->x += targetRotXRad;
+
+                    pRootBone->GetRotation()->y += m_fRootRotRadY;
+                }
+
+                // 앞뒤로 움직이고 있으면 Root는 보고 있는 방향으로
+                else if (bMovingForwardBackward)
+                {
+                    float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;
+
+                    while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                    while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                    float sign = toRotYRadDiff > 0 ? 1.f : -1.f;
+
+                    float threshold = XMConvertToRadians(0.f);
+
+                    if (fabsf(toRotYRadDiff) > threshold)
+                    {
+                        float delta = (toRotYRadDiff - (threshold * sign)) * 5.f * fTimeDelta;
+                        m_fRootRotRadY += delta;
+
+                        pHeadBone->GetRotation()->y += toRotYRadDiff;
+                    }
+                    else
+                    {
+                        pHeadBone->GetRotation()->y += (threshold * sign);
+                    }
+
+
+                    pRootBone->GetRotation()->y += m_fRootRotRadY;
+
+                    pHeadBone->GetRotation()->x += targetRotXRad;
+                }
+                // 움직이지 않는 상태
+                else
+                {
+                    float toRotYRadDiff = targetRotYRad - m_fRootRotRadY;
+
+                    while (toRotYRadDiff > XM_PI) toRotYRadDiff -= XM_2PI;
+                    while (toRotYRadDiff < -XM_PI) toRotYRadDiff += XM_2PI;
+
+                    float sign = toRotYRadDiff > 0 ? 1.f : -1.f;
+
+                    float threshold = XMConvertToRadians(45.f);
+
+                    if (fabsf(toRotYRadDiff) > threshold)
+                    {
+                        float delta = (toRotYRadDiff - (threshold * sign)) * 5.f * fTimeDelta;
+                        m_fRootRotRadY += delta;
+                        pHeadBone->GetRotation()->y += (threshold * sign);
+                    }
+                    else
+                    {
+                        pHeadBone->GetRotation()->y += toRotYRadDiff;
+                    }
+
+
+                    pRootBone->GetRotation()->y += m_fRootRotRadY;
+
+                    pHeadBone->GetRotation()->x += targetRotXRad;
+                }
+            }
+        }
+        }
+
+
+
+    if (1)
+    {
+        static float fTmp2 = 0;
+        fTmp2 += fTimeDelta;;
+        float lifeTime = fTmp2;
+        float bob = (cosf(lifeTime * XMConvertToRadians(103.2f)) * 2.865f) + 2.865f;
+
+        if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+        {
+            pLeftArm->GetRotation()->z += XMConvertToRadians(-bob);
+        }
+
+        if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+        {
+            pRightArm->GetRotation()->z += XMConvertToRadians(bob);
+        }
+    }
+
+    if (1)
+    {
+        static float fWalkCycle = 0.f;
+        bool bMoving = m_bKeyPressingA || m_bKeyPressingD || m_bKeyPressingW || m_bKeyPressingS;
+        if (bMoving)
+        {
+            fWalkCycle += fTimeDelta * 6.28f;
+            if (fWalkCycle > 6.28f) {
+                fWalkCycle -= 6.28f;
+            }
+
+            float tcos0 = cos(fWalkCycle) * 30;
+
+            // leftarm, leftleg, rightarm, rightleg 회전 적용
+            if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+            {
+                pLeftArm->GetRotation()->x += XMConvertToRadians(tcos0);
+            }
+
+            if (auto pLeftLeg = m_pComEntityModel->GetBone("leftLeg"))
+            {
+                pLeftLeg->GetRotation()->x += XMConvertToRadians(tcos0 * -1.4f);
+
+            }
+
+            if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+            {
+                pRightArm->GetRotation()->x += XMConvertToRadians(-tcos0);
+            }
+
+            if (auto pRightLeg = m_pComEntityModel->GetBone("rightLeg"))
+            {
+                pRightLeg->GetRotation()->x += XMConvertToRadians(tcos0 * 1.4f);
+            }
+        }
+    }
+
+
+
+    //PlayerMove(fTimeDelta);
+    //// camera control
+    //{
+    //    PlayerCameraTrace(fTimeDelta);
+    //}
+
+
+    /////
+
+    if (1)
+    {
+        if (m_bKeyPressingShift)
+        {
+            constexpr float fScale = 0.0625f;
+
+            if (auto pWaist = m_pComEntityModel->GetBone("waist"))
+            {
+                pWaist->GetRotation()->x += XMConvertToRadians(28.f);
+                pWaist->GetTranslatoin()->y -= 1.f * fScale;
+            }
+
+            if (auto pHead = m_pComEntityModel->GetBone("head"))
+            {
+                pHead->GetRotation()->x += -XMConvertToRadians(28.f);
+
+            }
+        }
+    }
+
+
+
+    {
+
+        if (m_bMousePressingLeft)
+        {
+            m_bAttacking = true;
+            m_fAttackTime = 0.0f;
+            m_fAttackDuration = 0.3f;  // 공격 지속 시간
+        }
+
+        if (m_bAttacking)
+        {
+            // attack_time: 0.0 ~ 1.0
+            m_fAttackTime += fTimeDelta / m_fAttackDuration;
+            m_fAttackTime = std::min(m_fAttackTime, 1.0f);
+
+            float attackTime = m_fAttackTime;
+            float attackBodyRotY = (float)m_iMouseMoveX;  // 현재 head 회전값
+
+            // body 회전
+            if (auto pBody = m_pComEntityModel->GetBone("body"))
+            {
+                float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                float leftArmRotX = -(sin(t * 3.14159f) * 1.2f + sin(attackTime * 3.14159f)) * 10.0f;
+                //pBody->GetRotation()->y += XMConvertToRadians(leftArmRotX);
+            }
+
+            // leftarm 회전
+            if (auto pLeftArm = m_pComEntityModel->GetBone("leftArm"))
+            {
+                float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                float leftArmRotX = -(sin(t * 3.14159f) * 1.2f + sin(attackTime * 3.14159f)) * 10.0f;
+
+                pLeftArm->GetRotation()->x += XMConvertToRadians(leftArmRotX);
+            }
+
+            // rightarm 회전
+            if (auto pRightArm = m_pComEntityModel->GetBone("rightArm"))
+            {
+                float t = 1.0f - pow(1.0f - attackTime, 4.0f);
+                float sinT = sin(t * 3.14159f);
+
+                float rightArmRotX = -(sinT * 1.2f + sin(attackTime * 3.14159f)) * 30.0f;
+
+                float rightArmRotY = -(sinT != 0.0f ?
+                    (-90.0f * sinT) + 30.0f :
+                    0.0f);
+
+                pRightArm->GetRotation()->x += XMConvertToRadians(rightArmRotX);
+                pRightArm->GetRotation()->y += XMConvertToRadians(rightArmRotY);
+
+            }
+
+            // 공격 완료
+            if (m_fAttackTime >= 1.0f)
+            {
+                m_bAttacking = false;
+                m_fAttackTime = 0.0f;
+            }
+        }
+    }
+
+
+    //if (m_hRightItem)
+    //{
+    //    if (auto pItem = CGameInstance::Get().GetGameObjectByHandle(m_hRightItem.value()))
+    //    {
+    //        auto pRightItem = m_pComEntityModel->GetBone("rightItem");
+    //        auto pos = GetTransform().GetPosition();
+
+    //        // 1. 기존 로컬 행렬 가져옴
+    //        _matrix matLocal = XMLoadFloat4x4(pRightItem->GetCombinedTransformationMatrix());
+
+    //        // 2. Y축 회전 적용
+    //        float fRotationY = XMConvertToRadians(90.0f);
+    //        _matrix matRotateY = XMMatrixRotationY(fRotationY) * XMMatrixRotationX(XMConvertToRadians(90.0f));
+    //        _matrix matResult = matRotateY * matLocal;
+
+    //        // 3. 앞으로 전진 (Local Forward Vector 활용)
+    //        float fForwardDistance = 0.3f; // 전진할 거리 (수치를 조절하세요)
+    //        _vector vForward = matResult.r[1]; // 행렬의 3번째 열이 Local Forward 방향입니다.
+    //        _vector vOffset = XMVectorScale(vForward, fForwardDistance);
+
+    //        // 4. 위치 성분에 오프셋 더하기
+    //        matResult.r[3] = XMVectorAdd(matResult.r[3], vOffset); // 전진 이동 적용
+    //        matResult.r[3] = XMVectorAdd(matResult.r[3], XMLoadFloat3(&pos)); // 월드 위치 적용
+
+    //        _float4x4 asdf;
+    //        XMStoreFloat4x4(&asdf, matResult);
+    //        pItem->GetTransform().SetParentWorldMatrix(asdf);
+    //    }
+    //}
+
+
+
+
+
+
+
+
+
+
+
     } // End if FPS
     else // NOT FPS
     {
