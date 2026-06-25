@@ -243,7 +243,7 @@ private:
 	//void SpawnDropItemObject(const CItemObject::ItemInfo& info, _float3 pos, _float3 vel);
 
 public:
-	void TakeDamage(int32_t iDamage);
+	void TakeDamage(int32_t iDamage, _bool bIsNoArmor = false);
 
 public:
 	_bool GetDeath() const { return m_bDeath; }

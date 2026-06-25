@@ -37,7 +37,7 @@ HRESULT CZombieEntity::Initialize(void* pArg)
     {
         return E_FAIL;
     }
-
+    m_RenderPassFlags = ETOUI(RENDERPASS::DEFAULT) | ETOUI(RENDERPASS::SHADOW);
     {
         CComEntityModel::DESC Desc{};
         Desc.viBufferId = { "MC_ENTITY_VIBuffer", "Zombie" };

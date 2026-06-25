@@ -727,6 +727,17 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			res->Load();
 		}
+		
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_Entity", "./Resources/Shader/Entity/Shadow_Entity.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_Entity", "./Resources/Shader/Entity/Shadow_Entity.hlsl"))
+		{
+			res->Load();
+		}
+
+		
 	}
 
 	// initialize item shader
@@ -929,6 +940,15 @@ HRESULT CGameInstance::InitializeMCResource()
 			res->Load();
 		}
 		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Cloud", "./Resources/Shader/Cloud/Cloud.hlsl"))
+		{
+			res->Load();
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_Cloud", "./Resources/Shader/Cloud/Shadow_Cloud.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_Cloud", "./Resources/Shader/Cloud/Shadow_Cloud.hlsl"))
 		{
 			res->Load();
 		}

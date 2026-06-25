@@ -252,8 +252,16 @@ void CComEntityModel::ResetBonesChannel()
 
 HRESULT CComEntityModel::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx, uint32_t iMeshIdx)
 {
-    const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Entity");
-    const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Entity");
+
+    StringID vsStrID = ctx.pass == RENDERPASS::SHADOW ? "VS_Shadow_Entity" : "VS_Entity";
+    StringID psStrID = ctx.pass == RENDERPASS::SHADOW ? "PS_Shadow_Entity" : "PS_Entity";
+
+    const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, vsStrID);
+    const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, psStrID);
+
+
+    //const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Entity");
+    //const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Entity");
 
     {
         const auto& viBuffer = m_pResEntityViBuffer;

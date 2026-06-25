@@ -51,7 +51,7 @@ void CWorldManager::UpdateGUI()
 
 void CWorldManager::Update(_float fTimeDelta)
 {
-	//m_fElapsedTime += fTimeDelta;
+	m_fElapsedTime += fTimeDelta;
 
 	UpdateSunShadowCamera(fTimeDelta);
 
@@ -63,7 +63,7 @@ void CWorldManager::Update(_float fTimeDelta)
 		if (auto pObj = CGameInstance::Get().GetGameObjectByHandle(m_hPlayer))
 		{
 			auto pos = pObj->GetTransform().GetPosition();
-			if (FAILED(WorldRandomMonsterGeneration(pos, 32.f * 1.5f, 1)))
+			if (FAILED(WorldRandomMonsterGeneration(pos, 32.f * 2.f, 1)))
 			{
 				//MSG_BOX("FAIL");
 			}

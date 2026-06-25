@@ -128,8 +128,11 @@ HRESULT CHandHeldItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
     }
     if (m_ItemInfo->block)
     {
-        const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropBlock");
-        const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropBlock");
+        StringID vsStrID = ctx.pass == RENDERPASS::SHADOW ? "VS_Shadow_DropBlock" : "VS_DropBlock";
+        StringID psStrID = ctx.pass == RENDERPASS::SHADOW ? "PS_Shadow_DropBlock" : "PS_DropBlock";
+
+        const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, vsStrID);
+        const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, psStrID);
         //const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>("MC_ITEM_VIBuffer", "CubeItemDirt");
         const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>(m_viBufferID.first, m_viBufferID.second);
 
@@ -193,8 +196,11 @@ HRESULT CHandHeldItem::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
     }
     else
     {
-        const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropItem");
-        const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropItem");
+        StringID vsStrID = ctx.pass == RENDERPASS::SHADOW ? "VS_Shadow_DropItem" : "VS_DropItem";
+        StringID psStrID = ctx.pass == RENDERPASS::SHADOW ? "PS_Shadow_DropItem" : "PS_DropItem";
+
+        const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, vsStrID);
+        const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, psStrID);
         //const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>("MC_ITEM_VIBuffer", "CubeItemDirt");
         const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>(m_viBufferID.first, m_viBufferID.second);
 
