@@ -273,8 +273,8 @@ void CPlayerEntity::UpdateGUI()
         if (auto pObj = CGameInstance::Get().GetFirstGameObjectByLayer<CExperienceOrb>("56_ExperienceOrb"))
         {
             auto pos = GetTransform().GetPosition();
-            pos.x += 7.f + Randf(-1.f, 1.f);
-            pos.z += 7.f + Randf(-1.f, 1.f);
+            pos.x += 2.f + Randf(-1.f, 1.f);
+            pos.z += 2.f + Randf(-1.f, 1.f);
             pObj->AddOrb(pos, {}, rand() % 16, Randf(0.3f, 1.f));
         }
     }
@@ -540,6 +540,8 @@ void CPlayerEntity::PriorityUpdate(E::_float fTimeDelta)
         m_bMouseUpRight = false;
     }
 
+    SyncBless();
+
 }
 
 void CPlayerEntity::Update(E::_float fTimeDelta)
@@ -695,7 +697,9 @@ void CPlayerEntity::LateUpdate(E::_float fTimeDelta)
     //        }
     //    }
     //}
+
     ProcessItemColliding(fTimeDelta);
+    ProcessArrowHeadColliding(fTimeDelta);
     ProcessExpOrbColliding(fTimeDelta);
     ProcessMeleeAttackColliding(fTimeDelta);
 }
@@ -787,6 +791,59 @@ void CPlayerEntity::AddRenderPassPlayerInvenUIPass()
         //camPos.z += 4.f;
         //cam->GetTransform().SetPosition(XMLoadFloat3(&camPos));
         //cam->GetTransform().LookAt(XMLoadFloat3(&playerPos));
+    }
+}
+
+void CPlayerEntity::SyncBless()
+{
+    m_ItemShiled;
+    m_iLevel;
+    auto iBlessLevel = CGameInstance::Get().GetGameBlessLevel();
+    if (m_iLevel > iBlessLevel)
+    {
+        CGameInstance::Get().SetGameBlessLevel(iBlessLevel);
+        if (m_iLevel >= 0 && m_iLevel < 2)
+        {
+            if (m_ItemShiled && m_ItemShiled->eItemType != CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0)
+            {
+                m_ItemShiled->eItemType = CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0;
+            }
+        }
+        else if (m_iLevel >= 2 && m_iLevel < 4)
+        {
+            if (m_ItemShiled && m_ItemShiled->eItemType != CItemObject::ITEM_TYPE::ITEM_Bless_Lv_2)
+            {
+                m_ItemShiled->eItemType = CItemObject::ITEM_TYPE::ITEM_Bless_Lv_2;
+            }
+        }
+        else if (m_iLevel >= 4 && m_iLevel < 6)
+        {
+            if (m_ItemShiled && m_ItemShiled->eItemType != CItemObject::ITEM_TYPE::ITEM_Bless_Lv_4)
+            {
+                m_ItemShiled->eItemType = CItemObject::ITEM_TYPE::ITEM_Bless_Lv_4;
+            }
+        }
+        else if (m_iLevel >= 6 && m_iLevel < 8)
+        {
+            if (m_ItemShiled && m_ItemShiled->eItemType != CItemObject::ITEM_TYPE::ITEM_Bless_Lv_6)
+            {
+                m_ItemShiled->eItemType = CItemObject::ITEM_TYPE::ITEM_Bless_Lv_6;
+            }
+        }
+        else if (m_iLevel >= 8 && m_iLevel < 10)
+        {
+            if (m_ItemShiled && m_ItemShiled->eItemType != CItemObject::ITEM_TYPE::ITEM_Bless_Lv_8)
+            {
+                m_ItemShiled->eItemType = CItemObject::ITEM_TYPE::ITEM_Bless_Lv_8;
+            }
+        }
+        else
+        {
+            if (m_ItemShiled && m_ItemShiled->eItemType != CItemObject::ITEM_TYPE::ITEM_Bless_Lv_10)
+            {
+                m_ItemShiled->eItemType = CItemObject::ITEM_TYPE::ITEM_Bless_Lv_10;
+            }
+        }
     }
 }
 
@@ -2050,6 +2107,33 @@ void CPlayerEntity::ProcessExpOrbColliding(_float fTimeDelta)
     }
 }
 
+void CPlayerEntity::ProcessArrowHeadColliding(_float fTimeDelta)
+{
+    if (auto pCollGroup = CGameInstance::Get().GetColliderGroup("Coll_ArrowHead"))
+    {
+        for (auto& pColl : *pCollGroup)
+        {
+            if (CGameInstance::Get().IntersectColl(pColl, m_pCenterCollider.get()))
+            {
+                if (auto pObj = Cast<CArrowEntity>(pColl->GetInnerPointer()))
+                {
+                    if (pObj->IsGround())
+                    {
+                        CItemObject::ItemInfo itemInfo{ CItemObject::ITEM_TYPE::ITEM_Arrow, 1 };
+                        if (SUCCEEDED(ProcessItemGain(itemInfo)))
+                        {
+                            pObj->SetPendingDestroyCascade();
+                            const float pitches[] = { 0.6f, 0.7f, 0.8f };
+                            CGameInstance::Get().SoundPlay("POP", 0.5f, pitches[RandInt(0, 2)]);
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }
+}
+
 void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
 {
     // Coll_PigCenter
@@ -2550,9 +2634,11 @@ void CPlayerEntity::ReadyPlayerItem()
     m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_GoldLeggings };
     m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::TNT), 64};
     m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
-    m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bread, 64 };
+    m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Arrow, 64 };
     m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Mutton, 64 };
     m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bow_Standby };
+
+    m_ItemShiled = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0 };
 }
 
 void CPlayerEntity::ReadySoundTimer()
@@ -5870,8 +5956,41 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                 || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
                                 )
                             {
+                                std::optional<CItemObject::ItemInfo>* pTarget{};
+
+                                for (uint32_t i = 0; i < 9; ++i)
+                                {
+                                    if (m_ItemArrHotbar[i])
+                                    {
+                                        if (m_ItemArrHotbar[i]->eItemType == CItemObject::ITEM_TYPE::ITEM_Arrow)
+                                        {
+                                            pTarget = &m_ItemArrHotbar[i];
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                for (uint32_t i = 0; i < 9 * 3; ++i)
+                                {
+                                    if (m_ItemArrInventory[i])
+                                    {
+                                        if (m_ItemArrInventory[i]->eItemType == CItemObject::ITEM_TYPE::ITEM_Arrow)
+                                        {
+                                            pTarget = &m_ItemArrInventory[i];
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (!pTarget)
+                                {
+                                    break;
+                                }
                                 auto funcShootArrow = [&](_float fSpeed)
                                     {
+                                        
+                                        _bool bInfinityArrow = true;
+                                        if (bInfinityArrow || (pTarget && pTarget->has_value()))
                                         {
                                             E::CArrowEntity::DESC Desc{};
                                             Desc.sObjectTag = "Arrow";
@@ -5883,45 +6002,94 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                                     const auto& [rayOrigin2, rayDir2] = m_pActivePlayerCamera->GetRay();
                                                     auto pos = GetTransform().GetPosition();
                                                     pos.y += 1.8f;
-                                                    //auto look = GetTransform().GetState(STATE::LOOK);
-                                                    //auto pos = XMLoadFloat3(&rayOrigin2);
                                                     auto look = XMLoadFloat3(&rayDir2);
-
                                                     pObj->Shoot(XMLoadFloat3(&pos), look, fSpeed, true);
-
-
+                                                    pObj->SetArrowLifeTime(5.f);
                                                 }
+                                            }
+
+                                            if (!bInfinityArrow)
+                                            {
+                                                if ((*pTarget)->iCnt == 1)
+                                                {
+                                                    *pTarget = std::nullopt;
+                                                }
+                                                else
+                                                {
+                                                    (*pTarget)->iCnt -= 1;
+                                                }
+
+                                            }
+                                           
+                                            if (
+                                                hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby
+                                                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0
+                                                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1
+                                                || hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2
+                                                )
+                                            {
+                                                hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
                                             }
                                         }
                                     };
-                                if (fBowPullingProgress <= 0.1f)
+
+                                if (false)
                                 {
-                                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
-                                }
-                                else if (fBowPullingProgress <= 0.4f)
-                                {
-                                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
-                                    if (m_bMouseUpRight)
+                                    if (fBowPullingProgress <= 0.1f)
                                     {
-                                        funcShootArrow(15.f);
+                                        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
                                     }
-                                }
-                                else if (fBowPullingProgress <= 0.7f)
-                                {
-                                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
-                                    if (m_bMouseUpRight)
+                                    else if (fBowPullingProgress <= 0.4f)
                                     {
-                                        funcShootArrow(25.f);
+                                        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
+                                        if (m_bMouseUpRight)
+                                        {
+                                            funcShootArrow(15.f);
+                                        }
+                                    }
+                                    else if (fBowPullingProgress <= 0.7f)
+                                    {
+                                        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
+                                        if (m_bMouseUpRight)
+                                        {
+                                            funcShootArrow(25.f);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
+                                        if (m_bMouseUpRight)
+                                        {
+                                            funcShootArrow(45.f);
+                                        }
                                     }
                                 }
                                 else
                                 {
-                                    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
-                                    if (m_bMouseUpRight)
+                                    if (m_bMousePressingRight)
                                     {
-                                        funcShootArrow(45.f);
+                                        if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Standby)
+                                        {
+                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0;
+                                        
+                                        }
+                                        else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_0)
+                                        {
+                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1;
+                                        }
+                                        else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_1)
+                                        {
+                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Pulling_2;
+                                        }
+                                        else
+                                        {
+                                            hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
+                                        
+                                            funcShootArrow(45.f);
+                                        }
                                     }
                                 }
+                                
                                 //else if (fBowPullingProgress <= 0.6f)
                                 //{
 
@@ -5944,13 +6112,13 @@ void CPlayerEntity::ProcessPlayerCameraAction(_float fTimeDelta)
                                 //    hotbarItemInfo->eItemType = CItemObject::ITEM_TYPE::ITEM_Bow_Standby;
                                 //}
                             }
-                        }
-                        if (fBowPullingProgress >= 1.f)
-                        {
+
                             
                         }
 
                         break;
+
+
                     }
 
 

@@ -79,6 +79,9 @@ private:
 
 	CComEntityModel* m_pComInventoryPlayerEntityModel{};
 
+private:
+	void SyncBless();
+
 public:
 	void SetDestroyState(CHandle h) { m_hDestroyStage = h; }
 private:
@@ -124,6 +127,7 @@ private:
 private:
 	void ProcessItemColliding(_float fTimeDelta);
 	void ProcessExpOrbColliding(_float fTimeDelta);
+	void ProcessArrowHeadColliding(_float fTimeDelta);
 	void ProcessMeleeAttackColliding(_float fTimeDelta);
 
 private:

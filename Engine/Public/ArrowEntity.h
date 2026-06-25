@@ -60,11 +60,16 @@ private:
 private:
 	_float m_fSpeed{ 5.f };
 	_bool m_bOnGround{ false };
-	_float m_fArrowLiftTime{ 15.f };
+	_float m_fArrowLifeTime{ 15.f };
+
+public:
+	void SetArrowLifeTime(_float f) { m_fArrowLifeTime = f; }
 
 private:
 	_float3 m_vStartPos{};
 
+public:
+	_bool IsGround() const { return m_bOnGround; }
 private:
 	_bool m_bArrowBomb{ false };
 

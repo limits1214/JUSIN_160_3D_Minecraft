@@ -2928,6 +2928,11 @@ HRESULT CGameInstance::InitializeMCResource()
 			AddTexItem16_16("./Resources/Texture/Item/seeds_wheat.png", "SeedsWheat");
 		}
 
+		// 107: totem.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/totem.png", "Totem");
+		}
+
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
 		{
 			CResTexture2DArray::DESC desc{};
