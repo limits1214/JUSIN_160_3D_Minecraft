@@ -44,7 +44,7 @@ protected:
 	UPtr<CCollider> m_pCenterCollider{};
 	void VelocityUpdate(E::_float fTimeDelta, _fvector vWishDir);
 	_float3 m_vVelocity{};
-	_float m_fSpeed{ 5.f };
+	_float m_fSpeed{ 7.f };
 	_bool m_bOnGround{};
 	_float m_fRootRotRadY{ 0.f };
 	_float m_fHeadRotRadX = 0.f;

@@ -280,48 +280,209 @@ public:
 		{
 			switch (info.block->GetType())
 			{
-			case CBlock3::TYPE::DIRT:
-				return L"흙";
-			case CBlock3::TYPE::LOG_ACACIA:
-				return L"아카시아나무";
-			case CBlock3::TYPE::LOG_BIRCH:
-				return L"BIRCH나무";
-			case CBlock3::TYPE::LOG_OAK:
-				return L"참나무";
-			case CBlock3::TYPE::LOG_CHERRY:
-				return L"벗꼿나무";
-			};
+			case CBlock3::TYPE::AIR: return L"공기";
+			case CBlock3::TYPE::STONE: return L"돌";
+			case CBlock3::TYPE::BEDROCK: return L"기반암";
+			case CBlock3::TYPE::GRASS: return L"잔디";
+			case CBlock3::TYPE::STONE_REDSTONE_ORE: return L"레드스톤 광석";
+			case CBlock3::TYPE::STONE_LAPIS_ORE: return L"청금석 광석";
+			case CBlock3::TYPE::STONE_IRON_ORE: return L"철 광석";
+			case CBlock3::TYPE::STONE_GOLD_ORE: return L"금 광석";
+			case CBlock3::TYPE::STONE_EMERALD_ORE: return L"에메랄드 광석";
+			case CBlock3::TYPE::STONE_DIAMOND_ORE: return L"다이아몬드 광석";
+			case CBlock3::TYPE::STONE_COPPER_ORE: return L"구리 광석";
+			case CBlock3::TYPE::STONE_COAL_ORE: return L"석탄 광석";
+			case CBlock3::TYPE::DEEPSLATE: return L"심층암";
+			case CBlock3::TYPE::DEEPSLATE_COAL_ORE: return L"심층암 석탄 광석";
+			case CBlock3::TYPE::DEEPSLATE_COPPER_ORE: return L"심층암 구리 광석";
+			case CBlock3::TYPE::DEEPSLATE_DIAMOND_ORE: return L"심층암 다이아몬드 광석";
+			case CBlock3::TYPE::DEEPSLATE_EMERALD_ORE: return L"심층암 에메랄드 광석";
+			case CBlock3::TYPE::DEEPSLATE_GOLD_ORE: return L"심층암 금 광석";
+			case CBlock3::TYPE::DEEPSLATE_IRON_ORE: return L"심층암 철 광석";
+			case CBlock3::TYPE::DEEPSLATE_LAPIS_ORE: return L"심층암 청금석 광석";
+			case CBlock3::TYPE::DEEPSLATE_REDSTONE_ORE: return L"심층암 레드스톤 광석";
+			case CBlock3::TYPE::DIRT: return L"흙";
+			case CBlock3::TYPE::SAND: return L"모래";
+			case CBlock3::TYPE::WATER_PLACE_HOLDER: return L"물(임시)";
+			case CBlock3::TYPE::TORCH_ON: return L"횃불";
+			case CBlock3::TYPE::REDSTONE_TORCH_OFF: return L"레드스톤 횃불(꺼짐)";
+			case CBlock3::TYPE::REDSTONE_TORCH_ON: return L"레드스톤 횃불";
+			case CBlock3::TYPE::LOG_CHERRY: return L"벚나무 원목";
+			case CBlock3::TYPE::LOG_OAK: return L"참나무 원목";
+			case CBlock3::TYPE::LOG_BIRCH: return L"자작나무 원목";
+			case CBlock3::TYPE::LOG_ACACIA: return L"아카시아 원목";
+			case CBlock3::TYPE::PLANK_CHERRY: return L"벚나무 판자";
+			case CBlock3::TYPE::PLANK_OAK: return L"참나무 판자";
+			case CBlock3::TYPE::PLANK_BIRCH: return L"자작나무 판자";
+			case CBlock3::TYPE::PLANK_ACACIA: return L"아카시아 판자";
+			case CBlock3::TYPE::LEAVES_CHERRY: return L"벚나무 잎";
+			case CBlock3::TYPE::LEAVES_OAK: return L"참나무 잎";
+			case CBlock3::TYPE::LEAVES_BIRCH: return L"자작나무 잎";
+			case CBlock3::TYPE::LEAVES_ACACIA: return L"아카시아 잎";
+			case CBlock3::TYPE::FLOWER_ALLIUM: return L"알리움";
+			case CBlock3::TYPE::FLOWER_BLUE_ORCHID: return L"파란 난초";
+			case CBlock3::TYPE::FLOWER_CORNFLOWER: return L"수레국화";
+			case CBlock3::TYPE::FLOWER_DANDELION: return L"민들레";
+			case CBlock3::TYPE::FLOWER_HOUSTONIA: return L"휴스토니아";
+			case CBlock3::TYPE::FLOWER_LILY_OF_THE_VALLEY: return L"은방울꽃";
+			case CBlock3::TYPE::FLOWER_OXEYE_DAISY: return L"옥스아이 데이지";
+			case CBlock3::TYPE::FLOWER_PAEONIA: return L"작약";
+			case CBlock3::TYPE::FLOWER_ROSE: return L"장미";
+			case CBlock3::TYPE::FLOWER_ROSE_BLUE: return L"파란 장미";
+			case CBlock3::TYPE::FLOWER_TULIP_ORANGE: return L"주황 튤립";
+			case CBlock3::TYPE::FLOWER_TULIP_PINK: return L"분홍 튤립";
+			case CBlock3::TYPE::FLOWER_TULIP_RED: return L"빨간 튤립";
+			case CBlock3::TYPE::FLOWER_WITHER_ROSE: return L"위더 장미";
+			case CBlock3::TYPE::FIJI_SHORT_DRY_GRASS: return L"마른 풀";
+			case CBlock3::TYPE::FIJI_SHORT_GRASS: return L"짧은 풀";
+			case CBlock3::TYPE::FIJI_TALL_DRY_GRASS: return L"키 큰 마른 풀";
+			case CBlock3::TYPE::FIJI_TALL_GRASS_BOTTOM: return L"키 큰 풀(하)";
+			case CBlock3::TYPE::FIJI_TALL_GRASS_TOP: return L"키 큰 풀(상)";
+			case CBlock3::TYPE::SLAP_PLANK_CHERRY: return L"벚나무 반 블록";
+			case CBlock3::TYPE::SLAP_PLANK_OAK: return L"참나무 반 블록";
+			case CBlock3::TYPE::SLAP_PLANK_BIRCH: return L"자작나무 반 블록";
+			case CBlock3::TYPE::SLAP_PLANK_ACACIA: return L"아카시아 반 블록";
+			case CBlock3::TYPE::STAIR_PLANK_CHERRY: return L"벚나무 계단";
+			case CBlock3::TYPE::STAIR_PLANK_OAK: return L"참나무 계단";
+			case CBlock3::TYPE::STAIR_PLANK_BIRCH: return L"자작나무 계단";
+			case CBlock3::TYPE::STAIR_PLANK_ACACIA: return L"아카시아 계단";
+			case CBlock3::TYPE::OBSIDIAN: return L"흑요석";
+			case CBlock3::TYPE::CHEST: return L"상자";
+			case CBlock3::TYPE::CRAFTING_TABLE: return L"제작대";
+			case CBlock3::TYPE::FURNACE: return L"화로";
+			case CBlock3::TYPE::TNT: return L"TNT";
+			case CBlock3::TYPE::ENCHANTING_TABLE: return L"마법 부여대";
+			case CBlock3::TYPE::BOOKSHELF: return L"책장";
+			case CBlock3::TYPE::LADDER: return L"사다리";
+			case CBlock3::TYPE::COBBLESTONE: return L"조약돌";
+			case CBlock3::TYPE::COBBLED_DEEPSLATE: return L"심층암 조약돌";
+			case CBlock3::TYPE::WATER_STILL: return L"물";
+			case CBlock3::TYPE::WATER_FLOW: return L"흐르는 물";
+			case CBlock3::TYPE::LAVA_PLACE_HOLDER: return L"용암(임시)";
+			case CBlock3::TYPE::LAVA_STILL: return L"용암";
+			case CBlock3::TYPE::LAVA_FLOW: return L"흐르는 용암";
+			}
 		}
 		else
 		{
 			switch (info.eItemType)
 			{
-			case ITEM_TYPE::ITEM_WoodPickaxe:
-				return L"나무곡괭이";
-			case ITEM_TYPE::ITEM_CopperPickaxe:
-				return L"구리곡괭이";
-			case ITEM_TYPE::ITEM_CopperHelmet:
-				return L"구리헬맷";
-			case ITEM_TYPE::ITEM_Coal:
-				return L"석탄";
-			case ITEM_TYPE::ITEM_Stick:
-				return L"막대";
-			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0:
-				return L"???의 가호 LV0 \n\n          : ???";
-			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_2:
-				return L"160기의 가호 LV 2\n\n무한의화살: 화살을 소비 하지 않습니다.\n                 : ???";
-			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_4:
-				return L"자습실의 가호 LV 4\n\n무한의화살: 화살을 소비 하지 않습니다.\n폭풍의 시  : 빠르게 화살을 쏩니다.\n                 : ???";
-			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_6:
-				return L"아지트의 가호 LV 6\n\n무한의화살: 화살을 소비 하지 않습니다.\n에로우 밤  : 화살이 폭발합니다.\n                 : ???";
-			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_8:
-				return L"포트폴리오실의 가호 LV 8\n\n무한의화살: 화살을 소비 하지 않습니다.\n폭풍의 시  : 빠르게 화살을 쏩니다.\n에로우 밤  : 화살이 폭발합니다.\n                 : ???";
-			case CItemObject::ITEM_TYPE::ITEM_Bless_Lv_10:
-				return L"쥬신의 가호 LV 10\n\n무한의화살: 화살을 소비 하지 않습니다.\n폭풍의 시: 빠르게 화살을 쏩니다.\n에로우 밤: 화살이 폭발합니다.\nTHE GOD        : 신이 되어 날아다닙니다.";
-			};
+			case ITEM_TYPE::ITEM_WoodPickaxe: return L"나무 곡괭이";
+			case ITEM_TYPE::ITEM_StonePickaxe: return L"돌 곡괭이";
+			case ITEM_TYPE::ITEM_CopperPickaxe: return L"구리 곡괭이";
+			case ITEM_TYPE::ITEM_IronPickaxe: return L"철 곡괭이";
+			case ITEM_TYPE::ITEM_GoldPickaxe: return L"금 곡괭이";
+			case ITEM_TYPE::ITEM_DiamondPickaxe: return L"다이아몬드 곡괭이";
+			case ITEM_TYPE::ITEM_NetheritePickaxe: return L"네더라이트 곡괭이";
+			case ITEM_TYPE::ITEM_WoodAxe: return L"나무 도끼";
+			case ITEM_TYPE::ITEM_StoneAxe: return L"돌 도끼";
+			case ITEM_TYPE::ITEM_CopperAxe: return L"구리 도끼";
+			case ITEM_TYPE::ITEM_IronAxe: return L"철 도끼";
+			case ITEM_TYPE::ITEM_GoldAxe: return L"금 도끼";
+			case ITEM_TYPE::ITEM_DiamondAxe: return L"다이아몬드 도끼";
+			case ITEM_TYPE::ITEM_NetheriteAxe: return L"네더라이트 도끼";
+			case ITEM_TYPE::ITEM_WoodShovel: return L"나무 삽";
+			case ITEM_TYPE::ITEM_StoneShovel: return L"돌 삽";
+			case ITEM_TYPE::ITEM_CopperShovel: return L"구리 삽";
+			case ITEM_TYPE::ITEM_IronShovel: return L"철 삽";
+			case ITEM_TYPE::ITEM_GoldShovel: return L"금 삽";
+			case ITEM_TYPE::ITEM_DiamondShovel: return L"다이아몬드 삽";
+			case ITEM_TYPE::ITEM_NetheriteShovel: return L"네더라이트 삽";
+			case ITEM_TYPE::ITEM_WoodHoe: return L"나무 괭이";
+			case ITEM_TYPE::ITEM_StoneHoe: return L"돌 괭이";
+			case ITEM_TYPE::ITEM_CopperHoe: return L"구리 괭이";
+			case ITEM_TYPE::ITEM_IronHoe: return L"철 괭이";
+			case ITEM_TYPE::ITEM_GoldHoe: return L"금 괭이";
+			case ITEM_TYPE::ITEM_DiamondHoe: return L"다이아몬드 괭이";
+			case ITEM_TYPE::ITEM_NetheriteHoe: return L"네더라이트 괭이";
+			case ITEM_TYPE::ITEM_WoodSword: return L"나무 검";
+			case ITEM_TYPE::ITEM_StoneSword: return L"돌 검";
+			case ITEM_TYPE::ITEM_CopperSword: return L"구리 검";
+			case ITEM_TYPE::ITEM_IronSword: return L"철 검";
+			case ITEM_TYPE::ITEM_GoldSword: return L"금 검";
+			case ITEM_TYPE::ITEM_DiamondSword: return L"다이아몬드 검";
+			case ITEM_TYPE::ITEM_NetheriteSword: return L"네더라이트 검";
+			case ITEM_TYPE::ITEM_CopperHelmet: return L"구리 헬멧";
+			case ITEM_TYPE::ITEM_IronHelmet: return L"철 헬멧";
+			case ITEM_TYPE::ITEM_GoldHelmet: return L"금 헬멧";
+			case ITEM_TYPE::ITEM_DiamondHelmet: return L"다이아몬드 헬멧";
+			case ITEM_TYPE::ITEM_NetheriteHelmet: return L"네더라이트 헬멧";
+			case ITEM_TYPE::ITEM_CopperChestplate: return L"구리 흉갑";
+			case ITEM_TYPE::ITEM_IronChestplate: return L"철 흉갑";
+			case ITEM_TYPE::ITEM_GoldChestplate: return L"금 흉갑";
+			case ITEM_TYPE::ITEM_DiamondChestplate: return L"다이아몬드 흉갑";
+			case ITEM_TYPE::ITEM_NetheriteChestplate: return L"네더라이트 흉갑";
+			case ITEM_TYPE::ITEM_CopperLeggings: return L"구리 각반";
+			case ITEM_TYPE::ITEM_IronLeggings: return L"철 각반";
+			case ITEM_TYPE::ITEM_GoldLeggings: return L"금 각반";
+			case ITEM_TYPE::ITEM_DiamondLeggings: return L"다이아몬드 각반";
+			case ITEM_TYPE::ITEM_NetheriteLeggings: return L"네더라이트 각반";
+			case ITEM_TYPE::ITEM_CopperBoots: return L"구리 부츠";
+			case ITEM_TYPE::ITEM_IronBoots: return L"철 부츠";
+			case ITEM_TYPE::ITEM_GoldBoots: return L"금 부츠";
+			case ITEM_TYPE::ITEM_DiamondBoots: return L"다이아몬드 부츠";
+			case ITEM_TYPE::ITEM_NetheriteBoots: return L"네더라이트 부츠";
+			case ITEM_TYPE::ITEM_Bow_Standby: return L"활";
+			case ITEM_TYPE::ITEM_Bow_Pulling_0: return L"활";
+			case ITEM_TYPE::ITEM_Bow_Pulling_1: return L"활";
+			case ITEM_TYPE::ITEM_Bow_Pulling_2: return L"활";
+			case ITEM_TYPE::ITEM_Arrow: return L"화살";
+			case ITEM_TYPE::ITEM_Raw_Iron: return L"철 원석";
+			case ITEM_TYPE::ITEM_Raw_Copper: return L"구리 원석";
+			case ITEM_TYPE::ITEM_Raw_Gold: return L"금 원석";
+			case ITEM_TYPE::ITEM_Iron_Ingot: return L"철 주괴";
+			case ITEM_TYPE::ITEM_Copper_Ingot: return L"구리 주괴";
+			case ITEM_TYPE::ITEM_Gold_Ingot: return L"금 주괴";
+			case ITEM_TYPE::ITEM_Netherite_Ingot: return L"네더라이트 주괴";
+			case ITEM_TYPE::ITEM_Diamond: return L"다이아몬드";
+			case ITEM_TYPE::ITEM_NetheriteScrap: return L"네더라이트 파편";
+			case ITEM_TYPE::ITEM_Charcoal: return L"숯";
+			case ITEM_TYPE::ITEM_Coal: return L"석탄";
+			case ITEM_TYPE::ITEM_Stick: return L"막대기";
+			case ITEM_TYPE::ITEM_Torch: return L"횃불";
+			case ITEM_TYPE::ITEM_String: return L"실";
+			case ITEM_TYPE::ITEM_Feather: return L"깃털";
+			case ITEM_TYPE::ITEM_Flint: return L"부싯돌";
+			case ITEM_TYPE::ITEM_Bucket_Empty: return L"양동이";
+			case ITEM_TYPE::ITEM_Bucket_Water: return L"물 양동이";
+			case ITEM_TYPE::ITEM_Bucket_Lava: return L"용암 양동이";
+			case ITEM_TYPE::ITEM_FlintAndSteel: return L"라이터";
+			case ITEM_TYPE::ITEM_Gunpowder: return L"화약";
+			case ITEM_TYPE::ITEM_Raw_Beef: return L"날고기";
+			case ITEM_TYPE::ITEM_Raw_Chicken: return L"생닭";
+			case ITEM_TYPE::ITEM_Raw_Porkchop: return L"날돼지고기";
+			case ITEM_TYPE::ITEM_Raw_Mutton: return L"날양고기";
+			case ITEM_TYPE::ITEM_Beef_Cooked: return L"스테이크";
+			case ITEM_TYPE::ITEM_Chicken_Cooked: return L"구운 닭";
+			case ITEM_TYPE::ITEM_Porkchop_Cooked: return L"구운 돼지고기";
+			case ITEM_TYPE::ITEM_Mutton_Cooked: return L"구운 양고기";
+			case ITEM_TYPE::ITEM_Apple: return L"사과";
+			case ITEM_TYPE::ITEM_Wheat: return L"밀";
+			case ITEM_TYPE::ITEM_Bread: return L"빵";
+			case ITEM_TYPE::ITEM_Flower_Allium: return L"알리움";
+			case ITEM_TYPE::ITEM_Flower_Blue_Orchid: return L"파란 난초";
+			case ITEM_TYPE::ITEM_Flower_CornFlower: return L"수레국화";
+			case ITEM_TYPE::ITEM_Flower_Dandelion: return L"민들레";
+			case ITEM_TYPE::ITEM_Flower_Houstonia: return L"휴스토니아";
+			case ITEM_TYPE::ITEM_Flower_Lily_Of_The_Valley: return L"은방울꽃";
+			case ITEM_TYPE::ITEM_Flower_Oxeye_Daisy: return L"옥스아이 데이지";
+			case ITEM_TYPE::ITEM_Flower_Paeonia: return L"작약";
+			case ITEM_TYPE::ITEM_Flower_Rose: return L"장미";
+			case ITEM_TYPE::ITEM_Flower_Rose_Blue: return L"파란 장미";
+			case ITEM_TYPE::ITEM_Flower_Tulip_Orange: return L"주황 튤립";
+			case ITEM_TYPE::ITEM_Flower_Tulip_Pink: return L"분홍 튤립";
+			case ITEM_TYPE::ITEM_Flower_Tulip_Red: return L"빨간 튤립";
+			case ITEM_TYPE::ITEM_Flower_WIther_Rose: return L"위더 장미";
+			case ITEM_TYPE::ITEM_Seeds_Wheat: return L"밀 씨앗";
+			case ITEM_TYPE::ITEM_Bless_Lv_0: return L"토템 LV 0";
+			case ITEM_TYPE::ITEM_Bless_Lv_2: return L"토템 LV 2\n\n무한의화살: 화살 소비 없음";
+			case ITEM_TYPE::ITEM_Bless_Lv_4: return L"토템 LV 4\n\n무한의화살: 화살 소비 없음\n폭풍의 시: 공격 속도 증가";
+			case ITEM_TYPE::ITEM_Bless_Lv_6: return L"토템 LV 6\n\n무한의화살: 화살 소비 없음\n에로우 밤: 화살 폭발";
+			case ITEM_TYPE::ITEM_Bless_Lv_8: return L"토템 LV 8\n\n무한의화살: 화살 소비 없음\n폭풍의 시: 공격 속도 증가\n에로우 밤: 화살 폭발";
+			case ITEM_TYPE::ITEM_Bless_Lv_10: return L"토템 LV 10\n\n무한의화살: 화살 소비 없음\n폭풍의 시: 공격 속도 증가\n에로우 밤: 화살 폭발\nTHE GOD: 비행 가능";
+			}
 		}
-
-		return L"NO_NAME";
+		return L"알 수 없음";
 	}
 
 	static _bool IsCountableItem(CItemObject::ITEM_TYPE eType)

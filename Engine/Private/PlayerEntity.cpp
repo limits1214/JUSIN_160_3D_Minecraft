@@ -43,7 +43,7 @@
 #include "ActivatedTNT.h"
 #include "ArrowEntity.h"
 
-
+#include "UICrosshair.h"
 NS_USING(Engine)
 
 
@@ -996,7 +996,7 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
                 m_TimerDestorystageSoundPlay.AppendCurrTime(fTimeDelta);
                 if (m_TimerDestorystageSoundPlay.Get_Finished())
                 {
-                    CGameInstance::Get().SoundPlay(hitSound, 0.5f);
+                    CGameInstance::Get().SoundPlay(hitSound, 0.1f);
                     m_TimerDestorystageSoundPlay.Reset();
                 }
             }
@@ -1021,7 +1021,58 @@ void CPlayerEntity::ProcessDestroyStage(float fTimeDelta)
             fElapsed += fTimeDelta;
 
             float blockDestroyRate = 1.f;
-            float blockDestroyTime = 0.5f;
+            //ASDF
+            auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+            if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
+            {
+                if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_DiamondPickaxe)
+                {
+                    if (res.block)
+                    {
+                        if (res.block->GetType() == CBlock3::TYPE::STONE
+                            || res.block->GetType() == CBlock3::TYPE::COBBLESTONE
+                            || res.block->GetType() == CBlock3::TYPE::STONE_COAL_ORE
+                            || res.block->GetType() == CBlock3::TYPE::STONE_IRON_ORE
+                            || res.block->GetType() == CBlock3::TYPE::STONE_DIAMOND_ORE)
+                        {
+                            blockDestroyRate = 0.1f;
+                        }
+                    }
+                }
+                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_DiamondShovel)
+                    {
+                        if (res.block)
+                        {
+                            if (res.block->GetType() == CBlock3::TYPE::GRASS
+                                || res.block->GetType() == CBlock3::TYPE::DIRT)
+                            {
+                                blockDestroyRate = 0.1f;
+                            }
+                        }
+                    }
+                else if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_DiamondAxe)
+                {
+                    if (res.block)
+                    {
+                        if (res.block->GetType() == CBlock3::TYPE::LOG_ACACIA
+                            || res.block->GetType() == CBlock3::TYPE::PLANK_ACACIA
+                            || res.block->GetType() == CBlock3::TYPE::LOG_OAK
+                            || res.block->GetType() == CBlock3::TYPE::PLANK_OAK
+                            || res.block->GetType() == CBlock3::TYPE::LOG_CHERRY
+                            || res.block->GetType() == CBlock3::TYPE::PLANK_CHERRY
+                            || res.block->GetType() == CBlock3::TYPE::LOG_BIRCH
+                            || res.block->GetType() == CBlock3::TYPE::PLANK_BIRCH
+                            )
+                        {
+                            blockDestroyRate = 0.1f;
+                        }
+                    }
+                }
+            }
+            
+
+            
+            float blockDestroyTime = 1.f;
             float goal = blockDestroyTime * blockDestroyRate;
 
 
@@ -1640,6 +1691,15 @@ void CPlayerEntity::ProcessUI(float fTimeDelta)
             m_openChestLocation = std::nullopt;
         }
 
+        if (bInvenRender || bCraftingTable || bFurnaceRender || bChestRender || bChest2Render)
+        {
+            GetUIController()->GetCrosshair()->SetRender(true);
+           
+        }
+        else
+        {
+            GetUIController()->GetCrosshair()->SetRender(false);
+        }
         if (bFurnaceRender || bCraftingTable || bChestRender || bChest2Render)
         {
             if (bInvenRender)
@@ -1656,6 +1716,8 @@ void CPlayerEntity::ProcessUI(float fTimeDelta)
 
             if (bChest2Render)
                 GetUIController()->GetChest2()->SetRender(false);
+
+
         }
         else
         {
@@ -2152,7 +2214,7 @@ void CPlayerEntity::ProcessItemColliding(_float fTimeDelta)
                                 if (SUCCEEDED(ProcessItemGain(itemInfo)))
                                 {
                                     const float pitches[] = { 0.6f, 0.7f, 0.8f };
-                                    CGameInstance::Get().SoundPlay("POP", 0.5f, pitches[RandInt(0, 2)]);
+                                    CGameInstance::Get().SoundPlay("POP", 0.2f, pitches[RandInt(0, 2)]);
                                     pObj->GetDropItemObjects().erase(pHint->iter);
                                 }
                             }
@@ -2229,6 +2291,17 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
     // Coll_ZombieCenter
     // Coll_CreeperCenter
     // Coll_SkeletonCenter
+    uint32_t iDamage = 1;
+
+    auto currHotbarIdx = GetUIController()->GetHotBar()->GetHotBarSelect()->GetSelectIdx();
+    if (auto& hotbarItemInfo = m_ItemArrHotbar[currHotbarIdx])
+    {
+        if (hotbarItemInfo->eItemType == CItemObject::ITEM_TYPE::ITEM_DiamondSword)
+        {
+            iDamage = 10;
+        }
+    }
+    
 
     auto vPos = GetTransform().GetPosition();
     vPos.y += 1.8f;
@@ -2243,7 +2316,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CPigEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
+                        pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -2261,7 +2334,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CCowEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
+                        pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -2279,7 +2352,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CChickenEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
+                        pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -2297,7 +2370,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CZombieEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
+                        pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -2315,7 +2388,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CCreeperEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
+                        pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -2333,7 +2406,7 @@ void CPlayerEntity::ProcessMeleeAttackColliding(_float fTimeDelta)
                 {
                     if (auto pObj = Cast<CSkeletonEntity>(pColl->GetInnerPointer()))
                     {
-                        pObj->TakeDamage(1, XMLoadFloat3(&vPos));
+                        pObj->TakeDamage(iDamage, XMLoadFloat3(&vPos));
                     }
                 }
             }
@@ -2690,7 +2763,7 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
                 auto vPos = GetTransform().GetPosition();
                 if (auto stepBlock = CGameInstance::Get().GetVoxelBlock(std::floor(vPos.x), std::floor(vPos.y), std::floor(vPos.z)))
                 {
-                    CGameInstance::Get().SoundPlay(CBlock3::GetSoundStep(stepBlock.value().GetType()), 0.5f);
+                    CGameInstance::Get().SoundPlay(CBlock3::GetSoundStep(stepBlock.value().GetType()), 0.1f);
                 }
             }
             
@@ -2714,18 +2787,26 @@ void CPlayerEntity::PlayerMove(_float fTimeDelta)
 
 void CPlayerEntity::ReadyPlayerItem()
 {
-    m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Torch, 64 };
-    //m_ItemArrHotbar[0]->fDurability = 0.95f;
-    m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondHelmet };
-    m_ItemArrHotbar[2] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondChestplate };
-    m_ItemArrHotbar[3] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_DiamondLeggings };
-    m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::TNT), 64};
-    m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
-    m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Arrow, 64 };
-    m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Mutton, 64 };
-    m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bow_Standby };
+    //m_ItemArrHotbar[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Torch, 64 };
+    //m_ItemArrHotbar[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Diamond, 32 };
+    //m_ItemArrHotbar[4] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::TNT), 64};
+    //m_ItemArrHotbar[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
+    //m_ItemArrHotbar[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 8 };
+    //m_ItemArrHotbar[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Mutton, 64 };
+    //m_ItemArrHotbar[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bow_Standby };
 
     m_ItemShiled = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bless_Lv_0 };
+
+    m_ItemArrInventory[0] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Diamond, 64 };
+    m_ItemArrInventory[1] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_FlintAndSteel };
+    m_ItemArrInventory[2] = CItemObject::ItemInfo{ CBlock3(CBlock3::TYPE::TNT), 64 };
+    m_ItemArrInventory[3] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bow_Standby };
+    m_ItemArrInventory[4] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Arrow, 16 };
+    m_ItemArrInventory[5] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Coal, 8 };
+    m_ItemArrInventory[6] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Torch, 64 };
+    m_ItemArrInventory[7] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Bread, 64 };
+
+    m_ItemArrInventory[8] = CItemObject::ItemInfo{ CItemObject::ITEM_TYPE::ITEM_Raw_Chicken, 8 };
 }
 
 void CPlayerEntity::ReadySoundTimer()
@@ -4716,7 +4797,7 @@ void CPlayerEntity::TakeDamage(int32_t iDamage, _bool bIsNoArmor)
     if (bBlocked)
     {
         const char* sounds[] = { "ARMOR_BLOCK_1", "ARMOR_BLOCK_2", "ARMOR_BLOCK_3", "ARMOR_BLOCK_4", "ARMOR_BLOCK_5"};
-        CGameInstance::Get().SoundPlay(sounds[RandInt(0, 4)], 0.5f);
+        CGameInstance::Get().SoundPlay(sounds[RandInt(0, 4)], 0.1f);
 
     }
     else

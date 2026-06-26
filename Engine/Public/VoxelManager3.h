@@ -270,7 +270,7 @@ public:
 	std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>> m_mapEditedBlock{};
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 20 };
+	int32_t m_iRenderDistance{ 3 };
 	int32_t m_iVerticalRenderDistance{ 0 };
 
 public:

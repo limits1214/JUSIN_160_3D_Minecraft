@@ -76,12 +76,21 @@ void CPlayerCamera::Update(E::_float fTimeDelta)
 
     if (CGameInstance::Get().KeyPressing(DIK_LEFT))
     {
-        GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(360.f) * fTimeDelta);
+        GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(90.f));
     }
 
     if (CGameInstance::Get().KeyPressing(DIK_RIGHT))
     {
-        GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -XMConvertToRadians(360.f) * fTimeDelta);
+        GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -XMConvertToRadians(90.f));
+    }
+
+    if (CGameInstance::Get().KeyDown(DIK_P))
+    {
+        CGameInstance::Get().SetActiveGameCamera("Player");
+    }
+    if (CGameInstance::Get().KeyDown(DIK_O))
+    {
+        CGameInstance::Get().SetActiveGameCamera("FLY");
     }
 }
 

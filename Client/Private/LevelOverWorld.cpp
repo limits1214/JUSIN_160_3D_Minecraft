@@ -140,6 +140,8 @@ HRESULT CLevelOverWorld::Initialize()
 		{
 			if (auto playerObj = E::CGameInstance::Get().GetGameObjectByHandleT<E::CPlayerEntity>(playerHandle.value()))
 			{
+				playerObj->GetTransform().SetPosition(XMVectorSet(0.f, 100.f, 0.f, 1.f));
+				//playerObj->GetTransform().SetPosition(_float3{ 0.f, 100.f, 0.f });
 				//block outline
 				{
 					//CBlockOutline

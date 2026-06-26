@@ -51,6 +51,10 @@ void CWorldManager::UpdateGUI()
 
 void CWorldManager::Update(_float fTimeDelta)
 {
+	if (CGameInstance::Get().KeyDown(DIK_M))
+	{
+		m_iTotalEntityCnt = 100;
+	}
 	m_fElapsedTime += fTimeDelta;
 
 	UpdateSunShadowCamera(fTimeDelta);
@@ -453,7 +457,7 @@ void UpdateSunShadowCamera2(_float fTimeDelta)
 HRESULT CWorldManager::WorldRandomMonsterGeneration(_float3 vCenterPos, _float fRadius, uint32_t iCnt)
 {
 	// 1. 엔티티 최대 개수 제한
-	uint32_t iTotalEntityCnt = 100;
+	uint32_t iTotalEntityCnt = m_iTotalEntityCnt;
 
 	// 2. 중심(플레이어) 기준 디스폰 반경 설정
 	_float fDespawnLimit = fRadius;
@@ -548,85 +552,133 @@ HRESULT CWorldManager::WorldRandomMonsterGeneration(_float3 vCenterPos, _float f
 
 	// 7. 몬스터(돼지) 스폰
 
-	auto randIdx = RandInt(0, 5);
-	if (randIdx == 0)
+
+	if (iTotalEntityCnt <= 3)
 	{
-		E::CPigEntity::DESC Desc{};
-		Desc.sObjectTag = "Pig";
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity", layerName, &Desc))
+		auto randIdx = RandInt(0, 2);
+		if (randIdx == 0)
 		{
-			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CPigEntity>(handle.value()))
+			E::CPigEntity::DESC Desc{};
+			Desc.sObjectTag = "Pig";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity", layerName, &Desc))
 			{
-				pObj->GetTransform().SetPosition(vSpawnPos);
-				pObj->SetPlayer(m_hPlayer);
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CPigEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
+			}
+		}
+		else if (randIdx == 1)
+		{
+			E::CCowEntity::DESC Desc{};
+			Desc.sObjectTag = "Cow";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity", layerName, &Desc))
+			{
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCowEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
+			}
+		}
+		else if (randIdx == 2)
+		{
+			E::CChickenEntity::DESC Desc{};
+			Desc.sObjectTag = "Chicken";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity", layerName, &Desc))
+			{
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CChickenEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
 			}
 		}
 	}
-	else if (randIdx == 1)
+	else
 	{
-		E::CCowEntity::DESC Desc{};
-		Desc.sObjectTag = "Cow";
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity", layerName, &Desc))
+		auto randIdx = RandInt(0, 5);
+		if (randIdx == 0)
 		{
-			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCowEntity>(handle.value()))
+			E::CPigEntity::DESC Desc{};
+			Desc.sObjectTag = "Pig";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_PigEntity", layerName, &Desc))
 			{
-				pObj->GetTransform().SetPosition(vSpawnPos);
-				pObj->SetPlayer(m_hPlayer);
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CPigEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
+			}
+		}
+		else if (randIdx == 1)
+		{
+			E::CCowEntity::DESC Desc{};
+			Desc.sObjectTag = "Cow";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CowEntity", layerName, &Desc))
+			{
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCowEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
+			}
+		}
+		else if (randIdx == 2)
+		{
+			E::CChickenEntity::DESC Desc{};
+			Desc.sObjectTag = "Chicken";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity", layerName, &Desc))
+			{
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CChickenEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
+			}
+		}
+		else if (randIdx == 3)
+		{
+			E::CZombieEntity::DESC Desc{};
+			Desc.sObjectTag = "Zombie";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ZombieEntity", layerName, &Desc))
+			{
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CZombieEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
+			}
+		}
+		else if (randIdx == 4)
+		{
+			E::CSkeletonEntity::DESC Desc{};
+			Desc.sObjectTag = "Skeleton";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_SkeletonEntity", layerName, &Desc))
+			{
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CSkeletonEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
+			}
+		}
+		else if (randIdx == 5)
+		{
+			E::CCreeperEntity::DESC Desc{};
+			Desc.sObjectTag = "Creeper";
+			if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CreeperEntity", layerName, &Desc))
+			{
+				if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCreeperEntity>(handle.value()))
+				{
+					pObj->GetTransform().SetPosition(vSpawnPos);
+					pObj->SetPlayer(m_hPlayer);
+				}
 			}
 		}
 	}
-	else if (randIdx == 2)
-	{
-		E::CChickenEntity::DESC Desc{};
-		Desc.sObjectTag = "Chicken";
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ChickenEntity", layerName, &Desc))
-		{
-			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CChickenEntity>(handle.value()))
-			{
-				pObj->GetTransform().SetPosition(vSpawnPos);
-				pObj->SetPlayer(m_hPlayer);
-			}
-		}
-	}
-	else if (randIdx == 3)
-	{
-		E::CZombieEntity::DESC Desc{};
-		Desc.sObjectTag = "Zombie";
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_ZombieEntity", layerName, &Desc))
-		{
-			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CZombieEntity>(handle.value()))
-			{
-				pObj->GetTransform().SetPosition(vSpawnPos);
-				pObj->SetPlayer(m_hPlayer);
-			}
-		}
-	}
-	else if (randIdx == 4)
-	{
-		E::CSkeletonEntity::DESC Desc{};
-		Desc.sObjectTag = "Skeleton";
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_SkeletonEntity", layerName, &Desc))
-		{
-			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CSkeletonEntity>(handle.value()))
-			{
-				pObj->GetTransform().SetPosition(vSpawnPos);
-				pObj->SetPlayer(m_hPlayer);
-			}
-		}
-	}
-	else if (randIdx == 5)
-	{
-		E::CCreeperEntity::DESC Desc{};
-		Desc.sObjectTag = "Creeper";
-		if (auto handle = E::CGameInstance::Get().AddGameObjectToLayer("ENTITY", "Prototype_GameObject_CreeperEntity", layerName, &Desc))
-		{
-			if (auto pObj = CGameInstance::Get().GetGameObjectByHandleT<CCreeperEntity>(handle.value()))
-			{
-				pObj->GetTransform().SetPosition(vSpawnPos);
-				pObj->SetPlayer(m_hPlayer);
-			}
-		}
-	}
+	
 	
 
 	return S_OK;

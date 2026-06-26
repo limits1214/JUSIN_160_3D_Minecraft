@@ -343,7 +343,7 @@ void CGameInstance::Release_Engine()
 	m_pLightManager.reset();
 	//m_pVoxelManager.reset();
 	m_pVoxelManager3.reset();
-
+	m_pCameraManager.reset();
 	m_pPrototypeManager.reset();
 	m_pGameObjectManager.reset();
 	m_pRenderer.reset();
@@ -2990,7 +2990,9 @@ HRESULT CGameInstance::InitializeMCSoundResource()
 			}
 			return E_FAIL;
 		};
+	
 	if (FAILED(funcSoundAdd("minecraft", "./Resources/Sound/minecraft.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("haggstrom", "./Resources/Sound/haggstrom.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("HIT_1", "./Resources/Sound/hit/hit1.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("HIT_2", "./Resources/Sound/hit/hit2.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("HIT_3", "./Resources/Sound/hit/hit3.ogg"))) return E_FAIL;
@@ -3173,6 +3175,10 @@ HRESULT CGameInstance::InitializeMCSoundResource()
 	if (FAILED(funcSoundAdd("ARMOR_BLOCK_3", "./Resources/Sound/armor_block/block3.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("ARMOR_BLOCK_4", "./Resources/Sound/armor_block/block4.ogg"))) return E_FAIL;
 	if (FAILED(funcSoundAdd("ARMOR_BLOCK_5", "./Resources/Sound/armor_block/block5.ogg"))) return E_FAIL;
+
+	//SoundPlay;
+
+	m_pSoundManager->PlayLoop("haggstrom", 0.1f);
 	return S_OK;
 }
 

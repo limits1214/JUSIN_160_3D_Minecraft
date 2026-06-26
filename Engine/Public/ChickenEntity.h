@@ -77,7 +77,7 @@ private:
 	void ProcessDropDropItem(_float fTimeDelta);
 	void ProcessDestroy(_float fTimeDelta);
 	_bool m_bDropDropItem{ false };
-	int32_t m_iHeart{ 5 };
+	int32_t m_iHeart{ 3 };
 private:
 	_float m_fDeathTimer = 0.f;
 private:
