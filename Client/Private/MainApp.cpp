@@ -29,7 +29,7 @@ HRESULT CMainApp::Initialize()
 		return E_FAIL;
 	}
 
-	if (CBaseApp::StartLevel(CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::LOGO)))
+	if (CBaseApp::StartLevel(CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::THE_OVERWORLD)))
 	{
 		return E_FAIL;
 	}

@@ -38,7 +38,7 @@ public:
 	HRESULT Play(const StringID& channelTag);
 	HRESULT Play(const StringID& channelTag, _float fVolume);
 	HRESULT Play(const StringID& channelTag, _float fVolume, _float fPitch);
-	HRESULT PlayLoop(const StringID& channelTag);
+	HRESULT PlayLoop(const StringID& channelTag, _float fVolume);
 	void Stop(const StringID& channelTag);
 	void Pause(const StringID& channelTag, _bool bPause);
 	_bool GetVolume(const StringID& channelTag, _float& fVolume);

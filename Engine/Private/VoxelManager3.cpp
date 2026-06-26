@@ -1317,6 +1317,11 @@ void CVoxelManager3::WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& ch
 
 void CVoxelManager3::Update(_float fTimeDelta)
 {
+    if (CGameInstance::Get().KeyDown(DIK_L))
+    {
+        m_iRenderDistance = 20;
+    }
+
     if (m_bDbgPicking)
     {
         if (CGameInstance::Get().MouseDown(MOUSEKEYSTATE::LB))
@@ -1621,7 +1626,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
     if (fTmp1 > 0.5f * 0.1f)
     {
         fTmp1 = 0.f;
-        if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera())
         {
             float fx = cam->GetTransform().GetPosition().x;
             float fy = cam->GetTransform().GetPosition().y;
@@ -1647,7 +1652,7 @@ void CVoxelManager3::Update(_float fTimeDelta)
     if ( fTmp2 > 0.7f * 0.1f)
     {
         fTmp2 = 0.f;
-        if (auto cam = CGameInstance::Get().GetActiveGameCamera("Player"))
+        if (auto cam = CGameInstance::Get().GetActiveGameCamera())
         {
             float fx = cam->GetTransform().GetPosition().x;
             float fy = cam->GetTransform().GetPosition().y;

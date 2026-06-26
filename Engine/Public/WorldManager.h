@@ -54,6 +54,8 @@ private:
 private:
 	CTimer m_TimerMobSpawn{};
 
+	uint32_t m_iTotalEntityCnt{3};
+
 public:
 	_float GetElapsedTime() const { return m_fElapsedTime; };
 	_float GetDayFactor() const
@@ -80,8 +82,8 @@ public:
 	
 	//float g_fTimeFactor = ; // 0.0f ~ 1.0f
 private:
-	float fDayDuration = 60.0f * 5.f;
-	_float m_fElapsedTime{10.f};
+	float fDayDuration = 60.0f * 10.f;
+	_float m_fElapsedTime{-120.f};
 
 private:
 	_float m_fShadowSnapTimer = 0.f;

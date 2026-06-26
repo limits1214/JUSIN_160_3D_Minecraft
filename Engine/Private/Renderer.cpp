@@ -824,17 +824,18 @@ HRESULT CRenderer::DrawFullscreen()
     m_pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
     m_pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
 
-    if (CGameInstance::Get().KeyPressing(DIK_N))
-    {
-        ID3D11ShaderResourceView* pSRVs[1] = { m_pShadowTex2D->GetSRV().Get() };
-        m_pContext->PSSetShaderResources(0, 1, pSRVs);
-    }
-    else
-    {
-        ID3D11ShaderResourceView* pSRVs[1] = { m_pLastTex2DBeforeFullScreenDraw->GetSRV().Get() };
-        m_pContext->PSSetShaderResources(0, 1, pSRVs);
-    }
-
+    //if (CGameInstance::Get().KeyPressing(DIK_N))
+    //{
+    //    ID3D11ShaderResourceView* pSRVs[1] = { m_pShadowTex2D->GetSRV().Get() };
+    //    m_pContext->PSSetShaderResources(0, 1, pSRVs);
+    //}
+    //else
+    //{
+    //    ID3D11ShaderResourceView* pSRVs[1] = { m_pLastTex2DBeforeFullScreenDraw->GetSRV().Get() };
+    //    m_pContext->PSSetShaderResources(0, 1, pSRVs);
+    //}
+    ID3D11ShaderResourceView* pSRVs[1] = { m_pLastTex2DBeforeFullScreenDraw->GetSRV().Get() };
+    m_pContext->PSSetShaderResources(0, 1, pSRVs);
 
     const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_LINEAR_WRAP);
     m_pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());

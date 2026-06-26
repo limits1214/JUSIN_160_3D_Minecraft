@@ -275,7 +275,7 @@ void CActivatedTNT::LateUpdate(E::_float fTimeDelta)
 				copyPos.x += 0.5f;
 				copyPos.z += 0.5f;
 				copyPos.y += 1.f;
-				ExplodeAndDamageColliding(copyPos, 4.f, 1, 25);
+				ExplodeAndDamageColliding(copyPos, 4.f, 8, 25);
 			}
 			
 

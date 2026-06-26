@@ -68,7 +68,7 @@ void CSoundManager::UpdateGUI()
 				ImGui::SameLine();
 				if (ImGui::Button("PlayLoop"))
 				{
-					PlayLoop(k);
+					//PlayLoop(k);
 				}
 				_float fCurrVol;
 				if (GetVolume(k, fCurrVol))
@@ -239,7 +239,7 @@ HRESULT CSoundManager::Play(const StringID& channelTag, _float fVolume, _float f
 	return S_OK;
 }
 
-HRESULT CSoundManager::PlayLoop(const StringID& channelTag)
+HRESULT CSoundManager::PlayLoop(const StringID& channelTag, _float fVolume)
 {
 	auto iter = m_mapChannels.find(channelTag);
 	if (iter == m_mapChannels.end())
@@ -257,6 +257,7 @@ HRESULT CSoundManager::PlayLoop(const StringID& channelTag)
 			&iter->second.pChannel
 		);
 		FMOD_Channel_SetMode(iter->second.pChannel, FMOD_LOOP_NORMAL);
+		FMOD_Channel_SetVolume(iter->second.pChannel, fVolume);
 	}
 
 	return S_OK;

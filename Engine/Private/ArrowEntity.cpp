@@ -165,7 +165,7 @@ HRESULT CArrowEntity::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX&
 
 void CArrowEntity::ProcessArrowDamage(_float fTimeDelta)
 {
-    uint32_t iDamage = 1;
+    uint32_t iDamage = 2;
     // Coll_PigCenter
     // Coll_CowCenter
     // Coll_ChickenCenter
