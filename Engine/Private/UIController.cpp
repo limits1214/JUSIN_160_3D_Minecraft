@@ -131,7 +131,6 @@ HRESULT CUIController::Initialize(void* pArg)
 						if (auto pObj = E::CGameInstance::Get().GetGameObjectByHandle(handle.value()))
 						{
 							pObj->SetParentNode(pBarObj);
-							
 						}
 					}
 				}

@@ -119,6 +119,7 @@ void CUIItem::PriorityUpdate(E::_float fTimeDelta)
 
 void CUIItem::Update(E::_float fTimeDelta)
 {
+	GetChildrenNode();
 	//if (m_bOnCursor)
 	//{
 	//	POINT mousePos;
