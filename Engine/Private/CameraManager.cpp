@@ -100,50 +100,102 @@ void CCameraManager::UpdateGUI()
 	ImGui::End();
 }
 
-//const CCameraObject* CCameraManager::GetCameraObject(const StringID& GroupID) const
-//{
-//	auto iter = m_ActiveCameras.find(GroupID);
-//	if (iter == m_ActiveCameras.end())
-//	{
-//		return nullptr;
-//	}
-//
-//	auto pObj = CGameInstance::Get().GetGameObjectByHandle(iter->second);
-//	if (!pObj)
-//	{
-//		return nullptr;
-//	}
-//	
-//	if (!pObj->IsA(CCameraObject::StaticType))
-//	{
-//		return nullptr;
-//	}
-//
-//	return static_cast<CCameraObject*>(pObj);
-//}
-//
-//HRESULT CCameraManager::SetCameraObject(const StringID& GroupID, const CHandle& handle)
-//{
-//	auto pObj = CGameInstance::Get().GetGameObjectByHandle(handle);
-//	if (!pObj)
-//	{
-//		return E_FAIL;
-//	}
-//
-//	if (!pObj->IsA(CCameraObject::StaticType))
-//	{
-//		return E_FAIL;
-//	}
-//
-//	auto iter = m_ActiveCameras.find(GroupID);
-//	if (iter != m_ActiveCameras.end())
-//	{
-//		m_ActiveCameras.erase(iter);
-//	}
-//	m_ActiveCameras.emplace(GroupID, handle);
-//
-//	return S_OK;
-//}
+CCameraObject* CCameraManager::GetActiveCamera() const
+{
+	if (!m_ActiveCamera.has_value())
+	{
+		return nullptr;
+	}
+
+	auto pObj = CGameInstance::Get().GetGameObjectByHandle(m_ActiveCamera->second);
+	if (!pObj)
+	{
+		return nullptr;
+	}
+
+	if (!pObj->IsA(CCameraObject::StaticType))
+	{
+		return nullptr;
+	}
+
+	return static_cast<CCameraObject*>(pObj);
+}
+
+CCameraObject* CCameraManager::GetActiveCamera(const StringID& CameraID) const
+{
+	auto tmp = GetActiveCamera();
+	if (tmp != GetCamera(CameraID))
+	{
+		return nullptr;
+	}
+	return tmp;
+}
+
+HRESULT CCameraManager::SetActiveCamera(const StringID& CameraID)
+{
+	auto iter = m_Cameras.find(CameraID);
+	if (iter == m_Cameras.end())
+	{
+		return E_FAIL;
+	}
+	auto pObj = CGameInstance::Get().GetGameObjectByHandle(iter->second);
+	if (!pObj)
+	{
+		return E_FAIL;
+	}
+
+	if (!pObj->IsA(CCameraObject::StaticType))
+	{
+		return E_FAIL;
+	}
+
+	m_ActiveCamera = *iter;
+
+	return S_OK;
+}
+
+CCameraObject* CCameraManager::GetCamera(const StringID& CameraID) const
+{
+	auto iter = m_Cameras.find(CameraID);
+	if (iter == m_Cameras.end())
+	{
+		return nullptr;
+	}
+	auto pObj = CGameInstance::Get().GetGameObjectByHandle(iter->second);
+	if (!pObj)
+	{
+		return nullptr;
+	}
+
+	if (!pObj->IsA(CCameraObject::StaticType))
+	{
+		return nullptr;
+	}
+
+	return static_cast<CCameraObject*>(pObj);
+}
+
+HRESULT CCameraManager::RegistCamera(const StringID& CameraID, const CHandle& handle)
+{
+	auto pObj = CGameInstance::Get().GetGameObjectByHandle(handle);
+	if (!pObj)
+	{
+		return E_FAIL;
+	}
+
+	if (!pObj->IsA(CCameraObject::StaticType))
+	{
+		return E_FAIL;
+	}
+
+	auto iter = m_Cameras.find(CameraID);
+	if (iter != m_Cameras.end())
+	{
+		m_Cameras.erase(iter);
+	}
+	m_Cameras.emplace(CameraID, handle);
+	return S_OK;
+}
 
 CCameraObject* CCameraManager::GetActiveGameCamera() const
 {

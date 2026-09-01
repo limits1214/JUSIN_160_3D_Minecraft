@@ -13,6 +13,12 @@ private:
 		_string sTaskName;
 	} WORKER;
 
+	typedef struct tagWorkerTask
+	{
+		_string sTaskName;
+		_Func func;
+	} WORKER_TASK;
+
 private:
 	CWorkerManager(const std::string& sName);
 	~CWorkerManager();

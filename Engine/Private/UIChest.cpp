@@ -281,6 +281,9 @@ HRESULT CUIChest::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx
 		}
 		pContext->VSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
 		pContext->PSSetConstantBuffers(7, 1, m_pComCBufferPerUI->GetAdressOfBuffer());
+		//pContext->GSSetConstantBuffers
+		//pContext->HS
+		//pContext->DS
 	}
 	{
 		E::CB_PER_OBJECT cbPerObject{};
