@@ -27,6 +27,13 @@ public:
 private:
 	_bool m_bRender{ true };
 
+
+public:
+	int32_t GetSelectIdx() const { return   std::clamp(m_iSelectIdx, 0, 8); }
+	void SetSelectIdx(int32_t idx) { m_iSelectIdx = std::clamp(idx, 0, 8); };
+private:
+	int32_t m_iSelectIdx{};
+
 public:
 	static E::UPtr<CUIHotBarSelect> Create();
 	E::UPtr<E::CPrototype> Clone(void* pArg) override;

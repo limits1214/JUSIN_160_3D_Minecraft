@@ -22,6 +22,11 @@ void CPlayerCamera::UpdateGUI()
     CCameraObject::UpdateGUI();
 
     ImGui::Text("intersect: %i", m_iColliderIntersect);
+
+    if (ImGui::Button("Shake"))
+    {
+        TriggerCameraShake(1.f, 1.f);
+    }
 }
 
 HRESULT CPlayerCamera::Initialize(void* pArg)
@@ -32,7 +37,7 @@ HRESULT CPlayerCamera::Initialize(void* pArg)
     }
 
     m_pCollider = CCollFrustum::Create(XMLoadFloat4x4(&m_matProj));
-
+    m_pCollider->SetOriginalColor({ 1.f, 0.f, 1.f, 1.f });
     return S_OK;
 }
 
@@ -45,7 +50,48 @@ void CPlayerCamera::PriorityUpdate(E::_float fTimeDelta)
 
 void CPlayerCamera::Update(E::_float fTimeDelta)
 {
+    if (m_fShakeTimer > 0.f)
+    {
+        m_fShakeTimer -= fTimeDelta;
+        if (m_fShakeTimer < 0.f)
+            m_fShakeTimer = 0.f;
 
+        // 시간이 지날수록 1.0에서 0.0으로 줄어드는 감쇠 비율
+        _float fDecay = m_fShakeTimer / m_fShakeDuration;
+
+        // 현재 프레임의 실제 흔들림 강도
+        _float fCurrentIntensity = m_fShakeIntensity * fDecay;
+
+        // -1.0 ~ 1.0 사이의 난수 생성 후 강도 곱하기
+        _float fOffsetX = ((rand() % 200) / 100.f - 1.f) * fCurrentIntensity;
+        _float fOffsetY = ((rand() % 200) / 100.f - 1.f) * fCurrentIntensity;
+        _float fOffsetZ = ((rand() % 200) / 100.f - 1.f) * fCurrentIntensity;
+
+        auto vFinalPos = GetTransform().GetLoadedPostion();
+        // 최종 위치에 흔들림 오프셋 추가
+        vFinalPos += XMVectorSet(fOffsetX, fOffsetY, fOffsetZ, 0.f);
+        GetTransform().SetPosition(vFinalPos);
+    }
+
+
+    if (CGameInstance::Get().KeyPressing(DIK_LEFT))
+    {
+        GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(90.f));
+    }
+
+    if (CGameInstance::Get().KeyPressing(DIK_RIGHT))
+    {
+        GetTransform().AddRotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), -XMConvertToRadians(90.f));
+    }
+
+    if (CGameInstance::Get().KeyDown(DIK_P))
+    {
+        CGameInstance::Get().SetActiveGameCamera("Player");
+    }
+    if (CGameInstance::Get().KeyDown(DIK_O))
+    {
+        CGameInstance::Get().SetActiveGameCamera("FLY");
+    }
 }
 
 void CPlayerCamera::LateUpdate(E::_float fTimeDelta)

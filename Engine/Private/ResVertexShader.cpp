@@ -68,7 +68,11 @@ HRESULT CResVertexShader::Load(const std::any& arg)
 		}
 
 		// 핵심: DXGI_FORMAT 결정
-		if (paramDesc.Mask == 1)
+		if (strcmp(paramDesc.SemanticName, "COLOR_PACK") == 0)
+		{
+			element.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		}
+		else if (paramDesc.Mask == 1)
 		{
 			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
 				element.Format = DXGI_FORMAT_R32_UINT;
@@ -112,11 +116,15 @@ HRESULT CResVertexShader::Load(const std::any& arg)
 
 
 	m_eState = STATE::LOADED;
+
+	m_pBlob.Reset();
+	m_pErrorBlob.Reset();
 	return S_OK;
 }
 
 HRESULT CResVertexShader::Unload(const std::any& arg)
 {
+	m_eState = STATE::UNLOAD;
 	return S_OK;
 }
 

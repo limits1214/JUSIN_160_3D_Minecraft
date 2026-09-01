@@ -18,7 +18,7 @@ HRESULT CPlayerFPSArm::Initialize(void* pArg)
 	auto pDesc = static_cast<DESC*>(pArg);
 
 	//m_viBufferID = pDesc->viBufferId;
-	if (FAILED(CItemObject::Initialize(pArg)))
+	if (FAILED(CEntityObject::Initialize(pArg)))
 	{
 		return E_FAIL;
 	}
@@ -50,7 +50,11 @@ void CPlayerFPSArm::Update(E::_float fTimeDelta)
 void CPlayerFPSArm::LateUpdate(E::_float fTimeDelta)
 {
 	m_pComEntityArmModel->UpdateBoneMatrix(fTimeDelta);
-	E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
+	if (m_bRender)
+	{
+		E::CGameInstance::Get().AddRenderObject(E::RENDERGROUP::NONBLEND, this);
+	}
+	
 	GetTransform().Update();
 }
 
@@ -64,6 +68,7 @@ HRESULT CPlayerFPSArm::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 
 			E::CB_PER_OBJECT cbPerObject{};
 			cbPerObject.matWorld = *GetTransform().GetCombinedWorldMatrix();
+			cbPerObject.light = m_iLight;
 			XMStoreFloat4x4(&cbPerObject.matWVP, GetTransform().GetLoadedCombinedWorldMatrix() * ctx.matViewProj);
 
 			memcpy(mappedSubResource.pData, &cbPerObject, sizeof(cbPerObject));
@@ -73,7 +78,7 @@ HRESULT CPlayerFPSArm::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX
 		pContext->PSSetConstantBuffers(0, 1, pCbPerObject->GetCBuffer().GetAddressOf());
 	}
 
-	m_pComEntityArmModel->BindBoneMatrix();
+	m_pComEntityArmModel->BindBoneMatrix(pContext);
 
 	m_pComEntityArmModel->Render(pContext, ctx);
 	return S_OK;

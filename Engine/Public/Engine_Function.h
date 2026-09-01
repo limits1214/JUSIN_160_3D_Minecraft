@@ -2,7 +2,21 @@
 
 namespace Engine
 {
+	inline float Randf(float min, float max)
+	{
+		return min +
+			(max - min) *
+			(rand() / (float)RAND_MAX);
+	}
 
+	inline int RandInt(int min, int max)
+	{
+		static std::random_device rd;
+		static std::mt19937 gen(rd());
+
+		std::uniform_int_distribution<int> dist(min, max);
+		return dist(gen);
+	}
 	template<typename T>
 	constexpr int32_t ETOI(T e)
 	{
@@ -83,19 +97,26 @@ namespace Engine
 
 
 
-	inline uint32_t PackTexId(uint32_t arrayGroupId, uint32_t sliceIndex)
+	inline constexpr uint32_t PackTexId(uint32_t arrayGroupId, uint32_t sliceIndex)
 	{
 		return (arrayGroupId << 24) | (sliceIndex & 0x00FFFFFF);
 	}
 
-	inline uint32_t GetTexArrayGroup(uint32_t texId)
+	inline constexpr uint32_t GetTexArrayGroup(uint32_t texId)
 	{
 		return texId >> 24;
 	}
 
-	inline uint32_t GetTexSliceIndex(uint32_t texId)
+	inline constexpr uint32_t GetTexSliceIndex(uint32_t texId)
 	{
 		return texId & 0x00FFFFFF;
+	}
+
+	inline constexpr uint32_t PackRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
+		return (static_cast<uint32_t>(a) << 24) |
+			(static_cast<uint32_t>(b) << 16) |
+			(static_cast<uint32_t>(g) << 8) |
+			(static_cast<uint32_t>(r));
 	}
 }
 

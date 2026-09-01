@@ -23,7 +23,7 @@ void CUIBreathBar::UpdateGUI()
 	{
 		m_bRender = !m_bRender;
 	}
-	ImGui::DragInt("HalfHealthCnt", &m_iCurrentHalfBreathCnt, 1, 0, 10);
+	ImGui::DragInt("HalfHealthCnt", &m_iCurrentBreathCnt, 1, 0, 10);
 }
 
 HRESULT CUIBreathBar::Initialize(void* pArg)
@@ -54,7 +54,7 @@ void CUIBreathBar::Update(E::_float fTimeDelta)
 	{
 		if (auto* icon = Cast<CUIBreathBarIcon>(GetChildrenNode()[i]))
 		{
-			if (i < imaxHealthCnt - m_iCurrentHalfBreathCnt)
+			if (i < imaxHealthCnt - m_iCurrentBreathCnt)
 			{
 				icon->SetIconType(CUIBreathBarIcon::BREATH_ICON_TYPE::EMPTY);
 			}

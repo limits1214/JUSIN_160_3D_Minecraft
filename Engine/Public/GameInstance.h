@@ -21,12 +21,17 @@ class CColliderManager;
 class CCollider;
 class CRenderer;
 class CLightManager;
-class CVoxelManager;
-class CVoxelManager2;
+//class CVoxelManager;
+//class CVoxelManager2;
 class CFontManager;
 //class CVoxelManager3;
+class CWorldManager;
+
 class CChunk3;
 class CCameraObject;
+
+class CFurnaceStorage;
+class CChestStorage;
 
 class CParticleManager;
 class ENGINE_DLL CGameInstance final : public Singleton<CGameInstance>
@@ -54,6 +59,7 @@ public:
 private:
 	HRESULT InitializeResources();
 	HRESULT InitializeMCResource();
+	HRESULT InitializeMCSoundResource();
 	HRESULT InitializePrototype();
 
 public:
@@ -94,6 +100,15 @@ public:
 #pragma region SOUND_MANAGER
 public:
 	HRESULT CreateSound(const _string& sPath, FMOD_SOUND** ppSound);
+
+	HRESULT SoundAddChannel(const StringID& channelTag, const std::pair<StringID, StringID>& soundResources);
+	HRESULT SoundPlay(const StringID& channelTag, _float fVolume = 1.f, _float fPitch = 1.f);
+	void SoundStop(const StringID& channelTag);
+	void SoundPause(const StringID& channelTag, _bool bPause);
+	_bool SoundGetVolume(const StringID& channelTag, _float& fVolume);
+	_bool SoundSetVolume(const StringID& channelTag, _float fVolume);
+	_bool SoundIsPlaying(const StringID& channelTag) const;
+	void SoundSetPitch(const StringID& channelTag, float fPitchRatio);
 #pragma endregion
 
 #pragma region DINPUT_MANAGER
@@ -112,6 +127,7 @@ public:
 	ComPtr<ID3D11Device> GetGraphicDevice() const;
 	ComPtr<ID3D11DeviceContext> GetGraphicDeviceContext()const;
 	ComPtr<ID3D11RenderTargetView> GetBackBufferRTV() const;
+	ComPtr<ID3D11DepthStencilView> GetBackBufferDSV() const;
 	HRESULT ClearBackBufferView(const _float4* pClearColor);
 	HRESULT ClearDepthStencilView();
 	HRESULT Present();
@@ -140,7 +156,7 @@ public:
 	auto WorkerEnqueueWithFuture(_string_view svTaskName, Func&& f, Args&&... args)
 		-> std::future<std::invoke_result_t<Func, Args...>>
 	{
-		return m_pChunkLoadWorkerManager->WorkerEnqueueWithFuture(
+		return m_pWorkerManager->WorkerEnqueueWithFuture(
 			svTaskName,
 			std::forward<Func>(f),
 			std::forward<Args>(args)...
@@ -178,6 +194,7 @@ public:
 	void GameObjectAllReset();
 	std::optional<CHandle> AddGameObjectToLayer(const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, std::string_view sLayerName, void* pArg = nullptr);
 	const std::vector<CHandle>* GetGameObjectLayer(std::string_view sLayerName) const;
+	const std::vector<CHandle>* GetGameObjectLayer(std::string_view sLayerName, const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, void* pArg);
 	void DelGameObjectLayer(std::string_view sLayerName);
 
 	//std::optional<CHandle> GetFreeHandle() const;
@@ -192,6 +209,12 @@ public:
 	const T* GetGameObjectByHandleT(const CHandle& handle) const
 	{
 		return static_cast<const CGameObjectManager*>(m_pGameObjectManager.get())->GetGameObjectByHandleT<T>(handle);
+	}
+
+	template<typename T>
+	T* GetFirstGameObjectByLayer(std::string_view sLayerName) const
+	{
+		return m_pGameObjectManager->GetFirstGameObjectByLayer<T>(sLayerName);
 	}
 #pragma endregion
 
@@ -229,6 +252,8 @@ public:
 #pragma region RENDERER
 public:
 	HRESULT AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pRenderObject);
+	void RendererDrawPlayerInvenUIPass();
+	void RendererSetFilterRed(_bool b);
 #pragma endregion
 
 #pragma region LIGHT_MANAGER
@@ -239,23 +264,57 @@ public:
 
 #pragma region VOXEL_MANAGER
 public:
+	std::shared_mutex& GetVoxelEditMutex();
+	std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>>* GetVoxelEdited();
 	void VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc);
 	//_float GetVoxelHeightNoise(_float x, _float z) const;
 	FastNoiseLite& GetVoxelNoiseByType(NOISE_TYPE eNoiseType);
 
+	const std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>>& GetVoxelEditShadow() const;
 	CChunk3* GetVoxelChunk(int32_t x, int32_t y, int32_t z) const;
+	CChunk3* GetVoxelChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const;
+
+	void VoxelProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound = true, std::optional<CBlock3> rayCastedBlock = std::nullopt);
+	void VoxelProcessExplodeBlock(float wx, float wy, float wz, float fRadius);
 	std::optional<CBlock3> GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
+	void SetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
 	_bool VoxelBlockRaycast(const _float3& rayOrigin,
 		const _float3& rayDir,
 		float fMaxDist,
 		CVoxelManager3::BLOCK_RAY_RESULT& outResult) const;
 
 	bool VoxelAABBOverlap(const _float3& pos, const _float3& halfExtents) const;
+
+
 #pragma endregion
 	
 #pragma region FONT_MANAGER
 	void FontDraw(const StringID& fontName, const _tchar* pText, const _float2& vPosition, float fScale = 1.f, _fvector vColor = XMVectorSet(1.f, 1.f, 1.f, 1.f), _float fRotation = 0.f, const _float2& vOrigin = { 0.f, 0.f });
+	void FontAddLateDraw(RENDERGROUP eRenderGroup, const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale = 1.f, _fvector vColor = XMVectorSet(1.f, 1.f, 1.f, 1.f), _float fRotation = 0.f, const _float2& vOrigin = { 0.f, 0.f });
+	_float2 FontMeasureString(const StringID& fontName, const wchar_t* txt, float scale = 1.f) const;
+	void FontLateDraw(RENDERGROUP eRenderGroup);
 #pragma
+
+
+#pragma region PARTICLE_MANAGER
+	void AddParticleRenderDestruct(_float3 pos, uint32_t iTexId, uint32_t iCnt = 1, _float4 vColor = {1.f, 1.f, 1.f, 1.f});
+	void AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt = 1);
+#pragma
+
+
+#pragma region WORLD_MANAGER
+	CFurnaceStorage* GetWorldFurnaceStorage();
+	CChestStorage* GetWorldChestStorage();
+	_float GetWorldDayFactor() const;
+	_float GetWorldSkyRotation() const;
+	HRESULT WorldRandomMonsterGeneration(_float3 vCenterPos, _float fRadius, uint32_t iCnt);
+	void WorldSetPlayer(CHandle h);
+#pragma
+
+
+
 private:
 	UPtr<CGraphicDevice> m_pGraphicDevice{};
 	UPtr<CImguiManager> m_pImguiManager{};
@@ -272,11 +331,12 @@ private:
 	UPtr<CColliderManager> m_pColliderManager{};
 	UPtr<CRenderer> m_pRenderer{};
 	UPtr<CLightManager> m_pLightManager{};
-	UPtr<CVoxelManager> m_pVoxelManager{};
-	UPtr<CVoxelManager2> m_pVoxelManager2{};
+	//UPtr<CVoxelManager> m_pVoxelManager{};
+	//UPtr<CVoxelManager2> m_pVoxelManager2{};
 	UPtr<CVoxelManager3> m_pVoxelManager3{};
 	UPtr<CParticleManager> m_pParticleManager{};
 	UPtr<CFontManager> m_pFontManager{};
+	UPtr<CWorldManager> m_pWorldManager{};
 
 
 public:
@@ -289,6 +349,13 @@ private:
 
 private:
 	void MouseFix() const;
+
+public:
+	uint32_t GetGameBlessLevel() const { return m_iGameBlessLevel; }
+	void SetGameBlessLevel(uint32_t i) { m_iGameBlessLevel = i; }
+
+private:
+	uint32_t m_iGameBlessLevel{};
 };
 
 NS_END

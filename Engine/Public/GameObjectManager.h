@@ -45,6 +45,8 @@ private:
 public:
 	std::optional<CHandle> AddGameObjectToLayer(const StringID& siProtoGroupTag, const StringID& siPrototypeTag, std::string_view sLayerName, void* pArg);
 	const std::vector<CHandle>* GetLayer(std::string_view sLayerName) const;
+	const std::vector<CHandle>* GetLayer(std::string_view sLayerName, const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, void* pArg) ;
+	template<typename T> T* GetFirstGameObjectByLayer(std::string_view sLayerName);
 	void DelLayer(std::string_view sLayerName);
 
 public:
@@ -126,8 +128,8 @@ inline T* Engine::CGameObjectManager::GetGameObjectByHandleT(const CHandle& hand
 	{
 		return nullptr;
 	}
-
-	if (obj->GetType() != T::StaticType)
+	
+	if (!obj->IsA(T::StaticType))
 	{
 		return nullptr;
 	}
@@ -146,10 +148,26 @@ inline const T* Engine::CGameObjectManager::GetGameObjectByHandleT(const CHandle
 		return nullptr;
 	}
 
-	if (obj->GetType() != T::StaticType)
+	if (!obj->IsA(T::StaticType))
 	{
 		return nullptr;
 	}
 
 	return static_cast<const T*>(obj);
+}
+
+template<typename T>
+inline T* Engine::CGameObjectManager::GetFirstGameObjectByLayer(std::string_view sLayerName)
+{
+	auto* pLayer = GetLayer(sLayerName);
+	if (pLayer->empty())
+	{
+		return nullptr;
+	}
+	T* pObj = GetGameObjectByHandleT<T>(pLayer->front());
+	if (!pObj)
+	{
+		return nullptr;
+	}
+	return pObj;
 }

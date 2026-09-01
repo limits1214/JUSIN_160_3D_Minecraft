@@ -9,11 +9,12 @@
 #include "TimeProvider.h"
 #include "PrototypeManager.h"
 #include "LightManager.h"
-#include "VoxelManager.h"
-#include "VoxelManager2.h"
+//#include "VoxelManager.h"
+//#include "VoxelManager2.h"
 #include "VoxelManager3.h"
 #include "ParticleManager.h"
 #include "FontManager.h"
+#include "WorldManager.h"
 
 #include "GameObject.h"
 #include "CameraManager.h"
@@ -25,12 +26,14 @@
 #include "FlyCamera.h"
 #include "UICamera.h"
 #include "PlayerCamera.h"
+#include "ShadowCamera.h"
+#include "PlayerInvenUICamera.h"
 
 #include "Resources.h"
 
 #include "ComEntityModel.h"
 #include "ComConstantBuffer.h"
-
+#include "ComAnimator.h"
 
 
 NS_USING(Engine)
@@ -46,8 +49,8 @@ CGameInstance::~CGameInstance()
 HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID3D11Device>& ppDevice, ComPtr<ID3D11DeviceContext>& ppContext)
 {
 	m_hWnd = EngineDesc.hWnd;
-	m_vClientScreenSize.x = EngineDesc.iWinSizeX;
-	m_vClientScreenSize.y = EngineDesc.iWinSizeY;
+	m_vClientScreenSize.x = (float)EngineDesc.iWinSizeX;
+	m_vClientScreenSize.y = (float)EngineDesc.iWinSizeY;
 	
 
 	m_pGraphicDevice = CGraphicDevice::Create(ppDevice, ppContext);
@@ -58,6 +61,12 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 
 	m_pResourceManager = CResourceManager::Create(ppDevice.Get(), ppContext.Get());
 	if (m_pResourceManager == nullptr)
+	{
+		return E_FAIL;
+	}
+
+	m_pSoundManager = CSoundManager::Create();
+	if (m_pSoundManager == nullptr)
 	{
 		return E_FAIL;
 	}
@@ -73,6 +82,10 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 	if (FAILED(InitializeMCResource()))
+	{
+		return E_FAIL;
+	}
+	if (FAILED(InitializeMCSoundResource()))
 	{
 		return E_FAIL;
 	}
@@ -183,6 +196,11 @@ HRESULT CGameInstance::InitializeEngine(const ENGINE_DESC& EngineDesc, ComPtr<ID
 		return E_FAIL;
 	}
 
+	m_pWorldManager = CWorldManager::Create(ppDevice.Get(), ppContext.Get());
+	if (m_pWorldManager == nullptr)
+	{
+		return E_FAIL;
+	}
 
 
 
@@ -211,9 +229,13 @@ void CGameInstance::UpdateEngine(_float fTimeDelta)
 		MouseFix();
 	}
 
+	m_pSoundManager->Update();
+
 	m_pVoxelManager3->Update(fTimeDelta);
 
 	m_pParticleManager->Update(fTimeDelta);
+
+	m_pWorldManager->Update(fTimeDelta);
 
 	m_pGameObjectManager->PriorityUpdate(fTimeDelta);
 	m_pGameObjectManager->Update(fTimeDelta);
@@ -251,6 +273,8 @@ void CGameInstance::UpdateGUI()
 
 	m_pResourceManager->UpdateGUI();
 
+	m_pWorldManager->UpdateGUI();
+
 	m_pCameraManager->UpdateGUI();
 
 	m_pLevelManager->UpdateGUI();
@@ -262,6 +286,26 @@ void CGameInstance::UpdateGUI()
 	m_pLightManager->UpdateGUI();
 
 	m_pVoxelManager3->UpdateGUI();
+
+	m_pRenderer->UpdateGUI();
+
+	m_pSoundManager->UpdateGUI();
+
+	if (ImGui::Button("ShaderRebuild"))
+	{
+		//TAG_RES_GRP_PERMANENT_SHADER
+		if (auto resources = GetResource(TAG_RES_GRP_PERMANENT_SHADER))
+		{
+			for (auto& [_, res] : *resources)
+			{
+				if (!res.empty())
+				{
+					res.front()->Unload();
+					res.front()->Load();
+				}
+			}
+		}
+	}
 }
 
 void CGameInstance::ClearResource(uint32_t iClearLevelIndex)
@@ -289,17 +333,19 @@ void CGameInstance::Release_Engine()
 	m_pSoundManager.reset();
 	m_pImguiManager.reset();
 	m_pDInputManager.reset();
+	m_pWorldManager.reset();
 	m_pGameObjectManager->AllReset();
-	m_pGameObjectManager.reset();
 	m_pLevelManager.reset();
 	m_pColliderManager.reset();
 	m_pParticleManager.reset();
 	m_pWorkerManager.reset();
 	m_pChunkLoadWorkerManager.reset();
-	m_pPrototypeManager.reset();
 	m_pLightManager.reset();
-	m_pVoxelManager.reset();
+	//m_pVoxelManager.reset();
 	m_pVoxelManager3.reset();
+	m_pCameraManager.reset();
+	m_pPrototypeManager.reset();
+	m_pGameObjectManager.reset();
 	m_pRenderer.reset();
 	m_pFontManager.reset();
 	m_pResourceManager.reset();
@@ -378,6 +424,14 @@ HRESULT CGameInstance::InitializeResources()
 		}
 	}
 
+	//
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_BUFFER, "CB_PerVoxelWater", E::CResCBuffer::Create()))
+	{
+		if (FAILED(res->Load(E::CResCBuffer::CBUFFER_DESC{ .byteWidth = sizeof(CB_PER_VOXEL_WATER) })))
+		{
+			return E_FAIL;
+		}
+	}
 	
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_LINEAR_WRAP, CResSamplerState::Create()))
 	{
@@ -393,15 +447,19 @@ HRESULT CGameInstance::InitializeResources()
 	}
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP, CResSamplerState::Create()))
 	{
-		res->Load(D3D11_SAMPLER_DESC{
-			.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT, // 핵심
-			.AddressU = D3D11_TEXTURE_ADDRESS_WRAP,
-			.AddressV = D3D11_TEXTURE_ADDRESS_WRAP,
-			.AddressW = D3D11_TEXTURE_ADDRESS_WRAP,
-			.ComparisonFunc = D3D11_COMPARISON_NEVER,
-			.MinLOD = 0,
-			.MaxLOD = D3D11_FLOAT32_MAX,
-			});
+		D3D11_SAMPLER_DESC samplerDesc{};
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+		samplerDesc.MinLOD = 0.f;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		res->Load(samplerDesc);
 	}
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP_NOMIP, CResSamplerState::Create()))
 	{
@@ -414,6 +472,27 @@ HRESULT CGameInstance::InitializeResources()
 			.MinLOD = 0,
 			.MaxLOD = 0.0f,
 			});
+	}
+	if (auto res = AddResourceT(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_SAHDOW, CResSamplerState::Create()))
+	{
+		D3D11_SAMPLER_DESC sampDesc{};
+		sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.BorderColor[0] = 1.f;
+		sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+
+		//sampDesc.MinLOD = -D3D11_FLOAT32_MAX;
+		//sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+		//sampDesc.MipLODBias = 0.f;
+		//sampDesc.MaxAnisotropy = 1;
+		if (FAILED(res->Load(sampDesc)))
+		{
+			return E_FAIL;
+		}
+
+		GetGraphicDeviceContext()->PSSetSamplers(4, 1, res->GetSamplerState().GetAddressOf());
 	}
 		
 	if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_QuadTex", "./Resources/Shader/QuadTex/QuadTex.hlsl"))
@@ -440,6 +519,9 @@ HRESULT CGameInstance::InitializeResources()
 		res->Load();
 	}
 
+	
+	
+
 	//
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL, E::CResRasterizerState::Create()))
 	{
@@ -463,6 +545,9 @@ HRESULT CGameInstance::InitializeResources()
 		desc.FillMode = D3D11_FILL_SOLID;
 		desc.CullMode = D3D11_CULL_NONE;
 		desc.DepthClipEnable = TRUE;
+		desc.DepthBias = 10;
+		desc.SlopeScaledDepthBias = 0.5f;
+		desc.DepthBiasClamp = 0.0f;
 		res->Load(desc);
 	}
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_WIREFRAME_NOCULL, E::CResRasterizerState::Create()))
@@ -471,7 +556,7 @@ HRESULT CGameInstance::InitializeResources()
 		desc.FillMode = D3D11_FILL_WIREFRAME;
 		desc.CullMode = D3D11_CULL_NONE;
 		desc.DepthClipEnable = TRUE;
-
+		
 		res->Load(desc);
 	}
 	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "RS_SOLID_BACKCULL_DEPTHBIAS", E::CResRasterizerState::Create()))
@@ -485,12 +570,74 @@ HRESULT CGameInstance::InitializeResources()
 		desc.DepthBiasClamp = 0.0f;
 		res->Load(desc);
 	}
+
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "RS_SOLID_BLOCK_VOXEL_SHADOW", E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_FRONT;
+		desc.DepthClipEnable = TRUE;
+		res->Load(desc);
+	}
+	
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "RS_ALPHATEST_BLOCK_VOXEL_SHADOW", E::CResRasterizerState::Create()))
+	{
+		D3D11_RASTERIZER_DESC desc{};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_NONE;
+		desc.DepthClipEnable = TRUE;
+		desc.DepthBias = 10;
+		desc.SlopeScaledDepthBias = 0.5f;
+		desc.DepthBiasClamp = 0.0f;
+		res->Load(desc);
+	}
+
+
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "BS_ALPHA_BLEND", E::CResBlendState::Create()))
+	{
+		D3D11_BLEND_DESC blendDesc{};
+		blendDesc.AlphaToCoverageEnable = FALSE;
+		blendDesc.IndependentBlendEnable = FALSE;
+		blendDesc.RenderTarget[0].BlendEnable = TRUE;
+		blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		res->Load(blendDesc);
+	}
+
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "DS_NO_DEPTHWRITE", E::CResDepthStencilState::Create()))
+	{
+		D3D11_DEPTH_STENCIL_DESC depthDesc{};
+		depthDesc.DepthEnable = TRUE;
+		depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // 무력화 (기록 안함)
+		depthDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		res->Load(depthDesc);
+	}
+
+	if (auto res = AddResource(TAG_RES_GRP_PERMANENT_STATE, "DS_Skybox", E::CResDepthStencilState::Create()))
+	{
+		D3D11_DEPTH_STENCIL_DESC depthDesc{};
+		depthDesc.DepthEnable = TRUE;
+		depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // 무력화 (기록 안함)
+		depthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		res->Load(depthDesc);
+	}
+
+
+
+
+	// offscreenTextureVIBuffer
+
 	return S_OK;
 }
 
 HRESULT CGameInstance::InitializeMCResource()
 {
-	// initialize block shader(voxel)
+	// initialize block, watershader(voxel)
 	{
 		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Block", "./Resources/Shader/Block/Block.hlsl"))
 		{
@@ -500,6 +647,69 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Block", "./Resources/Shader/Block/Block.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_BlockAlphaTest", "./Resources/Shader/Block/BlockAlphaTest.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_BlockAlphaTest", "./Resources/Shader/Block/BlockAlphaTest.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Water", "./Resources/Shader/Block/Water.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Water", "./Resources/Shader/Block/Water.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+
+
+
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_Block", "./Resources/Shader/Block/Shadow_Block.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_Block", "./Resources/Shader/Block/Shadow_Block.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_BlockAlphaTest", "./Resources/Shader/Block/Shadow_BlockAlphaTest.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = CGameInstance::Get().AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_BlockAlphaTest", "./Resources/Shader/Block/Shadow_BlockAlphaTest.hlsl"))
 		{
 			if (FAILED(res->Load()))
 			{
@@ -517,15 +727,119 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			res->Load();
 		}
+		
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_Entity", "./Resources/Shader/Entity/Shadow_Entity.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_Entity", "./Resources/Shader/Entity/Shadow_Entity.hlsl"))
+		{
+			res->Load();
+		}
+
+		
 	}
 
 	// initialize item shader
 	{
-		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Item", "./Resources/Shader/Item/Item.hlsl"))
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropItem", "./Resources/Shader/Item/DropItem.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropItem", "./Resources/Shader/Item/DropItem.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_DropBlock", "./Resources/Shader/Item/DropBlock.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_DropBlock", "./Resources/Shader/Item/DropBlock.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_DropItem", "./Resources/Shader/Item/Shadow_DropItem.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_DropItem", "./Resources/Shader/Item/Shadow_DropItem.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_DropBlock", "./Resources/Shader/Item/Shadow_DropBlock.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_DropBlock", "./Resources/Shader/Item/Shadow_DropBlock.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_HandHeldItem", "./Resources/Shader/Item/HandHeldItem.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_HandHeldItem", "./Resources/Shader/Item/HandHeldItem.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_HandHeldBlock", "./Resources/Shader/Item/HandHeldBlock.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_HandHeldBlock", "./Resources/Shader/Item/HandHeldBlock.hlsl"))
+		{
+			if (FAILED(res->Load()))
+			{
+				return E_FAIL;
+			}
+		}
+	}
+
+	// experenceOrb shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_ExperienceOrb", "./Resources/Shader/ExperienceOrb/ExperienceOrb.hlsl"))
 		{
 			res->Load();
 		}
-		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Item", "./Resources/Shader/Item/Item.hlsl"))
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_ExperienceOrb", "./Resources/Shader/ExperienceOrb/ExperienceOrb.hlsl"))
 		{
 			res->Load();
 		}
@@ -580,6 +894,83 @@ HRESULT CGameInstance::InitializeMCResource()
 		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI", "./Resources/Shader/UI/UI.hlsl"))
 		{
 			res->Load();
+		}
+	}
+
+	// falling voxel Shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_FallingVoxel", "./Resources/Shader/FallingVoxel/FallingVoxel.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_FallingVoxel", "./Resources/Shader/FallingVoxel/FallingVoxel.hlsl"))
+		{
+			res->Load();
+		}
+	}
+	
+	// activated tnt shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_ActivatedTNT", "./Resources/Shader/ActivatedTNT/ActivatedTNT.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_ActivatedTNT", "./Resources/Shader/ActivatedTNT/ActivatedTNT.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
+	// initialize skybox Shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Skybox", "./Resources/Shader/Skybox/Skybox.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Skybox", "./Resources/Shader/Skybox/Skybox.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
+	// initialize cloud shader
+	{
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Cloud", "./Resources/Shader/Cloud/Cloud.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Cloud", "./Resources/Shader/Cloud/Cloud.hlsl"))
+		{
+			res->Load();
+		}
+
+		if (auto res = AddResourceT<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Shadow_Cloud", "./Resources/Shader/Cloud/Shadow_Cloud.hlsl"))
+		{
+			res->Load();
+		}
+		if (auto res = AddResourceT<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Shadow_Cloud", "./Resources/Shader/Cloud/Shadow_Cloud.hlsl"))
+		{
+			res->Load();
+		}
+	}
+
+	// ui button
+	{
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/button.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_UI", "BUTTON", pTexture);
+		}
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/button_highlighted.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_UI", "BUTTON_HIGHLIGHT", pTexture);
 		}
 	}
 
@@ -670,6 +1061,33 @@ HRESULT CGameInstance::InitializeMCResource()
 				}
 				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
 			}
+			{
+				//6
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/chest.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+			{
+				//7
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/UI/chest2.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
+			{
+				//8 enderDragon
+				auto pTexture = CResTexture2D::Create("./Resources/Texture/Entity/EnderDragon/dragon.png");
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_256_256", "TEXTURES", pTexture);
+			}
 		}
 
 		{
@@ -696,6 +1114,7 @@ HRESULT CGameInstance::InitializeMCResource()
 						return E_FAIL;
 					}
 					CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURES", pTexture);
+					return S_OK;
 				};
 
 			{
@@ -817,6 +1236,332 @@ HRESULT CGameInstance::InitializeMCResource()
 				// 23: grass_block_snow.png
 				VoxelManagerTexAdd("./Resources/Texture/Blocks/grass_block_snow.png");
 			}
+
+			{
+				// 24: water_placeholder.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/water/water_placeholder.png");
+			}
+
+			{
+				// 25:torch_on.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/torch_on.png");
+			}
+
+			{
+				// 26: redstone_torch_off.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/redstone_torch_off.png");
+			}
+
+			{
+				// 27: redstone_torch_on.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/redstone_torch_on.png");
+			}
+
+			{
+				// 28: cherry_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/cherry_log_top.png");
+			}
+
+			{
+				// 29: cherry_log_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/cherry_log_side.png");
+			}
+
+			{
+				// 30: log_oak_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_oak_top.png");
+			}
+
+			{
+				// 31: log_oak.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_oak.png");
+			}
+
+			{
+				// 32: log_birch_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_birch_top.png");
+			}
+
+			{
+				// 33: log_birch.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_birch.png");
+			}
+
+			{
+				// 34: log_acacia_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_acacia_top.png");
+			}
+
+			{
+				// 35: log_acacia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/log/log_acacia.png");
+			}
+
+			{
+				// 36: cherry_planks.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/plank/cherry_planks.png");
+			}
+
+			{
+				// 37: planks_oak.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/plank/planks_oak.png");
+			}
+
+			{
+				// 38: planks_birch.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/plank/planks_birch.png");
+			}
+
+			{
+				// 39: planks_acacia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/plank/planks_acacia.png");
+			}
+
+			{
+				// 40: cherry_leaves.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/leaves/cherry_leaves.png");
+			}
+
+			{
+				// 41: leaves_oak.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/leaves/leaves_oak.png");
+			}
+
+			{
+				// 42: leaves_birch.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/leaves/leaves_birch.png");
+			}
+
+			{
+				// 43: leaves_acacia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/leaves/leaves_acacia.png");
+			}
+
+			{
+				// 44: flower_allium.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_allium.png");
+			}
+
+			{
+				// 45: flower_blue_orchid.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_blue_orchid.png");
+			}
+
+			{
+				// 46: flower_cornflower.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_cornflower.png");
+			}
+
+			{
+				// 47: flower_dandelion.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_dandelion.png");
+			}
+
+			{
+				// 48: flower_houstonia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_houstonia.png");
+			}
+
+			{
+				// 49: flower_lily_of_the_valley.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_lily_of_the_valley.png");
+			}
+
+			{
+				// 50: flower_oxeye_daisy.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_oxeye_daisy.png");
+			}
+
+			{
+				// 51: flower_paeonia.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_paeonia.png");
+			}
+
+			{
+				// 52: flower_rose.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_rose.png");
+			}
+			
+			{
+				// 53: flower_rose_blue.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_rose_blue.png");
+			}
+
+			{
+				// 54: flower_tulip_orange.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_tulip_orange.png");
+			}
+
+			{
+				// 55: flower_tulip_pink.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_tulip_pink.png");
+			}
+
+			{
+				// 56: flower_tulip_red.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_tulip_red.png");
+			}
+
+			{
+				// 57:flower_wither_rose.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/flower/flower_wither_rose.png");
+			}
+
+			{
+				// 58:short_dry_grass.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/short_dry_grass.png");
+			}
+
+			{
+				// 59:short_grass.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/short_grass.png");
+			}
+
+			{
+				// 60:tall_dry_grass.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/tall_dry_grass.png");
+			}
+			{
+				// 61:tall_grass_bottom.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/tall_grass_bottom.png");
+			}
+			{
+				// 62:tall_grass_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/fiji/tall_grass_top.png");
+			}
+			
+			{
+				// 63: stripped_cherry_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_cherry_log_top.png");
+			}
+			{
+				// 64: stripped_cherry_log_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_cherry_log_side.png");
+			}
+			{
+				// 65: stripped_oak_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_oak_log_top.png");
+			}
+			{
+				// 66: stripped_oak_log.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_oak_log.png");
+			}
+			{
+				// 67: stripped_birch_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_birch_log_top.png");
+			}
+			{
+				// 68: stripped_birch_log.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_birch_log.png");
+			}
+			{
+				// 69: stripped_acacia_log_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_acacia_log_top.png");
+			}
+			{
+				// 70: stripped_acacia_log.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stripped_log/stripped_acacia_log.png");
+			}
+
+			{
+				// 71: obsidian.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/obsidian.png");
+			}
+
+			{
+				// 72: chest_front.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/chest/chest_front.png");
+			}
+
+			{
+				// 73: chest_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/chest/chest_side.png");
+			}
+
+			{
+				// 74: chest_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/chest/chest_top.png");
+			}
+
+			{
+				// 75: crafting_table_front.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/crafting_table/crafting_table_front.png");
+			}
+			{
+				// 76: crafting_table_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/crafting_table/crafting_table_side.png");
+			}
+			{
+				// 77: crafting_table_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/crafting_table/crafting_table_top.png");
+			}
+
+			{
+				// 78: furnace_front_off.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/furnace/furnace_front_off.png");
+			}
+
+			{
+				// 79: furnace_front_on.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/furnace/furnace_front_on.png");
+			}
+
+			{
+				// 80: furnace_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/furnace/furnace_side.png");
+			}
+
+			{
+				// 81: furnace_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/furnace/furnace_top.png");
+			}
+
+			{
+				// 82: tnt_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/tnt/tnt_top.png");
+			}
+			{
+				// 83: tnt_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/tnt/tnt_side.png");
+			}
+			{
+				// 84: tnt_bottom.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/tnt/tnt_bottom.png");
+			}
+
+			{
+				// 85: enchanting_table_top.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/enchant_table/enchanting_table_top.png");
+			}
+			{
+				// 86: enchanting_table_side.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/enchant_table/enchanting_table_side.png");
+			}
+			{
+				// 87: enchanting_table_bottom.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/enchant_table/enchanting_table_bottom.png");
+			}
+			{
+				// 88: bookshelf.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/bookshelf.png");
+			}
+			{
+				// 89: ladder.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/ladder.png");
+			}
+			{
+				// 90: cobblestone.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/stone/cobblestone.png");
+			}
+			{
+				// 91: cobbled_deepslate.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/deepslate/cobbled_deepslate.png");
+			}
+			{
+				// 92: lava_placeholder.png
+				VoxelManagerTexAdd("./Resources/Texture/Blocks/lava/lava_placeholder.png");
+			}
+
 		}
 
 		{
@@ -828,9 +1573,203 @@ HRESULT CGameInstance::InitializeMCResource()
 				return E_FAIL;
 			}
 			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "TEXTURE_ARRAY", pTextureArray);
-
-
 			GetGraphicDeviceContext()->PSSetShaderResources(9, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+
+
+		{
+			//"VOXEL_MANAGER_TEX", "TEXTURES"
+			CGameInstance::Get().DelResource("VOXEL_MANAGER_TEX", "TEXTURES");
+		}
+
+		// water_still
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/water/water_still.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "WATER_STILL", pTexture);
+			GetGraphicDeviceContext()->PSSetShaderResources(13, 1, pTexture->GetSRV().GetAddressOf());
+		}
+
+		// water_flow
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/water/water_flow.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "WATER_FLOW", pTexture);
+			GetGraphicDeviceContext()->PSSetShaderResources(14, 1, pTexture->GetSRV().GetAddressOf());
+		}
+
+		// lava_still
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/lava/lava_still.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "LAVA_STILL", pTexture);
+			GetGraphicDeviceContext()->PSSetShaderResources(15, 1, pTexture->GetSRV().GetAddressOf());
+		}
+
+		// lava_flow
+		{
+			auto pTexture = CResTexture2D::Create("./Resources/Texture/Blocks/lava/lava_flow.png");
+			if (FAILED(pTexture->Load()))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("VOXEL_MANAGER_TEX", "LAVA_FLOW", pTexture);
+			GetGraphicDeviceContext()->PSSetShaderResources(16, 1, pTexture->GetSRV().GetAddressOf());
+		}
+
+	}
+
+	{
+		auto CubeItem300_300TexAdd = [&](const _string& path)
+			{
+				auto pTexture = CResTexture2D::Create(path);
+				if (FAILED(pTexture->Load()))
+				{
+					return E_FAIL;
+				}
+				CGameInstance::Get().AddResource("MC_TEX_300_300", "TEXTURES", pTexture);
+				return S_OK;
+			};
+
+		{
+			{
+				// 0
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Dirt.png");
+			}
+
+			{
+				// 1
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Cobblestone.png");
+			}
+
+			{
+				// 2
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Sand.png");
+			}
+
+			{
+				// 3
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/TNT.png");
+			}
+
+			{
+				// 4
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Acacia_Log.png");
+			}
+
+			{
+				// 5
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Acacia_Planks.png");
+			}
+
+			{
+				// 6
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Birch_Log.png");
+			}
+
+			{
+				// 7
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Birch_Planks.png");
+			}
+
+			{
+				// 8
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Cherry_Log.png");
+			}
+
+			{
+				// 9
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Cherry_Planks.png");
+			}
+
+			{
+				// 10
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Oak_Log.png");
+			}
+
+			{
+				// 11
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Oak_Planks.png");
+			}
+
+			{
+				// 12
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Obsidian.png");
+			}
+
+			{
+				// 13
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Glass.png");
+			}
+
+			{
+				// 14
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Crafting_Table.png");
+			}
+
+			{
+				// 15
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Chest.png");
+			}
+
+			{
+				// 16
+				CubeItem300_300TexAdd("./Resources/Texture/Item/Cube/Furnace.png");
+			}
+		}
+
+
+
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_TEX_300_300", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_300_300", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(17, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+
+		{
+			CGameInstance::Get().DelResource("MC_TEX_300_300", "TEXTURES");
+		}
+	}
+
+	// 128_128 texture
+	{
+		{
+			// 0: particles.png
+			if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_128_128", "TEXTURES", CResTexture2D::Create("./Resources/Texture/particles.png")))
+			{
+				if (FAILED(pRes->Load()))
+				{
+					int x = 0;
+				}
+			}
+		}
+
+		// Entity_128_128_Ted2d_Array
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_TEX_128_128", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_128_128", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(10, 1, pTextureArray->GetSRV().GetAddressOf());
 		}
 	}
 
@@ -838,14 +1777,32 @@ HRESULT CGameInstance::InitializeMCResource()
 	{
 		if (auto res = AddResource("MC_ITEM_VIBuffer", "CubeItemDirt", CResCubeItemVIBuffer::Create()))
 		{
-			uint32_t tmp[ETOUI(FACE_DIR::END)]{PackTexId(9, 0),PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
+			//uint32_t tmp[ETOUI(FACE_DIR::END)]{PackTexId(9, 0),PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
 
 			CResCubeItemVIBuffer::DESC desc{};
-			desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
-			desc.resourceIdx = 0;
-			memcpy(desc.texIndices, tmp, sizeof(tmp));
+			//desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
+			//desc.resourceIdx = 0;
+			//memcpy(desc.texIndices, tmp, sizeof(tmp));
 
 			res->Load(desc);
+		}
+	}
+
+	{
+		if (auto res = AddResource("MC_VIBuffer", "Cloud", CResCloudVIBuffer::Create()))
+		{
+			//uint32_t tmp[ETOUI(FACE_DIR::END)]{PackTexId(9, 0),PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) ,PackTexId(9, 0) };
+
+			CResCloudVIBuffer::DESC desc{};
+			//desc.textureId = { "VOXEL_MANAGER_TEX", "TEXTURES" };
+			//desc.resourceIdx = 0;
+			//memcpy(desc.texIndices, tmp, sizeof(tmp));
+
+			if (FAILED(res->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			;
 		}
 	}
 
@@ -893,9 +1850,13 @@ HRESULT CGameInstance::InitializeMCResource()
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "ExperienceOrb", CResQuadItemVIBuffer::Create()))
+				if (auto res = AddResource("MC_ITEM_VIBuffer", "ExperienceOrb", CResExperenceOrbVIBuffer::Create()))
 				{
-					res->Load(CResQuadItemVIBuffer::DESC{ .textureId = {"MC_TEX_64_64", "TEXTURES"}, .resourceIdx = 4, .texIndex = PackTexId(8, 4) });
+					//CResExperenceOrbVIBuffer::DESC{ .textureId = {"MC_TEX_64_64", "TEXTURES"}, .resourceIdx = 4, .texIndex = PackTexId(8, 4) }
+					if (res->Load())
+					{
+						return E_FAIL;
+					}
 				}
 			}
 		}
@@ -950,6 +1911,133 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
+		// 4: Zombie
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Zombie/zombie.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 5: Creeper
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Creeper/creeper.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+
+		// 6: Spider
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Spider/spider.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 7: EnderMan
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/EnderMan/enderman.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 8: copper_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/copper_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 9: copper_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/copper_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 10: iron_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/iron_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 11: iron_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/iron_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 12: gold_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/gold_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 13: gold_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/gold_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 14: diamond_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/diamond_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 15: diamond_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/diamond_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 16: netherite_1.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/netherite_1.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 17: netherite_2.png
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Armor/netherite_2.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
 
 		// Entity_64_32_Ted2d_Array
 		{
@@ -962,6 +2050,48 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 			CGameInstance::Get().AddResource("MC_TEX_64_32", "TEXTURE_ARRAY", pTextureArray);
 			GetGraphicDeviceContext()->PSSetShaderResources(7, 1, pTextureArray->GetSRV().GetAddressOf());
+		}
+	}
+
+	{
+		// 0: Sun
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_32_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Env/sun.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 1: Moon
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_32_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Env/Moon/full_moon.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 2: Arrow
+		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_32_32", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Entity/Arrow/arrows.png")))
+		{
+			if (FAILED(pRes->Load()))
+			{
+				int x = 0;
+			}
+		}
+
+		// 32_32_texArray
+		{
+			CResTexture2DArray::DESC desc{};
+			desc.textureId = { "MC_TEX_32_32", "TEXTURES" };
+			auto pTextureArray = CResTexture2DArray::Create();
+			if (FAILED(pTextureArray->Load(desc)))
+			{
+				return E_FAIL;
+			}
+			CGameInstance::Get().AddResource("MC_TEX_32_32", "TEXTURE_ARRAY", pTextureArray);
+			GetGraphicDeviceContext()->PSSetShaderResources(5, 1, pTextureArray->GetSRV().GetAddressOf());
 		}
 	}
 
@@ -1037,13 +2167,225 @@ HRESULT CGameInstance::InitializeMCResource()
 			}
 		}
 
-		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmor", CResEnttGeoPlayerArmor::Create()))
+		//if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmor", CResEnttGeoPlayerArmor::Create()))
+		//{
+		//	if (SUCCEEDED(pRes->Load()))
+		//	{
+		//		if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmor", CResEnttVIBuffer::Create()))
+		//		{
+		//			res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmor"}, .baseTexId = PackTexId(7, 2), .specificCubeTexIds = {{"armor2", PackTexId(7, 3)}}});
+		//		}
+		//	}
+		//}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmorHelmet", CResEnttGeoPlayerArmorHelmet::Create()))
 		{
 			if (SUCCEEDED(pRes->Load()))
 			{
-				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmor", CResEnttVIBuffer::Create()))
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet", CResEnttVIBuffer::Create()))
 				{
-					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmor"}, .baseTexId = PackTexId(7, 2), .specificCubeTexIds = {{"armor2", PackTexId(7, 3)}}});
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"} });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Copper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 8) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Iron", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 10) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Gold", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 12) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Diamond", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 14) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorHelmet_Netherite", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorHelmet"}, .baseTexId = PackTexId(7, 16) });
+				}
+
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmorChestplate", CResEnttGeoPlayerArmorChestplate::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"} });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Copper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 8) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Iron", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 10) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Gold", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 12) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Diamond", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 14) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorChestplate_Netherite", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorChestplate"}, .baseTexId = PackTexId(7, 16) });
+				}
+			}
+		}
+
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmorLeggings", CResEnttGeoPlayerArmorLeggings::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"} });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Copper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 9) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Iron", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 11) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Gold", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 13) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Diamond", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 15) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorLeggings_Netherite", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorLeggings"}, .baseTexId = PackTexId(7, 17) });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "PlayerArmorBoots", CResEnttGeoPlayerArmorBoots::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"} });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Copper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 8) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Iron", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 10) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Gold", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 12) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Diamond", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 14) });
+				}
+
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "PlayerArmorBoots_Netherite", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "PlayerArmorBoots"}, .baseTexId = PackTexId(7, 16) });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Zombie", CResEnttGeoZombie::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Zombie", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Zombie"}} );
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Creeper", CResEnttGeoCreeper::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Creeper", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Creeper"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Spider", CResEnttGeoSpider::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Spider", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Spider"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "EnderMan", CResEnttGeoEnderMan::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "EnderMan", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "EnderMan"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "EnderDragon", CResEnttGeoEnderDragon::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "EnderDragon", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "EnderDragon"} });
+				}
+			}
+		}
+
+		if (auto pRes = CGameInstance::Get().AddResource("MC_ENTITY_GEOMETRY", "Arrow", CResEnttGeoArrow::Create()))
+		{
+			if (SUCCEEDED(pRes->Load()))
+			{
+				if (auto res = AddResource("MC_ENTITY_VIBuffer", "Arrow", CResEnttVIBuffer::Create()))
+				{
+					res->Load(CResEnttVIBuffer::DESC{ .geometryId = {"MC_ENTITY_GEOMETRY", "Arrow"}, .bUseFlatQuad = true });
 				}
 			}
 		}
@@ -1051,79 +2393,566 @@ HRESULT CGameInstance::InitializeMCResource()
 
 	// initialize item texture
 	{
-		// 0: woodPickaxe
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/Pickaxe/wood_pickaxe.png")))
-		{
-			if (SUCCEEDED(pRes->Load()))
+		uint32_t countingResourceIdx{};
+		auto AddTexItem16_16 = [&](const _string& path, const char* pItemVIBufferTag = nullptr)
 			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "WoodPickaxe", CResExtrudedItemVIBuffer::Create()))
+				auto pTexture = CResTexture2D::Create(path);
+				if (FAILED(pTexture->Load()))
 				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 0, .texIndex = PackTexId(6, 0)});
+					return E_FAIL;
 				}
-			}
+				CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", pTexture);
+
+
+				if (pItemVIBufferTag)
+				{
+					if (auto res = AddResource("MC_ITEM_VIBuffer", pItemVIBufferTag, CResExtrudedItemVIBuffer::Create()))
+					{
+						if (FAILED(res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = countingResourceIdx })))
+						{
+							return E_FAIL;
+						};
+					}
+				}
+				++countingResourceIdx;
+				return S_OK;
+			};
+		
+		// 0: woodPickaxe
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/wood_pickaxe.png", "WoodPickaxe");
 		}
 
 		// 1: string
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/string.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "String", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 1, .texIndex = PackTexId(6, 1) });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/string.png", "String");
 		}
 
 		// 2: porkchop_raw
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/porkchop_raw.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "PorkchopRaw", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 2, .texIndex = PackTexId(6, 2) });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/porkchop_raw.png", "Porkchop");
 		}
 
 		// 3: chicken_raw
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/chicken_raw.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "ChickenRaw", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 3, .texIndex = PackTexId(6, 3) });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/chicken_raw.png", "Chicken");
 		}
 
 		// 4: beef_raw.png
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/beef_raw.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "BeefRaw", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 4, .texIndex = PackTexId(6, 4) });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/beef_raw.png", "Beef");
 		}
 
 		// 5: mutton_raw.png
-		if (auto pRes = CGameInstance::Get().AddResource("MC_TEX_ITEM_16_16", "TEXTURES", CResTexture2D::Create("./Resources/Texture/Item/mutton_raw.png")))
 		{
-			if (SUCCEEDED(pRes->Load()))
-			{
-				if (auto res = AddResource("MC_ITEM_VIBuffer", "MuttonRaw", CResExtrudedItemVIBuffer::Create()))
-				{
-					res->Load(CResExtrudedItemVIBuffer::DESC{ .textureId = {"MC_TEX_ITEM_16_16", "TEXTURES"}, .resourceIdx = 5 , .texIndex = PackTexId(6, 5) });
-				}
-			}
+			AddTexItem16_16("./Resources/Texture/Item/mutton_raw.png", "Mutton");
 		}
 
+		// 6: copperHelmet
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/copper_helmet.png", "CopperHelmet");
+		}
 
+		// 7: copper_pickaxe
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/copper_pickaxe.png");
+		}
+
+		// 8: coal
+		{
+			AddTexItem16_16("./Resources/Texture/Item/coal.png", "Coal");
+		}
+
+		// 9: stick.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/stick.png", "Stick");
+		}
+
+		// 10: torch_on.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/torch_on.png", "Torch");
+		}
+
+		// 11: stone_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/stone_pickaxe.png");
+		}
+
+		// 12: iron_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/iron_pickaxe.png");
+		}
+
+		// 13: gold_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/gold_pickaxe.png");
+		}
+
+		// 14: diamond_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/diamond_pickaxe.png");
+		}
+
+		// 15: netherite_pickaxe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Pickaxe/netherite_pickaxe.png");
+		}
+
+		// 16: iron_helmet.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/iron_helmet.png");
+		}
+
+		// 17: gold_helmet.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/gold_helmet.png");
+		}
+
+		// 18: diamond_helmet.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/diamond_helmet.png");
+		}
+
+		// 19: netherite_helmet.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Helmet/netherite_helmet.png");
+		}
+
+		// 20: copper_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/copper_chestplate.png", "Chestplate");
+		}
+
+		// 21: iron_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/iron_chestplate.png");
+		}
+
+		// 22: gold_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/gold_chestplate.png");
+		}
+
+		// 23: diamond_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/diamond_chestplate.png");
+		}
+
+		// 24: netherite_chestplate.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Chestplate/netherite_chestplate.png");
+		}
+
+		// 25: copper_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/copper_leggings.png", "Leggings");
+		}
+
+		// 26: iron_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/iron_leggings.png");
+		}
+
+		// 27: gold_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/gold_leggings.png");
+		}
+
+		// 28: diamond_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/diamond_leggings.png");
+		}
+
+		// 29: netherite_leggings.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Leggings/netherite_leggings.png");
+		}
+
+		// 30: copper_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/copper_boots.png", "Boots");
+		}
+
+		// 31: iron_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/iron_boots.png");
+		}
+
+		// 32: gold_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/gold_boots.png");
+		}
+
+		// 33: diamond_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/diamond_boots.png");
+		}
+
+		// 34: netherite_boots.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Boots/netherite_boots.png");
+		}
+
+		// 35: wood_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/wood_axe.png", "Axe");
+		}
+
+		// 36: stone_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/stone_axe.png");
+		}
+
+		// 37: copper_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/copper_axe.png");
+		}
+
+		// 38: iron_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/iron_axe.png");
+		}
+
+		// 39: gold_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/gold_axe.png");
+		}
+
+		// 40: diamond_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/diamond_axe.png");
+		}
+
+		// 41: netherite_axe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Axe/netherite_axe.png");
+		}
+
+		// 42: wood_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/wood_hoe.png", "Hoe");
+		}
+
+		// 43: stone_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/stone_hoe.png");
+		}
+
+		// 44: copper_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/copper_hoe.png");
+		}
+
+		// 45: iron_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/iron_hoe.png");
+		}
+
+		// 46: gold_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/gold_hoe.png");
+		}
+
+		// 47: diamond_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/diamond_hoe.png");
+		}
+
+		// 48: netherite_hoe.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Hoe/netherite_hoe.png");
+		}
+
+		// 49: wood_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/wood_shovel.png", "Shovel");
+		}
+
+		// 50: stone_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/stone_shovel.png");
+		}
+
+		// 51: copper_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/copper_shovel.png");
+		}
+
+		// 52: iron_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/iron_shovel.png");
+		}
+
+		// 53: gold_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/gold_shovel.png");
+		}
+
+		// 54: diamond_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/diamond_shovel.png");
+		}
+
+		// 55: netherite_shovel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Shovel/netherite_shovel.png");
+		}
+
+		// 56: wood_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/wood_sword.png", "Sword");
+		}
+
+		// 57: stone_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/stone_sword.png");
+		}
+
+		// 58: copper_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/copper_sword.png");
+		}
+
+		// 59: iron_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/iron_sword.png");
+		}
+
+		// 60: gold_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/gold_sword.png");
+		}
+
+		// 61: diamond_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/diamond_sword.png");
+		}
+
+		// 62: netherite_sword.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Sword/netherite_sword.png");
+		}
+
+		// 63: bow_standby.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Bow/bow_standby.png", "Bow_Standby");
+		}
+
+		// 64: bow_pulling_0.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Bow/bow_pulling_0.png", "Bow_Pulling_0");
+		}
+
+		// 65: bow_pulling_1.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Bow/bow_pulling_1.png", "Bow_Pulling_1");
+		}
+
+		// 66: bow_pulling_2.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/Bow/bow_pulling_2.png", "Bow_Pulling_2");
+		}
+
+		// 67: arrow.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/arrow.png", "Arrow");
+		}
+
+		// 68: raw_iron.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/raw_iron.png", "RawIron");
+		}
+
+		// 69: raw_copper.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/raw_copper.png", "RawCopper");
+		}
+
+		// 70: raw_gold.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/raw_gold.png", "RawGold");
+		}
+
+		// 71: iron_ingot.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/iron_ingot.png", "Ingot");
+		}
+
+		// 72: copper_ingot.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/copper_ingot.png");
+		}
+
+		// 73: gold_ingot.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/gold_ingot.png");
+		}
+
+		// 74: diamond.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/diamond.png", "Diamond");
+		}
+
+		// 75: netherite_scrap.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/netherite_scrap.png", "NetheriteScrap");
+		}
+
+		// 76: charcoal.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/charcoal.png", "Charcoal");
+		}
+
+		// 77: netherite_ingot.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/netherite_ingot.png");
+		}
+
+		// 78: flint.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flint.png", "Flint");
+		}
+
+		// 79:feather.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/feather.png", "Feather");
+		}
+
+		// 80: bucket_empty.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/bucket_empty.png", "Bucket");
+		}
+
+		// 81: bucket_water.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/bucket_water.png");
+		}
+
+		// 82: bucket_lava.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/bucket_lava.png");
+		}
+
+		// 83: flint_and_steel.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flint_and_steel.png", "FlintAndSteel");
+		}
+
+		// 84: gunpowder.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/gunpowder.png", "Gunpowder");
+		}
+
+		// 85: beef_cooked.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/beef_cooked.png");
+		}
+
+		// 86: chicken_cooked.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/chicken_cooked.png");
+		}
+
+		// 87: porkchop_cooked.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/porkchop_cooked.png");
+		}
+
+		// 88: mutton_cooked.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/mutton_cooked.png");
+		}
+
+		// 89: apple.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/apple.png", "Apple");
+		}
+
+		// 90: wheat.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/wheat.png", "Wheat");
+		}
+
+		// 91: bread.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/bread.png", "Bread");
+		}
+
+		// 92: flower_allium.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_allium.png", "FlowerAllium");
+		}
+
+		// 93: flower_blue_orchid.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_blue_orchid.png", "FlowerBlueOrchid");
+		}
+
+		// 94: flower_cornflower.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_cornflower.png", "FlowerCornflower");
+		}
+
+		// 95: flower_dandelion.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_dandelion.png", "FlowerDandelion");
+		}
+
+		// 96: flower_houstonia.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_houstonia.png", "FlowerHoustonia");
+		}
+
+		// 97: flower_lily_of_the_valley.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_lily_of_the_valley.png", "FlowerLilyOfTheValley");
+		}
+
+		// 98: flower_oxeye_daisy.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_oxeye_daisy.png", "FlowerOxeyeDaisy");
+		}
+		// 99: flower_paeonia.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_paeonia.png", "FlowePaeonia");
+		}
+		// 100: flower_rose.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_rose.png", "FlowerRose");
+		}
+		// 101: flower_rose_blue.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_rose_blue.png", "FlowerRoseBlue");
+		}
+		// 102: flower_tulip_orange.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_tulip_orange.png", "FlowerTulipOrange");
+		}
+
+		// 103: flower_tulip_pink.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_tulip_pink.png", "FlowerTulipPink");
+		}
+
+		// 104: flower_tulip_red.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_tulip_red.png", "FlowerTulipRed");
+		}
+
+		// 105: flower_wither_rose.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/flower/flower_wither_rose.png", "FlowerWitherRose");
+		}
+
+		// 106: flower_wither_rose.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/seeds_wheat.png", "SeedsWheat");
+		}
+
+		// 107: totem.png
+		{
+			AddTexItem16_16("./Resources/Texture/Item/totem.png", "Totem");
+		}
 
 		// MC_TEX_ITEM_16_16  TEXTURE_ARRAY
 		{
@@ -1143,6 +2972,216 @@ HRESULT CGameInstance::InitializeMCResource()
 	return S_OK;
 }
 
+HRESULT CGameInstance::InitializeMCSoundResource()
+{
+	auto funcSoundAdd = [&](StringID channelID, const _string& path)
+		{
+			if (auto pRes = CGameInstance::Get().AddResource("MC_SOUND", channelID, CResFmodSound::Create(path)))
+			{
+				if (FAILED(pRes->Load()))
+				{
+					return E_FAIL;
+				}
+				if (FAILED(SoundAddChannel(channelID, { "MC_SOUND", channelID })))
+				{
+					return E_FAIL;
+				}
+				return S_OK;
+			}
+			return E_FAIL;
+		};
+	
+	if (FAILED(funcSoundAdd("minecraft", "./Resources/Sound/minecraft.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("haggstrom", "./Resources/Sound/haggstrom.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("HIT_1", "./Resources/Sound/hit/hit1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("HIT_2", "./Resources/Sound/hit/hit2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("HIT_3", "./Resources/Sound/hit/hit3.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("POP", "./Resources/Sound/pop/pop.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_GRASS_1", "./Resources/Sound/dig/grass1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EAT_1", "./Resources/Sound/eat/eat1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EAT_2", "./Resources/Sound/eat/eat2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EAT_3", "./Resources/Sound/eat/eat3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EXPLODE_1", "./Resources/Sound/explode/explode1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EXPLODE_2", "./Resources/Sound/explode/explode2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EXPLODE_3", "./Resources/Sound/explode/explode3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EXPLODE_4", "./Resources/Sound/explode/explode4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("LEVELUP", "./Resources/Sound/levelup/levelup.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("FUSE", "./Resources/Sound/fuse/fuse.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EX_ORB_DROP", "./Resources/Sound/orb/orb.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("EX_ORB_HIT", "./Resources/Sound/orb/successful_hit.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("TOOL_BREAK", "./Resources/Sound/toolbreak/break.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("BOW", "./Resources/Sound/bow/bow.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BOW_HIT_1", "./Resources/Sound/bow/bowhit1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BOW_HIT_2", "./Resources/Sound/bow/bowhit2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BOW_HIT_3", "./Resources/Sound/bow/bowhit3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BOW_HIT_4", "./Resources/Sound/bow/bowhit4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("BURP", "./Resources/Sound/burp/burp.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_STONE_1", "./Resources/Sound/step/stone1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_2", "./Resources/Sound/step/stone2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_3", "./Resources/Sound/step/stone3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_4", "./Resources/Sound/step/stone4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_5", "./Resources/Sound/step/stone5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_STONE_6", "./Resources/Sound/step/stone6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_WOOD_1", "./Resources/Sound/step/wood1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_2", "./Resources/Sound/step/wood2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_3", "./Resources/Sound/step/wood3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_4", "./Resources/Sound/step/wood4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_5", "./Resources/Sound/step/wood5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_WOOD_6", "./Resources/Sound/step/wood6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_GRASS_1", "./Resources/Sound/step/grass1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_2", "./Resources/Sound/step/grass2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_3", "./Resources/Sound/step/grass3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_4", "./Resources/Sound/step/grass4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_5", "./Resources/Sound/step/grass5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_GRASS_6", "./Resources/Sound/step/grass6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_ROOTS_1", "./Resources/Sound/block/roots/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_2", "./Resources/Sound/block/roots/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_3", "./Resources/Sound/block/roots/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_4", "./Resources/Sound/block/roots/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_5", "./Resources/Sound/block/roots/step5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_ROOTS_6", "./Resources/Sound/block/roots/step6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_SAND_1", "./Resources/Sound/step/sand1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_2", "./Resources/Sound/step/sand2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_3", "./Resources/Sound/step/sand3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_4", "./Resources/Sound/step/sand4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_5", "./Resources/Sound/step/sand5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_SAND_6", "./Resources/Sound/step/sand6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_1", "./Resources/Sound/block/cherry_leaves/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_2", "./Resources/Sound/block/cherry_leaves/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_3", "./Resources/Sound/block/cherry_leaves/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_4", "./Resources/Sound/block/cherry_leaves/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_5", "./Resources/Sound/block/cherry_leaves/step5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("STEP_CHERRY_LEAVES_6", "./Resources/Sound/block/cherry_leaves/step6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("DIG_STONE_1", "./Resources/Sound/dig/stone1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_STONE_2", "./Resources/Sound/dig/stone2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_STONE_3", "./Resources/Sound/dig/stone3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_STONE_4", "./Resources/Sound/dig/stone4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("DIG_WOOD_1", "./Resources/Sound/dig/wood1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_WOOD_2", "./Resources/Sound/dig/wood2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_WOOD_3", "./Resources/Sound/dig/wood3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_WOOD_4", "./Resources/Sound/dig/wood4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("DIG_GRASS_1", "./Resources/Sound/dig/grass1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_GRASS_2", "./Resources/Sound/dig/grass2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_GRASS_3", "./Resources/Sound/dig/grass3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_GRASS_4", "./Resources/Sound/dig/grass4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("DIG_SAND_1", "./Resources/Sound/dig/sand1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_SAND_2", "./Resources/Sound/dig/sand2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_SAND_3", "./Resources/Sound/dig/sand3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("DIG_SAND_4", "./Resources/Sound/dig/sand4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_1", "./Resources/Sound/block/roots/break1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_2", "./Resources/Sound/block/roots/break2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_3", "./Resources/Sound/block/roots/break3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_4", "./Resources/Sound/block/roots/break4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_5", "./Resources/Sound/block/roots/break5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_ROOTS_6", "./Resources/Sound/block/roots/break6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_1", "./Resources/Sound/block/cherry_leaves/break1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_2", "./Resources/Sound/block/cherry_leaves/break2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_3", "./Resources/Sound/block/cherry_leaves/break3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_4", "./Resources/Sound/block/cherry_leaves/break4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_5", "./Resources/Sound/block/cherry_leaves/break5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("BREAK_CHERRY_LEAVES_6", "./Resources/Sound/block/cherry_leaves/break6.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("PIG_STEP_1", "./Resources/Sound/mob/pig/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_STEP_2", "./Resources/Sound/mob/pig/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_STEP_3", "./Resources/Sound/mob/pig/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_STEP_4", "./Resources/Sound/mob/pig/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_STEP_5", "./Resources/Sound/mob/pig/step5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_DEATH",  "./Resources/Sound/mob/pig/death.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_SAY_1",  "./Resources/Sound/mob/pig/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_SAY_2", "./Resources/Sound/mob/pig/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("PIG_SAY_3", "./Resources/Sound/mob/pig/say3.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("COW_STEP_1", "./Resources/Sound/mob/cow/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_STEP_2", "./Resources/Sound/mob/cow/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_STEP_3", "./Resources/Sound/mob/cow/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_STEP_4", "./Resources/Sound/mob/cow/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_SAY_1",  "./Resources/Sound/mob/cow/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_SAY_2",  "./Resources/Sound/mob/cow/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_SAY_3",  "./Resources/Sound/mob/cow/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_SAY_4",  "./Resources/Sound/mob/cow/say4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_HURT_1", "./Resources/Sound/mob/cow/hurt1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_HURT_2", "./Resources/Sound/mob/cow/hurt2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("COW_HURT_3", "./Resources/Sound/mob/cow/hurt3.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("CHICKEN_STEP_1", "./Resources/Sound/mob/chicken/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_STEP_2", "./Resources/Sound/mob/chicken/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_SAY_1",  "./Resources/Sound/mob/chicken/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_SAY_2",  "./Resources/Sound/mob/chicken/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_SAY_3",  "./Resources/Sound/mob/chicken/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_HURT_1", "./Resources/Sound/mob/chicken/hurt1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_HURT_2", "./Resources/Sound/mob/chicken/hurt2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CHICKEN_PLOP", "./Resources/Sound/mob/chicken/plop.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("ZOMBIE_DEATH",			"./Resources/Sound/mob/zombie/death.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_HURT_1",		"./Resources/Sound/mob/zombie/hurt1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_HURT_2",		"./Resources/Sound/mob/zombie/hurt2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_INFECT",		"./Resources/Sound/mob/zombie/infect.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_METAL_1",		"./Resources/Sound/mob/zombie/metal1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_METAL_2",		"./Resources/Sound/mob/zombie/metal2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_METAL_3",		"./Resources/Sound/mob/zombie/metal3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_REMEDY",		"./Resources/Sound/mob/zombie/remedy.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_SAY_1",			"./Resources/Sound/mob/zombie/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_SAY_2",			"./Resources/Sound/mob/zombie/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_SAY_3",			"./Resources/Sound/mob/zombie/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_1",		"./Resources/Sound/mob/zombie/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_2",		"./Resources/Sound/mob/zombie/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_3",		"./Resources/Sound/mob/zombie/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_4",		"./Resources/Sound/mob/zombie/step4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_STEP_5",		"./Resources/Sound/mob/zombie/step5.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_UNFECT",		"./Resources/Sound/mob/zombie/unfect.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_1",		"./Resources/Sound/mob/zombie/wood1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_2",		"./Resources/Sound/mob/zombie/wood2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_3",		"./Resources/Sound/mob/zombie/wood3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_4",		"./Resources/Sound/mob/zombie/wood4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ZOMBIE_WOOD_BREAK",	"./Resources/Sound/mob/zombie/woodbreak.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("SKELETON_DEATH", "./Resources/Sound/mob/skeleton/death.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_HURT_1", "./Resources/Sound/mob/skeleton/hurt1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_HURT_2", "./Resources/Sound/mob/skeleton/hurt2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_HURT_3", "./Resources/Sound/mob/skeleton/hurt3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_HURT_4", "./Resources/Sound/mob/skeleton/hurt4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_SAY_1", "./Resources/Sound/mob/skeleton/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_SAY_2", "./Resources/Sound/mob/skeleton/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_SAY_3", "./Resources/Sound/mob/skeleton/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_STEP_1", "./Resources/Sound/mob/skeleton/step1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_STEP_2", "./Resources/Sound/mob/skeleton/step2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_STEP_3", "./Resources/Sound/mob/skeleton/step3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("SKELETON_STEP_4", "./Resources/Sound/mob/skeleton/step4.ogg"))) return E_FAIL;
+
+	if (FAILED(funcSoundAdd("CREEPER_DEATH", "./Resources/Sound/mob/creeper/death.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CREEPER_SAY_1", "./Resources/Sound/mob/creeper/say1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CREEPER_SAY_2", "./Resources/Sound/mob/creeper/say2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CREEPER_SAY_3", "./Resources/Sound/mob/creeper/say3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("CREEPER_SAY_4", "./Resources/Sound/mob/creeper/say4.ogg"))) return E_FAIL;
+
+
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_1", "./Resources/Sound/armor_block/block1.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_2", "./Resources/Sound/armor_block/block2.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_3", "./Resources/Sound/armor_block/block3.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_4", "./Resources/Sound/armor_block/block4.ogg"))) return E_FAIL;
+	if (FAILED(funcSoundAdd("ARMOR_BLOCK_5", "./Resources/Sound/armor_block/block5.ogg"))) return E_FAIL;
+
+	//SoundPlay;
+
+	m_pSoundManager->PlayLoop("haggstrom", 0.1f);
+	return S_OK;
+}
+
 
 HRESULT CGameInstance::InitializePrototype()
 {
@@ -1152,6 +3191,10 @@ HRESULT CGameInstance::InitializePrototype()
 	}
 
 	if (AddPrototype("PERMANENT", "Prototype_Component_EntityModel", CComEntityModel::Create()))
+	{
+		return E_FAIL;
+	}
+	if (AddPrototype("PERMANENT", "Prototype_Component_Animator", CComAnimator::Create()))
 	{
 		return E_FAIL;
 	}
@@ -1171,6 +3214,14 @@ HRESULT CGameInstance::InitializePrototype()
 	}
 
 	if (AddPrototype("CAMERAS", "Prototype_GameObject_PlayerCamera", CPlayerCamera::Create()))
+	{
+		return E_FAIL;
+	}
+	if (AddPrototype("CAMERAS", "Prototype_GameObject_ShadowCamera", CShadowCamera::Create()))
+	{
+		return E_FAIL;
+	}
+	if (AddPrototype("CAMERAS", "Prototype_GameObject_PlayerInvenUICamera", CPlayerInvenUICamera::Create()))
 	{
 		return E_FAIL;
 	}
@@ -1229,6 +3280,46 @@ HRESULT CGameInstance::CreateSound(const _string& sPath, FMOD_SOUND** ppSound)
 	return m_pSoundManager->CreateSound(sPath, ppSound);
 }
 
+HRESULT CGameInstance::SoundAddChannel(const StringID& channelTag, const std::pair<StringID, StringID>& soundResources)
+{
+	return m_pSoundManager->AddChannel(channelTag, soundResources);
+}
+
+HRESULT CGameInstance::SoundPlay(const StringID& channelTag, _float fVolume, _float fPitch)
+{
+	return m_pSoundManager->Play(channelTag, fVolume, fPitch);
+}
+
+void CGameInstance::SoundStop(const StringID& channelTag)
+{
+	m_pSoundManager->Stop(channelTag);
+}
+
+void CGameInstance::SoundPause(const StringID& channelTag, _bool bPause)
+{
+	m_pSoundManager->Pause(channelTag, bPause);
+}
+
+_bool CGameInstance::SoundGetVolume(const StringID& channelTag, _float& fVolume)
+{
+	return m_pSoundManager->GetVolume(channelTag, fVolume);
+}
+
+_bool CGameInstance::SoundSetVolume(const StringID& channelTag, _float fVolume)
+{
+	return m_pSoundManager->SetVolume(channelTag, fVolume);
+}
+
+_bool CGameInstance::SoundIsPlaying(const StringID& channelTag) const
+{
+	return m_pSoundManager->IsPlaying(channelTag);
+}
+
+void CGameInstance::SoundSetPitch(const StringID& channelTag, float fPitchRatio)
+{
+	m_pSoundManager->SetPitch(channelTag, fPitchRatio);
+}
+
 
 #pragma region DINPUT_MANAGER
 _bool CGameInstance::KeyPressing(_ubyte byKeyID) const
@@ -1278,6 +3369,11 @@ ComPtr<ID3D11RenderTargetView> CGameInstance::GetBackBufferRTV() const
 {
 	return m_pGraphicDevice->GetBackBufferRTV();
 }
+ComPtr<ID3D11DepthStencilView> CGameInstance::GetBackBufferDSV() const
+{
+	return m_pGraphicDevice->GetBackBufferDSV();
+}
+
 HRESULT CGameInstance::ClearBackBufferView(const _float4* pClearColor)
 {
 	return m_pGraphicDevice->ClearBackBufferView(pClearColor);
@@ -1390,6 +3486,10 @@ const std::vector<CHandle>* CGameInstance::GetGameObjectLayer(std::string_view s
 {
 	return m_pGameObjectManager->GetLayer(sLayerName);
 }
+const std::vector<CHandle>* CGameInstance::GetGameObjectLayer(std::string_view sLayerName, const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, void* pArg)
+{
+	return m_pGameObjectManager->GetLayer(sLayerName, iPrototypeLevelIndex, svPrototypeTag, pArg);
+}
 void CGameInstance::DelGameObjectLayer(std::string_view sLayerName)
 {
 	return m_pGameObjectManager->DelLayer(sLayerName);
@@ -1489,6 +3589,14 @@ HRESULT CGameInstance::AddRenderObject(RENDERGROUP eRenderGroup, IRenderable* pR
 {
 	return m_pRenderer->AddRenderObject(eRenderGroup, pRenderObject);
 }
+void CGameInstance::RendererDrawPlayerInvenUIPass()
+{
+	m_pRenderer->DrawPlayerInvenUIPass();
+}
+void CGameInstance::RendererSetFilterRed(_bool b)
+{
+	m_pRenderer->SetFilterRed(b);
+}
 #pragma endregion
 
 
@@ -1506,6 +3614,14 @@ HRESULT CGameInstance::SetDirectionalLight(const StringID& iStr, const std::opti
 
 
 #pragma region VOXEL_MANAGER
+std::shared_mutex& CGameInstance::GetVoxelEditMutex()
+{
+	return m_pVoxelManager3->GetEditMutex();
+}
+std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>>* CGameInstance::GetVoxelEdited()
+{
+	return m_pVoxelManager3->GetEditedBlock();
+}
 void CGameInstance::VoxelManagerStateUpdate(const VOXEL_MANAGER_STATE_UPDATE_DESC& desc)
 {
 	//m_pVoxelManager->StateUpdate(desc);
@@ -1518,6 +3634,10 @@ FastNoiseLite& CGameInstance::GetVoxelNoiseByType(NOISE_TYPE eNoiseType)
 {
 	return m_pVoxelManager3->GetNoiseByType(eNoiseType);
 }
+const std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>>& CGameInstance::GetVoxelEditShadow() const
+{
+	return m_pVoxelManager3->GetEditShadow();
+}
 CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 {
 	return m_pVoxelManager3->GetChunkByChunkCoord(x, y, z);
@@ -1525,9 +3645,29 @@ CChunk3* CGameInstance::GetVoxelChunk(int32_t x, int32_t y, int32_t z) const
 	//return nullptr;
 }
 
+CChunk3* CGameInstance::GetVoxelChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const
+{
+	return m_pVoxelManager3->GetChunkByWorldBlockCoord(x, y, z);
+}
+
+void CGameInstance::VoxelProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound , std::optional<CBlock3> rayCastedBlock)
+{
+	return m_pVoxelManager3->ProcessPlayerBlockSet(wbx, wby, wbz, block, bPlaySound, rayCastedBlock);
+}
+
+void CGameInstance::VoxelProcessExplodeBlock(float wx, float wy, float wz, float fRadius)
+{
+	m_pVoxelManager3->ProcessExplodeBlock(wx, wy, wz, fRadius);
+}
+
 std::optional<CBlock3> CGameInstance::GetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz) const
 {
 	return m_pVoxelManager3->GetBlock(wbx, wby, wbz);
+}
+
+void CGameInstance::SetVoxelBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block)
+{
+	return m_pVoxelManager3->SetBlock(wbx, wby, wbz, block);
 }
 
 _bool CGameInstance::VoxelBlockRaycast(const _float3& rayOrigin, const _float3& rayDir, float fMaxDist, CVoxelManager3::BLOCK_RAY_RESULT& outResult) const
@@ -1546,10 +3686,66 @@ void CGameInstance::FontDraw(const StringID& fontName, const _tchar* pText, cons
 {
 	m_pFontManager->Draw(fontName, pText, vPosition, fScale, vColor, fRotation, vOrigin);
 }
-
+void CGameInstance::FontAddLateDraw(RENDERGROUP eRenderGroup, const StringID& fontName, const _wstring& pText, const _float2& vPosition, float fScale, _fvector vColor, _float fRotation, const _float2& vOrigin)
+{
+	m_pFontManager->AddLateDraw(eRenderGroup, fontName, pText, vPosition, fScale, vColor, fRotation, vOrigin);
+}
+_float2 CGameInstance::FontMeasureString(const StringID& fontName, const wchar_t* txt, float scale) const
+{
+	return m_pFontManager->MeasureString(fontName, txt, scale);
+}
+void CGameInstance::FontLateDraw(RENDERGROUP eRenderGroup)
+{
+	m_pFontManager->LateDraw(eRenderGroup);
+}
 #pragma endregion
 
 
+#pragma region PARTICLE_MANAGER
+void CGameInstance::AddParticleRenderDestruct(_float3 pos, uint32_t iTexId, uint32_t iCnt , _float4 vColor)
+{
+	m_pParticleManager->AddParticleRenderDestruct(pos, iTexId, iCnt, vColor);
+}
+void CGameInstance::AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt)
+{
+	m_pParticleManager->AddParticleRenderDeathSmoke(pos, iCnt);
+}
+void CGameInstance::AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt)
+{
+	m_pParticleManager->AddParticleRenderExplodeSmoke(pos, iCnt);
+}
+void CGameInstance::AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt)
+{
+	m_pParticleManager->AddParticleRenderTNTFusing(pos, iCnt);
+}
+#pragma endregion
+
+#pragma region WORLD_MANAGER
+CFurnaceStorage* CGameInstance::GetWorldFurnaceStorage()
+{
+	return m_pWorldManager->GetFurnaceStorage();
+}
+CChestStorage* CGameInstance::GetWorldChestStorage()
+{
+	return m_pWorldManager->GetChestStorage();
+}
+_float CGameInstance::GetWorldDayFactor() const
+{
+	return m_pWorldManager->GetDayFactor();
+}
+_float CGameInstance::GetWorldSkyRotation() const
+{
+	return m_pWorldManager->GetSkyRotation();
+}
+HRESULT CGameInstance::WorldRandomMonsterGeneration(_float3 vCenterPos, _float fRadius, uint32_t iCnt)
+{
+	return m_pWorldManager->WorldRandomMonsterGeneration(vCenterPos, fRadius, iCnt);
+}
+void CGameInstance::WorldSetPlayer(CHandle h)
+{
+	m_pWorldManager->SetPlayer(h);
+}
+#pragma endregion
 
 void CGameInstance::MouseFix() const
 {

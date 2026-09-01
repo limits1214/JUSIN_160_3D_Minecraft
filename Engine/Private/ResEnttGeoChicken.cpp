@@ -27,6 +27,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
              },
              {
                  .name = "head",
+                 .parent = "body", // TODO: 내가 넣음 
                  .pivot = {0.0f, 9.0f, -4.0f},
                  .cubes = {
                      {.origin = {-2.0f, 9.0f, -6.0f}, .size = {4.0f, 6.0f, 3.0f}, .uv {0.0f, 0.0f}, .texIndex = PackTexId(7, 0)},
@@ -34,6 +35,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
                  .locators = {
                      {"lead", {0.0f, 9.0f, -4.0f}}
                  }
+            
              },
              {
                  .name = "comb",
@@ -53,6 +55,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
              },
              {
                  .name = "leg0",
+                 .parent = "body", // TODO: 내가 넣음 
                  .pivot = {-2.0f, 5.0f, 1.0f},
                  .cubes = {
                      {.origin = {-3.0f, 0.0f, -2.0f}, .size = {3.0f, 5.0f, 3.0f}, .uv {26.0f, 0.0f}, .texIndex = PackTexId(7, 0)},
@@ -60,6 +63,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
              },
              {
                  .name = "leg1",
+                 .parent = "body", // TODO: 내가 넣음 
                  .pivot = {1.0f, 5.0f, 1.0f},
                  .cubes = {
                      {.origin = {0.0f, 0.0f, -2.0f}, .size = {3.0f, 5.0f, 3.0f}, .uv {26.0f, 0.0f}, .texIndex = PackTexId(7, 0)},
@@ -67,6 +71,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
              },
              {
                  .name = "wing0",
+                 .parent = "body", // TODO: 내가 넣음 
                  .pivot = {-3.0f, 11.0f, 0.0f},
                  .cubes = {
                      {.origin = {-4.0f, 7.0f, -3.0f}, .size = {1.0f, 4.0f, 6.0f}, .uv {24.0f, 13.0f}, .texIndex = PackTexId(7, 0)},
@@ -74,6 +79,7 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
              },
              {
                  .name = "wing1",
+                 .parent = "body", // TODO: 내가 넣음 
                  .pivot = {3.0f, 11.0f, 0.0f},
                  .cubes = {
                      {.origin = {3.0f, 7.0f, -3.0f}, .size = {1.0f, 4.0f, 6.0f}, .uv {24.0f, 13.0f}, .texIndex = PackTexId(7, 0)},
@@ -84,6 +90,9 @@ HRESULT CResEnttGeoChicken::Load(const std::any& arg)
 
         RightToLeft();
 
+        Scaling();
+
+        BoneSorting();
     }
     m_eState = STATE::LOADED;
     return S_OK;

@@ -1,20 +1,18 @@
 #pragma once
-#include "ItemObject.h"
+#include "DropItemObject.h"
 
 NS_BEGIN(Engine)
-class ENGINE_DLL CDropItem : public CItemObject
+class CCollider;
+class CResDynamicBuffer;
+class ENGINE_DLL CDropItem : public CDropItemObject
 {
-public:
-	typedef struct tagDesc : CItemObject::DESC
-	{
-		std::pair<StringID, StringID> viBufferId{};
-	}DESC;
 
 public:
-	DECLARE_DERIVED_TYPE(CDropItem, CItemObject)
+	DECLARE_DERIVED_TYPE(CDropItem, CDropItemObject)
 
 private:
 	explicit CDropItem();
+	CDropItem(const CDropItem& rhs);
 	~CDropItem() override;
 
 public:
@@ -27,7 +25,10 @@ public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
-	std::pair<StringID, StringID> m_viBufferID{};
+	std::vector<VTX_DROP_ITEM_INSTANCED_DATA> m_vecInstancedData{};
+	uint32_t m_iNumElements{ 1000 };
+	SPtr<CResDynamicBuffer> m_pResInstancedBuffer{};
+
 public:
 	static UPtr<CDropItem> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;

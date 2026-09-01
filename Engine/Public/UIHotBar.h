@@ -1,9 +1,14 @@
 #pragma once
+#include "ItemObject.h"
 #include "UIObject.h"
+#include "UIHotbarSelect.h"
 NS_BEGIN(Engine)
+
+//class CUIHotBarSelect;
 
 class ENGINE_DLL CUIHotBar final : public E::CUIObject
 {
+
 public:
 	DECLARE_DERIVED_TYPE(CUIHotBar, CUIObject)
 
@@ -27,6 +32,23 @@ public:
 private:
 	_bool m_bRender{ true };
 
+public:
+	void SetHotBarSelect(CHandle h) { m_hHotbarSelect = h; }
+	CUIHotBarSelect* GetHotBarSelect() const;
+private:
+	CHandle m_hHotbarSelect{};
+
+public:
+	void SetHotbarItemData(std::optional<CItemObject::ItemInfo>* pArr, size_t size);
+private:
+	void InitializeSlot();
+private:
+	struct Slot
+	{
+		_float2 vOriginPos{};
+		std::optional<CHandle> hItem{};
+	};
+	std::vector<Slot> m_vecSlot{};
 public:
 	static E::UPtr<CUIHotBar> Create();
 	E::UPtr<E::CPrototype> Clone(void* pArg) override;

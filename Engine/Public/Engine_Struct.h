@@ -106,6 +106,8 @@ namespace Engine
 	typedef struct tagVertexVoxel
 	{
 		_float3 pos{};
+		_float2 texCoord{};
+		uint32_t vColor{ 0xFFFFFFFF };
 		uint32_t packedData{};
 	} VTX_VOXEL;
 
@@ -124,8 +126,64 @@ namespace Engine
 		_float3 pos{};   // 12 bytes
 		_float3 normal{};     // 12 bytes  (조명 계산용)
 		_float2 texCoord{}; //  8 bytes
-		uint32_t texIndex{};  //  4 bytes
+		//uint32_t texIndex{};  //  4 bytes
 	} VTX_ITEM;
+
+	typedef struct tagItemInstancedData
+	{
+		_float4x4 matWorld{};
+		uint32_t   texIndex{};
+		uint32_t	light{0xFF};
+	}VTX_DROP_ITEM_INSTANCED_DATA;
+
+	typedef struct tagVertexExpOrb
+	{
+		_float3 pos{};   // 12 bytes
+		_float3 normal{};     // 12 bytes  (조명 계산용)
+		_float2 texCoord{}; //  8 bytes
+		//uint32_t texIndex{};  //  4 bytes
+	} VTX_EXP_ORB;
+
+	typedef struct tagExpOrbInstancedData
+	{
+		_float4x4 matWorld{};
+		//uint32_t   texIndex{};
+		_float2   uvOffset{};
+		_float4   vColor{};
+		uint32_t	light{ 0xFF };
+	}VTX_EXP_ORB_INSTANCED_DATA;
+
+
+	typedef struct tagVertexDropBlock
+	{
+		_float3 pos{};   // 12 bytes
+		_float3 normal{};     // 12 bytes  (조명 계산용)
+		_float2 texCoord{}; //  8 bytes
+		uint32_t faceId;
+		//uint32_t texIndex{};  //  4 bytes
+
+	} VTX_DROP_BLOCK;
+
+	typedef struct tagBlockInstancedData
+	{
+		_float4x4 matWorld{};
+		uint32_t   texIndexs[6]{};
+		uint32_t	light{ 0xFF };
+		_float4 vColor{1.f, 1.f, 1.f, 1.f};
+	}VTX_DROP_BLOCK_INSTANCED_DATA;
+
+	typedef struct tagVertexFallingVoxel
+	{
+		_float3 pos{};   // 12 bytes
+		_float3 normal{};     // 12 bytes  (조명 계산용)
+		_float2 texCoord{}; //  8 bytes
+		uint32_t texIndex{};  //  4 bytes
+	} VTX_FALLING_VOXEL;
+
+	typedef struct tagVertexCloud
+	{
+		_float3 pos{};   // 12 bytes
+	} VTX_CLOUD;
 
 
 	typedef struct tagVertexPointParticle
@@ -138,8 +196,8 @@ namespace Engine
 		_float4 color{};
 		uint32_t texIndex{};  //  4 bytes
 		uint32_t frameIndex{};
-		uint32_t flag{};
-		uint32_t _pad;
+		uint32_t light{0xFF};
+		uint32_t flag;
 	} VTX_POINT_PARTICLE;
 
 	typedef struct tagVertexDestroyStage
@@ -152,19 +210,28 @@ namespace Engine
 
 	typedef struct tagConstantBufferPerFrame
 	{
-		DIRECTIONAL_LIGHT dirLight{};
+		//DIRECTIONAL_LIGHT dirLight{};
 		_float4x4  matView{};            // 뷰 행렬
 		_float4x4  matProj{};            // 투영 행렬 (Perspective 또는 Ortho)
 		_float4x4  matViewProj{};        // 곱해진 행렬 (VS에서 연산 절약)
 		_float4x4  matInvView{};			// 뷰 역행렬 (빌보드 계산이나 월드 좌표 복원용)
+		_float4x4  matInvViewProj{};
 		_float3 vCamPos{};
-		_float _padding{};
+		_float fDayFactor{};
+		_float4x4  matSkyRotation{};
+		_float4x4  matStarRotation{};
+		_float4x4  matShadowLightViewProj{};
+		_float3 vShadowLightDir{};
+		_float _pad{};
 	} CB_PER_FRAME;
 
 	typedef struct tagConstantBufferPerObject
 	{
 		_float4x4 matWorld{};
 		_float4x4 matWVP{};
+		_float4   vBaseColor{1.f, 1.f, 1.f, 1.f};
+		uint32_t light{0xFF};
+		_float3 _pad{};
 	} CB_PER_OBJECT;
 
 	typedef struct tagConstantBufferPerMaterial
@@ -189,35 +256,53 @@ namespace Engine
 		_float fThickness{};
 		_float4 vColor{};
 		_float3 vExtents{};
-		_float _pad{};
+		uint32_t light{};
 	} CB_PER_BLOCKOUTLINE;
 
 	typedef struct tagConstantBufferPerDestroyStage
 	{
 		uint32_t   destroyStage;  // 0~9
+		uint32_t light{0xFF};
 		//_float crackTiling;   // 블록 크기에 맞게 조절 (보통 1.0)
-		_float3 _pad;
+		_float2 _pad;
 	}CB_PER_DESTROYSTAGE;
 
 
 	typedef struct tagConstantBufferPerUI
 	{
-		_float2 texCoord{}; //  8 bytes
-		_float2 uvSize{}; // textureSize
-		_float4 color{1.f, 1.f, 1.f, 1.f};
-		uint32_t texIndex{};  //  4 bytes
-		_float3 _pad{};
+		_float2  texCoord{};
+		_float2  uvSize{};
+		_float4  color{ 1.f, 1.f, 1.f, 1.f };
+		uint32_t texIndex{};
+		_float2  borderUV{};
+		float    _pad0{};
+		_float2  borderPx{};
+		_float2  rectSizePx{};
 	}CB_PER_UI;
+
+	typedef struct tagConstantBufferVoxelWater
+	{
+		int32_t stillFrameIndex{}; // m_iWaterFrame % 32
+		int32_t flowFrameIndex{};  // m_iWaterFrame % 64
+		_float2   _pddding;
+	}CB_PER_VOXEL_WATER;
 
 	typedef struct tagVoxQuad
 	{
-		_float3 v1;
-		_float3 v2;
-		_float3 v3;
-		_float3 v4;
+		_float3 v[4];
+		//_float3 v1;
+		//_float3 v2;
+		//_float3 v3;
+		//_float3 v4;
 		FACE_DIR eDir;
 		uint8_t blockTexType{};
 		uint8_t lighting{};
+		uint8_t ao[4]{3,3,3,3};
+		_float2 uv[4]{ {0.f, 0.f}, { 1.f, 0.f }, { 1.f, 1.f }, { 0.f, 1.f } };
+		//_float2 uv1{0.f, 0.f}; _float2 uv2{ 1.f, 0.f }; _float2 uv3{ 1.f, 1.f }; _float2 uv4{ 0.f, 1.f };
+
+		uint32_t color[4]{ 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
+
 	} VOX_QUAD;
 
 

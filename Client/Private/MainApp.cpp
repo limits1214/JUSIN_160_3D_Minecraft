@@ -29,7 +29,7 @@ HRESULT CMainApp::Initialize()
 		return E_FAIL;
 	}
 
-	if (CBaseApp::StartLevel(CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::LOGO)))
+	if (CBaseApp::StartLevel(CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::THE_OVERWORLD)))
 	{
 		return E_FAIL;
 	}
@@ -46,6 +46,11 @@ HRESULT CMainApp::Initialize()
 	E::CGameInstance::Get().RegisterLevelChangeFunc("TO_TEST_WORLD", [=]() {
 		Engine::CGameInstance::Get().ChangeLevel(
 			CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::TEST_WORLD));
+		});
+
+	E::CGameInstance::Get().RegisterLevelChangeFunc("TO_OVERWORLD", [=]() {
+		Engine::CGameInstance::Get().ChangeLevel(
+			CLevelLoading::Create(m_pDevice, m_pContext, LEVEL::THE_OVERWORLD));
 		});
 
 	return S_OK;

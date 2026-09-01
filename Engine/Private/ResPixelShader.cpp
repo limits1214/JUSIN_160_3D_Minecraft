@@ -20,11 +20,15 @@ HRESULT CResPixelShader::Load(const std::any& arg)
 		return E_FAIL;
 	}
 	m_eState = STATE::LOADED;
+
+	m_pBlob.Reset();
+	m_pErrorBlob.Reset();
 	return S_OK;
 }
 
 HRESULT CResPixelShader::Unload(const std::any& arg)
 {
+	m_eState = STATE::UNLOAD;
 	return S_OK;
 }
 

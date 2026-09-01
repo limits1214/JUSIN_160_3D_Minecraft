@@ -98,8 +98,55 @@ HRESULT CResEnttVIBuffer::Load(const std::any& arg)
                        → 나머지 face도 내부 U 반전
                 */
 
+                // [추가된 부분] 두께가 0인지 체크하여 2D 평면 메쉬(예: 화살, 잔디) 감지
+                bool bIsFlatQuad = (W == 0.f || H == 0.f || D == 0.f);
+                
+                if (argDesc->bUseFlatQuad && bIsFlatQuad)
+                {
+                    float uvW = (W == 0.f) ? D : W;
+                    float uvH = (H == 0.f) ? D : H;
+                    if (W != 0.f && D != 0.f && H == 0.f) uvH = D;
 
-                if (bone.mirror)
+                    // [수정됨] 물리적 좌표(x0, z0)에 텍스처 시작점(U)을 강제로 고정하여
+                    // 앞면/뒷면 텍스처가 물리적으로 일치하게 만듭니다 (교차 시 겹침 현상 방지).
+
+                    // POS_X
+                    vertices[24 * tmpI + 0] = { .pos = {x1, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uv(U,       V)} };
+                    vertices[24 * tmpI + 1] = { .pos = {x1, y1, z1}, .normal = {-1, 0, 0}, .texCoord = {uv(U + uvW, V)} };
+                    vertices[24 * tmpI + 2] = { .pos = {x1, y0, z1}, .normal = {-1, 0, 0}, .texCoord = {uv(U + uvW, V + uvH)} };
+                    vertices[24 * tmpI + 3] = { .pos = {x1, y0, z0}, .normal = {-1, 0, 0}, .texCoord = {uv(U,       V + uvH)} };
+
+                    // NEG_X (z0는 항상 U, z1은 항상 U+uvW)
+                    vertices[24 * tmpI + 4] = { .pos = {x0, y1, z1}, .normal = {1, 0, 0},  .texCoord = {uv(U + uvW, V)} };
+                    vertices[24 * tmpI + 5] = { .pos = {x0, y1, z0}, .normal = {1, 0, 0},  .texCoord = {uv(U,       V)} };
+                    vertices[24 * tmpI + 6] = { .pos = {x0, y0, z0}, .normal = {1, 0, 0},  .texCoord = {uv(U,       V + uvH)} };
+                    vertices[24 * tmpI + 7] = { .pos = {x0, y0, z1}, .normal = {1, 0, 0},  .texCoord = {uv(U + uvW, V + uvH)} };
+
+                    // POS_Y (x0는 항상 U, x1은 항상 U+uvW)
+                    vertices[24 * tmpI + 8] = { .pos = {x0, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uv(U,       V + uvH)} };
+                    vertices[24 * tmpI + 9] = { .pos = {x1, y1, z1}, .normal = {0, 1, 0},  .texCoord = {uv(U + uvW, V + uvH)} };
+                    vertices[24 * tmpI + 10] = { .pos = {x1, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uv(U + uvW, V)} };
+                    vertices[24 * tmpI + 11] = { .pos = {x0, y1, z0}, .normal = {0, 1, 0},  .texCoord = {uv(U,       V)} };
+
+                    // NEG_Y
+                    vertices[24 * tmpI + 12] = { .pos = {x1, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uv(U + uvW, V + uvH)} };
+                    vertices[24 * tmpI + 13] = { .pos = {x0, y0, z1}, .normal = {0, -1, 0}, .texCoord = {uv(U,       V + uvH)} };
+                    vertices[24 * tmpI + 14] = { .pos = {x0, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uv(U,       V)} };
+                    vertices[24 * tmpI + 15] = { .pos = {x1, y0, z0}, .normal = {0, -1, 0}, .texCoord = {uv(U + uvW, V)} };
+
+                    // POS_Z (x0는 항상 U, x1은 항상 U+uvW)
+                    vertices[24 * tmpI + 16] = { .pos = {x1, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + uvW, V)} };
+                    vertices[24 * tmpI + 17] = { .pos = {x0, y1, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U,       V)} };
+                    vertices[24 * tmpI + 18] = { .pos = {x0, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U,       V + uvH)} };
+                    vertices[24 * tmpI + 19] = { .pos = {x1, y0, z1}, .normal = {0, 0, 1},  .texCoord = {uv(U + uvW, V + uvH)} };
+
+                    // NEG_Z
+                    vertices[24 * tmpI + 20] = { .pos = {x0, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U,       V)} };
+                    vertices[24 * tmpI + 21] = { .pos = {x1, y1, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + uvW, V)} };
+                    vertices[24 * tmpI + 22] = { .pos = {x1, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U + uvW, V + uvH)} };
+                    vertices[24 * tmpI + 23] = { .pos = {x0, y0, z0}, .normal = {0, 0, -1}, .texCoord = {uv(U,       V + uvH)} };
+                }
+                else if (bone.mirror)
                 {
                     // POS_X
                     vertices[24 * tmpI + 0] =  { .pos = {x1, y1, z0}, .normal = {-1, 0, 0}, .texCoord = {uv(U + D + W + D,  V + D)} };

@@ -3,6 +3,7 @@
 #include "Chunk3.h"
 #include "IRenderable.h"
 #include <FastNoiseLite.h>
+#include "Timer.h"
 
 NS_BEGIN(Engine)
 class CResTexture2DArray;
@@ -33,6 +34,8 @@ public:
 	//	CBlock3 block{};
 	//}CHUNK_EDIT_DESC;
 
+	
+	const std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>>& GetEditShadow() const { return m_EditShadow; }
 	std::unordered_map<uint64_t, std::unordered_map<uint32_t, CBlock3>> m_EditShadow{};
 
 	typedef struct tagRaycastResult {
@@ -47,7 +50,7 @@ public:
 public:
 	std::optional< CBlock3> GetBlock(int32_t wbx, int32_t wby, int32_t wbz) const;
 	std::optional< CBlock3> GetBlockByChunkCoord(uint64_t chunkIdx ,int32_t cbx, int32_t cby, int32_t cbz) const;
-	void SetBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block);
+	void SetBlock(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bRecord = false);
 	void SetBlocks(std::vector<std::tuple<int32_t, int32_t, int32_t, CBlock3>>);
 	_bool BlockRaycast(const _float3& rayOrigin,
 		const _float3& rayDir,     // normalized
@@ -69,7 +72,12 @@ public:
 				for (int z = zMin; z <= zMax; z++)
 				{
 					auto block = GetBlock(x, y, z);
-					if (block && block->GetType() != CBlock3::TYPE::AIR)
+					if (block
+						&& block->GetType() != CBlock3::TYPE::AIR
+						&& !CBlock3::IsDirectBreakBlock(block->GetType())
+						&& block->GetType() != CBlock3::TYPE::TORCH_ON
+						&& !CBlock3::IsWater(block->GetType())
+						)
 						return true;
 				}
 		return false;
@@ -132,6 +140,11 @@ public:
 				}
 		return false;
 	}
+
+public:
+	void ProcessPlayerBlockSet(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 block, _bool bPlaySound = true, std::optional<CBlock3> rayCastedBlock = std::nullopt);
+	void ProcessExplodeBlock(float wbx, float wby, float wbz, float fRadius);
+
 public:
 	HRESULT QueuingInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& desc);
 	HRESULT QueuingOutRangeChunkRelease(const OUT_RANGE_CHUNK_RELEASE_DESC& desc);
@@ -146,6 +159,8 @@ private:
 	//std::list<std::future<CHUNK_EDIT_DESC>> m_queueFutEdit{};
 	std::list<std::vector<std::future<uint64_t>>> m_queueFutBlockFilling{};
 	std::list<std::future<std::vector<uint64_t>>> m_queueFutQuadMessing{};
+	std::future<std::unordered_set<uint64_t>> m_futLighting{};
+	std::atomic<_bool> m_bLighing{ false };
 
 
 private:
@@ -154,11 +169,77 @@ private:
 
 public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) override;
-	bool HasRenderPass(RENDERPASS ePass) const override { return ePass == RENDERPASS::DEFAULT; };
+	HRESULT RenderShadow(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
+	HRESULT RenderDefault(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx);
+	bool HasRenderPass(RENDERPASS ePass) const override { return (ePass == RENDERPASS::DEFAULT) || (ePass == RENDERPASS::SHADOW); };
+
+public:
+	//void InitialFillingBlockLighting(CChunk3* pChunk);
+	void RuntimeOnBlockRemovedLighting(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 oldBlock);
+	void RuntimeOnBlockPlacedLighting(int32_t wbx, int32_t wby, int32_t wbz, CBlock3 oldBlock);
+
+private:
+	void RuntimeFloodFillBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void RuntimeRemoveBlockLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void RuntimeFloodFillSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void RuntimeRemoveSkyLighting(std::queue<std::pair<XMINT3, uint8_t>>& q);
+
+public:
+	void RuntimeOnBlockPlaced(int32_t wbx, int32_t wby, int32_t wbz, const CBlock3& newBlock);
+	void RuntimeOnBlockRemoved(int32_t wbx, int32_t wby, int32_t wbz);
+
+
+	
+public:
+	void WorkerFloodFillBlockLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
+	//void WorkerRemoveBlocklighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
+	void WorkerFloodFillSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
+	//void WorkerRemoveSkyLighting(std::unordered_set<uint64_t>& chunkIdxLookupBundle, std::queue<std::pair<XMINT3, uint8_t>>& q);
 
 public:
 	void Update(_float fTimeDelta);
 	void UpdateGUI();
+
+private:
+	//struct SWaterTickData
+	//{
+	//	DirectX::XMINT3 worldPos;
+	//	uint8_t level;
+	//	bool bIsStill; // true면 WATER_STILL, false면 WATER_FLOWING
+	//};
+
+	struct SWaterTickData
+	{
+		XMINT3 worldPos;
+		bool bIsStill;
+		uint8_t level;
+		
+		enum class STATE { SPREAD, DECREASE };
+		STATE eState = STATE::SPREAD; // 기본값은 전파
+	};
+
+	std::queue<SWaterTickData> m_waterUpdateQ;
+	void UpdateWaterTick(_float fTimeDelta);
+	CTimer m_TimerUpdateWaterTick{};
+
+	void TriggerWaterUpdateAround(int x, int y, int z);
+
+
+private:
+	struct SLavaTickData
+	{
+		XMINT3 worldPos;
+		bool bIsStill;
+		uint8_t level;
+
+		enum class STATE { SPREAD, DECREASE };
+		STATE eState = STATE::SPREAD; // 기본값은 전파
+	};
+	std::queue<SLavaTickData> m_lavaUpdateQ;
+	void UpdateLavaTick(_float fTimeDelta);
+	CTimer m_TimerUpdateLavaTick{};
+
+	void TriggerLavaUpdateAround(int x, int y, int z);
 
 public:
 	static uint64_t encodeChunkCoord(int32_t x, int32_t y, int32_t z) ;
@@ -168,6 +249,8 @@ public:
 	CChunk3* GetChunkByChunkCoord(int32_t x, int32_t y, int32_t z) const;
 	CChunk3* GetChunkByWorldBlockCoord(int32_t x, int32_t y, int32_t z) const;
 
+	static _int3 GetChunkCoordByWorldBlockCoord(int32_t x, int32_t y, int32_t z) ;
+
 private:
 	HRESULT StartProcessInRangeChunkCreate(const IN_RANGE_CHUNK_CREATE_DESC& createDesc);
 	HRESULT StartProcessOutRangeChunkRelease(const OUT_RANGE_CHUNK_RELEASE_DESC& releaseDesc);
@@ -175,16 +258,25 @@ private:
 	HRESULT UpdateCheckQuduedQuadMessingChunk();
 	HRESULT UpdateCheckQuadMessingEndFutures();
 	HRESULT UpdateCheckBlockEdit();
+	HRESULT UpdateCheckLightingFutures();
 
 	//HRESULT AdjChunkReMessing(uint64_t targetIdx);
 	HRESULT QueueingQuadMessing(std::vector<uint64_t> targetCoords, _bool bPushFront = false);
 private:
 	HRESULT Initialize();
 
+public:
+	std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>>* GetEditedBlock()  { return &m_mapEditedBlock; }
+	std::unordered_map<uint64_t, std::array<std::optional<CBlock3>, VOXEL_CHUNK_X_SIZE3* VOXEL_CHUNK_Z_SIZE3* VOXEL_CHUNK_Y_SIZE3>> m_mapEditedBlock{};
 private:
 	std::unordered_map<uint64_t, UPtr<CChunk3>> m_mapChunks{};
-	int32_t m_iRenderDistance{ 0 };
+	int32_t m_iRenderDistance{ 3 };
 	int32_t m_iVerticalRenderDistance{ 0 };
+
+public:
+	std::shared_mutex& GetEditMutex() { return m_editMutex; }
+private:
+	std::shared_mutex m_editMutex;
 
 //public:
 //	_float GetHeightNoise(_float x, _float z) const { return  m_NoiseHeight.GetNoise(x, z); }
@@ -198,12 +290,23 @@ private:
 	FastNoiseLite m_Noises[ETOUI(NOISE_TYPE::END)];
 	int m_iNoiseSeed{ 160 };
 
+private:
+	uint32_t m_iWaterFrame{ 0 };
 
 private:
 	SPtr<CResTexture2DArray> m_pResBlocksTexutreArray{};
 	SPtr<CResSamplerState> m_pResSamplerPointWrap{};
-	SPtr<CResPixelShader> m_pResPixelShader{};
-	SPtr<CResVertexShader> m_pResVertexShader{};
+	SPtr<CResPixelShader> m_pResSolidBlockPixelShader{};
+	SPtr<CResVertexShader> m_pResSolidBlockVertexShader{};
+	SPtr<CResPixelShader> m_pResAlphaTestBlockPixelShader{};
+	SPtr<CResVertexShader> m_pResAlphaTestBlockVertexShader{};
+	SPtr<CResPixelShader> m_pResWaterBlockPixelShader{};
+	SPtr<CResVertexShader> m_pResWaterBlockVertexShader{};
+
+	SPtr<CResPixelShader> m_pResSolidShadowBlockPixelShader{};
+	SPtr<CResVertexShader> m_pResSolidShadowBlockVertexShader{};
+	SPtr<CResPixelShader> m_pResAlphaTestShadowBlockPixelShader{};
+	SPtr<CResVertexShader> m_pResAlphaTestShadowBlockVertexShader{};
 
 private:
 	ComPtr<ID3D11Device> m_pDevice{};

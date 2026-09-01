@@ -11,6 +11,9 @@
 #include "ResExtrudedItemVIBuffer.h"
 #include "ResQuadItemVIBuffer.h"
 #include "ResCubeItemVIBuffer.h"
+#include "ResFallingVoxelVIBuffer.h"
+#include "ResCloudVIBuffer.h"
+#include "ResExperenceOrbVIBuffer.h"
 
 #include "ResFmodSound.h"
 
@@ -45,6 +48,17 @@
 #include "ResEnttGeoSteveArm.h"
 #include "ResEnttGeoSkeleton.h"
 #include "ResEnttGeoPlayerArmor.h"
+#include "ResEnttGeoPlayerArmorHelmet.h"
+#include "ResEnttGeoPlayerArmorChestplate.h"
+#include "ResEnttGeoPlayerArmorLeggings.h"
+#include "ResEnttGeoPlayerArmorBoots.h"
+
+#include "ResEnttGeoZombie.h"
+#include "ResEnttGeoCreeper.h"
+#include "ResEnttGeoSpider.h"
+#include "ResEnttGeoEnderMan.h"
+#include "ResEnttGeoEnderDragon.h"
+#include "ResEnttGeoArrow.h"
 
 #include "ResFont.h"
 #include "ResFontCustom.h"
@@ -69,6 +83,7 @@ constexpr static const char* TAG_RES_STATE_RS_WIREFRAME_NOCULL = "RS_WIREFRAME_N
 constexpr static const char* TAG_RES_STATE_SS_LINEAR_WRAP = "SS_LinearWrap";
 constexpr static const char* TAG_RES_STATE_SS_POINT_WRAP = "SS_PointWrap";
 constexpr static const char* TAG_RES_STATE_SS_POINT_WRAP_NOMIP = "SS_PointWrapNoMip";
+constexpr static const char* TAG_RES_STATE_SS_SAHDOW = "SS_SHADOW";
 
 constexpr static const char* TAG_RES_CBUFFER_FRAME = "CB_PerFrame";
 constexpr static const char* TAG_RES_CBUFFER_OBJECT = "CB_PerObject";

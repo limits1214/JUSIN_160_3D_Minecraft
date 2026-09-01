@@ -33,10 +33,10 @@ HRESULT CResQuadItemVIBuffer::Load(const std::any& arg)
         constexpr uint32_t iNumVertices = 4;
         std::vector<VTX_ITEM> vertices =
         {
-            {_float3{-0.5f, 0.5f, 0.f},_float3{0.f, 0.f, -1.f},  _float2{0.f, 0.f},     argDesc->texIndex},
-            {_float3{0.5f, 0.5f, 0.f},_float3{0.f, 0.f, -1.f},  _float2{1.f, 0.f},      argDesc->texIndex},
-            {_float3{0.5f, -0.5f, 0.f},_float3{0.f, 0.f, -1.f},  _float2{1.f, 1.f},     argDesc->texIndex},
-            {_float3{-0.5f, -0.5f, 0.f},_float3{0.f, 0.f, -1.f},  _float2{0.f, 1.f},    argDesc->texIndex}
+            {_float3{-0.5f, 0.5f, 0.f},_float3{0.f, 0.f, -1.f},  _float2{0.f, 0.f}},
+            {_float3{0.5f, 0.5f, 0.f},_float3{0.f, 0.f, -1.f},  _float2{1.f, 0.f}},
+            {_float3{0.5f, -0.5f, 0.f},_float3{0.f, 0.f, -1.f},  _float2{1.f, 1.f}},
+            {_float3{-0.5f, -0.5f, 0.f},_float3{0.f, 0.f, -1.f},  _float2{0.f, 1.f}}
         };
 
         std::vector<uint16_t> indices{ 0, 1, 2, 0, 2, 3 };

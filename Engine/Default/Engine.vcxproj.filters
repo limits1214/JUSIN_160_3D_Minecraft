@@ -217,18 +217,6 @@
     <Filter Include="Light\Manager">
       <UniqueIdentifier>{5e7b9985-b1c6-483b-9978-29bedce2210b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Voxel">
-      <UniqueIdentifier>{e6d84552-9b75-479b-828f-df58e2f6faaf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Voxel\Manager">
-      <UniqueIdentifier>{1121b771-ea81-49b8-8736-915bc7eba4ca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Voxel\Block">
-      <UniqueIdentifier>{cfe70bfd-b49e-4517-9a83-4969c1dd4ac2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Voxel\Chunk">
-      <UniqueIdentifier>{db11d8e3-ba78-4eb5-8dc3-b395821caa2a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="100.Shaders">
       <UniqueIdentifier>{3accd414-d763-43e7-8484-4a170d330154}</UniqueIdentifier>
     </Filter>
@@ -237,18 +225,6 @@
     </Filter>
     <Filter Include="100.Shaders\QuadCol">
       <UniqueIdentifier>{4a81528d-5046-4952-be1a-b41f24e12a61}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Voxel2">
-      <UniqueIdentifier>{1aeef163-66ae-44f0-b0a4-49e6d7ebe26e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Voxel2\Manager">
-      <UniqueIdentifier>{7f8d25ca-ec97-459a-9712-08924624f21e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Voxel2\Chunk">
-      <UniqueIdentifier>{5074b6bb-21db-4ea2-99be-aedd5e1dfa53}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Voxel2\Block">
-      <UniqueIdentifier>{619f9e21-30c7-42b3-8116-4cb483bd36ee}</UniqueIdentifier>
     </Filter>
     <Filter Include="Voxel3">
       <UniqueIdentifier>{40bb09e9-5355-4494-b3c2-ed6279266696}</UniqueIdentifier>
@@ -337,26 +313,14 @@
     <Filter Include="Game\Manager">
       <UniqueIdentifier>{18206a88-6672-4c8a-b907-bddea2e4edb6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Item">
-      <UniqueIdentifier>{91f53f7c-733a-49d8-b63e-6124e108c022}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameObject\Item\Drop">
       <UniqueIdentifier>{b578ad8f-d538-41d0-89a3-10fc3f5e09c0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Item\Pickaxe">
-      <UniqueIdentifier>{f5649b3f-e242-4928-8ebd-12ca91fe2a3e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Item\Pickaxe\Wood">
-      <UniqueIdentifier>{385c43bc-4ff1-4964-ac9c-86dd70870534}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer">
       <UniqueIdentifier>{be8b1ed9-9d5a-4e89-979d-3337b2bbd10f}</UniqueIdentifier>
     </Filter>
     <Filter Include="100.Shaders\Item">
       <UniqueIdentifier>{f4c1913b-cc14-4a0e-9938-203d6882240b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObject\Item\ExperienceOrb">
-      <UniqueIdentifier>{ece6a9f2-bb91-4e58-ab01-e9b9d8d5539d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded">
       <UniqueIdentifier>{4d2708e9-1b02-4d45-bc68-dbebdfcc0fee}</UniqueIdentifier>
@@ -393,9 +357,6 @@
     </Filter>
     <Filter Include="Resource\Entity\Geometry\Steve\Arm">
       <UniqueIdentifier>{5c7021ed-ac7d-4a28-87b8-539c0a50cf5b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObject\Item\PlayerFPSArm">
-      <UniqueIdentifier>{6e5e5c7f-24db-4137-ab66-24f335d6ec64}</UniqueIdentifier>
     </Filter>
     <Filter Include="Particle">
       <UniqueIdentifier>{7547f2c7-321b-40d5-a03d-9c6629ef60cd}</UniqueIdentifier>
@@ -453,6 +414,183 @@
     </Filter>
     <Filter Include="Component\ConstantBuffer">
       <UniqueIdentifier>{dafbe165-3d84-4b3d-9814-867cb9127276}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Collider">
+      <UniqueIdentifier>{04cbe188-607b-4ae5-b429-591dd5cca899}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Voxel">
+      <UniqueIdentifier>{27364ad3-ed15-408d-a7fb-48aad9eeaa3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Voxel\Falling">
+      <UniqueIdentifier>{98f67ba0-37ae-455b-8d47-5d1d1508884e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\FallingVoxel">
+      <UniqueIdentifier>{223b3a4c-69a7-4fbf-963f-95ecfa0ae350}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\FallingVoxelVIBuffer">
+      <UniqueIdentifier>{bd75ae31-e499-49ec-9eec-c03d54773d5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\UIController">
+      <UniqueIdentifier>{7a60ec6b-146e-49ac-93bc-b35c4ca922c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\CraftingTable">
+      <UniqueIdentifier>{99d26066-5953-463d-8107-0e35c737d99a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\BlastFurnace">
+      <UniqueIdentifier>{ea64046c-36c3-4245-9b6f-8b30782228f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\EnchantingTable">
+      <UniqueIdentifier>{023a3ff9-43ff-4ca5-beb4-ba2da5751275}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\Item">
+      <UniqueIdentifier>{2185abf2-6f66-40c0-a9b7-cccbe4e31117}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\Drop\Item">
+      <UniqueIdentifier>{89fad06b-3813-466f-b5e9-cfb37b583bc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\Drop\Block">
+      <UniqueIdentifier>{6015b916-185f-4958-aae3-cd83165eed96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\Chest">
+      <UniqueIdentifier>{4456d761-92a2-4d7b-8daf-bc356ac2f839}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\Chest2">
+      <UniqueIdentifier>{63931cca-54a8-4b65-948b-875a3693040a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\PlayerFPSArm">
+      <UniqueIdentifier>{6e5e5c7f-24db-4137-ab66-24f335d6ec64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\ExperienceOrb">
+      <UniqueIdentifier>{ece6a9f2-bb91-4e58-ab01-e9b9d8d5539d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\Item">
+      <UniqueIdentifier>{92f0cd25-a9b9-481b-bfee-670091b545ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\TextBg">
+      <UniqueIdentifier>{8bb133f3-8a5b-4712-84c6-e9a5326dbe6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World">
+      <UniqueIdentifier>{9075403e-5dd1-4908-bae5-70feb8d86956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World\FurnaceStorage">
+      <UniqueIdentifier>{322c1db9-01c2-4f95-8212-6243d336dc58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World\ChestStorage">
+      <UniqueIdentifier>{38d28e25-0b92-4ae4-8c90-06b20949151a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Skybox">
+      <UniqueIdentifier>{bc848797-f1b2-4fff-ae71-c9424b116ccf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Skybox">
+      <UniqueIdentifier>{e90ba3c6-cb3d-4138-b1ad-9300ea095dbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Cloud">
+      <UniqueIdentifier>{80590765-a5d9-419d-89f2-e2673c2844cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\CloudVIBuffer">
+      <UniqueIdentifier>{c562ff8d-1b37-4524-8ee3-f561f6de468f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Cloud">
+      <UniqueIdentifier>{c3c723b2-f60d-4628-b9e6-9fb6018abf68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\Animator">
+      <UniqueIdentifier>{c830eda9-86b5-43c4-8787-9d0c4df943c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\HandHeld">
+      <UniqueIdentifier>{4fda0257-c93c-4017-bc55-52a45fcb4c7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\HandHeld\Item">
+      <UniqueIdentifier>{365e1316-0cee-49d0-9a4f-1ced9e1b62db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Item\HandHeld\Block">
+      <UniqueIdentifier>{a7a15908-2afe-476d-8898-198a466aba20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\Fullscreen">
+      <UniqueIdentifier>{d7083c34-4ae6-4203-ac42-3260e6015299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Camera\ShadowCamera">
+      <UniqueIdentifier>{0a9ace27-8a6d-4b4f-a897-2d68bb9ad725}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\Collider">
+      <UniqueIdentifier>{800016da-bf26-44de-8ad0-b7e04f093c6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World\VoxelEditMem">
+      <UniqueIdentifier>{29b4d380-ed7a-48fe-ad70-c6855b1e996e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Zombie">
+      <UniqueIdentifier>{e04b4e9f-e839-4583-96a5-3fcf46ae3e6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\Zombie">
+      <UniqueIdentifier>{e1cf9bde-8241-4afe-9eea-8de26d7b1425}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Creeper">
+      <UniqueIdentifier>{4615624c-5efd-4e5c-9c61-642c1c6f55d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\Creeper">
+      <UniqueIdentifier>{cd25a691-3cec-43d2-b043-dee4536d50d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Spider">
+      <UniqueIdentifier>{e81b8cef-ffd0-431b-8153-640cd78fd007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\Spider">
+      <UniqueIdentifier>{cd03b60c-ace9-4ba8-a338-1ecee72fe389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\EnderMan">
+      <UniqueIdentifier>{bcc037c4-5ce8-4bfe-9c43-3795cea684ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\EnderMan">
+      <UniqueIdentifier>{4283fb75-37d9-4bff-9bec-f76125a7e5b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\EnderDragon">
+      <UniqueIdentifier>{a7e6be32-7142-4c29-b465-f25898bb54fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Monster\EnderDragon">
+      <UniqueIdentifier>{e4ceed53-2fcb-4fd8-8b04-d5e1534f48b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Camera\PlayerInvenUICamera">
+      <UniqueIdentifier>{9a602f25-882b-40c7-b215-036e28758af8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\PlayerInvenUI">
+      <UniqueIdentifier>{3cbc4f1c-b2e2-4e9a-829c-432c6fdf8f76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Armor">
+      <UniqueIdentifier>{11eb32d4-55a8-42aa-b121-8f60f68d2401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor\Helmet">
+      <UniqueIdentifier>{1367e327-5dbf-475e-ba92-8d0201338a64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor\Chestplate">
+      <UniqueIdentifier>{dbc6cec8-84c0-4fa3-80d7-9075359f699e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor\Leggings">
+      <UniqueIdentifier>{2cd95769-280c-427f-a1aa-ff7772f13230}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Armor\Boots">
+      <UniqueIdentifier>{3dabb78a-059c-4cfc-b2e5-4fe49069f1d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\ExperienceOrb">
+      <UniqueIdentifier>{feca626f-de8c-43f0-8679-b8f9b7e84b02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer">
+      <UniqueIdentifier>{453277c1-8ea5-49b8-a080-5d5fbb2732c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Entity\Geometry\Arrow">
+      <UniqueIdentifier>{edaf739a-ce6a-4710-9e91-275f89cbf071}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Entity\Arrow">
+      <UniqueIdentifier>{cdb3c769-c8bc-4d2e-bd9d-7a789d46724c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Voxel\ActivatedTNT">
+      <UniqueIdentifier>{f0ba2d2f-89a9-4173-9246-4fe892367e8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\ActivatedTNT">
+      <UniqueIdentifier>{c70f1d6c-11f1-42db-b081-bb1048313642}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\UI\DeathScreen">
+      <UniqueIdentifier>{a1f0389d-57a3-478a-9685-96ab00beb251}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100.Shaders\DeathScreenRedFilter">
+      <UniqueIdentifier>{01ad6339-f4f2-410d-9b70-4905797a3c5d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -699,24 +837,6 @@
     <ClInclude Include="..\public\LightManager.h">
       <Filter>Light\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\VoxelManager.h">
-      <Filter>Voxel\Manager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\Block.h">
-      <Filter>Voxel\Block</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\Chunk.h">
-      <Filter>Voxel\Chunk</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\Block2.h">
-      <Filter>Voxel2\Block</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\Chunk2.h">
-      <Filter>Voxel2\Chunk</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\VoxelManager2.h">
-      <Filter>Voxel2\Manager</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\Block3.h">
       <Filter>Voxel3\Block</Filter>
     </ClInclude>
@@ -786,26 +906,14 @@
     <ClInclude Include="..\public\ResEnttGeoSkeleton.h">
       <Filter>Resource\Entity\Geometry\Skeleton</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\Item.h">
-      <Filter>Game\Item</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\GameManager.h">
       <Filter>Game\Manager</Filter>
     </ClInclude>
     <ClInclude Include="..\public\ItemObject.h">
       <Filter>GameObject\Item</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\DropItem.h">
-      <Filter>GameObject\Item\Drop</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\ItemPickaxe.h">
-      <Filter>Game\Item\Pickaxe</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\ItemWoodPickaxe.h">
-      <Filter>Game\Item\Pickaxe\Wood</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\ExperienceOrbItem.h">
-      <Filter>GameObject\Item\ExperienceOrb</Filter>
+    <ClInclude Include="..\public\ExperienceOrb.h">
+      <Filter>GameObject\Entity\ExperienceOrb</Filter>
     </ClInclude>
     <ClInclude Include="..\public\ResExtrudedItemVIBuffer.h">
       <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded</Filter>
@@ -832,7 +940,7 @@
       <Filter>Resource\Entity\Geometry\Steve\Arm</Filter>
     </ClInclude>
     <ClInclude Include="..\public\PlayerFPSArm.h">
-      <Filter>GameObject\Item\PlayerFPSArm</Filter>
+      <Filter>GameObject\Entity\PlayerFPSArm</Filter>
     </ClInclude>
     <ClInclude Include="..\public\ParticleManager.h">
       <Filter>Particle\Manager</Filter>
@@ -890,6 +998,153 @@
     </ClInclude>
     <ClInclude Include="..\public\ComConstantBuffer.h">
       <Filter>Component\ConstantBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\VoxelObject.h">
+      <Filter>GameObject\Voxel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\FallingVoxel.h">
+      <Filter>GameObject\Voxel\Falling</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\FallingVoxelVIBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIController.h">
+      <Filter>GameObject\UI\UIController</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UICraftingTable.h">
+      <Filter>GameObject\UI\CraftingTable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIBlastFurnace.h">
+      <Filter>GameObject\UI\BlastFurnace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIEnchantingTable.h">
+      <Filter>GameObject\UI\EnchantingTable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIItem.h">
+      <Filter>GameObject\UI\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DropItemObject.h">
+      <Filter>GameObject\Item\Drop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DropBlock.h">
+      <Filter>GameObject\Item\Drop\Block</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DropItem.h">
+      <Filter>GameObject\Item\Drop\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIChest.h">
+      <Filter>GameObject\UI\Chest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIChest2.h">
+      <Filter>GameObject\UI\Chest2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Item.h">
+      <Filter>GameObject\Item\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UITextBg.h">
+      <Filter>GameObject\UI\TextBg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\WorldManager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\FurnaceStorage.h">
+      <Filter>World\FurnaceStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ChestStorage.h">
+      <Filter>World\ChestStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Skybox.h">
+      <Filter>GameObject\Skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Cloud.h">
+      <Filter>GameObject\Cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResCloudVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\CloudVIBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ComAnimator.h">
+      <Filter>Component\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\HandHeldItemObject.h">
+      <Filter>GameObject\Item\HandHeld</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\HandHeldBlock.h">
+      <Filter>GameObject\Item\HandHeld\Block</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\HandHeldItem.h">
+      <Filter>GameObject\Item\HandHeld\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ShadowCamera.h">
+      <Filter>GameObject\Camera\ShadowCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ComCollider.h">
+      <Filter>Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\VoxelEditMem.h">
+      <Filter>World\VoxelEditMem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoZombie.h">
+      <Filter>Resource\Entity\Geometry\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ZombieEntity.h">
+      <Filter>GameObject\Entity\Monster\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoCreeper.h">
+      <Filter>Resource\Entity\Geometry\Creeper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\CreeperEntity.h">
+      <Filter>GameObject\Entity\Monster\Creeper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoSpider.h">
+      <Filter>Resource\Entity\Geometry\Spider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\SpiderEntity.h">
+      <Filter>GameObject\Entity\Monster\Spider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoEnderMan.h">
+      <Filter>Resource\Entity\Geometry\EnderMan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\EnderManEntity.h">
+      <Filter>GameObject\Entity\Monster\EnderMan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoEnderDragon.h">
+      <Filter>Resource\Entity\Geometry\EnderDragon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\EnderDragonEntity.h">
+      <Filter>GameObject\Entity\Monster\EnderDragon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\PlayerInvenUICamera.h">
+      <Filter>GameObject\Camera\PlayerInvenUICamera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ArmorEntity.h">
+      <Filter>GameObject\Entity\Armor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorBoots.h">
+      <Filter>Resource\Entity\Geometry\Armor\Boots</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorChestplate.h">
+      <Filter>Resource\Entity\Geometry\Armor\Chestplate</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorHelmet.h">
+      <Filter>Resource\Entity\Geometry\Armor\Helmet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorLeggings.h">
+      <Filter>Resource\Entity\Geometry\Armor\Leggings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResExperenceOrbVIBuffer.h">
+      <Filter>Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ResEnttGeoArrow.h">
+      <Filter>Resource\Entity\Geometry\Arrow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ArrowEntity.h">
+      <Filter>GameObject\Entity\Arrow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\ActivatedTNT.h">
+      <Filter>GameObject\Voxel\ActivatedTNT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIDeathScreen.h">
+      <Filter>GameObject\UI\DeathScreen</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1124,24 +1379,6 @@
     <ClCompile Include="..\private\LightManager.cpp">
       <Filter>Light\Manager</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\VoxelManager.cpp">
-      <Filter>Voxel\Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\Block.cpp">
-      <Filter>Voxel\Block</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\Chunk.cpp">
-      <Filter>Voxel\Chunk</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\Block2.cpp">
-      <Filter>Voxel2\Block</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\Chunk2.cpp">
-      <Filter>Voxel2\Chunk</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\VoxelManager2.cpp">
-      <Filter>Voxel2\Manager</Filter>
-    </ClCompile>
     <ClCompile Include="..\private\Block3.cpp">
       <Filter>Voxel3\Block</Filter>
     </ClCompile>
@@ -1211,26 +1448,14 @@
     <ClCompile Include="..\private\ResEnttGeoSkeleton.cpp">
       <Filter>Resource\Entity\Geometry\Skeleton</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\Item.cpp">
-      <Filter>Game\Item</Filter>
-    </ClCompile>
     <ClCompile Include="..\private\GameManager.cpp">
       <Filter>Game\Manager</Filter>
     </ClCompile>
     <ClCompile Include="..\private\ItemObject.cpp">
       <Filter>GameObject\Item</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\DropItem.cpp">
-      <Filter>GameObject\Item\Drop</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\ItemPickaxe.cpp">
-      <Filter>Game\Item\Pickaxe</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\ItemWoodPickaxe.cpp">
-      <Filter>Game\Item\Pickaxe\Wood</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\ExperienceOrbItem.cpp">
-      <Filter>GameObject\Item\ExperienceOrb</Filter>
+    <ClCompile Include="..\private\ExperienceOrb.cpp">
+      <Filter>GameObject\Entity\ExperienceOrb</Filter>
     </ClCompile>
     <ClCompile Include="..\private\ResExtrudedItemVIBuffer.cpp">
       <Filter>Resource\Buffer\VIBuffer\ItemVIBuffer\Extruded</Filter>
@@ -1257,7 +1482,7 @@
       <Filter>Resource\Entity\Geometry\Steve\Arm</Filter>
     </ClCompile>
     <ClCompile Include="..\private\PlayerFPSArm.cpp">
-      <Filter>GameObject\Item\PlayerFPSArm</Filter>
+      <Filter>GameObject\Entity\PlayerFPSArm</Filter>
     </ClCompile>
     <ClCompile Include="..\private\ParticleManager.cpp">
       <Filter>Particle\Manager</Filter>
@@ -1316,6 +1541,153 @@
     <ClCompile Include="..\private\ComConstantBuffer.cpp">
       <Filter>Component\ConstantBuffer</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\VoxelObject.cpp">
+      <Filter>GameObject\Voxel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\FallingVoxel.cpp">
+      <Filter>GameObject\Voxel\Falling</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\FallingVoxelVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIController.cpp">
+      <Filter>GameObject\UI\UIController</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UICraftingTable.cpp">
+      <Filter>GameObject\UI\CraftingTable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIBlastFurnace.cpp">
+      <Filter>GameObject\UI\BlastFurnace</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIEnchantingTable.cpp">
+      <Filter>GameObject\UI\EnchantingTable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIItem.cpp">
+      <Filter>GameObject\UI\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DropItemObject.cpp">
+      <Filter>GameObject\Item\Drop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DropBlock.cpp">
+      <Filter>GameObject\Item\Drop\Block</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DropItem.cpp">
+      <Filter>GameObject\Item\Drop\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIChest.cpp">
+      <Filter>GameObject\UI\Chest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIChest2.cpp">
+      <Filter>GameObject\UI\Chest2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Item.cpp">
+      <Filter>GameObject\Item\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UITextBg.cpp">
+      <Filter>GameObject\UI\TextBg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\WorldManager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\FurnaceStorage.cpp">
+      <Filter>World\FurnaceStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ChestStorage.cpp">
+      <Filter>World\ChestStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Skybox.cpp">
+      <Filter>GameObject\Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Cloud.cpp">
+      <Filter>GameObject\Cloud</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResCloudVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\CloudVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ComAnimator.cpp">
+      <Filter>Component\Animator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\HandHeldItemObject.cpp">
+      <Filter>GameObject\Item\HandHeld</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\HandHeldBlock.cpp">
+      <Filter>GameObject\Item\HandHeld\Block</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\HandHeldItem.cpp">
+      <Filter>GameObject\Item\HandHeld\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ShadowCamera.cpp">
+      <Filter>GameObject\Camera\ShadowCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ComCollider.cpp">
+      <Filter>Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\VoxelEditMem.cpp">
+      <Filter>World\VoxelEditMem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoZombie.cpp">
+      <Filter>Resource\Entity\Geometry\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ZombieEntity.cpp">
+      <Filter>GameObject\Entity\Monster\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoCreeper.cpp">
+      <Filter>Resource\Entity\Geometry\Creeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\CreeperEntity.cpp">
+      <Filter>GameObject\Entity\Monster\Creeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoSpider.cpp">
+      <Filter>Resource\Entity\Geometry\Spider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\SpiderEntity.cpp">
+      <Filter>GameObject\Entity\Monster\Spider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoEnderMan.cpp">
+      <Filter>Resource\Entity\Geometry\EnderMan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\EnderManEntity.cpp">
+      <Filter>GameObject\Entity\Monster\EnderMan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoEnderDragon.cpp">
+      <Filter>Resource\Entity\Geometry\EnderDragon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\EnderDragonEntity.cpp">
+      <Filter>GameObject\Entity\Monster\EnderDragon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PlayerInvenUICamera.cpp">
+      <Filter>GameObject\Camera\PlayerInvenUICamera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ArmorEntity.cpp">
+      <Filter>GameObject\Entity\Armor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorBoots.cpp">
+      <Filter>Resource\Entity\Geometry\Armor\Boots</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorChestplate.cpp">
+      <Filter>Resource\Entity\Geometry\Armor\Chestplate</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorHelmet.cpp">
+      <Filter>Resource\Entity\Geometry\Armor\Helmet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorLeggings.cpp">
+      <Filter>Resource\Entity\Geometry\Armor\Leggings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResExperenceOrbVIBuffer.cpp">
+      <Filter>Resource\Buffer\VIBuffer\ExperenceOrbVIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ResEnttGeoArrow.cpp">
+      <Filter>Resource\Entity\Geometry\Arrow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ArrowEntity.cpp">
+      <Filter>GameObject\Entity\Arrow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\ActivatedTNT.cpp">
+      <Filter>GameObject\Voxel\ActivatedTNT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIDeathScreen.cpp">
+      <Filter>GameObject\UI\DeathScreen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Block.hlsl">
@@ -1329,9 +1701,6 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Entity.hlsl">
       <Filter>100.Shaders\Entity</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Item.hlsl">
-      <Filter>100.Shaders\Item</Filter>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Crosshair\CrossHair.hlsl">
       <Filter>100.Shaders\CrossHair</Filter>
@@ -1347,6 +1716,63 @@
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\UI\UI.hlsl">
       <Filter>100.Shaders\UI</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Water.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Collider\Collider.hlsl">
+      <Filter>100.Shaders\Collider</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FallingVoxel\FallingVoxel.hlsl">
+      <Filter>100.Shaders\FallingVoxel</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\DropItem.hlsl">
+      <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\DropBlock.hlsl">
+      <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Skybox\Skybox.hlsl">
+      <Filter>100.Shaders\Skybox</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Cloud\Cloud.hlsl">
+      <Filter>100.Shaders\Cloud</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FullscreenQuad\FullscreenQuad.hlsl">
+      <Filter>100.Shaders\Fullscreen</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropItem.hlsl">
+      <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropBlock.hlsl">
+      <Filter>100.Shaders\Item</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Shadow_Block.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\BlockAlphaTest.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Shadow_BlockAlphaTest.hlsl">
+      <Filter>100.Shaders\Block</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\PlayerInvenUI\PlayerInvenUI.hlsl">
+      <Filter>100.Shaders\PlayerInvenUI</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ExperienceOrb\ExperienceOrb.hlsl">
+      <Filter>100.Shaders\ExperienceOrb</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ActivatedTNT\ActivatedTNT.hlsl">
+      <Filter>100.Shaders\ActivatedTNT</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\DeathScreenRedFilter\DeathScreenRedFilter.hlsl">
+      <Filter>100.Shaders\DeathScreenRedFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Cloud\Shadow_Cloud.hlsl">
+      <Filter>100.Shaders\Cloud</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Shadow_Entity.hlsl">
+      <Filter>100.Shaders\Entity</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

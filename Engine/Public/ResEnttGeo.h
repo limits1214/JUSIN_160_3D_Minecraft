@@ -20,6 +20,7 @@ public:
 protected:
 	void RightToLeft();
 	void Scaling();
+	void BoneSorting();
 protected:
 	ENTITY_GEOMETRY m_entityGeometry{};
 

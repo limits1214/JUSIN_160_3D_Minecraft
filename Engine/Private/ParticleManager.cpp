@@ -7,6 +7,176 @@
 
 NS_USING(Engine)
 
+
+void CParticleManager::AddParticleRenderDestruct(_float3 pos, uint32_t iTexId, uint32_t iCnt, _float4 vColor )
+{
+    //auto texId = CBlock3::GetTexType(block.GetType(), FACE_DIR::POS_X);
+    for (int i = 0; i < iCnt; ++i)
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 2.f;
+        att.iTexId = iTexId; //PackTexId(9, static_cast<uint32_t>(texId))
+        att.vPos = { pos };
+        att.vAcceleration = { 0.f, -9.8f, 0.f };
+        //att.vAcceleration = { 0.f, 0.f, 0.f };
+
+        auto tmp = rand() % 10 / 10.f;
+        auto tmp2 = rand() % 10 / 10.f;
+        att.vUv = { tmp, tmp2 };
+        att.vUvSize = { 0.1f, 0.1f };
+        att.vSize = { 0.1f, 0.1f };
+
+        //att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        //uint32_t baseColorABGR = CBlock3::GetBaseColor(block.GetType());
+        //if (baseColorABGR != 0xFF)
+        //{
+        //    _float4 blockTint;
+        //    blockTint.x = ((baseColorABGR >> 0) & 0xFF) / 255.f; // R
+        //    blockTint.y = ((baseColorABGR >> 8) & 0xFF) / 255.f; // G
+        //    blockTint.z = ((baseColorABGR >> 16) & 0xFF) / 255.f; // B
+        //    blockTint.w = ((baseColorABGR >> 24) & 0xFF) / 255.f; // A
+        //    att.vColor = blockTint;
+        //}
+        att.vColor = vColor;
+        
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(0.5f, 1.5f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(1.f, 4.f);
+
+        dir *= speed;
+
+        XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::BLOCK_DESTRUCT, att);
+    }
+}
+
+void CParticleManager::AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt)
+{
+    for (int i = 0; i < iCnt; ++i)
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 4.f;
+        att.iTexId = PackTexId(10, 0);
+        att.vPos = { pos };
+        att.vAcceleration = { 0.f, -1.8f, 0.f };
+        //att.vAcceleration = { 0.f, 0.f, 0.f };
+
+        //auto tmp = rand() % 10 / 10.f;
+        //auto tmp2 = rand() % 10 / 10.f;
+        att.vUv = { 8.f * (7) / 128.f, 0.f / 128.f };
+        //8.f / 128.f;
+        att.vUvSize = { 8.f / 128.f, 8.f / 128.f };
+        //att.vSize = { 8.f / 128.f, 8.f / 128.f };
+        auto tmpSize = Randf(0.1f, 1.5f);
+        att.vSize = { tmpSize, tmpSize };
+        att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(0.5f, 1.5f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(1.f, 4.f);
+
+        dir *= speed;
+
+        XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE, att);
+    }
+}
+
+void CParticleManager::AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt)
+{
+    for (uint32_t i = 0; i < iCnt; ++i)
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 0.05f * 15.f;
+        att.iTexId = PackTexId(10, 0);
+        att.vPos = pos;
+        att.vAcceleration = { 0.f, -1.8f, 0.f };
+
+        att.vUv = { 8.f * (15) / 128.f, 80.f / 128.f };
+        att.vUvSize = { 8.f / 128.f, 8.f / 128.f };
+        auto tmpSize = Randf(0.1f, 2.5f);
+        att.vSize = { tmpSize, tmpSize };
+        att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(-1.f, 1.f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(4.f, 8.f);
+        dir *= speed;
+
+        XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_EXPLODE_SMOKE, att);
+    }
+}
+
+void CParticleManager::AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt)
+{
+    for (int i = 0; i < iCnt; ++i)
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 0.7f;
+        att.iTexId = PackTexId(10, 0);
+        att.vPos = { pos };
+        
+        att.vVelocity = { Randf(-0.1f, 0.1f), +0.8f, Randf(-0.1f, 0.1f) };
+        //att.vAcceleration = { 0.f, 0.f, 0.f };
+
+        //auto tmp = rand() % 10 / 10.f;
+        //auto tmp2 = rand() % 10 / 10.f;
+        att.vUv = { 8.f * (7) / 128.f, 0.f / 128.f };
+        //8.f / 128.f;
+        att.vUvSize = { 8.f / 128.f, 8.f / 128.f };
+        //att.vSize = { 8.f / 128.f, 8.f / 128.f };
+        auto tmpSize = Randf(0.1f, 0.1f);
+        att.vSize = { tmpSize, tmpSize };
+        //att.vColor = { 1.f, 1.f, 1.f, 1.f };
+
+        float c = Randf(0.0f, 0.8f);
+        float a = Randf(0.0f, 0.8f);
+
+        att.vColor = { c, c, c, 1.f };
+
+
+        //XMVECTOR dir =
+        //    XMVectorSet(
+        //        Randf(-1.f, 1.f),
+        //        Randf(0.5f, 1.5f),
+        //        Randf(-1.f, 1.f),
+        //        0.f);
+
+        //dir = XMVector3Normalize(dir);
+
+        //float speed = Randf(1.f, 4.f);
+
+        //dir *= speed;
+
+        //XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_TNT_FUSING, att);
+    }
+}
+
 CParticleManager::CParticleManager(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11DeviceContext> pContext)
     : m_pDevice {pDevice}
     , m_pContext {pContext}
@@ -16,19 +186,13 @@ CParticleManager::CParticleManager(ComPtr<ID3D11Device> pDevice, ComPtr<ID3D11De
 CParticleManager::~CParticleManager()
 {
 }
-float Randf(float min, float max)
-{
-    return min +
-        (max - min) *
-        (rand() / (float)RAND_MAX);
-}
+
 void CParticleManager::UpdateGUI()
 {
     ImGui::Begin("ParticleManager");
 
     if (ImGui::Button("TEST"))
     {
-        
         for (int i = 0; i < 130; ++i)
         {
             ATTRIBUTE att{};
@@ -43,6 +207,7 @@ void CParticleManager::UpdateGUI()
             auto tmp2 = rand() % 10 / 10.f;
             att.vUv = { tmp, tmp2 };
             att.vUvSize = { 0.1f, 0.1f };
+            
             att.vSize = { 0.1f, 0.1f };
             att.vColor = { 1.f, 1.f, 1.f, 1.f };
             XMVECTOR dir =
@@ -63,7 +228,106 @@ void CParticleManager::UpdateGUI()
         }
     }
 
+    if (ImGui::Button("TEST SMOKE"))
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 4.f;
+        att.iTexId = PackTexId(10, 0);
+        att.vPos = {};
+        att.vAcceleration = { 0.f, -9.8f, 0.f };
+        //att.vAcceleration = { 0.f, 0.f, 0.f };
 
+        //auto tmp = rand() % 10 / 10.f;
+        //auto tmp2 = rand() % 10 / 10.f;
+        att.vUv = { 8.f * (7) / 128.f, 0.f / 128.f };
+        //8.f / 128.f;
+        att.vUvSize = { 8.f / 128.f, 8.f / 128.f };
+        //att.vSize = { 8.f / 128.f, 8.f / 128.f };
+        auto tmpSize = Randf(0.1f, 0.5f);
+        att.vSize = { tmpSize, tmpSize };
+        att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(0.5f, 1.5f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(1.f, 4.f);
+
+        dir *= speed;
+
+        XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE, att);
+    }
+
+    if (ImGui::Button("TEST EXPLODE"))
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 0.05f * 15.f;
+        att.iTexId = PackTexId(10, 0);
+        att.vPos = {};
+        att.vAcceleration = { 0.f, -1.8f, 0.f };
+
+        att.vUv = { 8.f * (15) / 128.f, 80.f / 128.f };
+        att.vUvSize = { 8.f / 128.f, 8.f / 128.f };
+        auto tmpSize = Randf(0.1f, 2.5f);
+        att.vSize = { tmpSize, tmpSize };
+        att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(0.5f, 1.5f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(1.f, 4.f);
+        dir *= speed;
+
+        XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_EXPLODE_SMOKE, att);
+    }
+
+    if (ImGui::Button("TEST TORCH"))
+    {
+        ATTRIBUTE att{};
+        att.bAlive = true;
+        att.fLifeTime = 4.f;
+        att.iTexId = PackTexId(10, 0);
+        att.vPos = {};
+        //att.vAcceleration = { 0.f, -1.8f, 0.f };
+
+        att.vUv = { 8.f * (15) / 128.f, 24.f / 128.f };
+        att.vUvSize = { 8.f / 128.f, 8.f / 128.f };
+        auto tmpSize = Randf(1.0f, 1.0f);
+        att.vSize = { tmpSize, tmpSize };
+        att.vColor = { 1.f, 1.f, 1.f, 1.f };
+        XMVECTOR dir =
+            XMVectorSet(
+                Randf(-1.f, 1.f),
+                Randf(0.5f, 1.5f),
+                Randf(-1.f, 1.f),
+                0.f);
+
+        dir = XMVector3Normalize(dir);
+
+        float speed = Randf(1.f, 4.f);
+        dir *= speed;
+
+        //XMStoreFloat3(&att.vVelocity, dir);
+        AddParticle(PARTICLE_TYPE::PARTICLES_ATLAS_TORCH, att);
+    }
+
+    if (ImGui::Button("TEST FUSING"))
+    {
+        AddParticleRenderTNTFusing({}, 1);
+    }
     ImGui::End();
 }
 
@@ -74,6 +338,23 @@ void CParticleManager::Update(_float fTimeDelta)
         v.clear();
     }
 
+    // BLOCK_DESTRUCT
+    Update_BLOCK_DESTRUCT(fTimeDelta);
+
+    // PARTICLES_ATLAS_DEATH
+    Update_PARTICLES_ATLAS_DEATH_SMOKE(fTimeDelta);
+
+    // PARTICLES_ATLAS_EXPLODE_SMOKE
+    Update_PARTICLES_ATLAS_EXPLODE_SMOKE(fTimeDelta);
+
+    // PARTICLES_ATLAS_TORCH
+    Update_PARTICLES_ATLAS_TORCH(fTimeDelta);
+
+    Update_PARTICLES_ATLAS_TNT_FUSING(fTimeDelta);
+}
+
+void CParticleManager::Update_BLOCK_DESTRUCT(_float fTimeDelta)
+{
     auto& particles = m_arrParticles[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)];
     auto& vertices = m_arrVertices[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)];
 
@@ -103,6 +384,17 @@ void CParticleManager::Update(_float fTimeDelta)
             vtx.size = att.vSize;
             vtx.uvSize = att.vUvSize;
             vtx.texCoord = att.vUv;
+
+
+            int32_t blockX = static_cast<int32_t>(std::floor(att.vPos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(att.vPos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(att.vPos.z));
+
+            auto optblock = CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ);
+            if (optblock)
+            {
+                vtx.light = optblock.value().GetLight();
+            }
             vertices.push_back(vtx);
 
             ++i;
@@ -110,62 +402,334 @@ void CParticleManager::Update(_float fTimeDelta)
     }
 }
 
+void CParticleManager::Update_PARTICLES_ATLAS_DEATH_SMOKE(_float fTimeDelta)
+{
+    auto& particles = m_arrParticles[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)];
+    auto& vertices = m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)];
+
+    size_t i = 0;
+    while (i < particles.size())
+    {
+        ATTRIBUTE& att = particles[i];
+
+        att.fAge += fTimeDelta;
+        XMStoreFloat3(&att.vVelocity, XMLoadFloat3(&att.vVelocity) + XMLoadFloat3(&att.vAcceleration) * fTimeDelta);
+        XMStoreFloat3(&att.vPos, XMLoadFloat3(&att.vPos) + XMLoadFloat3(&att.vVelocity) * fTimeDelta);
+
+
+        const float fTileWidth = 8.0f / 128.0f;
+        const float fTotalTime = 0.5f * 8.f;
+        float fPlayTime = std::min(att.fAge, fTotalTime);
+        uint32_t currentStep = static_cast<uint32_t>(fPlayTime / 0.5f);
+        uint32_t idx = 7 - currentStep;
+        if (currentStep >= 7) {
+            idx = 0;
+        }
+
+        att.vUv = { idx * fTileWidth, 0.f };
+
+
+        if (att.fAge > att.fLifeTime || !att.bAlive)
+        {
+            if (i != particles.size() - 1)
+            {
+                std::swap(particles[i], particles.back());
+            }
+            particles.pop_back();
+        }
+        else
+        {
+            VTX_POINT_PARTICLE vtx{};
+            vtx.texIndex = att.iTexId;
+            vtx.color = att.vColor;
+            vtx.pos = att.vPos;
+            vtx.size = att.vSize;
+            vtx.uvSize = att.vUvSize;
+            vtx.texCoord = att.vUv;
+
+
+            int32_t blockX = static_cast<int32_t>(std::floor(att.vPos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(att.vPos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(att.vPos.z));
+
+            auto optblock = CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ);
+            if (optblock)
+            {
+                vtx.light = optblock.value().GetLight();
+            }
+            vertices.push_back(vtx);
+
+            ++i;
+        }
+    }
+}
+void CParticleManager::Update_PARTICLES_ATLAS_EXPLODE_SMOKE(_float fTimeDelta)
+{
+    auto& particles = m_arrParticles[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_EXPLODE_SMOKE)];
+    auto& vertices = m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_EXPLODE_SMOKE)];
+
+    size_t i = 0;
+    while (i < particles.size())
+    {
+        ATTRIBUTE& att = particles[i];
+
+        att.fAge += fTimeDelta;
+        XMStoreFloat3(&att.vVelocity, XMLoadFloat3(&att.vVelocity) + XMLoadFloat3(&att.vAcceleration) * fTimeDelta);
+        XMStoreFloat3(&att.vPos, XMLoadFloat3(&att.vPos) + XMLoadFloat3(&att.vVelocity) * fTimeDelta);
+
+
+        const float fTileWidth = 8.0f / 128.0f;
+        const float fTotalTime = 0.05f * 15.f;
+        float fPlayTime = std::min(att.fAge, fTotalTime);
+        uint32_t currentStep = static_cast<uint32_t>(fPlayTime / 0.05f);
+        uint32_t idx = currentStep;
+        if (currentStep >= 15) {
+            idx = 0;
+        }
+
+        att.vUv = { idx * fTileWidth, 80.f / 128.0f };
+
+
+        if (att.fAge > att.fLifeTime || !att.bAlive)
+        {
+            if (i != particles.size() - 1)
+            {
+                std::swap(particles[i], particles.back());
+            }
+            particles.pop_back();
+        }
+        else
+        {
+            VTX_POINT_PARTICLE vtx{};
+            vtx.texIndex = att.iTexId;
+            vtx.color = att.vColor;
+            vtx.pos = att.vPos;
+            vtx.size = att.vSize;
+            vtx.uvSize = att.vUvSize;
+            vtx.texCoord = att.vUv;
+
+
+            int32_t blockX = static_cast<int32_t>(std::floor(att.vPos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(att.vPos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(att.vPos.z));
+
+            auto optblock = CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ);
+            if (optblock)
+            {
+                vtx.light = optblock.value().GetLight();
+            }
+            vertices.push_back(vtx);
+
+            ++i;
+        }
+    }
+}
+
+void CParticleManager::Update_PARTICLES_ATLAS_TORCH(_float fTimeDelta)
+{
+    auto& particles = m_arrParticles[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_TORCH)];
+    auto& vertices = m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_TORCH)];
+
+    size_t i = 0;
+    while (i < particles.size())
+    {
+        ATTRIBUTE& att = particles[i];
+
+        att.fAge += fTimeDelta;
+        XMStoreFloat3(&att.vVelocity, XMLoadFloat3(&att.vVelocity) + XMLoadFloat3(&att.vAcceleration) * fTimeDelta);
+        XMStoreFloat3(&att.vPos, XMLoadFloat3(&att.vPos) + XMLoadFloat3(&att.vVelocity) * fTimeDelta);
+
+
+        const float fTileWidth = 8.0f / 128.0f;
+        const float fTotalTime = 1.f * 4.f;
+        float fPlayTime = std::min(att.fAge, fTotalTime);
+        uint32_t currentStep = static_cast<uint32_t>(fPlayTime / 1.f);
+        uint32_t idx = currentStep % 2;
+        //if (currentStep >= 15) {
+        //    idx = 0;
+        //}
+
+        att.vUv = { idx * fTileWidth, 24.f / 128.0f };
+        att.vSize = { att.vSize.x - (1.f / 4.f * fTimeDelta) , att.vSize.y - (1.f / 4.f * fTimeDelta) };
+        //att.vSize.x
+        ;
+
+
+        if (att.fAge > att.fLifeTime || !att.bAlive)
+        {
+            if (i != particles.size() - 1)
+            {
+                std::swap(particles[i], particles.back());
+            }
+            particles.pop_back();
+        }
+        else
+        {
+            VTX_POINT_PARTICLE vtx{};
+            vtx.texIndex = att.iTexId;
+            vtx.color = att.vColor;
+            vtx.pos = att.vPos;
+            vtx.size = att.vSize;
+            vtx.uvSize = att.vUvSize;
+            vtx.texCoord = att.vUv;
+
+
+            int32_t blockX = static_cast<int32_t>(std::floor(att.vPos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(att.vPos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(att.vPos.z));
+
+            auto optblock = CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ);
+            if (optblock)
+            {
+                vtx.light = optblock.value().GetLight();
+            }
+            vertices.push_back(vtx);
+
+            ++i;
+        }
+    }
+}
+
+void CParticleManager::Update_PARTICLES_ATLAS_TNT_FUSING(_float fTimeDelta)
+{
+    auto& particles = m_arrParticles[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_TNT_FUSING)];
+    auto& vertices = m_arrVertices[ETOUI(PARTICLE_TYPE::PARTICLES_ATLAS_TNT_FUSING)];
+
+    size_t i = 0;
+    while (i < particles.size())
+    {
+        ATTRIBUTE& att = particles[i];
+
+        att.fAge += fTimeDelta;
+        XMStoreFloat3(&att.vVelocity, XMLoadFloat3(&att.vVelocity) + XMLoadFloat3(&att.vAcceleration) * fTimeDelta);
+        XMStoreFloat3(&att.vPos, XMLoadFloat3(&att.vPos) + XMLoadFloat3(&att.vVelocity) * fTimeDelta);
+
+
+        const float fTileWidth = 8.0f / 128.0f;
+        const float fTotalTime = 0.1f * 8.f;
+        float fPlayTime = std::min(att.fAge, fTotalTime);
+        uint32_t currentStep = static_cast<uint32_t>(fPlayTime / 0.1f);
+        uint32_t idx = 7 - currentStep;
+        if (currentStep >= 7) {
+            idx = 0;
+        }
+
+        att.vUv = { idx * fTileWidth, 0.f };
+
+
+        if (att.fAge > att.fLifeTime || !att.bAlive)
+        {
+            if (i != particles.size() - 1)
+            {
+                std::swap(particles[i], particles.back());
+            }
+            particles.pop_back();
+        }
+        else
+        {
+            VTX_POINT_PARTICLE vtx{};
+            vtx.texIndex = att.iTexId;
+            vtx.color = att.vColor;
+            vtx.pos = att.vPos;
+            vtx.size = att.vSize;
+            vtx.uvSize = att.vUvSize;
+            vtx.texCoord = att.vUv;
+
+
+            int32_t blockX = static_cast<int32_t>(std::floor(att.vPos.x));
+            int32_t blockY = static_cast<int32_t>(std::floor(att.vPos.y));
+            int32_t blockZ = static_cast<int32_t>(std::floor(att.vPos.z));
+
+            auto optblock = CGameInstance::Get().GetVoxelBlock(blockX, blockY, blockZ);
+            if (optblock)
+            {
+                vtx.light = optblock.value().GetLight();
+            }
+            vertices.push_back(vtx);
+
+            ++i;
+        }
+    }
+}
 
 HRESULT CParticleManager::Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx)
 {
+    const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Particle");
+    const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Particle");
+    const auto& gs = E::CGameInstance::Get().GetResourceFirst<E::CResGeometryShader>(TAG_RES_GRP_PERMANENT_SHADER, "GS_Particle");
+
+    pContext->IASetInputLayout(vs->GetInputLayout().Get());
+    pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
+    pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
+    pContext->GSSetShader(gs->GetGeometryShader().Get(), nullptr, 0);
 
     {
-        const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_Particle");
-        const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_Particle");
-        const auto& gs = E::CGameInstance::Get().GetResourceFirst<E::CResGeometryShader>(TAG_RES_GRP_PERMANENT_SHADER, "GS_Particle");
-        //const auto& viBuffer = E::CGameInstance::Get().GetResourceFirst<E::CResVIBuffer>("MC_ITEM_VIBuffer", "CubeItemDirt");
-        const auto& viBuffer = m_pResVIBuffer;
+        const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(
+            TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP_NOMIP);
+        pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
+    }
+    {
+        const auto& rasterizer = CGameInstance::Get().GetResourceFirst<CResRasterizerState>(
+            TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
+        pContext->RSSetState(rasterizer->GetRasterizerState().Get());
+    }
 
-        pContext->IASetInputLayout(vs->GetInputLayout().Get());
-        pContext->VSSetShader(vs->GetVertexShader().Get(), nullptr, 0);
-        pContext->PSSetShader(ps->GetPixelShader().Get(), nullptr, 0);
-        pContext->GSSetShader(gs->GetGeometryShader().Get(), nullptr, 0);
+    if (FAILED(RenderPaticle(pContext, PARTICLE_TYPE::BLOCK_DESTRUCT)))
+    {
+        return E_FAIL;
+    }
 
-        if (!m_arrVertices[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].empty())
+    if (FAILED(RenderPaticle(pContext, PARTICLE_TYPE::PARTICLES_ATLAS_DEATH_SMOKE)))
+    {
+        return E_FAIL;
+    }
+
+    if (FAILED(RenderPaticle(pContext, PARTICLE_TYPE::PARTICLES_ATLAS_EXPLODE_SMOKE)))
+    {
+        return E_FAIL;
+    }
+
+    if (FAILED(RenderPaticle(pContext, PARTICLE_TYPE::PARTICLES_ATLAS_TORCH)))
+    {
+        return E_FAIL;
+    }
+
+    if (FAILED(RenderPaticle(pContext, PARTICLE_TYPE::PARTICLES_ATLAS_TNT_FUSING)))
+    {
+        return E_FAIL;
+    }
+
+    pContext->GSSetShader(nullptr, nullptr, 0);
+    return S_OK;
+}
+
+HRESULT CParticleManager::RenderPaticle(ID3D11DeviceContext* pContext, PARTICLE_TYPE eType)
+{
+    if (!m_arrVertices[ETOUI(eType)].empty())
+    {
+        D3D11_MAPPED_SUBRESOURCE subResource{};
+        if (SUCCEEDED(pContext->Map(m_pResVIBuffer->GetVertexBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource)))
         {
-            D3D11_MAPPED_SUBRESOURCE subResource{};
-            if (SUCCEEDED(pContext->Map(m_pResVIBuffer->GetVertexBuffer().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource)))
-            {
-                memcpy(subResource.pData, m_arrVertices[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].data(), m_arrVertices[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].size() * sizeof(VTX_POINT_PARTICLE));
-                pContext->Unmap(m_pResVIBuffer->GetVertexBuffer().Get(), 0);
-            }
+            memcpy(subResource.pData, m_arrVertices[ETOUI(eType)].data(), m_arrVertices[ETOUI(eType)].size() * sizeof(VTX_POINT_PARTICLE));
+            pContext->Unmap(m_pResVIBuffer->GetVertexBuffer().Get(), 0);
         }
 
         ID3D11Buffer* vertexBuffers[] = {
-                viBuffer->GetVertexBuffer().Get()
+            m_pResVIBuffer->GetVertexBuffer().Get()
         };
         uint32_t strides[] = {
-            viBuffer->GetVertexStride()
+            m_pResVIBuffer->GetVertexStride()
         };
         uint32_t offsets[] = {
             0
         };
         pContext->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
         //pContext->IASetIndexBuffer(viBuffer->GetIndexBuffer().Get(), viBuffer->GetIndexFormat(), 0);
-        pContext->IASetPrimitiveTopology(viBuffer->GetPrimitiveType());
+        pContext->IASetPrimitiveTopology(m_pResVIBuffer->GetPrimitiveType());
 
-        {
-            const auto& sampler = E::CGameInstance::GetConst().GetResourceFirst<E::CResSamplerState>(TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_SS_POINT_WRAP);
-            pContext->PSSetSamplers(0, 1, sampler->GetSamplerState().GetAddressOf());
-        }
-        {
-            const auto& rasterizer = CGameInstance::Get().GetResourceFirst<CResRasterizerState>(
-                TAG_RES_GRP_PERMANENT_STATE, TAG_RES_STATE_RS_SOLID_BACKCULL);
-            pContext->RSSetState(rasterizer->GetRasterizerState().Get());
-        }
-        pContext->Draw(m_arrVertices[ETOUI(PARTICLE_TYPE::BLOCK_DESTRUCT)].size(), 0);
 
-        pContext->GSSetShader(nullptr, nullptr, 0);
-
+        pContext->Draw((uint32_t)m_arrVertices[ETOUI(eType)].size(), 0);
     }
-
-
-
     return S_OK;
 }
 
@@ -258,6 +822,7 @@ HRESULT CParticleManager::AddParticle(PARTICLE_TYPE eType, const ATTRIBUTE& part
     {
         return S_OK;
     }
+   
     m_arrParticles[ETOUI(eType)].push_back(particle);
     return S_OK;
 }

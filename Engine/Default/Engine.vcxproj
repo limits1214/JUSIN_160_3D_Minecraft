@@ -146,7 +146,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>DIRECTX_TOOLKIT_IMPORT;ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DIRECTX_TOOLKIT_IMPORT;ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);_STRID_NODBG;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -160,7 +160,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>d3d11.lib;dxguid.lib;fmod_vc.lib;dinput8.lib;dxcompiler.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\fmod_2_03_12\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\fmod_2_03_12\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>cd /d $(SolutionDir)
@@ -173,7 +173,7 @@ call CopyClient.bat</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>DIRECTX_TOOLKIT_IMPORT;ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);NDEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DIRECTX_TOOLKIT_IMPORT;ENGINE_EXPORTS;NOMINMAX;IMGUI_API=__declspec(dllexport);_STRID_NODBG;NDEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -187,7 +187,7 @@ call CopyClient.bat</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>d3d11.lib;dxguid.lib;fmod_vc.lib;dinput8.lib;dxcompiler.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\fmod_2_03_12\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\fmod_2_03_12\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>cd /d $(SolutionDir)
@@ -229,31 +229,39 @@ call CopyClient.bat</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\public\ActivatedTNT.h" />
     <ClInclude Include="..\public\AnimalEntityObject.h" />
+    <ClInclude Include="..\public\ArmorEntity.h" />
+    <ClInclude Include="..\public\ArrowEntity.h" />
     <ClInclude Include="..\public\BaseApp.h" />
-    <ClInclude Include="..\public\Block.h" />
-    <ClInclude Include="..\public\Block2.h" />
     <ClInclude Include="..\public\Block3.h" />
     <ClInclude Include="..\public\BlockOutline.h" />
     <ClInclude Include="..\public\CameraManager.h" />
     <ClInclude Include="..\public\CameraObject.h" />
+    <ClInclude Include="..\public\ChestStorage.h" />
     <ClInclude Include="..\public\ChickenEntity.h" />
-    <ClInclude Include="..\public\Chunk.h" />
-    <ClInclude Include="..\public\Chunk2.h" />
     <ClInclude Include="..\public\Chunk3.h" />
+    <ClInclude Include="..\public\Cloud.h" />
     <ClInclude Include="..\Public\CollBox.h" />
     <ClInclude Include="..\Public\CollFrustum.h" />
     <ClInclude Include="..\Public\Collider.h" />
     <ClInclude Include="..\Public\ColliderManager.h" />
     <ClInclude Include="..\Public\CollOrientedBox.h" />
     <ClInclude Include="..\Public\CollSphere.h" />
+    <ClInclude Include="..\public\ComAnimator.h" />
+    <ClInclude Include="..\public\ComCollider.h" />
     <ClInclude Include="..\public\ComConstantBuffer.h" />
     <ClInclude Include="..\public\ComEntityModel.h" />
     <ClInclude Include="..\public\Component.h" />
     <ClInclude Include="..\public\CowEntity.h" />
+    <ClInclude Include="..\public\CreeperEntity.h" />
     <ClInclude Include="..\public\DestroyStage.h" />
     <ClInclude Include="..\public\DInputManager.h" />
+    <ClInclude Include="..\public\DropBlock.h" />
     <ClInclude Include="..\public\DropItem.h" />
+    <ClInclude Include="..\public\DropItemObject.h" />
+    <ClInclude Include="..\public\EnderDragonEntity.h" />
+    <ClInclude Include="..\public\EnderManEntity.h" />
     <ClInclude Include="..\Public\Engine_Base.h" />
     <ClInclude Include="..\Public\Engine_Defines.h" />
     <ClInclude Include="..\Public\Engine_Enum.h" />
@@ -266,28 +274,55 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\EntityModelBone.h" />
     <ClInclude Include="..\public\EntityModelMesh.h" />
     <ClInclude Include="..\public\EntityObject.h" />
-    <ClInclude Include="..\public\ExperienceOrbItem.h" />
+    <ClInclude Include="..\public\ExperienceOrb.h" />
+    <ClInclude Include="..\public\FallingVoxel.h" />
     <ClInclude Include="..\public\FlyCamera.h" />
     <ClInclude Include="..\public\FontManager.h" />
+    <ClInclude Include="..\public\FurnaceStorage.h" />
     <ClInclude Include="..\public\GameInstance.h" />
     <ClInclude Include="..\public\GameManager.h" />
     <ClInclude Include="..\public\GameObject.h" />
     <ClInclude Include="..\public\GameObjectManager.h" />
     <ClInclude Include="..\public\GraphicDevice.h" />
+    <ClInclude Include="..\public\HandHeldBlock.h" />
+    <ClInclude Include="..\public\HandHeldItem.h" />
+    <ClInclude Include="..\public\HandHeldItemObject.h" />
+    <ClInclude Include="..\public\Item.h" />
+    <ClInclude Include="..\public\PlayerInvenUICamera.h" />
+    <ClInclude Include="..\public\ResCloudVIBuffer.h" />
+    <ClInclude Include="..\public\ResEnttGeoArrow.h" />
+    <ClInclude Include="..\public\ResEnttGeoCreeper.h" />
+    <ClInclude Include="..\public\ResEnttGeoEnderDragon.h" />
+    <ClInclude Include="..\public\ResEnttGeoEnderMan.h" />
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorBoots.h" />
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorHelmet.h" />
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorChestplate.h" />
+    <ClInclude Include="..\public\ResEnttGeoPlayerArmorLeggings.h" />
+    <ClInclude Include="..\public\ResEnttGeoSpider.h" />
+    <ClInclude Include="..\public\ResEnttGeoZombie.h" />
+    <ClInclude Include="..\public\ResExperenceOrbVIBuffer.h" />
+    <ClInclude Include="..\public\ResFallingVoxelVIBuffer.h" />
+    <ClInclude Include="..\public\ShadowCamera.h" />
+    <ClInclude Include="..\public\Skybox.h" />
+    <ClInclude Include="..\public\SpiderEntity.h" />
     <ClInclude Include="..\public\UIArmorBar.h" />
     <ClInclude Include="..\public\UIArmorBarIcon.h" />
+    <ClInclude Include="..\public\UIBlastFurnace.h" />
     <ClInclude Include="..\public\UIBreathBar.h" />
     <ClInclude Include="..\public\UIBreathBarIcon.h" />
+    <ClInclude Include="..\public\UIChest.h" />
+    <ClInclude Include="..\public\UIChest2.h" />
+    <ClInclude Include="..\public\UIController.h" />
+    <ClInclude Include="..\public\UICraftingTable.h" />
+    <ClInclude Include="..\public\UIDeathScreen.h" />
+    <ClInclude Include="..\public\UIEnchantingTable.h" />
     <ClInclude Include="..\public\UIExperienceBarGage.h" />
     <ClInclude Include="..\public\UIHealthBar.h" />
     <ClInclude Include="..\public\Helper.h" />
     <ClInclude Include="..\public\HumanoidEntityObject.h" />
     <ClInclude Include="..\public\ImguiManager.h" />
     <ClInclude Include="..\Public\ISerializer.h" />
-    <ClInclude Include="..\public\Item.h" />
     <ClInclude Include="..\public\ItemObject.h" />
-    <ClInclude Include="..\public\ItemPickaxe.h" />
-    <ClInclude Include="..\public\ItemWoodPickaxe.h" />
     <ClInclude Include="..\public\Level.h" />
     <ClInclude Include="..\public\LevelManager.h" />
     <ClInclude Include="..\public\LightManager.h" />
@@ -364,14 +399,18 @@ call CopyClient.bat</Command>
     <ClInclude Include="..\public\UIHungerBar.h" />
     <ClInclude Include="..\public\UIHungerBarIcon.h" />
     <ClInclude Include="..\public\UIInventory.h" />
+    <ClInclude Include="..\public\UIItem.h" />
     <ClInclude Include="..\public\UIObject.h" />
-    <ClInclude Include="..\public\VoxelManager.h" />
-    <ClInclude Include="..\public\VoxelManager2.h" />
+    <ClInclude Include="..\public\UITextBg.h" />
+    <ClInclude Include="..\public\VoxelEditMem.h" />
     <ClInclude Include="..\public\VoxelManager3.h" />
+    <ClInclude Include="..\public\VoxelObject.h" />
     <ClInclude Include="..\public\WorkerManager.h" />
     <ClInclude Include="..\Public\IRenderable.h" />
     <ClInclude Include="..\Public\Handle.h" />
     <ClInclude Include="..\Public\Slot.h" />
+    <ClInclude Include="..\public\WorldManager.h" />
+    <ClInclude Include="..\public\ZombieEntity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
@@ -472,32 +511,70 @@ call CopyClient.bat</Command>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
     </ClCompile>
+    <ClCompile Include="..\private\ActivatedTNT.cpp" />
     <ClCompile Include="..\private\AnimalEntityObject.cpp" />
+    <ClCompile Include="..\private\ArmorEntity.cpp" />
+    <ClCompile Include="..\private\ArrowEntity.cpp" />
     <ClCompile Include="..\private\BaseApp.cpp" />
-    <ClCompile Include="..\private\Block.cpp" />
-    <ClCompile Include="..\private\Block2.cpp" />
     <ClCompile Include="..\private\Block3.cpp" />
     <ClCompile Include="..\private\BlockOutline.cpp" />
     <ClCompile Include="..\private\CameraManager.cpp" />
     <ClCompile Include="..\private\CameraObject.cpp" />
+    <ClCompile Include="..\private\ChestStorage.cpp" />
     <ClCompile Include="..\private\ChickenEntity.cpp" />
-    <ClCompile Include="..\private\Chunk.cpp" />
-    <ClCompile Include="..\private\Chunk2.cpp" />
     <ClCompile Include="..\private\Chunk3.cpp" />
+    <ClCompile Include="..\private\Cloud.cpp" />
     <ClCompile Include="..\Private\CollBox.cpp" />
     <ClCompile Include="..\Private\CollFrustum.cpp" />
     <ClCompile Include="..\Private\Collider.cpp" />
     <ClCompile Include="..\Private\ColliderManager.cpp" />
     <ClCompile Include="..\Private\CollOrientedBox.cpp" />
     <ClCompile Include="..\Private\CollSphere.cpp" />
+    <ClCompile Include="..\private\ComAnimator.cpp" />
+    <ClCompile Include="..\private\ComCollider.cpp" />
     <ClCompile Include="..\private\ComConstantBuffer.cpp" />
     <ClCompile Include="..\private\ComEntityModel.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\CowEntity.cpp" />
+    <ClCompile Include="..\private\CreeperEntity.cpp" />
+    <ClCompile Include="..\private\UIDeathScreen.cpp" />
+    <ClCompile Include="..\private\DropBlock.cpp" />
+    <ClCompile Include="..\private\DropItemObject.cpp" />
+    <ClCompile Include="..\private\EnderDragonEntity.cpp" />
+    <ClCompile Include="..\private\EnderManEntity.cpp" />
+    <ClCompile Include="..\private\FallingVoxel.cpp" />
+    <ClCompile Include="..\private\FurnaceStorage.cpp" />
+    <ClCompile Include="..\private\HandHeldBlock.cpp" />
+    <ClCompile Include="..\private\HandHeldItem.cpp" />
+    <ClCompile Include="..\private\HandHeldItemObject.cpp" />
+    <ClCompile Include="..\private\Item.cpp" />
+    <ClCompile Include="..\private\PlayerInvenUICamera.cpp" />
+    <ClCompile Include="..\private\ResCloudVIBuffer.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoArrow.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoCreeper.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoEnderDragon.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoEnderMan.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorBoots.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorHelmet.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorChestplate.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoPlayerArmorLeggings.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoSpider.cpp" />
+    <ClCompile Include="..\private\ResEnttGeoZombie.cpp" />
+    <ClCompile Include="..\private\ResExperenceOrbVIBuffer.cpp" />
+    <ClCompile Include="..\private\ResFallingVoxelVIBuffer.cpp" />
+    <ClCompile Include="..\private\ShadowCamera.cpp" />
+    <ClCompile Include="..\private\Skybox.cpp" />
+    <ClCompile Include="..\private\SpiderEntity.cpp" />
     <ClCompile Include="..\private\UIArmorBar.cpp" />
     <ClCompile Include="..\private\UIArmorBarIcon.cpp" />
+    <ClCompile Include="..\private\UIBlastFurnace.cpp" />
     <ClCompile Include="..\private\UIBreathBar.cpp" />
     <ClCompile Include="..\private\UIBreathBarIcon.cpp" />
+    <ClCompile Include="..\private\UIChest.cpp" />
+    <ClCompile Include="..\private\UIChest2.cpp" />
+    <ClCompile Include="..\private\UIController.cpp" />
+    <ClCompile Include="..\private\UICraftingTable.cpp" />
+    <ClCompile Include="..\private\UIEnchantingTable.cpp" />
     <ClCompile Include="..\private\UIExperienceBarGage.cpp" />
     <ClCompile Include="..\private\UIHealthBar.cpp" />
     <ClCompile Include="..\private\UIExperienceBar.cpp" />
@@ -509,7 +586,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\EntityModelBone.cpp" />
     <ClCompile Include="..\private\EntityModelMesh.cpp" />
     <ClCompile Include="..\private\EntityObject.cpp" />
-    <ClCompile Include="..\private\ExperienceOrbItem.cpp" />
+    <ClCompile Include="..\private\ExperienceOrb.cpp" />
     <ClCompile Include="..\private\FlyCamera.cpp" />
     <ClCompile Include="..\private\FontManager.cpp" />
     <ClCompile Include="..\private\GameInstance.cpp" />
@@ -520,10 +597,7 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\Helper.cpp" />
     <ClCompile Include="..\private\HumanoidEntityObject.cpp" />
     <ClCompile Include="..\private\ImguiManager.cpp" />
-    <ClCompile Include="..\private\Item.cpp" />
     <ClCompile Include="..\private\ItemObject.cpp" />
-    <ClCompile Include="..\private\ItemPickaxe.cpp" />
-    <ClCompile Include="..\private\ItemWoodPickaxe.cpp" />
     <ClCompile Include="..\private\Level.cpp" />
     <ClCompile Include="..\private\LevelManager.cpp" />
     <ClCompile Include="..\private\LightManager.cpp" />
@@ -595,11 +669,15 @@ call CopyClient.bat</Command>
     <ClCompile Include="..\private\UIHungerBar.cpp" />
     <ClCompile Include="..\private\UIHungerBarIcon.cpp" />
     <ClCompile Include="..\private\UIInventory.cpp" />
+    <ClCompile Include="..\private\UIItem.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
-    <ClCompile Include="..\private\VoxelManager.cpp" />
-    <ClCompile Include="..\private\VoxelManager2.cpp" />
+    <ClCompile Include="..\private\UITextBg.cpp" />
+    <ClCompile Include="..\private\VoxelEditMem.cpp" />
     <ClCompile Include="..\private\VoxelManager3.cpp" />
+    <ClCompile Include="..\private\VoxelObject.cpp" />
     <ClCompile Include="..\private\WorkerManager.cpp" />
+    <ClCompile Include="..\private\WorldManager.cpp" />
+    <ClCompile Include="..\private\ZombieEntity.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>
@@ -610,6 +688,10 @@ call CopyClient.bat</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ActivatedTNT\ActivatedTNT.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\BlockOutline\BlockOutline.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -618,7 +700,39 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\BlockAlphaTest.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Shadow_Block.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Shadow_BlockAlphaTest.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Block\Water.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Cloud\Cloud.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Cloud\Shadow_Cloud.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Collider\Collider.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Crosshair\CrossHair.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\DeathScreenRedFilter\DeathScreenRedFilter.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -630,11 +744,43 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Item.hlsl">
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Entity\Shadow_Entity.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ExperienceOrb\ExperienceOrb.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FallingVoxel\FallingVoxel.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\FullscreenQuad\FullscreenQuad.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\DropBlock.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\DropItem.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropBlock.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Item\Shadow_DropItem.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Particle\Particle.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\PlayerInvenUI\PlayerInvenUI.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -643,6 +789,10 @@ call CopyClient.bat</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\ShaderDefines.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\MC_DX11_RESOURCE\Shader\Skybox\Skybox.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

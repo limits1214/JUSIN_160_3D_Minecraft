@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine_Defines.h"
 #include "IRenderable.h"
+#include "Block3.h"
 NS_BEGIN(Engine)
 class CResDynamicVIBuffer;
 class ENGINE_DLL CParticleManager final : public CEngineBase, public IRenderable
@@ -9,9 +10,18 @@ public:
 	enum class PARTICLE_TYPE
 	{
 		BLOCK_DESTRUCT,
-		PARTICLES_ATLAS,
+		PARTICLES_ATLAS_DEATH_SMOKE,
+		PARTICLES_ATLAS_EXPLODE_SMOKE,
+		PARTICLES_ATLAS_TORCH,
+		PARTICLES_ATLAS_TNT_FUSING,
 		END
 	};
+
+public:
+	void AddParticleRenderDestruct(_float3 pos, uint32_t iTexId, uint32_t iCnt = 1, _float4 vColor = {1.f, 1.f, 1.f, 1.f});
+	void AddParticleRenderDeathSmoke(_float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderExplodeSmoke(_float3 pos, uint32_t iCnt = 1);
+	void AddParticleRenderTNTFusing(_float3 pos, uint32_t iCnt = 1);
 
 
 	//enum class PARTICLE_TEX_TYPE
@@ -22,10 +32,12 @@ public:
 
 	typedef struct tagAttribute
 	{
-		_float2 vUv{};
-		_float2 vUvSize{};
-		_float2 vSize{};
+		_float2 vUv{}; // 시작지점
+		_float2 vUvSize{}; // 시작지점으로부터오프셋
+		_float2 vSize{};// GS에서  포인트로부터 늘릴 사이즈
 		uint32_t iFrameIndex{};
+		uint32_t iMaxFrameIndex{};
+		_float fFramePlusUnit{};
 		uint32_t iTexId{};
 		_float3 vPos{};
 		_float3 vVelocity{};
@@ -47,6 +59,7 @@ public:
 public:
 	HRESULT RenderX(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) ;
 	HRESULT Render(ID3D11DeviceContext* pContext, const RENDER_CTX& ctx) override;
+	HRESULT RenderPaticle(ID3D11DeviceContext* pContext, PARTICLE_TYPE eType);
 	bool HasRenderPass(RENDERPASS ePass) const override { return ePass == RENDERPASS::DEFAULT; };
 
 public:
@@ -54,6 +67,12 @@ public:
 public:
 	HRESULT AddParticle(PARTICLE_TYPE eType, const ATTRIBUTE& particle);
 	void Update(_float fTimeDelta);
+private:
+	void Update_BLOCK_DESTRUCT(_float fTimeDelta);
+	void Update_PARTICLES_ATLAS_DEATH_SMOKE(_float fTimeDelta);
+	void Update_PARTICLES_ATLAS_EXPLODE_SMOKE(_float fTimeDelta);
+	void Update_PARTICLES_ATLAS_TORCH(_float fTimeDelta);
+	void Update_PARTICLES_ATLAS_TNT_FUSING(_float fTimeDelta);
 
 private:
 	HRESULT Initialize();

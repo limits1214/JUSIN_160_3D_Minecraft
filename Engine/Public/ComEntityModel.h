@@ -26,7 +26,7 @@ private:
 
 public:
 	void UpdateBoneMatrix(_float fTimeDelta);
-	void BindBoneMatrix() const;
+	void BindBoneMatrix(ID3D11DeviceContext* pContext) const;
 	void ResetBonesChannel();
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx, uint32_t iMeshIdx = 0);
 	const std::vector<CEntityModelBone>& GetBones() const { return m_Bones; }
@@ -38,6 +38,18 @@ public:
 			return nullptr;
 		}
 		return &m_Bones[iter->second];
+	}
+
+	_bool SetBone(const std::string& name, const CEntityModelBone& bone)
+	{
+		auto iter = m_BonesLookup.find(name);
+		if (iter == m_BonesLookup.end())
+		{
+			return false;
+		}
+
+		m_Bones[iter->second] = bone;
+		return true;
 	}
 
 private:

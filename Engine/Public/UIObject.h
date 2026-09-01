@@ -3,7 +3,7 @@
 #include "GameObject.h"
 NS_BEGIN(Engine)
 
-constexpr static float MC_UI_SCALE = 1.f;
+constexpr static float MC_UI_SCALE = 2.f;
 
 class ENGINE_DLL CUIObject : public CGameObject
 {
@@ -21,7 +21,16 @@ protected:
 	~CUIObject() override;
 
 public:
+	void UpdateGUI() override;
+
+public:
 	HRESULT Initialize(void* pArg) override;
+
+public:
+	_float2 GetOrigin() const { return { m_fX , m_fY }; }
+	_float2 GetSize() const { return{ m_fSizeX , m_fSizeY }; }
+	void SetOrigin(_float2 f) { m_fX = f.x; m_fY = f.y; CalcUICoord(); }
+	void SetSize(_float2 f) { m_fSizeX = f.x; m_fSizeY = f.y; CalcUICoord();}
 
 protected:
 	void CalcUICoord();

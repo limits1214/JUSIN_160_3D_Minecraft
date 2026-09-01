@@ -18,10 +18,10 @@ void CWorkerManager::UpdateGUI()
     std::string s = m_sName + "_Workers";
     ImGui::Begin(s.c_str());
 
-    if (ImGui::Button("TEST1"))
-    {
-        Enqueue("TEST_SLEEP1", []() {std::this_thread::sleep_for(std::chrono::milliseconds(2000)); });
-    }
+    //if (ImGui::Button("TEST1"))
+    //{
+    //    Enqueue("TEST_SLEEP1", []() {std::this_thread::sleep_for(std::chrono::milliseconds(2000)); });
+    //}
 
     if (ImGui::Button("TEST2"))
     {
@@ -44,7 +44,7 @@ void CWorkerManager::UpdateGUI()
         }
     }
 
-    ImGui::Text("Test: %i", m_iTest);
+    //ImGui::Text("Test: %i", m_iTest);
 
     if (ImGui::TreeNode("Workers"))
     {

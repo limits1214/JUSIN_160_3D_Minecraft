@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "CameraObject.h"
 #include "Resources.h"
+#include "UIExperienceBarGage.h"
 NS_USING(Engine)
 
 CUIExperienceBar::CUIExperienceBar()
@@ -56,10 +57,21 @@ void CUIExperienceBar::LateUpdate(E::_float fTimeDelta)
 	}
 
 	GetTransform().Update();
+;
+
+	for (uint32_t i = 0; i < GetChildrenNode().size(); ++i)
+	{
+		if (auto pGage = Cast<CUIExperienceBarGage>(GetChildrenNode()[i]))
+		{
+			pGage->SetGage(m_fGage);
+		}
+	}
 }
 
 HRESULT CUIExperienceBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx)
 {
+	
+
 	const auto& vs = E::CGameInstance::Get().GetResourceFirst<E::CResVertexShader>(TAG_RES_GRP_PERMANENT_SHADER, "VS_UI");
 	const auto& ps = E::CGameInstance::Get().GetResourceFirst<E::CResPixelShader>(TAG_RES_GRP_PERMANENT_SHADER, "PS_UI");
 
@@ -136,6 +148,8 @@ HRESULT CUIExperienceBar::Render(ID3D11DeviceContext* pContext, const E::RENDER_
 		pContext->DrawIndexed(viBuffer->GetNumIndices(), 0, 0);
 	}
 
+	auto size = E::CGameInstance::Get().FontMeasureString("NeoDGM_20px", std::to_wstring(m_iLevel).data(), 1.f);
+	E::CGameInstance::Get().FontAddLateDraw(RENDERGROUP::UI, "NeoDGM_20px", std::to_wstring(m_iLevel), { m_fX - (size.x * 0.5f) , m_fY - 15.f }, 1, XMVectorSet(128.f / 255.f, 255.f / 255.f, 32.f / 255.f, 1.f));
 	
 	return S_OK;
 }

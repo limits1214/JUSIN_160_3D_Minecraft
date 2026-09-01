@@ -1,22 +1,15 @@
 #pragma once
-#include "ItemObject.h"
+#include "GameObject.h"
 
 NS_BEGIN(Engine)
-class CComEntityModel;
-class ENGINE_DLL CExperienceOrbItem : public CItemObject
+class ENGINE_DLL CSkybox : public CGameObject
 {
 public:
-	typedef struct tagDesc : CItemObject::DESC
-	{
-
-	}DESC;
-
-public:
-	DECLARE_DERIVED_TYPE(CExperienceOrbItem, CItemObject)
+	DECLARE_DERIVED_TYPE(CSkybox, CGameObject)
 
 private:
-	explicit CExperienceOrbItem();
-	~CExperienceOrbItem() override;
+	explicit CSkybox();
+	~CSkybox() override;
 
 public:
 	HRESULT Initialize(void* pArg) override;
@@ -28,11 +21,10 @@ public:
 	HRESULT Render(ID3D11DeviceContext* pContext, const E::RENDER_CTX& ctx) override;
 
 private:
-	int m_iFrameIndex = 0;
-	int m_iFrameCol{};
-	int m_iFrameRow{};
+	_bool m_bRender{ true };
+
 public:
-	static UPtr<CExperienceOrbItem> Create();
+	static UPtr<CSkybox> Create();
 	UPtr<CPrototype> Clone(void* pArg) override;
 };
 

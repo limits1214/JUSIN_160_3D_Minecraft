@@ -144,7 +144,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NOMINMAX;IMGUI_API=__declspec(dllimport);_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;IMGUI_API=__declspec(dllimport);_STRID_NODBG;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -166,7 +166,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NOMINMAX;IMGUI_API=__declspec(dllimport);NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;IMGUI_API=__declspec(dllimport);_STRID_NODBG;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -218,6 +218,7 @@
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\public\LevelLoading.h" />
     <ClInclude Include="..\public\LevelLogo.h" />
+    <ClInclude Include="..\public\LevelOverWorld.h" />
     <ClInclude Include="..\public\LevelTestSimpleGreedy.h" />
     <ClInclude Include="..\public\LevelTestWorld.h" />
     <ClInclude Include="..\public\MainApp.h" />
@@ -234,6 +235,7 @@
     <ClCompile Include="..\private\BackGround.cpp" />
     <ClCompile Include="..\private\LevelLoading.cpp" />
     <ClCompile Include="..\private\LevelLogo.cpp" />
+    <ClCompile Include="..\private\LevelOverWorld.cpp" />
     <ClCompile Include="..\private\LevelTestSimpleGreedy.cpp" />
     <ClCompile Include="..\private\LevelTestWorld.cpp" />
     <ClCompile Include="..\private\MainApp.cpp" />

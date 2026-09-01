@@ -312,6 +312,19 @@ const std::vector<CHandle>* CGameObjectManager::GetLayer(std::string_view sLayer
 	return &m_Layers[iter->second].second;
 }
 
+const std::vector<CHandle>* CGameObjectManager::GetLayer(std::string_view sLayerName, const StringID& iPrototypeLevelIndex, const StringID& svPrototypeTag, void* pArg) 
+{
+	if (auto pLayer = GetLayer(sLayerName))
+	{
+		return pLayer;
+	}
+	else
+	{
+		AddGameObjectToLayer(iPrototypeLevelIndex, svPrototypeTag, sLayerName, pArg);
+		return GetLayer(sLayerName);
+	}
+}
+
 void CGameObjectManager::DelLayer(std::string_view sLayerName)
 {
 	auto iter = m_LookupLayers.find(sLayerName);

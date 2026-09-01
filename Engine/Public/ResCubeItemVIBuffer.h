@@ -12,9 +12,9 @@ public:
 public:
 	typedef struct tagDesc
 	{
-		std::pair<StringID, StringID> textureId;
-		uint32_t resourceIdx{};
-		uint32_t texIndices[ETOUI(FACE_DIR::END)]{};
+		//std::pair<StringID, StringID> textureId;
+		//uint32_t resourceIdx{};
+		//uint32_t texIndices[ETOUI(FACE_DIR::END)]{};
 	} DESC;
 
 private:

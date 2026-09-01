@@ -70,7 +70,8 @@ HRESULT CResDynamicTexture2D::Load(const std::any& arg)
 
     {
         auto param2 = descArg->texSubResource.pSysMem != nullptr ? &descArg->texSubResource : nullptr;
-        if (FAILED(m_pDevice->CreateTexture2D(&descArg->texDesc, param2, m_pTexture.GetAddressOf())))
+        auto hr = m_pDevice->CreateTexture2D(&descArg->texDesc, param2, m_pTexture.GetAddressOf());
+        if (FAILED(hr))
         {
             m_eState = STATE::LOADFAIL;
             MSG_BOX("CResDynamicTexture2D CreateTexture2D");

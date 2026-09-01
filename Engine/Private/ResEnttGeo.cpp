@@ -75,6 +75,10 @@ void CResEnttGeo::Scaling()
             cube.size.z *= fScale;
 
             cube.inflate *= fScale;
+
+            cube.pivot.x *= fScale;
+            cube.pivot.y *= fScale;
+            cube.pivot.z *= fScale;
         }
 
         // locators 스케일 (있으면)
@@ -85,4 +89,51 @@ void CResEnttGeo::Scaling()
             pos.z *= fScale;
         }
     }
+}
+
+void CResEnttGeo::BoneSorting()
+{
+    std::vector<ENTITY_BONE> bones{};
+
+    // 1. 이름 → 인덱스 임시 맵
+    std::unordered_map<std::string, size_t> tempLookup;
+    for (size_t i = 0; i < m_entityGeometry.bones.size(); ++i)
+        tempLookup.emplace(m_entityGeometry.bones[i].name, i);
+
+    // 2. 위상 정렬
+    std::vector<size_t> sorted;
+    std::vector<bool> visited(m_entityGeometry.bones.size(), false);
+
+    std::function<void(size_t)> visit = [&](size_t idx)
+        {
+            if (visited[idx]) return;
+            visited[idx] = true;
+
+            // 부모 먼저
+            const auto& parentName = m_entityGeometry.bones[idx].parent;
+            if (!parentName.empty())
+            {
+                auto it = tempLookup.find(parentName);
+                if (it != tempLookup.end())
+                    visit(it->second);
+            }
+
+            sorted.push_back(idx);
+        };
+
+    for (size_t i = 0; i < m_entityGeometry.bones.size(); ++i)
+        visit(i);
+
+    // 3. 정렬된 순서로 bones 구성
+    for (size_t i = 0; i < sorted.size(); ++i)
+    {
+        const auto& bone = m_entityGeometry.bones[sorted[i]];
+        bones.push_back(bone);
+        //auto b = CEntityModelBone{ bone.name };
+        //b.SetPivot(bone.pivot);
+        //b.SetParentName(bone.parent);
+        //m_BonesLookup.emplace(bone.name, m_Bones.size());
+        //m_Bones.push_back(b);
+    }
+    m_entityGeometry.bones = bones;
 }

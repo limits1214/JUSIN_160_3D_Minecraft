@@ -65,7 +65,7 @@ public:
 	//void LateUpdate(E::_float fTimeDelta) override;
 	//HRESULT Render(ComPtr<ID3D11Device>& ppDevice, ComPtr<ID3D11DeviceContext>& ppContext) override;
 
-protected:
+public:
 	HRESULT UpdateViewMatrix();
 	HRESULT UpdateProjMatrix();
 

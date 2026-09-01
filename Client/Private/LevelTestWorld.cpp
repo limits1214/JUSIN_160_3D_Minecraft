@@ -10,7 +10,7 @@
 #include "PlayerEntity.h"
 #include "SkeletonEntity.h"
 #include "DropItem.h"
-#include "ExperienceOrbItem.h"
+#include "ExperienceOrb.h"
 #include "UICrosshair.h"
 #include "UICamera.h"
 
@@ -30,6 +30,8 @@
 #include "UIHungerBarIcon.h"
 #include "UIBreathBar.h"
 #include "UIBreathBarIcon.h"
+
+#include "FallingVoxel.h"
 
 NS_USING(Client)
 CLevelTestWorld::CLevelTestWorld()
@@ -117,7 +119,7 @@ HRESULT CLevelTestWorld::Initialize()
 			int x = 0;
 		}
 
-		if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_ExperienceOrb", E::CExperienceOrbItem::Create())))
+		if (FAILED(E::CGameInstance::Get().AddPrototype("ITEM", "Prototype_GameObject_ExperienceOrb", E::CExperienceOrb::Create())))
 		{
 			int x = 0;
 		}
@@ -197,6 +199,12 @@ HRESULT CLevelTestWorld::Initialize()
 		}
 
 		if (FAILED(E::CGameInstance::Get().AddPrototype("DESTROY_STAGE", "Prototype_GameObject_DestroyStage", E::CDestroyStage::Create())))
+		{
+			int x = 0;
+		}
+
+		//CFallingVoxel
+		if (FAILED(E::CGameInstance::Get().AddPrototype("FALLING_VOXEL", "Prototype_GameObject_FallingVoxel", E::CFallingVoxel::Create())))
 		{
 			int x = 0;
 		}
@@ -315,7 +323,7 @@ HRESULT CLevelTestWorld::Initialize()
 		}
 
 		{
-			E::CExperienceOrbItem::DESC Desc{};
+			E::CExperienceOrb::DESC Desc{};
 			Desc.sObjectTag = "ExperienceOrb";
 			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("ITEM", "Prototype_GameObject_ExperienceOrb",
 				"01_DROPITEM", &Desc))
@@ -325,10 +333,26 @@ HRESULT CLevelTestWorld::Initialize()
 
 
 
-		
+
 
 	}
 
+	// falling voxel
+	{
+		//CFallingVoxel
+		{
+			E::CFallingVoxel::DESC Desc{};
+			Desc.sObjectTag = "CFallingVoxelDirt";
+			
+			if (auto pig = E::CGameInstance::Get().AddGameObjectToLayer("FALLING_VOXEL", "Prototype_GameObject_FallingVoxel",
+				"88_FALLING_VOXEL", &Desc))
+			{
+				int x = 0;
+			}
+		}
+		
+		//E::CGameInstance::Get().getga
+	}
 	//block outline
 	{
 		//CBlockOutline

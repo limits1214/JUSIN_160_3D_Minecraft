@@ -29,7 +29,8 @@ HRESULT CResSamplerState::Load(const std::any& arg)
 
 	m_eState = STATE::LOADING;
 
-	if (FAILED(m_pDevice->CreateSamplerState(desc, m_Sampler.GetAddressOf())))
+	auto hr = m_pDevice->CreateSamplerState(desc, m_Sampler.GetAddressOf());
+	if (FAILED(hr))
 	{
 		m_eState = STATE::LOADFAIL;
 		MSG_BOX("SamplerState Create Failed");

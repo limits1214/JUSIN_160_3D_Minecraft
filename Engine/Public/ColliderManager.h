@@ -46,7 +46,7 @@ private:
 	std::unordered_map<StringID, std::vector<const CCollider*>> m_Colliders{};
 	std::unordered_map<const CCollider*, _float4> m_DbgColor{};
 
-	_bool m_bRender{ true };
+	_bool m_bRender{ false };
 	std::unordered_map<StringID, _bool> m_DbgRenders{};
 	//_bool m_bDbgBufferInitialize{ false };
 
@@ -54,7 +54,7 @@ private:
 	ComPtr<ID3D11Device> m_pDevice{};
 	ComPtr<ID3D11DeviceContext> m_pContext{};
 
-	const uint32_t m_iVertexCnt{ 200000 };
+	const uint32_t m_iVertexCnt{ 20000 };
 
 	SPtr<CResDynamicVIBuffer> m_pDbgBuffer{};
 	SPtr<CResVertexShader> m_pDbgVShader{};
