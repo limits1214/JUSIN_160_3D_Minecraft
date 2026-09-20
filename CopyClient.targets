@@ -1,0 +1,25 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ClientDeploymentScript>$(MSBuildThisFileDirectory)CopyClient.bat</ClientDeploymentScript>
+  </PropertyGroup>
+
+  <Target Name="CopyClientFiles" Condition="'$(Platform)'=='x64'">
+    <PropertyGroup>
+      <ClientDependencyDir>$(VcpkgCurrentInstalledDir)</ClientDependencyDir>
+      <ClientDependencyDir Condition="'$(ClientDependencyDir)'==''">$(_ZVcpkgCurrentInstalledDir)</ClientDependencyDir>
+    </PropertyGroup>
+    <Error Condition="'$(ClientDependencyDir)'==''"
+           Text="vcpkg is not configured. Run 'vcpkg integrate install', reopen Visual Studio, and build the solution again." />
+    <Exec Command="call &quot;$(ClientDeploymentScript)&quot; &quot;$(Configuration)&quot; &quot;$(ClientDependencyDir)\.&quot;" />
+  </Target>
+
+  <!-- Export the engine SDK before the dependent client is compiled. -->
+  <Target Name="DeployEngineToClient" AfterTargets="Build"
+          Condition="'$(MSBuildProjectName)'=='Engine' and '$(Platform)'=='x64'"
+          DependsOnTargets="CopyClientFiles" />
+
+  <!-- Refresh resources even when only the client needs rebuilding. -->
+  <Target Name="PrepareClientFiles" BeforeTargets="ClCompile"
+          Condition="'$(MSBuildProjectName)'=='Client' and '$(Platform)'=='x64'"
+          DependsOnTargets="CopyClientFiles" />
+</Project>

@@ -1,2 +1,2 @@
--리소스 심볼릭 링크 생성, 파워셀 관리자모드 켜서 클라이언트의 빈폴더로 가서 아래 입력 
-New-Item -ItemType SymbolicLink -Path "./Resources" -Target "../../MC_DX11_RESOURCE"
+빌드 및 실행 방법은 README.md의 '리소스 및 실행 준비'를 참고하세요.
+리소스와 DLL은 빌드할 때 자동 복사되므로 심볼릭 링크를 직접 만들 필요가 없습니다.

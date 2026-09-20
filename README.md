@@ -57,3 +57,38 @@
 - Dear ImGui 기반 오브젝트·컴포넌트·리소스·렌더러·카메라 런타임 검사 도구
 - 충돌체 시각화, 복셀 피킹·청크 로드 제어, 워커 큐·스레드 상태 모니터링
 - 셰이더 런타임 재빌드와 파티클·사운드·엔티티 소환 테스트 기능
+
+## 리소스 및 실행 준비
+
+게임 리소스는 `MC_DX11_RESOURCE` 폴더에 일반 Git 파일로 포함되어 있습니다. 별도의 리소스 저장소 다운로드, 서브모듈 초기화 또는 Git LFS 다운로드는 필요하지 않습니다.
+
+```text
+MC_DX11_RESOURCE/
+├─ Font/
+├─ Shader/
+├─ Sound/
+└─ Texture/
+```
+
+### 최초 1회 준비
+
+- Visual Studio 2022 17.14 이상 또는 Visual Studio 2026: **C++를 사용한 데스크톱 개발**, **MSVC v143 x64/x86 빌드 도구**, **Windows SDK 10.0.26100.0 이상**을 설치합니다.
+- vcpkg를 설치한 뒤 해당 폴더의 PowerShell에서 `.\vcpkg.exe integrate install`을 한 번 실행하고 Visual Studio를 다시 엽니다. DirectXTex와 DirectXTK는 `vcpkg.json`에 따라 첫 빌드 때 자동 설치되므로 인터넷 연결이 필요합니다.
+- FMOD는 `ThirdParty`에 포함되어 있어 별도로 다운로드하지 않아도 됩니다.
+
+### 빌드 및 실행
+
+1. 저장소를 Clone하거나 Download ZIP으로 받아 압축을 풉니다.
+2. `MC_DX11.slnx`를 Visual Studio에서 엽니다.
+3. **Release | x64**를 선택하고 솔루션을 빌드합니다. **Debug | x64**도 사용할 수 있습니다.
+4. `Client`를 시작 프로젝트로 설정한 뒤 **F5**를 누릅니다. 빌드 후 `Client/Bin/Client.exe`를 직접 실행해도 됩니다.
+
+빌드 과정에서 `CopyClient.bat`이 다음 파일을 자동 배치합니다. 관리자 권한이나 수동 심볼릭 링크 생성은 필요하지 않습니다.
+
+- 엔진 헤더·라이브러리 → `EngineSDK/Inc`, `EngineSDK/Lib`
+- `Engine.dll`, `fmod.dll`, 빌드 구성에 맞는 vcpkg DLL → `Client/Bin`
+- `MC_DX11_RESOURCE`의 네 폴더 → `Client/Bin/Resources`
+
+디버깅 작업 폴더도 프로젝트에 `Client/Bin`으로 설정되어 있습니다. 기존에 `Resources`를 원본 리소스 폴더로 연결해 둔 경우에는 링크를 그대로 사용합니다. 다른 위치를 가리키는 링크는 자동으로 덮어쓰지 않고 오류를 표시합니다.
+
+리소스를 수정한 뒤에는 솔루션을 다시 빌드해 실행 폴더에 반영해 주세요. Visual Studio가 최신 상태로 판단해 빌드를 생략하면 **솔루션 다시 빌드**를 사용합니다. 셰이더를 프로젝트에서도 참조하므로 원본 `MC_DX11_RESOURCE` 폴더의 이름과 위치는 유지해 주세요.

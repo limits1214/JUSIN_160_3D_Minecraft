@@ -1,0 +1,6 @@
+*.png binary -filter
+*.fbx binary -filter
+*.tga binary -filter
+*.dds binary -filter
+*.spritefont binary -filter
+*.ogg binary -filter
